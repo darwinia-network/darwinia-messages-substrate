@@ -25,6 +25,7 @@ use frame_support::weights::Weight;
 use sp_runtime::app_crypto::Ss58Codec;
 use structopt::{clap::arg_enum, StructOpt};
 
+pub(crate) mod bridge;
 pub(crate) mod encode_call;
 
 mod derive_account;
@@ -330,15 +331,16 @@ pub struct PrometheusParams {
 	pub prometheus_port: u16,
 }
 
-impl From<PrometheusParams> for Option<relay_utils::metrics::MetricsParams> {
-	fn from(cli_params: PrometheusParams) -> Option<relay_utils::metrics::MetricsParams> {
+impl From<PrometheusParams> for relay_utils::metrics::MetricsParams {
+	fn from(cli_params: PrometheusParams) -> relay_utils::metrics::MetricsParams {
 		if !cli_params.no_prometheus {
-			Some(relay_utils::metrics::MetricsParams {
+			Some(relay_utils::metrics::MetricsAddress {
 				host: cli_params.prometheus_host,
 				port: cli_params.prometheus_port,
 			})
+			.into()
 		} else {
-			None
+			None.into()
 		}
 	}
 }

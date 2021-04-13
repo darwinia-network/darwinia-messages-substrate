@@ -29,7 +29,8 @@ pub type MillauClient = relay_substrate_client::Client<Millau>;
 pub type RialtoClient = relay_substrate_client::Client<Rialto>;
 
 use crate::cli::{
-	encode_call::{self, Call, CliEncodeCall, MILLAU_TO_RIALTO_INDEX, RIALTO_TO_MILLAU_INDEX},
+	bridge::{MILLAU_TO_RIALTO_INDEX, RIALTO_TO_MILLAU_INDEX},
+	encode_call::{self, Call, CliEncodeCall},
 	CliChain, ExplicitOrMaximal, HexBytes, Origins,
 };
 use codec::{Decode, Encode};
@@ -414,9 +415,9 @@ impl CliEncodeCall for Millau {
 	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
 		Ok(match call {
 			Call::Raw { data } => Decode::decode(&mut &*data.0)?,
-			Call::Remark { remark_payload, .. } => {
-				millau_runtime::Call::System(millau_runtime::SystemCall::remark(remark_payload.0.clone()))
-			}
+			Call::Remark { remark_payload, .. } => millau_runtime::Call::System(millau_runtime::SystemCall::remark(
+				remark_payload.as_ref().map(|x| x.0.clone()).unwrap_or_default(),
+			)),
 			Call::Transfer { recipient, amount } => millau_runtime::Call::Balances(
 				millau_runtime::BalancesCall::transfer(recipient.raw_id(), amount.cast()),
 			),
@@ -426,7 +427,7 @@ impl CliEncodeCall for Millau {
 				fee,
 				bridge_instance_index,
 			} => match *bridge_instance_index {
-				encode_call::MILLAU_TO_RIALTO_INDEX => {
+				MILLAU_TO_RIALTO_INDEX => {
 					let payload = Decode::decode(&mut &*payload.0)?;
 					millau_runtime::Call::BridgeRialtoMessages(millau_runtime::MessagesCall::send_message(
 						lane.0,
@@ -487,9 +488,9 @@ impl CliEncodeCall for Rialto {
 	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
 		Ok(match call {
 			Call::Raw { data } => Decode::decode(&mut &*data.0)?,
-			Call::Remark { remark_payload, .. } => {
-				rialto_runtime::Call::System(rialto_runtime::SystemCall::remark(remark_payload.0.clone()))
-			}
+			Call::Remark { remark_payload, .. } => rialto_runtime::Call::System(rialto_runtime::SystemCall::remark(
+				remark_payload.as_ref().map(|x| x.0.clone()).unwrap_or_default(),
+			)),
 			Call::Transfer { recipient, amount } => {
 				rialto_runtime::Call::Balances(rialto_runtime::BalancesCall::transfer(recipient.raw_id(), amount.0))
 			}
@@ -499,7 +500,7 @@ impl CliEncodeCall for Rialto {
 				fee,
 				bridge_instance_index,
 			} => match *bridge_instance_index {
-				encode_call::RIALTO_TO_MILLAU_INDEX => {
+				RIALTO_TO_MILLAU_INDEX => {
 					let payload = Decode::decode(&mut &*payload.0)?;
 					rialto_runtime::Call::BridgeMillauMessages(rialto_runtime::MessagesCall::send_message(
 						lane.0, payload, fee.0,

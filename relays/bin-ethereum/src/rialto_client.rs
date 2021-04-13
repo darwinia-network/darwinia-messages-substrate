@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Parity Technologies (UK) Ltd.
+// Copyright 2019-2021 Parity Technologies (UK) Ltd.
 // This file is part of Parity Bridges Common.
 
 // Parity Bridges Common is free software: you can redistribute it and/or modify
@@ -156,7 +156,7 @@ impl SubmitEthereumHeaders for SubstrateClient<Rialto> {
 	) -> SubmittedHeaders<EthereumHeaderId, RpcError> {
 		let ids = headers.iter().map(|header| header.id()).collect();
 		let submission_result = async {
-			self.submit_signed_extrinsic(params.public().as_array_ref().clone().into(), |transaction_nonce| {
+			self.submit_signed_extrinsic((*params.public().as_array_ref()).into(), |transaction_nonce| {
 				Bytes(
 					Rialto::sign_transaction(
 						*self.genesis_hash(),
@@ -257,7 +257,7 @@ impl SubmitEthereumExchangeTransactionProof for SubstrateClient<Rialto> {
 		instance: Arc<dyn BridgeInstance>,
 		proof: rialto_runtime::exchange::EthereumTransactionInclusionProof,
 	) -> RpcResult<()> {
-		self.submit_signed_extrinsic(params.public().as_array_ref().clone().into(), |transaction_nonce| {
+		self.submit_signed_extrinsic((*params.public().as_array_ref()).into(), |transaction_nonce| {
 			Bytes(
 				Rialto::sign_transaction(
 					*self.genesis_hash(),
