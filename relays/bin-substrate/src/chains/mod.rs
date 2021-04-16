@@ -14,199 +14,64 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Rialto <> Millau Bridge commands.
+//! Chain-specific relayer configuration.
 
 pub mod millau_headers_to_rialto;
 pub mod millau_messages_to_rialto;
 pub mod rialto_headers_to_millau;
 pub mod rialto_messages_to_millau;
+pub mod rococo_headers_to_westend;
 pub mod westend_headers_to_millau;
+pub mod westend_headers_to_rococo;
 
-/// Millau node client.
-pub type MillauClient = relay_substrate_client::Client<Millau>;
-/// Rialto node client.
-pub type RialtoClient = relay_substrate_client::Client<Rialto>;
+mod millau;
+mod rialto;
+mod rococo;
+mod westend;
 
-use crate::cli::{
-	bridge,
-	encode_call::{self, Call, CliEncodeCall},
-	encode_message, send_message, CliChain,
-};
-use codec::Decode;
-use frame_support::weights::{GetDispatchInfo, Weight};
-use pallet_bridge_dispatch::{CallOrigin, MessagePayload};
-use relay_millau_client::Millau;
-use relay_rialto_client::Rialto;
-use relay_westend_client::Westend;
-use sp_version::RuntimeVersion;
+use relay_utils::metrics::{FloatJsonValueMetric, MetricsParams};
 
-impl CliEncodeCall for Millau {
-	fn max_extrinsic_size() -> u32 {
-		bp_millau::max_extrinsic_size()
-	}
-
-	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
-		Ok(match call {
-			Call::Raw { data } => Decode::decode(&mut &*data.0)?,
-			Call::Remark { remark_payload, .. } => millau_runtime::Call::System(millau_runtime::SystemCall::remark(
-				remark_payload.as_ref().map(|x| x.0.clone()).unwrap_or_default(),
-			)),
-			Call::Transfer { recipient, amount } => millau_runtime::Call::Balances(
-				millau_runtime::BalancesCall::transfer(recipient.raw_id(), amount.cast()),
-			),
-			Call::BridgeSendMessage {
-				lane,
-				payload,
-				fee,
-				bridge_instance_index,
-			} => match *bridge_instance_index {
-				bridge::MILLAU_TO_RIALTO_INDEX => {
-					let payload = Decode::decode(&mut &*payload.0)?;
-					millau_runtime::Call::BridgeRialtoMessages(millau_runtime::MessagesCall::send_message(
-						lane.0,
-						payload,
-						fee.cast(),
-					))
-				}
-				_ => anyhow::bail!(
-					"Unsupported target bridge pallet with instance index: {}",
-					bridge_instance_index
-				),
-			},
-		})
-	}
-}
-
-impl CliChain for Millau {
-	const RUNTIME_VERSION: RuntimeVersion = millau_runtime::VERSION;
-
-	type KeyPair = sp_core::sr25519::Pair;
-	type MessagePayload = MessagePayload<bp_millau::AccountId, bp_rialto::AccountSigner, bp_rialto::Signature, Vec<u8>>;
-
-	fn ss58_format() -> u16 {
-		millau_runtime::SS58Prefix::get() as u16
-	}
-
-	fn max_extrinsic_weight() -> Weight {
-		bp_millau::max_extrinsic_weight()
-	}
-
-	// TODO [#854|#843] support multiple bridges?
-	fn encode_message(message: encode_message::MessagePayload) -> Result<Self::MessagePayload, String> {
-		match message {
-			encode_message::MessagePayload::Raw { data } => MessagePayload::decode(&mut &*data.0)
-				.map_err(|e| format!("Failed to decode Millau's MessagePayload: {:?}", e)),
-			encode_message::MessagePayload::Call { mut call, mut sender } => {
-				type Source = Millau;
-				type Target = Rialto;
-
-				sender.enforce_chain::<Source>();
-				let spec_version = Target::RUNTIME_VERSION.spec_version;
-				let origin = CallOrigin::SourceAccount(sender.raw_id());
-				encode_call::preprocess_call::<Source, Target>(&mut call, bridge::MILLAU_TO_RIALTO_INDEX);
-				let call = Target::encode_call(&call).map_err(|e| e.to_string())?;
-				let weight = call.get_dispatch_info().weight;
-
-				Ok(send_message::message_payload(spec_version, weight, origin, &call))
-			}
-		}
-	}
-}
-
-impl CliEncodeCall for Rialto {
-	fn max_extrinsic_size() -> u32 {
-		bp_rialto::max_extrinsic_size()
-	}
-
-	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
-		Ok(match call {
-			Call::Raw { data } => Decode::decode(&mut &*data.0)?,
-			Call::Remark { remark_payload, .. } => rialto_runtime::Call::System(rialto_runtime::SystemCall::remark(
-				remark_payload.as_ref().map(|x| x.0.clone()).unwrap_or_default(),
-			)),
-			Call::Transfer { recipient, amount } => {
-				rialto_runtime::Call::Balances(rialto_runtime::BalancesCall::transfer(recipient.raw_id(), amount.0))
-			}
-			Call::BridgeSendMessage {
-				lane,
-				payload,
-				fee,
-				bridge_instance_index,
-			} => match *bridge_instance_index {
-				bridge::RIALTO_TO_MILLAU_INDEX => {
-					let payload = Decode::decode(&mut &*payload.0)?;
-					rialto_runtime::Call::BridgeMillauMessages(rialto_runtime::MessagesCall::send_message(
-						lane.0, payload, fee.0,
-					))
-				}
-				_ => anyhow::bail!(
-					"Unsupported target bridge pallet with instance index: {}",
-					bridge_instance_index
-				),
-			},
-		})
-	}
-}
-
-impl CliChain for Rialto {
-	const RUNTIME_VERSION: RuntimeVersion = rialto_runtime::VERSION;
-
-	type KeyPair = sp_core::sr25519::Pair;
-	type MessagePayload = MessagePayload<bp_rialto::AccountId, bp_millau::AccountSigner, bp_millau::Signature, Vec<u8>>;
-
-	fn ss58_format() -> u16 {
-		rialto_runtime::SS58Prefix::get() as u16
-	}
-
-	fn max_extrinsic_weight() -> Weight {
-		bp_rialto::max_extrinsic_weight()
-	}
-
-	fn encode_message(message: encode_message::MessagePayload) -> Result<Self::MessagePayload, String> {
-		match message {
-			encode_message::MessagePayload::Raw { data } => MessagePayload::decode(&mut &*data.0)
-				.map_err(|e| format!("Failed to decode Rialto's MessagePayload: {:?}", e)),
-			encode_message::MessagePayload::Call { mut call, mut sender } => {
-				type Source = Rialto;
-				type Target = Millau;
-
-				sender.enforce_chain::<Source>();
-				let spec_version = Target::RUNTIME_VERSION.spec_version;
-				let origin = CallOrigin::SourceAccount(sender.raw_id());
-				encode_call::preprocess_call::<Source, Target>(&mut call, bridge::RIALTO_TO_MILLAU_INDEX);
-				let call = Target::encode_call(&call).map_err(|e| e.to_string())?;
-				let weight = call.get_dispatch_info().weight;
-
-				Ok(send_message::message_payload(spec_version, weight, origin, &call))
-			}
-		}
-	}
-}
-
-impl CliChain for Westend {
-	const RUNTIME_VERSION: RuntimeVersion = bp_westend::VERSION;
-
-	type KeyPair = sp_core::sr25519::Pair;
-	type MessagePayload = ();
-
-	fn ss58_format() -> u16 {
-		42
-	}
-
-	fn max_extrinsic_weight() -> Weight {
-		0
-	}
-
-	fn encode_message(_message: encode_message::MessagePayload) -> Result<Self::MessagePayload, String> {
-		Err("Sending messages from Westend is not yet supported.".into())
-	}
+pub(crate) fn add_polkadot_kusama_price_metrics<T: finality_relay::FinalitySyncPipeline>(
+	params: MetricsParams,
+) -> anyhow::Result<MetricsParams> {
+	Ok(
+		relay_utils::relay_metrics(Some(finality_relay::metrics_prefix::<T>()), params)
+			// Polkadot/Kusama prices are added as metrics here, because atm we don't have Polkadot <-> Kusama
+			// relays, but we want to test metrics/dashboards in advance
+			.standalone_metric(|registry, prefix| {
+				FloatJsonValueMetric::new(
+					registry,
+					prefix,
+					"https://api.coingecko.com/api/v3/simple/price?ids=Polkadot&vs_currencies=usd".into(),
+					"$.polkadot.usd".into(),
+					"polkadot_price".into(),
+					"Polkadot price in USD".into(),
+				)
+			})
+			.map_err(|e| anyhow::format_err!("{}", e))?
+			.standalone_metric(|registry, prefix| {
+				FloatJsonValueMetric::new(
+					registry,
+					prefix,
+					"https://api.coingecko.com/api/v3/simple/price?ids=Kusama&vs_currencies=usd".into(),
+					"$.kusama.usd".into(),
+					"kusama_price".into(),
+					"Kusama price in USD".into(),
+				)
+			})
+			.map_err(|e| anyhow::format_err!("{}", e))?
+			.into_params(),
+	)
 }
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use crate::cli::{encode_call, send_message};
 	use bp_messages::source_chain::TargetHeaderChain;
 	use codec::Encode;
+	use frame_support::dispatch::GetDispatchInfo;
+	use relay_millau_client::Millau;
+	use relay_rialto_client::Rialto;
 	use relay_substrate_client::TransactionSignScheme;
 	use sp_core::Pair;
 	use sp_runtime::traits::{IdentifyAccount, Verify};
@@ -375,6 +240,96 @@ mod tests {
 			"Hardcoded number of extra bytes in Millau transaction {} is lower than actual value: {}",
 			bp_millau::TX_EXTRA_BYTES,
 			extra_bytes_in_transaction,
+		);
+	}
+}
+
+#[cfg(test)]
+mod rococo_tests {
+	use bp_header_chain::justification::GrandpaJustification;
+	use codec::Encode;
+
+	#[test]
+	fn scale_compatibility_of_bridges_call() {
+		// given
+		let header = sp_runtime::generic::Header {
+			parent_hash: Default::default(),
+			number: Default::default(),
+			state_root: Default::default(),
+			extrinsics_root: Default::default(),
+			digest: sp_runtime::generic::Digest { logs: vec![] },
+		};
+
+		let justification = GrandpaJustification {
+			round: 0,
+			commit: finality_grandpa::Commit {
+				target_hash: Default::default(),
+				target_number: Default::default(),
+				precommits: vec![],
+			},
+			votes_ancestries: vec![],
+		};
+
+		let actual = bp_rococo::BridgeGrandpaWestendCall::submit_finality_proof(header.clone(), justification.clone());
+		let expected = millau_runtime::BridgeGrandpaRialtoCall::<millau_runtime::Runtime>::submit_finality_proof(
+			header,
+			justification,
+		);
+
+		// when
+		let actual_encoded = actual.encode();
+		let expected_encoded = expected.encode();
+
+		// then
+		assert_eq!(
+			actual_encoded, expected_encoded,
+			"\n\nEncoding difference.\nGot {:#?} \nExpected: {:#?}",
+			actual, expected
+		);
+	}
+}
+
+#[cfg(test)]
+mod westend_tests {
+	use bp_header_chain::justification::GrandpaJustification;
+	use codec::Encode;
+
+	#[test]
+	fn scale_compatibility_of_bridges_call() {
+		// given
+		let header = sp_runtime::generic::Header {
+			parent_hash: Default::default(),
+			number: Default::default(),
+			state_root: Default::default(),
+			extrinsics_root: Default::default(),
+			digest: sp_runtime::generic::Digest { logs: vec![] },
+		};
+
+		let justification = GrandpaJustification {
+			round: 0,
+			commit: finality_grandpa::Commit {
+				target_hash: Default::default(),
+				target_number: Default::default(),
+				precommits: vec![],
+			},
+			votes_ancestries: vec![],
+		};
+
+		let actual = bp_westend::BridgeGrandpaRococoCall::submit_finality_proof(header.clone(), justification.clone());
+		let expected = millau_runtime::BridgeGrandpaRialtoCall::<millau_runtime::Runtime>::submit_finality_proof(
+			header,
+			justification,
+		);
+
+		// when
+		let actual_encoded = actual.encode();
+		let expected_encoded = expected.encode();
+
+		// then
+		assert_eq!(
+			actual_encoded, expected_encoded,
+			"\n\nEncoding difference.\nGot {:#?} \nExpected: {:#?}",
+			actual, expected
 		);
 	}
 }

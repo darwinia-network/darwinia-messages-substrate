@@ -793,6 +793,7 @@ dependencies = [
 name = "bp-rococo"
 version = "0.1.0"
 dependencies = [
+ "bp-header-chain",
  "bp-messages",
  "bp-polkadot-core",
  "bp-runtime",
@@ -837,6 +838,7 @@ dependencies = [
 name = "bp-westend"
 version = "0.1.0"
 dependencies = [
+ "bp-header-chain",
  "bp-messages",
  "bp-polkadot-core",
  "bp-runtime",
@@ -4092,7 +4094,6 @@ dependencies = [
  "millau-runtime",
  "node-inspect",
  "pallet-bridge-messages",
- "pallet-bridge-messages-rpc",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
  "sc-cli",
@@ -4716,26 +4717,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-bridge-messages-rpc"
-version = "0.1.0"
-dependencies = [
- "bp-messages",
- "bp-runtime",
- "derive_more",
- "futures 0.3.13",
- "jsonrpc-core 15.1.0",
- "jsonrpc-core-client",
- "jsonrpc-derive",
- "log",
- "sc-client-api",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
- "sp-state-machine",
- "sp-trie",
 ]
 
 [[package]]
@@ -5994,6 +5975,7 @@ dependencies = [
  "sp-finality-grandpa",
  "sp-runtime",
  "sp-std",
+ "sp-storage",
  "sp-trie",
  "sp-version",
 ]
@@ -6072,7 +6054,6 @@ dependencies = [
  "jsonrpc-core 15.1.0",
  "node-inspect",
  "pallet-bridge-messages",
- "pallet-bridge-messages-rpc",
  "pallet-transaction-payment-rpc",
  "rialto-runtime",
  "sc-basic-authorship",
@@ -8447,6 +8428,7 @@ dependencies = [
  "bp-millau",
  "bp-polkadot",
  "bp-rialto",
+ "bp-rococo",
  "bp-runtime",
  "bp-westend",
  "bridge-runtime-common",
@@ -8463,7 +8445,6 @@ dependencies = [
  "num-format",
  "num-traits",
  "pallet-bridge-dispatch",
- "pallet-bridge-grandpa",
  "pallet-bridge-messages",
  "parity-scale-codec 2.0.1",
  "paste 1.0.4",
@@ -8471,6 +8452,7 @@ dependencies = [
  "relay-millau-client",
  "relay-polkadot-client",
  "relay-rialto-client",
+ "relay-rococo-client",
  "relay-substrate-client",
  "relay-utils",
  "relay-westend-client",
