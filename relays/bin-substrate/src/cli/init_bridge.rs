@@ -22,6 +22,8 @@ use relay_substrate_client::{Chain, TransactionSignScheme};
 use sp_core::{Bytes, Pair};
 use structopt::{clap::arg_enum, StructOpt};
 
+use pangolin_runtime::bridge::s2s::relay_client::PangolinChain;
+
 /// Initialize bridge pallet.
 #[derive(StructOpt)]
 pub struct InitBridge {
@@ -46,6 +48,7 @@ arg_enum! {
 		WestendToMillau,
 		WestendToRococo,
 		RococoToWestend,
+		PangolinToMillau,
 	}
 }
 
@@ -125,7 +128,23 @@ macro_rules! select_bridge {
 				}
 
 				$generic
-			}
+			},
+			InitBridgeName:PangolinToMillau => {
+				type Source = PangolinChain;
+				type Target = relay_millau_client::Millau;
+
+				fn encode_init_bridge(
+					init_data: InitializationData<<Source as ChainBase>::Header>,
+				) -> <Target as Chain>::Call {
+					let initialize_call = millau_runtime::BridgeGrandpaRialtoCall::<
+						millau_runtime::Runtime,
+						millau_runtime::RialtoGrandpaInstance,
+					>::initialize(init_data);
+					millau_runtime::SudoCall::sudo(Box::new(initialize_call.into())).into()
+				}
+
+				$generic
+			},
 		}
 	};
 }

@@ -47,6 +47,8 @@ relay-utils = { path = "../utils" }
 relay-westend-client = { path = "../client-westend" }
 rialto-runtime = { path = "../../bin/rialto/runtime" }
 
+pangolin-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s"s }
+
 # Substrate Dependencies
 
 frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
