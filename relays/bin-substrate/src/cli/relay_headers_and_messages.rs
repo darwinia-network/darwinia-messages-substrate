@@ -31,10 +31,13 @@ use futures::{FutureExt, TryFutureExt};
 use relay_utils::metrics::MetricsParams;
 use structopt::StructOpt;
 
+use pangolin_runtime::bridge::s2s::relay_client::PangolinChain;
+
 /// Start headers+messages relayer process.
 #[derive(StructOpt)]
 pub enum RelayHeadersAndMessages {
 	MillauRialto(MillauRialtoHeadersAndMessages),
+	PangolinMillau(PangolinMillauHeadersAndMessages),
 }
 
 /// Parameters that have the same names across all bridges.
@@ -100,7 +103,24 @@ macro_rules! select_bridge {
 				use crate::chains::rialto_messages_to_millau::run as right_to_left_messages;
 
 				$generic
-			}
+			},
+			RelayHeadersAndMessages::PangolinMillau(_) => {
+				type Params = PangolinMillauHeadersAndMessages;
+
+				type Left = PangolinChain;
+				type Right = relay_millau_client::Millau;
+
+				type LeftToRightFinality = crate::chains::millau_headers_to_pangolin::MillauFinalityToPangolin;
+				type RightToLeftFinality = crate::chains::pangolin_headers_to_millau::PangolinFinalityToMillau;
+
+				type LeftToRightMessages = crate::chains::millau_messages_to_pangolin::MillauMessagesToPangolin;
+				type RightToLeftMessages = crate::chains::pangolin_messages_to_millau::PangolinMessagesToMillau;
+
+				use crate::chains::millau_messages_to_pangolin::run as left_to_right_messages;
+				use crate::chains::pangolin_messages_to_millau::run as right_to_left_messages;
+
+				$generic
+			},
 		}
 	};
 }
@@ -110,6 +130,10 @@ declare_chain_options!(Millau, millau);
 declare_chain_options!(Rialto, rialto);
 // All supported bridges.
 declare_bridge_options!(Millau, Rialto);
+
+// Pangolin <-> Millau
+declare_chain_options!(Pangolin, pangolin);
+declare_bridge_options!(Pangolin, Millau);
 
 impl RelayHeadersAndMessages {
 	/// Run the command.

@@ -24,6 +24,11 @@ pub mod rococo_headers_to_westend;
 pub mod westend_headers_to_millau;
 pub mod westend_headers_to_rococo;
 
+pub mod pangolin_headers_to_millau;
+pub mod millau_headers_pangolin;
+pub mod pangolin_messages_to_maillau;
+pub mod millau_messages_to_pangolin;
+
 mod millau;
 mod rialto;
 mod rococo;
