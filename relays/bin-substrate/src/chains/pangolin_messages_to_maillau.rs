@@ -16,7 +16,7 @@ use messages_relay::message_lane::MessageLane;
 use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams};
 use pangolin_runtime::{
 	HeaderId as PangolinHeaderId,
-	PangolinChain,
+	PangolinRelayChain,
 	SigningParams as PangolinSigningParams
 };
 use relay_substrate_client::{
@@ -29,7 +29,7 @@ use std::{ops::RangeInclusive, time::Duration};
 
 /// Pangolin-to-Millau message lane.
 pub type PangolinMessagesToMillau = SubstrateMessageLaneToSubstrate<
-	PangolinChain,
+	PangolinRelayChain,
 	PangolinSigningParams,
 	Millau,
 	MillauSigningParams
@@ -56,7 +56,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str =
 		bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
 
-	type SourceChain = PangolinChain;
+	type SourceChain = PangolinRelayChain;
 	type TargetChain = Millau;
 
 	fn source_transactions_author(&self) -> pangolin_runtime::AccountId {
@@ -66,7 +66,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 
 	fn make_messages_receiving_proof_transaction(
 		&self,
-		transaction_nonce: <PangolinChain as Chain>::Index,
+		transaction_nonce: <PangolinRelayChain as Chain>::Index,
 		_generated_at_block: MillauHeaderId,
 		proof: <Self as MessageLane>::MessagesReceivingProof,
 	) -> Bytes {
@@ -77,7 +77,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		).into();
 		let call_weight = call.get_dispatch_info().weight;
 		let genesis_hash = *self.source_client.genesis_hash();
-		let transaction = PangolinChain::sign_transaction(
+		let transaction = PangolinRelayChain::sign_transaction(
 			genesis_hash,
 			&self.source_sign,
 			transaction_nonce,
@@ -143,7 +143,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 
 /// Pangolin node as messages source.
 type PangolinSourceClient = SubstrateMessagesSource<
-	PangolinChain,
+	PangolinRelayChain,
 	PangolinMessagesToMillau,
 	pangolin_runtime::Runtime,
 	pangolin_runtime::WithMillauMessagesInstance,
@@ -158,7 +158,7 @@ type MillauTargetClient = SubstrateMessagesTarget<
 >;
 
 pub async fn run(
-	params: MessagesRelayParams<PangolinChain, PangolinSigningParams, Millau, MillauSigningParams>,
+	params: MessagesRelayParams<PangolinRelayChain, PangolinSigningParams, Millau, MillauSigningParams>,
 ) -> Result<(), String> {
 	let stall_timeout = Duration::from_secs(5 * 60);
 	let relayer_id_at_pangolin = (*params.source_sign.public().as_array_ref()).into();
@@ -200,7 +200,7 @@ pub async fn run(
 	messages_relay::message_lane_loop::run(
 		messages_relay::message_lane_loop::Params {
 			lane: lane_id,
-			source_tick: PangolinChain::AVERAGE_BLOCK_INTERVAL,
+			source_tick: PangolinRelayChain::AVERAGE_BLOCK_INTERVAL,
 			target_tick: Millau::AVERAGE_BLOCK_INTERVAL,
 			reconnect_delay: relay_utils::relay_loop::RECONNECT_DELAY,
 			stall_timeout,

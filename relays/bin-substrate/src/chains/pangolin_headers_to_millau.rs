@@ -2,7 +2,7 @@ use crate::finality_pipeline::{SubstrateFinalitySyncPipeline, SubstrateFinalityT
 
 use bp_header_chain::justification::GrandpaJustification;
 use codec::Encode;
-use pangolin_runtime::bridge::s2s::{PangolinChain, SyncHeader as PangolinSyncHeader};
+use pangolin_runtime::bridge::s2s::{PangolinRelayChain, SyncHeader as PangolinSyncHeader};
 use relay_millau_client::{Millau, SigningParams as MillauSigningParams};
 use relay_substrate_client::{Chain, TransactionSignScheme};
 use sp_core::{Bytes, Pair};
@@ -10,7 +10,7 @@ use sp_core::{Bytes, Pair};
 
 /// Pangolin-to-Millau finality sync pipeline.
 pub(crate) type PangolinFinalityToMillau = SubstrateFinalityToSubstrate<
-	PangolinChain,
+	PangolinRelayChain,
 	Millau,
 	RialtoSigningParams
 >;

@@ -223,15 +223,15 @@ impl SourceHeaderChain<drml_primitives::Balance> for PangolinChainWithMessagesIn
 
 /// Millau -> Pangolin message lane pallet parameters.
 #[derive(RuntimeDebug, Clone, Encode, Decode, PartialEq, Eq)]
-pub enum MillauToRialtoMessagesParameter {
+pub enum MillauToPangolinMessagesParameter {
 	/// The conversion formula we use is: `MillauTokens = RialtoTokens * conversion_rate`.
 	PangolinToMillauConversionRate(FixedU128),
 }
 
-impl MessagesParameter for MillauToRialtoMessagesParameter {
+impl MessagesParameter for MillauToPangolinMessagesParameter {
 	fn save(&self) {
 		match *self {
-			MillauToRialtoMessagesParameter::PangolinToMillauConversionRate(ref conversion_rate) => {
+			MillauToPangolinMessagesParameter::PangolinToMillauConversionRate(ref conversion_rate) => {
 				PangolinToMillauConversionRate::set(conversion_rate)
 			}
 		}

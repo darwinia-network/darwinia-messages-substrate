@@ -22,7 +22,7 @@ use relay_substrate_client::{Chain, TransactionSignScheme};
 use sp_core::{Bytes, Pair};
 use structopt::{clap::arg_enum, StructOpt};
 
-use pangolin_runtime::bridge::s2s::relay_client::PangolinChain;
+use pangolin_runtime::bridge::s2s::relay_client::PangolinRelayChain;
 
 /// Initialize bridge pallet.
 #[derive(StructOpt)]
@@ -130,7 +130,7 @@ macro_rules! select_bridge {
 				$generic
 			},
 			InitBridgeName:PangolinToMillau => {
-				type Source = PangolinChain;
+				type Source = PangolinRelayChain;
 				type Target = relay_millau_client::Millau;
 
 				fn encode_init_bridge(

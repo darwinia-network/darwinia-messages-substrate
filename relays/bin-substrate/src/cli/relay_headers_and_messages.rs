@@ -31,7 +31,7 @@ use futures::{FutureExt, TryFutureExt};
 use relay_utils::metrics::MetricsParams;
 use structopt::StructOpt;
 
-use pangolin_runtime::bridge::s2s::relay_client::PangolinChain;
+use pangolin_runtime::bridge::s2s::relay_client::PangolinRelayChain;
 
 /// Start headers+messages relayer process.
 #[derive(StructOpt)]
@@ -107,7 +107,7 @@ macro_rules! select_bridge {
 			RelayHeadersAndMessages::PangolinMillau(_) => {
 				type Params = PangolinMillauHeadersAndMessages;
 
-				type Left = PangolinChain;
+				type Left = PangolinRelayChain;
 				type Right = relay_millau_client::Millau;
 
 				type LeftToRightFinality = crate::chains::millau_headers_to_pangolin::MillauFinalityToPangolin;
