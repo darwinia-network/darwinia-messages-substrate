@@ -69,6 +69,7 @@ pub trait WeightInfo {
 	fn receive_delivery_proof_for_multiple_messages_by_multiple_relayers(i: u32) -> Weight;
 }
 
+// todo: reminder #2: may there need add Pangolin weight
 /// Weights for pallet_bridge_messages using the Rialto node and recommended hardware.
 pub struct RialtoWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for RialtoWeight<T> {

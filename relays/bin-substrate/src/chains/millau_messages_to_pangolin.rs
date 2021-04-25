@@ -24,7 +24,7 @@ use sp_core::{Bytes, Pair};
 use std::{ops::RangeInclusive, time::Duration};
 
 
-/// Millau-to-Rialto message lane.
+/// Millau-to-Pangolin message lane.
 pub type MillauMessagesToPangolin = SubstrateMessageLaneToSubstrate<
 	Millau,
 	MillauSigningParams,
@@ -51,7 +51,7 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str =
 		bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
 	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str =
-		pangolin_runtime::BEST_FINALIZED_RIALTO_HEADER_METHOD;
+		pangolin_runtime::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
 
 	type SourceChain = Millau;
 	type TargetChain = PangolinChain;
@@ -140,10 +140,10 @@ type MillauSourceClient = SubstrateMessagesSource<
 	Millau,
 	MillauMessagesToPangolin,
 	millau_runtime::Runtime,
-	millau_runtime::WithRialtoMessagesInstance,
+	millau_runtime::WithPangolinMessagesInstance,
 >;
 
-/// Rialto node as messages target.
+/// Pangolin node as messages target.
 type PangolinTargetClient = SubstrateMessagesTarget<
 	PangolinChain,
 	MillauMessagesToPangolin,
@@ -152,9 +152,9 @@ type PangolinTargetClient = SubstrateMessagesTarget<
 >;
 
 
-/// Run Millau-to-Rialto messages sync.
+/// Run Millau-to-Pangolin messages sync.
 pub async fn run(
-	params: MessagesRelayParams<Millau, MillauSigningParams, PangolinChain, RialtoSigningParams>,
+	params: MessagesRelayParams<Millau, MillauSigningParams, PangolinChain, PangolinSigningParams>,
 ) -> Result<(), String> {
 	let stall_timeout = Duration::from_secs(5 * 60);
 	let relayer_id_at_millau = (*params.source_sign.public().as_array_ref()).into();

@@ -27,10 +27,10 @@ use sp_core::{Bytes, Pair};
 use std::{ops::RangeInclusive, time::Duration};
 
 
-/// Rialto-to-Millau message lane.
+/// Pangolin-to-Millau message lane.
 pub type PangolinMessagesToMillau = SubstrateMessageLaneToSubstrate<
 	PangolinChain,
-	RialtoSigningParams,
+	PangolinSigningParams,
 	Millau,
 	MillauSigningParams
 >;
@@ -141,12 +141,12 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 }
 
 
-/// Rialto node as messages source.
+/// Pangolin node as messages source.
 type PangolinSourceClient = SubstrateMessagesSource<
 	PangolinChain,
 	PangolinMessagesToMillau,
-	rialto_runtime::Runtime,
-	rialto_runtime::WithMillauMessagesInstance,
+	pangolin_runtime::Runtime,
+	pangolin_runtime::WithMillauMessagesInstance,
 >;
 
 /// Millau node as messages target.
@@ -154,7 +154,7 @@ type MillauTargetClient = SubstrateMessagesTarget<
 	Millau,
 	PangolinMessagesToMillau,
 	millau_runtime::Runtime,
-	millau_runtime::WithRialtoMessagesInstance,
+	millau_runtime::WithPangolinMessagesInstance,
 >;
 
 pub async fn run(
@@ -212,7 +212,7 @@ pub async fn run(
 				max_messages_size_in_single_batch,
 			},
 		},
-		RialtoSourceClient::new(
+		PangolinSourceClient::new(
 			source_client.clone(),
 			lane.clone(),
 			lane_id,
@@ -247,10 +247,10 @@ pub async fn run(
 					prefix,
 					source_client,
 					sp_core::storage::StorageKey(
-						rialto_runtime::millau_messages::MillauToRialtoConversionRate::key().to_vec(),
+						pangolin_runtime::bridge::s2s::millau_messages::MillauToPangolinConversionRate::key().to_vec(),
 					),
-					Some(pangolin_runtime::bridge::s2s::millau_messages::INITIAL_MILLAU_TO_RIALTO_CONVERSION_RATE),
-					"pangolin_millau_to_rialto_conversion_rate".into(),
+					Some(pangolin_runtime::bridge::s2s::millau_messages::INITIAL_MILLAU_TO_PANGOLIN_CONVERSION_RATE),
+					"pangolin_millau_to_pangolin_conversion_rate".into(),
 					"Millau to Pangolin tokens conversion rate (used by Millau)".into(),
 				)
 			})?

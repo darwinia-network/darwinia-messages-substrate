@@ -31,8 +31,10 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod rialto_messages;
+pub mod pangolin_messages;
 
 use crate::rialto_messages::{ToRialtoMessagePayload, WithRialtoMessageBridge};
+use crate::pangolin_messages::{ToPangolinMessagePayload, WithPangolinMessageBridge};
 
 use bridge_runtime_common::messages::{source::estimate_message_dispatch_and_delivery_fee, MessageBridge};
 use codec::Decode;
@@ -353,6 +355,8 @@ parameter_types! {
 
 /// Instance of the messages pallet used to relay messages to/from Rialto chain.
 pub type WithRialtoMessagesInstance = pallet_bridge_messages::DefaultInstance;
+/// Instance of the message pallet used to relay message to/from Pangolin chain.
+pub type WithPangolinMessagesInstance = pallet_bridge_messages::DefaultInstance;
 
 impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
 	type Event = Event;
