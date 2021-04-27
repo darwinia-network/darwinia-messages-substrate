@@ -699,7 +699,7 @@ dependencies = [
 name = "bp-header-chain"
 version = "0.1.0"
 dependencies = [
- "bp-test-utils",
+ "bp-test-utils 0.1.0",
  "finality-grandpa 0.14.0",
  "frame-support",
  "parity-scale-codec 2.0.1",
@@ -773,7 +773,9 @@ dependencies = [
  "frame-system",
  "hash256-std-hasher",
  "impl-codec",
+ "impl-serde",
  "parity-util-mem",
+ "serde",
  "sp-api",
  "sp-core",
  "sp-io",
@@ -912,6 +914,21 @@ dependencies = [
 [[package]]
 name = "bp-test-utils"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#1e14a1f1281aaffbbd3d3edb2cc7c8dae81d1967"
+dependencies = [
+ "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
+ "ed25519-dalek",
+ "finality-grandpa 0.14.0",
+ "parity-scale-codec 2.0.1",
+ "sp-application-crypto",
+ "sp-finality-grandpa",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "bp-test-utils"
+version = "0.1.0"
 dependencies = [
  "bp-header-chain 0.1.0",
  "ed25519-dalek",
@@ -954,6 +971,7 @@ dependencies = [
  "parity-scale-codec 2.0.1",
  "sp-core",
  "sp-runtime",
+ "sp-state-machine",
  "sp-std",
  "sp-trie",
 ]
@@ -1593,7 +1611,7 @@ dependencies = [
 [[package]]
 name = "darwinia-balances"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-balances-rpc-runtime-api",
  "darwinia-support",
@@ -1609,7 +1627,7 @@ dependencies = [
 [[package]]
 name = "darwinia-balances-rpc-runtime-api"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "parity-scale-codec 2.0.1",
@@ -1621,7 +1639,7 @@ dependencies = [
 [[package]]
 name = "darwinia-claims"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "darwinia-support",
@@ -1639,7 +1657,7 @@ dependencies = [
 [[package]]
 name = "darwinia-crab-backing"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1651,7 +1669,7 @@ dependencies = [
 [[package]]
 name = "darwinia-crab-issuing"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1663,7 +1681,7 @@ dependencies = [
 [[package]]
 name = "darwinia-democracy"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1678,7 +1696,7 @@ dependencies = [
 [[package]]
 name = "darwinia-elections-phragmen"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -1694,7 +1712,7 @@ dependencies = [
 [[package]]
 name = "darwinia-ethereum-backing"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "darwinia-relay-primitives",
@@ -1715,7 +1733,7 @@ dependencies = [
 [[package]]
 name = "darwinia-ethereum-issuing"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-ethereum-issuing-contract",
  "darwinia-evm",
@@ -1739,7 +1757,7 @@ dependencies = [
 [[package]]
 name = "darwinia-ethereum-issuing-contract"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "ethabi 13.0.0",
  "ethereum-types",
@@ -1748,7 +1766,7 @@ dependencies = [
 [[package]]
 name = "darwinia-ethereum-relay"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "blake2-rfc",
@@ -1772,7 +1790,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-balances",
  "dp-evm",
@@ -1797,7 +1815,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm-precompile"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-evm-precompile-empty",
  "darwinia-evm-precompile-issuing",
@@ -1809,7 +1827,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm-precompile-empty"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "dp-evm",
  "evm",
@@ -1818,7 +1836,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm-precompile-issuing"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-evm",
  "dp-evm",
@@ -1828,7 +1846,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm-precompile-kton"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "darwinia-evm",
@@ -1854,7 +1872,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm-precompile-simple"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "dp-evm",
  "evm",
@@ -1866,7 +1884,7 @@ dependencies = [
 [[package]]
 name = "darwinia-evm-precompile-withdraw"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-evm",
  "darwinia-support",
@@ -1886,7 +1904,7 @@ dependencies = [
 [[package]]
 name = "darwinia-header-mmr"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "ckb-merkle-mountain-range",
  "darwinia-header-mmr-rpc-runtime-api",
@@ -1904,7 +1922,7 @@ dependencies = [
 [[package]]
 name = "darwinia-header-mmr-rpc-runtime-api"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "parity-scale-codec 2.0.1",
@@ -1917,7 +1935,7 @@ dependencies = [
 [[package]]
 name = "darwinia-relay-authorities"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-relay-primitives",
  "darwinia-support",
@@ -1932,7 +1950,7 @@ dependencies = [
 [[package]]
 name = "darwinia-relay-primitives"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "frame-support",
  "parity-scale-codec 2.0.1",
@@ -1943,7 +1961,7 @@ dependencies = [
 [[package]]
 name = "darwinia-relayer-game"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-relay-primitives",
  "darwinia-support",
@@ -1959,7 +1977,7 @@ dependencies = [
 [[package]]
 name = "darwinia-staking"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
@@ -1984,7 +2002,7 @@ dependencies = [
 [[package]]
 name = "darwinia-staking-rpc-runtime-api"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "parity-scale-codec 2.0.1",
@@ -1996,7 +2014,7 @@ dependencies = [
 [[package]]
 name = "darwinia-support"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "ethereum-primitives",
  "frame-support",
@@ -2010,7 +2028,7 @@ dependencies = [
 [[package]]
 name = "darwinia-treasury"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "frame-support",
@@ -2024,7 +2042,7 @@ dependencies = [
 [[package]]
 name = "darwinia-tron-backing"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2036,7 +2054,7 @@ dependencies = [
 [[package]]
 name = "darwinia-vesting"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-support",
  "enumflags2",
@@ -2169,7 +2187,7 @@ checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 [[package]]
 name = "dp-evm"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "evm",
  "impl-trait-for-tuples",
@@ -2182,12 +2200,12 @@ dependencies = [
 [[package]]
 name = "dp-storage"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 
 [[package]]
 name = "dp_consensus"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "ethereum",
  "parity-scale-codec 2.0.1",
@@ -2201,7 +2219,7 @@ dependencies = [
 [[package]]
 name = "drml-primitives"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
@@ -2211,12 +2229,13 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-std",
+ "static_assertions",
 ]
 
 [[package]]
 name = "dvm-ethereum"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "darwinia-evm",
@@ -2245,7 +2264,7 @@ dependencies = [
 [[package]]
 name = "dvm-rpc-runtime-api"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "darwinia-evm",
  "darwinia-support",
@@ -2557,7 +2576,7 @@ dependencies = [
  "exchange-relay",
  "frame-system",
  "futures 0.3.13",
- "headers-relay 0.1.0",
+ "headers-relay",
  "hex",
  "hex-literal 0.3.1",
  "libsecp256k1",
@@ -2568,8 +2587,8 @@ dependencies = [
  "parity-scale-codec 2.0.1",
  "relay-ethereum-client",
  "relay-rialto-client",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "rialto-runtime",
  "serde",
  "serde_json",
@@ -2583,7 +2602,7 @@ dependencies = [
 [[package]]
 name = "ethereum-primitives"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "ethash",
@@ -2688,7 +2707,7 @@ dependencies = [
  "log",
  "num-traits",
  "parking_lot 0.11.1",
- "relay-utils 0.1.0",
+ "relay-utils",
 ]
 
 [[package]]
@@ -2795,33 +2814,17 @@ dependencies = [
 [[package]]
 name = "finality-relay"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#1e14a1f1281aaffbbd3d3edb2cc7c8dae81d1967"
-dependencies = [
- "async-std",
- "async-trait",
- "backoff",
- "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "futures 0.3.13",
- "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "log",
- "num-traits",
- "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
-]
-
-[[package]]
-name = "finality-relay"
-version = "0.1.0"
 dependencies = [
  "async-std",
  "async-trait",
  "backoff",
  "bp-header-chain 0.1.0",
  "futures 0.3.13",
- "headers-relay 0.1.0",
+ "headers-relay",
  "log",
  "num-traits",
  "parking_lot 0.11.1",
- "relay-utils 0.1.0",
+ "relay-utils",
 ]
 
 [[package]]
@@ -3473,7 +3476,6 @@ dependencies = [
 [[package]]
 name = "headers-relay"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#1e14a1f1281aaffbbd3d3edb2cc7c8dae81d1967"
 dependencies = [
  "async-std",
  "async-trait",
@@ -3483,22 +3485,7 @@ dependencies = [
  "log",
  "num-traits",
  "parking_lot 0.11.1",
- "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
-]
-
-[[package]]
-name = "headers-relay"
-version = "0.1.0"
-dependencies = [
- "async-std",
- "async-trait",
- "backoff",
- "futures 0.3.13",
- "linked-hash-map",
- "log",
- "num-traits",
- "parking_lot 0.11.1",
- "relay-utils 0.1.0",
+ "relay-utils",
 ]
 
 [[package]]
@@ -4970,7 +4957,7 @@ checksum = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
 [[package]]
 name = "merkle-patricia-trie"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "array-bytes",
  "hashbrown",
@@ -5002,7 +4989,7 @@ dependencies = [
  "hex",
  "log",
  "parking_lot 0.11.1",
- "relay-utils 0.1.0",
+ "relay-utils",
 ]
 
 [[package]]
@@ -5055,7 +5042,6 @@ dependencies = [
  "bp-runtime 0.1.0",
  "bp-westend",
  "bridge-runtime-common 0.1.0",
- "drml-primitives",
  "frame-executive",
  "frame-support",
  "frame-system",
@@ -5663,12 +5649,14 @@ source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
+ "bp-test-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "finality-grandpa 0.14.0",
  "frame-support",
  "frame-system",
  "log",
  "num-traits",
  "parity-scale-codec 2.0.1",
+ "serde",
  "sp-finality-grandpa",
  "sp-runtime",
  "sp-std",
@@ -5681,7 +5669,7 @@ version = "0.1.0"
 dependencies = [
  "bp-header-chain 0.1.0",
  "bp-runtime 0.1.0",
- "bp-test-utils",
+ "bp-test-utils 0.1.0",
  "finality-grandpa 0.14.0",
  "frame-benchmarking",
  "frame-support",
@@ -5710,6 +5698,7 @@ dependencies = [
  "log",
  "num-traits",
  "parity-scale-codec 2.0.1",
+ "serde",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -6090,9 +6079,10 @@ dependencies = [
 [[package]]
 name = "pangolin-runtime"
 version = "2.2.0"
-source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#bc5d9ea7ed2dbe55bc229b1fe412f76c432a1249"
+source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#ac9f8604b7c5e4415d9a82dda8da5dbd687e7c1b"
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
+ "bp-message-dispatch 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-millau 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
@@ -6157,7 +6147,6 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-utility",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "serde",
  "smallvec 1.6.1",
  "sp-api",
@@ -7174,14 +7163,14 @@ name = "relay-ethereum-client"
 version = "0.1.0"
 dependencies = [
  "bp-eth-poa",
- "headers-relay 0.1.0",
+ "headers-relay",
  "hex-literal 0.3.1",
  "jsonrpsee-proc-macros",
  "jsonrpsee-ws-client",
  "libsecp256k1",
  "log",
  "parity-scale-codec 2.0.1",
- "relay-utils 0.1.0",
+ "relay-utils",
  "web3",
 ]
 
@@ -7192,11 +7181,11 @@ dependencies = [
  "bp-kusama",
  "frame-support",
  "frame-system",
- "headers-relay 0.1.0",
+ "headers-relay",
  "pallet-transaction-payment",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
@@ -7208,12 +7197,12 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "headers-relay 0.1.0",
+ "headers-relay",
  "millau-runtime",
  "pallet-transaction-payment",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
@@ -7226,11 +7215,11 @@ dependencies = [
  "bp-polkadot",
  "frame-support",
  "frame-system",
- "headers-relay 0.1.0",
+ "headers-relay",
  "pallet-transaction-payment",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
@@ -7242,11 +7231,11 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "headers-relay 0.1.0",
+ "headers-relay",
  "pallet-transaction-payment",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "rialto-runtime",
  "sp-core",
  "sp-keyring",
@@ -7260,47 +7249,14 @@ dependencies = [
  "bp-rococo",
  "frame-support",
  "frame-system",
- "headers-relay 0.1.0",
+ "headers-relay",
  "pallet-transaction-payment",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
-]
-
-[[package]]
-name = "relay-substrate-client"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#1e14a1f1281aaffbbd3d3edb2cc7c8dae81d1967"
-dependencies = [
- "async-std",
- "async-trait",
- "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "finality-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support",
- "frame-system",
- "futures 0.3.13",
- "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "jsonrpsee-proc-macros",
- "jsonrpsee-ws-client",
- "log",
- "num-traits",
- "pallet-balances",
- "parity-scale-codec 2.0.1",
- "rand 0.7.3",
- "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sc-rpc-api",
- "sp-core",
- "sp-finality-grandpa",
- "sp-runtime",
- "sp-std",
- "sp-storage",
- "sp-trie",
- "sp-version",
 ]
 
 [[package]]
@@ -7312,11 +7268,11 @@ dependencies = [
  "bp-header-chain 0.1.0",
  "bp-messages 0.1.0",
  "bp-runtime 0.1.0",
- "finality-relay 0.1.0",
+ "finality-relay",
  "frame-support",
  "frame-system",
  "futures 0.3.13",
- "headers-relay 0.1.0",
+ "headers-relay",
  "jsonrpsee-proc-macros",
  "jsonrpsee-ws-client",
  "log",
@@ -7324,7 +7280,7 @@ dependencies = [
  "pallet-balances",
  "parity-scale-codec 2.0.1",
  "rand 0.7.3",
- "relay-utils 0.1.0",
+ "relay-utils",
  "sc-rpc-api",
  "sp-core",
  "sp-finality-grandpa",
@@ -7333,27 +7289,6 @@ dependencies = [
  "sp-storage",
  "sp-trie",
  "sp-version",
-]
-
-[[package]]
-name = "relay-utils"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#1e14a1f1281aaffbbd3d3edb2cc7c8dae81d1967"
-dependencies = [
- "ansi_term 0.12.1",
- "async-std",
- "async-trait",
- "backoff",
- "env_logger 0.8.3",
- "futures 0.3.13",
- "isahc",
- "jsonpath_lib",
- "log",
- "num-traits",
- "serde_json",
- "substrate-prometheus-endpoint",
- "sysinfo",
- "time 0.2.25",
 ]
 
 [[package]]
@@ -7383,11 +7318,11 @@ dependencies = [
  "bp-westend",
  "frame-support",
  "frame-system",
- "headers-relay 0.1.0",
+ "headers-relay",
  "pallet-transaction-payment",
  "parity-scale-codec 2.0.1",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "sp-core",
  "sp-keyring",
  "sp-runtime",
@@ -9753,7 +9688,7 @@ version = "0.1.0"
 dependencies = [
  "bp-header-chain 0.1.0",
  "bp-runtime 0.1.0",
- "bp-test-utils",
+ "bp-test-utils 0.1.0",
  "env_logger 0.8.3",
  "finality-grandpa 0.12.3",
  "frame-support",
@@ -9927,10 +9862,10 @@ dependencies = [
  "bp-westend",
  "bridge-runtime-common 0.1.0",
  "finality-grandpa 0.14.0",
- "finality-relay 0.1.0",
+ "finality-relay",
  "frame-support",
  "futures 0.3.13",
- "headers-relay 0.1.0",
+ "headers-relay",
  "hex",
  "hex-literal 0.3.1",
  "log",
@@ -9948,8 +9883,8 @@ dependencies = [
  "relay-polkadot-client",
  "relay-rialto-client",
  "relay-rococo-client",
- "relay-substrate-client 0.1.0",
- "relay-utils 0.1.0",
+ "relay-substrate-client",
+ "relay-utils",
  "relay-westend-client",
  "rialto-runtime",
  "sp-core",

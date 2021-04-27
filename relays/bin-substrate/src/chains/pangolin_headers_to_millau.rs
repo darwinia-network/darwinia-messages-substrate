@@ -30,11 +30,11 @@ impl SubstrateFinalitySyncPipeline for PangolinFinalityToMillau {
 		&self,
 		transaction_nonce: <Millau as Chain>::Index,
 		header: PangolinSyncHeader,
-		proof: GrandpaJustification<bp_rialto::Header>,
+		proof: GrandpaJustification<drml_primitives::Header>,
 	) -> Bytes {
-		let call = millau_runtime::BridgeGrandpaRialtoCall::<
+		let call = millau_runtime::BridgeGrandpaPangolinCall::<
 			millau_runtime::Runtime,
-			millau_runtime::RialtoGrandpaInstance,
+			millau_runtime::PangolinGrandpaInstance,
 		>::submit_finality_proof(header.into_inner(), proof)
 			.into();
 

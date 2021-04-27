@@ -26,8 +26,6 @@ pallet-bridge-grandpa = { path = "../../../modules/grandpa", default-features = 
 pallet-bridge-messages = { path = "../../../modules/messages", default-features = false }
 pallet-shift-session-manager = { path = "../../../modules/shift-session-manager", default-features = false }
 
-drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
-
 # Substrate Dependencies
 
 frame-executive = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" , default-features = false }
