@@ -2,7 +2,11 @@ use crate::finality_pipeline::{SubstrateFinalitySyncPipeline, SubstrateFinalityT
 
 use bp_header_chain::justification::GrandpaJustification;
 use codec::Encode;
-use pangolin_runtime::bridge::s2s::{PangolinRelayChain, SyncHeader as PangolinSyncHeader};
+use relay_pangolin_client::{
+	PangolinRelayChain,
+	SyncHeader as PangolinSyncHeader,
+	SigningParams as PangolinSigningParams,
+};
 use relay_millau_client::{Millau, SigningParams as MillauSigningParams};
 use relay_substrate_client::{Chain, TransactionSignScheme};
 use sp_core::{Bytes, Pair};
@@ -12,13 +16,13 @@ use sp_core::{Bytes, Pair};
 pub(crate) type PangolinFinalityToMillau = SubstrateFinalityToSubstrate<
 	PangolinRelayChain,
 	Millau,
-	RialtoSigningParams
+	PangolinSigningParams
 >;
 
 
 impl SubstrateFinalitySyncPipeline for PangolinFinalityToMillau {
 	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str =
-		pangolin_runtime::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
+		drml_primitives::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
 
 	type TargetChain = Millau;
 

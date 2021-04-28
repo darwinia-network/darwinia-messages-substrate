@@ -20,34 +20,37 @@ structopt = "0.3"
 
 # Bridge dependencies
 
-bp-header-chain = { path = "../../primitives/header-chain" }
-bp-kusama = { path = "../../primitives/chain-kusama" }
-bp-messages = { path = "../../primitives/messages" }
-bp-millau = { path = "../../primitives/chain-millau" }
-bp-polkadot = { path = "../../primitives/chain-polkadot" }
-bp-rialto = { path = "../../primitives/chain-rialto" }
-bp-rococo = { path = "../../primitives/chain-rococo" }
-bp-runtime = { path = "../../primitives/runtime" }
-bp-westend = { path = "../../primitives/chain-westend" }
-bridge-runtime-common = { path = "../../bin/runtime-common" }
+bp-header-chain = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-kusama = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-polkadot = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-rialto = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-rococo = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-runtime = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-westend = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bridge-runtime-common = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 finality-grandpa = { version = "0.14.0" }
-finality-relay = { path = "../finality" }
-headers-relay = { path = "../headers" }
-messages-relay = { path = "../messages" }
-millau-runtime = { path = "../../bin/millau/runtime" }
-pallet-bridge-dispatch = { path = "../../modules/dispatch" }
-pallet-bridge-messages = { path = "../../modules/messages" }
-relay-kusama-client = { path = "../client-kusama" }
-relay-millau-client = { path = "../client-millau" }
-relay-polkadot-client = { path = "../client-polkadot" }
-relay-rialto-client = { path = "../client-rialto" }
-relay-rococo-client = { path = "../client-rococo" }
-relay-substrate-client = { path = "../client-substrate" }
-relay-utils = { path = "../utils" }
-relay-westend-client = { path = "../client-westend" }
-rialto-runtime = { path = "../../bin/rialto/runtime" }
+finality-relay = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+headers-relay = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+messages-relay = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+pallet-bridge-dispatch = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+pallet-bridge-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-kusama-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-polkadot-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-rialto-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-rococo-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-substrate-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-utils = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-westend-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+rialto-runtime = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 
-pangolin-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+bp-millau = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+relay-millau-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+millau-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+
+#drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+#relay-pangolin-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+#pangolin-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 
 # Substrate Dependencies
 

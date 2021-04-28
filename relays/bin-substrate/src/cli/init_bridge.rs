@@ -129,7 +129,7 @@ macro_rules! select_bridge {
 
 				$generic
 			},
-			InitBridgeName:PangolinToMillau => {
+			InitBridgeName::PangolinToMillau => {
 				type Source = PangolinRelayChain;
 				type Target = relay_millau_client::Millau;
 
