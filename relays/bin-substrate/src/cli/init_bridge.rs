@@ -22,7 +22,7 @@ use relay_substrate_client::{Chain, TransactionSignScheme};
 use sp_core::{Bytes, Pair};
 use structopt::{clap::arg_enum, StructOpt};
 
-use pangolin_runtime::bridge::s2s::relay_client::PangolinRelayChain;
+use relay_pangolin_client::PangolinRelayChain;
 
 /// Initialize bridge pallet.
 #[derive(StructOpt)]

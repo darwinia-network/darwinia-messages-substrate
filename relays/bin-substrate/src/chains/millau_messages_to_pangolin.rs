@@ -11,7 +11,7 @@ use codec::Encode;
 use frame_support::dispatch::GetDispatchInfo;
 use messages_relay::message_lane::MessageLane;
 use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams};
-use pangolin_runtime::{
+use relay_pangolin_client::{
 	HeaderId as PangolinHeaderId,
 	PangolinRelayChain,
 	SigningParams as PangolinSigningParams,
@@ -35,11 +35,11 @@ pub type MillauMessagesToPangolin = SubstrateMessageLaneToSubstrate<
 
 impl SubstrateMessageLane for MillauMessagesToPangolin {
 	const OUTBOUND_LANE_MESSAGES_DISPATCH_WEIGHT_METHOD: &'static str =
-		pangolin_runtime::TO_PANGOLIN_MESSAGES_DISPATCH_WEIGHT_METHOD;
+		drml_primitives::TO_PANGOLIN_MESSAGES_DISPATCH_WEIGHT_METHOD;
 	const OUTBOUND_LANE_LATEST_GENERATED_NONCE_METHOD: &'static str =
-		pangolin_runtime::TO_PANGOLIN_LATEST_GENERATED_NONCE_METHOD;
+		drml_primitives::TO_PANGOLIN_LATEST_GENERATED_NONCE_METHOD;
 	const OUTBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		pangolin_runtime::TO_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		drml_primitives::TO_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
 
 	const INBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
 		bp_millau::FROM_MILLAU_LATEST_RECEIVED_NONCE_METHOD;
@@ -51,12 +51,12 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str =
 		bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
 	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str =
-		pangolin_runtime::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
+		drml_primitives::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
 
 	type SourceChain = Millau;
 	type TargetChain = PangolinRelayChain;
 
-	fn source_transactions_author(&self) -> pangolin_runtime::AccountId {
+	fn source_transactions_author(&self) -> drml_primitives::AccountId {
 		(*self.source_sign.public().as_array_ref()).into()
 	}
 
@@ -88,14 +88,14 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 		Bytes(transaction.encode())
 	}
 
-	fn target_transactions_author(&self) -> pangolin_runtime::AccountId {
+	fn target_transactions_author(&self) -> drml_primitives::AccountId {
 		(*self.target_sign.public().as_array_ref()).into()
 	}
 
 
 	fn make_messages_delivery_transaction(
 		&self,
-		transaction_nonce: <Pangolin as Chain>::Index,
+		transaction_nonce: <PangolinRelayChain as Chain>::Index,
 		_generated_at_header: MillauHeaderId,
 		_nonces: RangeInclusive<MessageNonce>,
 		proof: <Self as MessageLane>::MessagesProof,
@@ -107,7 +107,7 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 			..
 		} = proof;
 		let messages_count = nonces_end - nonces_start + 1;
-		let call: pangolin_runtime::Call = pangolin_runtime::MessagesCall::receive_messages_proof(
+		let call: pangolin_runtime::Call = pangolin_runtime::bridge::s2s::MessagesCall::receive_messages_proof(
 			self.relayer_id_at_source.clone(),
 			proof,
 			messages_count as _,
@@ -126,9 +126,9 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 			target: "bridge",
 			"Prepared Millau -> Pangolin delivery transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
-			pangolin_runtime::max_extrinsic_weight(),
+			drml_primitives::max_extrinsic_weight(),
 			transaction.encode().len(),
-			pangolin_runtime::max_extrinsic_size(),
+			drml_primitives::max_extrinsic_size(),
 		);
 		Bytes(transaction.encode())
 	}
@@ -148,7 +148,7 @@ type PangolinTargetClient = SubstrateMessagesTarget<
 	PangolinRelayChain,
 	MillauMessagesToPangolin,
 	pangolin_runtime::Runtime,
-	pangolin_runtime::WithMillauMessagesInstance,
+	pangolin_runtime::bridge::s2s::WithMillauMessagesInstance,
 >;
 
 
@@ -170,14 +170,14 @@ pub async fn run(
 	};
 
 	// 2/3 is reserved for proofs and tx overhead
-	let max_messages_size_in_single_batch = pangolin_runtime::max_extrinsic_size() as usize / 3;
+	let max_messages_size_in_single_batch = drml_primitives::max_extrinsic_size() as usize / 3;
 	// TODO: use Millau weights after https://github.com/paritytech/parity-bridges-common/issues/390
 	let (max_messages_in_single_batch, max_messages_weight_in_single_batch) =
 		select_delivery_transaction_limits::<
 			pallet_bridge_messages::weights::RialtoWeight<millau_runtime::Runtime>
 		>(
-			pangolin_runtime::max_extrinsic_weight(),
-			pangolin_runtime::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
+			drml_primitives::max_extrinsic_weight(),
+			drml_primitives::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
 		);
 
 	log::info!(
@@ -201,8 +201,8 @@ pub async fn run(
 			reconnect_delay: relay_utils::relay_loop::RECONNECT_DELAY,
 			stall_timeout,
 			delivery_params: messages_relay::message_lane_loop::MessageDeliveryParams {
-				max_unrewarded_relayer_entries_at_target: pangolin_runtime::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
-				max_unconfirmed_nonces_at_target: pangolin_runtime::MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE,
+				max_unrewarded_relayer_entries_at_target: drml_primitives::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
+				max_unconfirmed_nonces_at_target: drml_primitives::MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE,
 				max_messages_in_single_batch,
 				max_messages_weight_in_single_batch,
 				max_messages_size_in_single_batch,

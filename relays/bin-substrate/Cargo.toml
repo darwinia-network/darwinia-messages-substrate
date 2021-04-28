@@ -48,9 +48,9 @@ bp-millau = { git = "https://github.com/darwinia-network/darwinia-common", branc
 relay-millau-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 millau-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 
-#drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
-#relay-pangolin-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
-#pangolin-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+relay-pangolin-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+pangolin-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 
 # Substrate Dependencies
 

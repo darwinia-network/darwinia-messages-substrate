@@ -31,7 +31,7 @@ use futures::{FutureExt, TryFutureExt};
 use relay_utils::metrics::MetricsParams;
 use structopt::StructOpt;
 
-use pangolin_runtime::bridge::s2s::relay_client::PangolinRelayChain;
+use relay_pangolin_client::PangolinRelayChain;
 
 /// Start headers+messages relayer process.
 #[derive(StructOpt)]
@@ -110,14 +110,14 @@ macro_rules! select_bridge {
 				type Left = PangolinRelayChain;
 				type Right = relay_millau_client::Millau;
 
-				type LeftToRightFinality = crate::chains::millau_headers_to_pangolin::MillauFinalityToPangolin;
-				type RightToLeftFinality = crate::chains::pangolin_headers_to_millau::PangolinFinalityToMillau;
+				type LeftToRightFinality = crate::chains::pangolin_headers_to_millau::PangolinFinalityToMillau;
+				type RightToLeftFinality = crate::chains::millau_headers_to_pangolin::MillauFinalityToPangolin;
 
-				type LeftToRightMessages = crate::chains::millau_messages_to_pangolin::MillauMessagesToPangolin;
-				type RightToLeftMessages = crate::chains::pangolin_messages_to_millau::PangolinMessagesToMillau;
+				type LeftToRightMessages = crate::chains::pangolin_messages_to_millau::PangolinMessagesToMillau;
+				type RightToLeftMessages = crate::chains::millau_messages_to_pangolin::MillauMessagesToPangolin;
 
-				use crate::chains::millau_messages_to_pangolin::run as left_to_right_messages;
-				use crate::chains::pangolin_messages_to_millau::run as right_to_left_messages;
+				use crate::chains::pangolin_messages_to_millau::run as left_to_right_messages;
+				use crate::chains::millau_messages_to_pangolin::run as right_to_left_messages;
 
 				$generic
 			},

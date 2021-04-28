@@ -14,7 +14,7 @@ use codec::Encode;
 use frame_support::dispatch::GetDispatchInfo;
 use messages_relay::message_lane::MessageLane;
 use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams};
-use pangolin_runtime::{
+use relay_pangolin_client::{
 	HeaderId as PangolinHeaderId,
 	PangolinRelayChain,
 	SigningParams as PangolinSigningParams
@@ -45,21 +45,21 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		bp_millau::TO_MILLAU_LATEST_RECEIVED_NONCE_METHOD;
 
 	const INBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		pangolin_runtime::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		drml_primitives::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
 	const INBOUND_LANE_LATEST_CONFIRMED_NONCE_METHOD: &'static str =
-		pangolin_runtime::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
+		drml_primitives::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
 	const INBOUND_LANE_UNREWARDED_RELAYERS_STATE: &'static str =
-		pangolin_runtime::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
+		drml_primitives::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
 
 	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str =
-		pangolin_runtime::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
+		drml_primitives::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
 	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str =
 		bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
 
 	type SourceChain = PangolinRelayChain;
 	type TargetChain = Millau;
 
-	fn source_transactions_author(&self) -> pangolin_runtime::AccountId {
+	fn source_transactions_author(&self) -> drml_primitives::AccountId {
 		(*self.source_sign.public().as_array_ref()).into()
 	}
 
@@ -71,7 +71,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		proof: <Self as MessageLane>::MessagesReceivingProof,
 	) -> Bytes {
 		let (relayers_state, proof) = proof;
-		let call: pangolin_runtime::Call = pangolin_runtime::MessagesCall::receive_messages_delivery_proof(
+		let call: pangolin_runtime::Call = pangolin_runtime::bridge::s2s::MessagesCall::receive_messages_delivery_proof(
 			proof,
 			relayers_state,
 		).into();
@@ -87,14 +87,14 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 			target: "bridge",
 			"Prepared Millau -> Pangolin confirmation transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
-			pangolin_runtime::max_extrinsic_weight(),
+			drml_primitives::max_extrinsic_weight(),
 			transaction.encode().len(),
-			pangolin_runtime::max_extrinsic_size(),
+			drml_primitives::max_extrinsic_size(),
 		);
 		Bytes(transaction.encode())
 	}
 
-	fn target_transactions_author(&self) -> pangolin_runtime::AccountId {
+	fn target_transactions_author(&self) -> drml_primitives::AccountId {
 		(*self.target_sign.public().as_array_ref()).into()
 	}
 
@@ -146,7 +146,7 @@ type PangolinSourceClient = SubstrateMessagesSource<
 	PangolinRelayChain,
 	PangolinMessagesToMillau,
 	pangolin_runtime::Runtime,
-	pangolin_runtime::WithMillauMessagesInstance,
+	pangolin_runtime::bridge::s2s::WithMillauMessagesInstance,
 >;
 
 /// Millau node as messages target.
