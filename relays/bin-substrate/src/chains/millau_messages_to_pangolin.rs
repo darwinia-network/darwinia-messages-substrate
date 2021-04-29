@@ -67,8 +67,10 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 		proof: <Self as MessageLane>::MessagesReceivingProof,
 	) -> Bytes {
 		let (relayers_state, proof) = proof;
-		let call: millau_runtime::Call =
-			millau_runtime::MessagesCall::receive_messages_delivery_proof(proof, relayers_state).into();
+		let call: millau_runtime::Call = millau_runtime::MessagesCall::receive_messages_delivery_proof::<
+			millau_runtime::Runtime,
+			millau_runtime::WithPangolinMessagesInstance,
+		>(proof, relayers_state).into();
 		let call_weight = call.get_dispatch_info().weight;
 		let genesis_hash = *self.source_client.genesis_hash();
 		let transaction = Millau::sign_transaction(

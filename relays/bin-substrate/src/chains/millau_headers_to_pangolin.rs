@@ -32,7 +32,10 @@ impl SubstrateFinalitySyncPipeline for MillauFinalityToPangolin {
 		header: MillauSyncHeader,
 		proof: GrandpaJustification<bp_millau::Header>,
 	) -> Bytes {
-		let call = pangolin_runtime::bridge::s2s::BridgeGrandpaMillauCall::submit_finality_proof(header.into_inner(), proof).into();
+		let call = pangolin_runtime::bridge::s2s::BridgeGrandpaMillauCall::<
+			pangolin_runtime::Runtime,
+			pangolin_runtime::bridge::s2s::WithMillauGrandpaInstance
+		>::submit_finality_proof(header.into_inner(), proof).into();
 
 		let genesis_hash = *self.target_client.genesis_hash();
 		let transaction = PangolinRelayChain::sign_transaction(genesis_hash, &self.target_sign, transaction_nonce, call);

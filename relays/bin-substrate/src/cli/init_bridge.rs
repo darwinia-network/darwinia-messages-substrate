@@ -79,7 +79,7 @@ macro_rules! select_bridge {
 				) -> <Target as Chain>::Call {
 					let initialize_call = millau_runtime::BridgeGrandpaRialtoCall::<
 						millau_runtime::Runtime,
-						millau_runtime::RialtoGrandpaInstance,
+						millau_runtime::WithRialtoGrandpaInstance,
 					>::initialize(init_data);
 					millau_runtime::SudoCall::sudo(Box::new(initialize_call.into())).into()
 				}
@@ -138,7 +138,7 @@ macro_rules! select_bridge {
 				) -> <Target as Chain>::Call {
 					let initialize_call = millau_runtime::BridgeGrandpaRialtoCall::<
 						millau_runtime::Runtime,
-						millau_runtime::RialtoGrandpaInstance,
+						millau_runtime::WithRialtoGrandpaInstance,
 					>::initialize(init_data);
 					millau_runtime::SudoCall::sudo(Box::new(initialize_call.into())).into()
 				}

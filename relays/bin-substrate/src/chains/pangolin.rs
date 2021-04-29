@@ -23,7 +23,10 @@ impl CliEncodeCall for PangolinRelayChain {
 			)),
 			Call::Transfer { recipient, amount } => pangolin_runtime::Call::Balances(
 				// todo: there need correct it
-				pangolin_runtime::BalanceRingCall::transfer(recipient.raw_id(), amount.cast()),
+				pangolin_runtime::BalanceRingCall::transfer(
+					sp_runtime::MultiAddress::Id(recipient.raw_id()),
+					amount.cast() as u128
+				),
 			),
 			Call::BridgeSendMessage {
 				lane,
@@ -37,7 +40,7 @@ impl CliEncodeCall for PangolinRelayChain {
 						pangolin_runtime::bridge::s2s::MessagesCall::send_message(
 							lane.0,
 							payload,
-							fee.cast(),
+							fee.cast() as u128,
 						)
 					)
 				}

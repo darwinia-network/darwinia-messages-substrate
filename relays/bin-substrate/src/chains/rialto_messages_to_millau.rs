@@ -104,7 +104,10 @@ impl SubstrateMessageLane for RialtoMessagesToMillau {
 			..
 		} = proof;
 		let messages_count = nonces_end - nonces_start + 1;
-		let call: millau_runtime::Call = millau_runtime::MessagesCall::receive_messages_proof(
+		let call: millau_runtime::Call = millau_runtime::MessagesCall::receive_messages_proof::<
+			millau_runtime::Runtime,
+			millau_runtime::WithRialtoMessagesInstance,
+		>(
 			self.relayer_id_at_source.clone(),
 			proof,
 			messages_count as _,

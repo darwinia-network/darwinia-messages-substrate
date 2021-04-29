@@ -17,7 +17,7 @@ use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as M
 use relay_pangolin_client::{
 	HeaderId as PangolinHeaderId,
 	PangolinRelayChain,
-	SigningParams as PangolinSigningParams
+	SigningParams as PangolinSigningParams,
 };
 use relay_substrate_client::{
 	metrics::{FloatStorageValueMetric, StorageProofOverheadMetric},
@@ -113,13 +113,16 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 			..
 		} = proof;
 		let messages_count = nonces_end - nonces_start + 1;
-		let call: millau_runtime::Call = millau_runtime::MessagesCall::receive_messages_proof(
+		let call: millau_runtime::Call = millau_runtime::MessagesCall::receive_messages_proof::<
+			millau_runtime::Runtime,
+			millau_runtime::WithPangolinMessagesInstance,
+		>(
 			self.relayer_id_at_source.clone(),
 			proof,
 			messages_count as _,
 			dispatch_weight,
 		)
-			.into();
+		.into();
 		let call_weight = call.get_dispatch_info().weight;
 		let genesis_hash = *self.target_client.genesis_hash();
 		let transaction = Millau::sign_transaction(

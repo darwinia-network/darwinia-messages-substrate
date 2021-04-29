@@ -119,6 +119,9 @@ macro_rules! select_bridge {
 				type LeftToRightMessages = crate::chains::pangolin_messages_to_millau::PangolinMessagesToMillau;
 				type RightToLeftMessages = crate::chains::millau_messages_to_pangolin::MillauMessagesToPangolin;
 
+				const MAX_MISSING_LEFT_HEADERS_AT_RIGHT: drml_primitives::BlockNumber = drml_primitives::SESSION_LENGTH;
+				const MAX_MISSING_RIGHT_HEADERS_AT_LEFT: bp_millau::BlockNumber = bp_millau::SESSION_LENGTH;
+
 				use crate::chains::pangolin_messages_to_millau::run as left_to_right_messages;
 				use crate::chains::millau_messages_to_pangolin::run as right_to_left_messages;
 
