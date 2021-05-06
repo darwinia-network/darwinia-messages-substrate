@@ -1,4 +1,3 @@
-
 use crate::Runtime;
 
 use bp_messages::{
@@ -14,9 +13,9 @@ use frame_support::{
 	weights::{DispatchClass, Weight},
 	RuntimeDebug,
 };
+use pangolin_runtime::bridge::s2s;
 use sp_runtime::{FixedPointNumber, FixedU128};
 use sp_std::{convert::TryFrom, ops::RangeInclusive};
-
 
 /// Initial value of `PangolinToMillauConversionRate` parameter.
 pub const INITIAL_PANGOLIN_TO_MILLAU_CONVERSION_RATE: FixedU128 = FixedU128::from_inner(FixedU128::DIV);
@@ -25,7 +24,6 @@ parameter_types! {
 	/// Rialto to Millau conversion rate. Initially we treat both tokens as equal.
 	pub storage PangolinToMillauConversionRate: FixedU128 = INITIAL_PANGOLIN_TO_MILLAU_CONVERSION_RATE;
 }
-
 
 /// Message payload for Millau -> Pangolin messages.
 pub type ToPangolinMessagePayload = messages::source::FromThisChainMessagePayload<WithPangolinMessageBridge>;
@@ -44,7 +42,6 @@ type FromPangolinMessagesProof = messages::target::FromBridgedChainMessagesProof
 
 /// Messages delivery proof for Millau -> Pangolin messages.
 type ToPangolinMessagesDeliveryProof = messages::source::FromBridgedChainMessagesDeliveryProof<drml_primitives::Hash>;
-
 
 /// Call-dispatch based message dispatch for Pangolin -> Millau messages.
 pub type FromPangolinMessageDispatch = messages::target::FromBridgedChainMessageDispatch<
@@ -105,7 +102,7 @@ impl messages::ThisChainWithMessages for Millau {
 		MessageTransaction {
 			dispatch_weight: bp_millau::MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT,
 			size: inbound_data_size
-				.saturating_add(drml_primitives::EXTRA_STORAGE_PROOF_SIZE)
+				.saturating_add(s2s::EXTRA_STORAGE_PROOF_SIZE)
 				.saturating_add(bp_millau::TX_EXTRA_BYTES),
 		}
 	}
@@ -140,12 +137,13 @@ impl messages::ChainWithMessages for PangolinChainWithMessagesInMillau {
 
 impl messages::BridgedChainWithMessages for PangolinChainWithMessagesInMillau {
 	fn maximal_extrinsic_size() -> u32 {
-		drml_primitives::max_extrinsic_size()
+		pangolin_runtime::max_extrinsic_size()
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {
 		// we don't want to relay too large messages + keep reserve for future upgrades
-		let upper_limit = messages::target::maximal_incoming_message_dispatch_weight(drml_primitives::max_extrinsic_weight());
+		let upper_limit =
+			messages::target::maximal_incoming_message_dispatch_weight(pangolin_runtime::max_extrinsic_weight());
 
 		// we're charging for payload bytes in `WithRialtoMessageBridge::transaction_payment` function
 		//
@@ -165,19 +163,21 @@ impl messages::BridgedChainWithMessages for PangolinChainWithMessagesInMillau {
 
 		MessageTransaction {
 			dispatch_weight: extra_bytes_in_payload
-				.saturating_mul(drml_primitives::ADDITIONAL_MESSAGE_BYTE_DELIVERY_WEIGHT)
-				.saturating_add(drml_primitives::DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT)
+				.saturating_mul(s2s::ADDITIONAL_MESSAGE_BYTE_DELIVERY_WEIGHT)
+				.saturating_add(s2s::DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT)
 				.saturating_add(message_dispatch_weight),
 			size: message_payload_len
 				.saturating_add(bp_millau::EXTRA_STORAGE_PROOF_SIZE)
-				.saturating_add(drml_primitives::TX_EXTRA_BYTES),
+				.saturating_add(s2s::TX_EXTRA_BYTES),
 		}
 	}
 
 	fn transaction_payment(transaction: MessageTransaction<Weight>) -> drml_primitives::Balance {
 		// in our testnets, both per-byte fee and weight-to-fee are 1:1
 		messages::transaction_payment(
-			drml_primitives::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic,
+			pangolin_runtime::RuntimeBlockWeights::get()
+				.get(DispatchClass::Normal)
+				.base_extrinsic,
 			1,
 			FixedU128::zero(),
 			|weight| weight as _,
@@ -201,7 +201,11 @@ impl TargetHeaderChain<ToPangolinMessagePayload, drml_primitives::AccountId> for
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_millau::AccountId>), Self::Error> {
-		messages::source::verify_messages_delivery_proof::<WithPangolinMessageBridge, Runtime, crate::WithPangolinGrandpaInstance>(proof)
+		messages::source::verify_messages_delivery_proof::<
+			WithPangolinMessageBridge,
+			Runtime,
+			crate::WithPangolinGrandpaInstance,
+		>(proof)
 	}
 }
 
@@ -218,7 +222,10 @@ impl SourceHeaderChain<drml_primitives::Balance> for PangolinChainWithMessagesIn
 		proof: Self::MessagesProof,
 		messages_count: u32,
 	) -> Result<ProvedMessages<Message<drml_primitives::Balance>>, Self::Error> {
-		messages::target::verify_messages_proof::<WithPangolinMessageBridge, Runtime, crate::WithPangolinGrandpaInstance>(proof, messages_count)
+		messages::target::verify_messages_proof::<WithPangolinMessageBridge, Runtime, crate::WithPangolinGrandpaInstance>(
+			proof,
+			messages_count,
+		)
 	}
 }
 
@@ -238,5 +245,3 @@ impl MessagesParameter for MillauToPangolinMessagesParameter {
 		}
 	}
 }
-
-

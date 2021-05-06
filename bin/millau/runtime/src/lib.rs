@@ -30,11 +30,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-pub mod rialto_messages;
 pub mod pangolin_messages;
+pub mod rialto_messages;
 
-use crate::rialto_messages::{ToRialtoMessagePayload, WithRialtoMessageBridge};
 use crate::pangolin_messages::{ToPangolinMessagePayload, WithPangolinMessageBridge};
+use crate::rialto_messages::{ToRialtoMessagePayload, WithRialtoMessageBridge};
 
 use bridge_runtime_common::messages::{source::estimate_message_dispatch_and_delivery_fee, MessageBridge};
 use codec::Decode;
@@ -53,6 +53,8 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
+
+use pangolin_runtime::bridge::s2s;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -360,14 +362,13 @@ impl pallet_bridge_grandpa::Config<WestendGrandpaInstance> for Runtime {
 
 pub type WithPangolinGrandpaInstance = pallet_bridge_grandpa::Instance2;
 impl pallet_bridge_grandpa::Config<WithPangolinGrandpaInstance> for Runtime {
-	type BridgedChain = drml_primitives::PangolinSubstrateChain;
+	type BridgedChain = s2s::PangolinSubstrateChain;
 	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
 
 	// TODO [#391]: Use weights generated for the Millau runtime instead of Rialto ones.
 	type WeightInfo = pallet_bridge_grandpa::weights::RialtoWeight<Runtime>;
 }
-
 
 impl pallet_shift_session_manager::Config for Runtime {}
 
@@ -436,7 +437,7 @@ impl pallet_bridge_messages::Config<WithPangolinMessagesInstance> for Runtime {
 	type InboundMessageFee = drml_primitives::Balance;
 	type InboundRelayer = drml_primitives::AccountId;
 
-	type AccountIdConverter = drml_primitives::AccountIdConverter;
+	type AccountIdConverter = s2s::AccountIdConverter;
 
 	type TargetHeaderChain = crate::pangolin_messages::PangolinChainWithMessagesInMillau;
 	type LaneMessageVerifier = crate::pangolin_messages::ToPangolinMessageVerifier;
@@ -711,7 +712,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl drml_primitives::PangolinFinalityApi<Block> for Runtime {
+	impl s2s::PangolinFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (drml_primitives::BlockNumber, drml_primitives::Hash) {
 			let header = BridgePangolinGrandpa::best_finalized();
 			(header.number, header.hash())
@@ -723,7 +724,7 @@ impl_runtime_apis! {
 	}
 
 
-	impl drml_primitives::ToPangolinOutboundLaneApi<Block, Balance, ToPangolinMessagePayload> for Runtime {
+	impl s2s::ToPangolinOutboundLaneApi<Block, Balance, ToPangolinMessagePayload> for Runtime {
 		fn estimate_message_delivery_and_dispatch_fee(
 			_lane_id: bp_messages::LaneId,
 			payload: ToPangolinMessagePayload,
@@ -758,7 +759,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl drml_primitives::FromPangolinInboundLaneApi<Block> for Runtime {
+	impl s2s::FromPangolinInboundLaneApi<Block> for Runtime {
 		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
 			BridgePangolinMessages::inbound_latest_received_nonce(lane)
 		}
