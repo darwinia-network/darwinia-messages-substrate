@@ -48,7 +48,6 @@ arg_enum! {
 		WestendToMillau,
 		WestendToRococo,
 		RococoToWestend,
-		PangolinToMillau,
 	}
 }
 
@@ -79,7 +78,7 @@ macro_rules! select_bridge {
 				) -> <Target as Chain>::Call {
 					let initialize_call = millau_runtime::BridgeGrandpaRialtoCall::<
 						millau_runtime::Runtime,
-						millau_runtime::WithRialtoGrandpaInstance,
+						millau_runtime::RialtoGrandpaInstance,
 					>::initialize(init_data);
 					millau_runtime::SudoCall::sudo(Box::new(initialize_call.into())).into()
 				}
@@ -105,30 +104,30 @@ macro_rules! select_bridge {
 
 				$generic
 			}
-			InitBridgeName::WestendToRococo => {
-				type Source = relay_westend_client::Westend;
+			InitBridgeName::RococoToWococo => {
+				type Source = relay_rococo_client::Rococo;
+				type Target = relay_wococo_client::Wococo;
+
+				fn encode_init_bridge(
+					init_data: InitializationData<<Source as ChainBase>::Header>,
+				) -> <Target as Chain>::Call {
+					bp_wococo::Call::BridgeGrandpaRococo(bp_wococo::BridgeGrandpaRococoCall::initialize(init_data))
+				}
+
+				$generic
+			}
+			InitBridgeName::WococoToRococo => {
+				type Source = relay_wococo_client::Wococo;
 				type Target = relay_rococo_client::Rococo;
 
 				fn encode_init_bridge(
 					init_data: InitializationData<<Source as ChainBase>::Header>,
 				) -> <Target as Chain>::Call {
-					bp_rococo::Call::BridgeGrandpaWestend(bp_rococo::BridgeGrandpaWestendCall::initialize(init_data))
+					bp_rococo::Call::BridgeGrandpaWococo(bp_rococo::BridgeGrandpaWococoCall::initialize(init_data))
 				}
 
 				$generic
 			}
-			InitBridgeName::RococoToWestend => {
-				type Source = relay_rococo_client::Rococo;
-				type Target = relay_westend_client::Westend;
-
-				fn encode_init_bridge(
-					init_data: InitializationData<<Source as ChainBase>::Header>,
-				) -> <Target as Chain>::Call {
-					bp_westend::Call::BridgeGrandpaRococo(bp_westend::BridgeGrandpaRococoCall::initialize(init_data))
-				}
-
-				$generic
-			},
 			InitBridgeName::PangolinToMillau => {
 				type Source = PangolinRelayChain;
 				type Target = relay_millau_client::Millau;
@@ -144,7 +143,7 @@ macro_rules! select_bridge {
 				}
 
 				$generic
-			},
+			}
 		}
 	};
 }

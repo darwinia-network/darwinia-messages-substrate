@@ -20,20 +20,21 @@ pub mod millau_headers_to_rialto;
 pub mod millau_messages_to_rialto;
 pub mod rialto_headers_to_millau;
 pub mod rialto_messages_to_millau;
-pub mod rococo_headers_to_westend;
+pub mod rococo_headers_to_wococo;
 pub mod westend_headers_to_millau;
-pub mod westend_headers_to_rococo;
+pub mod wococo_headers_to_rococo;
 
-pub mod pangolin_headers_to_millau;
 pub mod millau_headers_to_pangolin;
-pub mod pangolin_messages_to_millau;
 pub mod millau_messages_to_pangolin;
+pub mod pangolin_headers_to_millau;
+pub mod pangolin_messages_to_millau;
 
 mod millau;
+mod pangolin;
 mod rialto;
 mod rococo;
 mod westend;
-mod pangolin;
+mod wococo;
 
 use relay_utils::metrics::{FloatJsonValueMetric, MetricsParams};
 
@@ -137,7 +138,7 @@ mod tests {
 		let payload = send_message::message_payload(
 			Default::default(),
 			call.get_dispatch_info().weight,
-			pallet_bridge_dispatch::CallOrigin::SourceRoot,
+			bp_message_dispatch::CallOrigin::SourceRoot,
 			&call,
 		);
 		assert_eq!(Millau::verify_message(&payload), Ok(()));
@@ -147,7 +148,7 @@ mod tests {
 		let payload = send_message::message_payload(
 			Default::default(),
 			call.get_dispatch_info().weight,
-			pallet_bridge_dispatch::CallOrigin::SourceRoot,
+			bp_message_dispatch::CallOrigin::SourceRoot,
 			&call,
 		);
 		assert!(Millau::verify_message(&payload).is_err());
@@ -174,7 +175,7 @@ mod tests {
 		let payload = send_message::message_payload(
 			Default::default(),
 			maximal_dispatch_weight,
-			pallet_bridge_dispatch::CallOrigin::SourceRoot,
+			bp_message_dispatch::CallOrigin::SourceRoot,
 			&call,
 		);
 		assert_eq!(Millau::verify_message(&payload), Ok(()));
@@ -182,7 +183,7 @@ mod tests {
 		let payload = send_message::message_payload(
 			Default::default(),
 			maximal_dispatch_weight + 1,
-			pallet_bridge_dispatch::CallOrigin::SourceRoot,
+			bp_message_dispatch::CallOrigin::SourceRoot,
 			&call,
 		);
 		assert!(Millau::verify_message(&payload).is_err());
@@ -199,7 +200,7 @@ mod tests {
 		let payload = send_message::message_payload(
 			Default::default(),
 			maximal_dispatch_weight,
-			pallet_bridge_dispatch::CallOrigin::SourceRoot,
+			bp_message_dispatch::CallOrigin::SourceRoot,
 			&call,
 		);
 		assert_eq!(Rialto::verify_message(&payload), Ok(()));
@@ -207,7 +208,7 @@ mod tests {
 		let payload = send_message::message_payload(
 			Default::default(),
 			maximal_dispatch_weight + 1,
-			pallet_bridge_dispatch::CallOrigin::SourceRoot,
+			bp_message_dispatch::CallOrigin::SourceRoot,
 			&call,
 		);
 		assert!(Rialto::verify_message(&payload).is_err());
@@ -276,7 +277,7 @@ mod rococo_tests {
 			votes_ancestries: vec![],
 		};
 
-		let actual = bp_rococo::BridgeGrandpaWestendCall::submit_finality_proof(header.clone(), justification.clone());
+		let actual = bp_rococo::BridgeGrandpaWococoCall::submit_finality_proof(header.clone(), justification.clone());
 		let expected = millau_runtime::BridgeGrandpaRialtoCall::<millau_runtime::Runtime>::submit_finality_proof(
 			header,
 			justification,
