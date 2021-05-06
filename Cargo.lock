@@ -658,28 +658,28 @@ dependencies = [
 [[package]]
 name = "bp-currency-exchange"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-currency-exchange"
 version = "0.1.0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-eth-poa"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "ethbloom 0.10.0",
  "fixed-hash",
@@ -694,10 +694,10 @@ dependencies = [
  "rlp",
  "serde",
  "serde-big-array",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
  "triehash",
 ]
 
@@ -719,26 +719,26 @@ dependencies = [
  "rlp",
  "serde",
  "serde-big-array",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
  "triehash",
 ]
 
 [[package]]
 name = "bp-header-chain"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "finality-grandpa 0.14.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -747,25 +747,25 @@ version = "0.1.0"
 dependencies = [
  "bp-test-utils 0.1.0",
  "finality-grandpa 0.14.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-kusama"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-polkadot-core 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
@@ -775,19 +775,19 @@ dependencies = [
  "bp-messages 0.1.0",
  "bp-polkadot-core 0.1.0",
  "bp-runtime 0.1.0",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-message-dispatch"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-std",
 ]
 
 [[package]]
@@ -795,21 +795,21 @@ name = "bp-message-dispatch"
 version = "0.1.0"
 dependencies = [
  "bp-runtime 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-messages"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
 ]
 
 [[package]]
@@ -817,10 +817,10 @@ name = "bp-messages"
 version = "0.1.0"
 dependencies = [
  "bp-runtime 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
 ]
 
 [[package]]
@@ -831,19 +831,19 @@ dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "fixed-hash",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hash256-std-hasher",
  "impl-codec",
  "impl-serde",
  "parity-util-mem",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
@@ -853,31 +853,31 @@ dependencies = [
  "bp-messages 0.1.0",
  "bp-runtime 0.1.0",
  "fixed-hash",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hash256-std-hasher",
  "impl-codec",
  "impl-serde",
  "parity-util-mem",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
 name = "bp-polkadot"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-polkadot-core 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
@@ -887,25 +887,25 @@ dependencies = [
  "bp-messages 0.1.0",
  "bp-polkadot-core 0.1.0",
  "bp-runtime 0.1.0",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-polkadot-core"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
@@ -914,30 +914,30 @@ version = "0.1.0"
 dependencies = [
  "bp-messages 0.1.0",
  "bp-runtime 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hex",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
 name = "bp-rialto"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -946,28 +946,28 @@ version = "0.1.0"
 dependencies = [
  "bp-messages 0.1.0",
  "bp-runtime 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-rococo"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-polkadot-core 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
@@ -979,58 +979,58 @@ dependencies = [
  "bp-polkadot-core 0.1.0",
  "bp-runtime 0.1.0",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "hash-db",
  "num-traits",
  "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
 name = "bp-runtime"
 version = "0.1.0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "hash-db",
  "num-traits",
  "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
 name = "bp-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "ed25519-dalek",
  "finality-grandpa 0.14.0",
  "parity-scale-codec 2.1.1",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1041,26 +1041,26 @@ dependencies = [
  "ed25519-dalek",
  "finality-grandpa 0.14.0",
  "parity-scale-codec 2.1.1",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "bp-westend"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-polkadot-core 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
@@ -1072,26 +1072,26 @@ dependencies = [
  "bp-polkadot-core 0.1.0",
  "bp-runtime 0.1.0",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
 name = "bp-wococo"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-polkadot-core 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-version 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
@@ -1103,32 +1103,32 @@ dependencies = [
  "bp-polkadot-core 0.1.0",
  "bp-runtime 0.1.0",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
 name = "bridge-runtime-common"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-message-dispatch 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "ed25519-dalek",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "hash-db",
  "pallet-bridge-dispatch 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "pallet-bridge-grandpa 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "pallet-bridge-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
@@ -1139,17 +1139,17 @@ dependencies = [
  "bp-messages 0.1.0",
  "bp-runtime 0.1.0",
  "ed25519-dalek",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "hash-db",
  "pallet-bridge-dispatch 0.1.0",
  "pallet-bridge-grandpa 0.1.0",
  "pallet-bridge-messages 0.1.0",
  "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
@@ -1776,13 +1776,13 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "darwinia-balances-rpc-runtime-api",
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1793,8 +1793,8 @@ dependencies = [
  "darwinia-support",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -1804,15 +1804,15 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "array-bytes",
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
  "serde_json",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1820,11 +1820,11 @@ name = "darwinia-crab-backing"
 version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -1832,11 +1832,11 @@ name = "darwinia-crab-issuing"
 version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -1845,13 +1845,13 @@ version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1860,14 +1860,14 @@ version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
  "sp-npos-elections",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1880,15 +1880,15 @@ dependencies = [
  "darwinia-support",
  "ethabi 13.0.0",
  "ethereum-primitives",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
  "serde_json",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1905,14 +1905,14 @@ dependencies = [
  "dvm-ethereum",
  "ethereum-primitives",
  "ethereum-types",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
  "serde_json",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1937,15 +1937,15 @@ dependencies = [
  "darwinia-support",
  "ethereum-primitives",
  "ethereum-types",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "rlp",
  "serde",
  "serde_json",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -1958,8 +1958,8 @@ dependencies = [
  "evm",
  "evm-gasometer",
  "evm-runtime",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
@@ -1967,10 +1967,10 @@ dependencies = [
  "rlp",
  "serde",
  "sha3 0.8.2",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2017,17 +2017,17 @@ dependencies = [
  "ethabi 13.0.0",
  "ethereum-types",
  "evm",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hex",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
  "ripemd160",
  "sha3 0.9.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2038,8 +2038,8 @@ dependencies = [
  "dp-evm",
  "evm",
  "ripemd160",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
 ]
 
 [[package]]
@@ -2051,15 +2051,15 @@ dependencies = [
  "darwinia-support",
  "dp-evm",
  "evm",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
  "ripemd160",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2071,13 +2071,13 @@ dependencies = [
  "darwinia-header-mmr-rpc-runtime-api",
  "darwinia-relay-primitives",
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2088,9 +2088,9 @@ dependencies = [
  "darwinia-support",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2100,12 +2100,12 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "darwinia-relay-primitives",
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2113,10 +2113,10 @@ name = "darwinia-relay-primitives"
 version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2126,13 +2126,13 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "darwinia-relay-primitives",
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2143,19 +2143,19 @@ dependencies = [
  "darwinia-staking-rpc-runtime-api",
  "darwinia-support",
  "frame-election-provider-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "pallet-authorship",
  "pallet-session",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
  "static_assertions",
  "substrate-fixed",
 ]
@@ -2168,8 +2168,8 @@ dependencies = [
  "darwinia-support",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -2178,12 +2178,12 @@ version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
  "ethereum-primitives",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "impl-trait-for-tuples",
  "num-traits",
  "parity-scale-codec 2.1.1",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2192,12 +2192,12 @@ version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
  "darwinia-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2205,11 +2205,11 @@ name = "darwinia-tron-backing"
 version = "2.2.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -2219,12 +2219,12 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "darwinia-support",
  "enumflags2",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2355,8 +2355,8 @@ dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-std",
 ]
 
 [[package]]
@@ -2373,9 +2373,9 @@ dependencies = [
  "parity-scale-codec 2.1.1",
  "rlp",
  "sha3 0.8.2",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2385,12 +2385,12 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
  "static_assertions",
 ]
 
@@ -2409,18 +2409,18 @@ dependencies = [
  "ethereum",
  "ethereum-types",
  "evm",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "libsecp256k1",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
  "rlp",
  "serde",
  "sha3 0.9.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2434,11 +2434,11 @@ dependencies = [
  "ethereum",
  "ethereum-types",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2716,9 +2716,9 @@ dependencies = [
  "rialto-runtime 0.1.0",
  "sc-finality-grandpa",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -2736,7 +2736,7 @@ dependencies = [
  "ethabi-contract",
  "ethabi-derive",
  "exchange-relay",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-system",
  "futures 0.3.14",
  "headers-relay 0.1.0",
  "hex",
@@ -2745,7 +2745,7 @@ dependencies = [
  "log",
  "messages-relay 0.1.0",
  "num-traits",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-ethereum-client",
  "relay-rialto-client 0.1.0",
@@ -2754,9 +2754,9 @@ dependencies = [
  "rialto-runtime 0.1.0",
  "serde",
  "serde_json",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
  "substrate-prometheus-endpoint",
  "time 0.2.26",
 ]
@@ -2780,9 +2780,9 @@ dependencies = [
  "rlp",
  "rlp-derive",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -2976,7 +2976,7 @@ dependencies = [
 [[package]]
 name = "finality-relay"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "async-std",
  "async-trait",
@@ -3065,18 +3065,18 @@ name = "frame-benchmarking"
 version = "3.1.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "linregress",
  "log",
  "parity-scale-codec 2.1.1",
  "paste",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-io",
+ "sp-runtime",
+ "sp-runtime-interface",
+ "sp-std",
+ "sp-storage",
 ]
 
 [[package]]
@@ -3094,11 +3094,11 @@ dependencies = [
  "sc-executor",
  "sc-service",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-state-machine",
  "structopt",
 ]
 
@@ -3107,12 +3107,12 @@ name = "frame-election-provider-support"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
  "sp-npos-elections",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
 ]
 
 [[package]]
@@ -3120,26 +3120,15 @@ name = "frame-executive"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "frame-metadata"
-version = "13.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "parity-scale-codec 2.1.1",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-tracing",
 ]
 
 [[package]]
@@ -3149,34 +3138,8 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "frame-support"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "bitflags",
- "frame-metadata 13.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "frame-support-procedural 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "impl-trait-for-tuples",
- "log",
- "once_cell",
- "parity-scale-codec 2.1.1",
- "paste",
- "serde",
- "smallvec 1.6.1",
- "sp-arithmetic 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-inherents 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-staking 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-state-machine 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-core",
+ "sp-std",
 ]
 
 [[package]]
@@ -3185,8 +3148,8 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "bitflags",
- "frame-metadata 13.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-support-procedural 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-metadata",
+ "frame-support-procedural",
  "impl-trait-for-tuples",
  "log",
  "once_cell",
@@ -3194,27 +3157,15 @@ dependencies = [
  "paste",
  "serde",
  "smallvec 1.6.1",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "frame-support-procedural"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "Inflector",
- "frame-support-procedural-tools 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "proc-macro2",
- "quote",
- "syn",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-state-machine",
+ "sp-std",
+ "sp-tracing",
 ]
 
 [[package]]
@@ -3223,19 +3174,7 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "Inflector",
- "frame-support-procedural-tools 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "frame-support-procedural-tools"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "frame-support-procedural-tools-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "proc-macro-crate 1.0.0",
+ "frame-support-procedural-tools",
  "proc-macro2",
  "quote",
  "syn",
@@ -3246,18 +3185,8 @@ name = "frame-support-procedural-tools"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support-procedural-tools-derive 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support-procedural-tools-derive",
  "proc-macro-crate 1.0.0",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "frame-support-procedural-tools-derive"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
  "proc-macro2",
  "quote",
  "syn",
@@ -3276,35 +3205,18 @@ dependencies = [
 [[package]]
 name = "frame-system"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "impl-trait-for-tuples",
- "log",
- "parity-scale-codec 2.1.1",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-version 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
-]
-
-[[package]]
-name = "frame-system"
-version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
 ]
 
 [[package]]
@@ -3313,7 +3225,7 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
 ]
 
 [[package]]
@@ -3321,11 +3233,11 @@ name = "frame-try-runtime"
 version = "0.9.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -3730,7 +3642,7 @@ dependencies = [
 [[package]]
 name = "headers-relay"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "async-std",
  "async-trait",
@@ -5252,7 +5164,7 @@ dependencies = [
  "hashbrown",
  "keccak-hash",
  "rlp",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
 ]
 
 [[package]]
@@ -5270,7 +5182,7 @@ dependencies = [
 [[package]]
 name = "messages-relay"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "async-std",
  "async-trait",
@@ -5326,10 +5238,10 @@ dependencies = [
  "serde_json",
  "sp-consensus",
  "sp-consensus-aura",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-runtime",
  "structopt",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
@@ -5347,8 +5259,8 @@ dependencies = [
  "bp-westend 0.1.0",
  "bridge-runtime-common 0.1.0",
  "frame-executive",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "frame-system-rpc-runtime-api",
  "hex-literal 0.3.1",
  "pallet-aura",
@@ -5362,23 +5274,23 @@ dependencies = [
  "pallet-shift-session-manager 0.1.0",
  "pallet-sudo",
  "pallet-timestamp",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
  "sp-offchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
  "sp-transaction-pool",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
+ "sp-version",
  "substrate-wasm-builder 3.0.0",
 ]
 
@@ -5396,8 +5308,8 @@ dependencies = [
  "bridge-runtime-common 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "drml-primitives",
  "frame-executive",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "frame-system-rpc-runtime-api",
  "hex-literal 0.3.1",
  "pallet-aura",
@@ -5411,23 +5323,23 @@ dependencies = [
  "pallet-shift-session-manager 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "pallet-sudo",
  "pallet-timestamp",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
  "sp-offchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
  "sp-transaction-pool",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
+ "sp-version",
  "substrate-wasm-builder-runner",
 ]
 
@@ -5677,8 +5589,8 @@ dependencies = [
  "sc-client-api",
  "sc-service",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
  "structopt",
 ]
 
@@ -5870,16 +5782,16 @@ name = "pallet-aura"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "pallet-session",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
  "sp-consensus-aura",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5887,15 +5799,15 @@ name = "pallet-authority-discovery"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "pallet-session",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
  "sp-authority-discovery",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5903,14 +5815,14 @@ name = "pallet-authorship"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "impl-trait-for-tuples",
  "parity-scale-codec 2.1.1",
  "sp-authorship",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5919,22 +5831,22 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "pallet-authorship",
  "pallet-session",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
  "sp-consensus-babe",
  "sp-consensus-vrf",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
  "sp-session",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
@@ -5943,30 +5855,30 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-bridge-currency-exchange"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-currency-exchange 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5976,31 +5888,31 @@ dependencies = [
  "bp-currency-exchange 0.1.0",
  "bp-header-chain 0.1.0",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-bridge-dispatch"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-message-dispatch 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6009,33 +5921,33 @@ version = "0.1.0"
 dependencies = [
  "bp-message-dispatch 0.1.0",
  "bp-runtime 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-bridge-eth-poa"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-eth-poa 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "libsecp256k1",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6044,38 +5956,38 @@ version = "0.1.0"
 dependencies = [
  "bp-eth-poa 0.1.0",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hex-literal 0.3.1",
  "libsecp256k1",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-header-chain 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-test-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "finality-grandpa 0.14.0",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "num-traits",
  "parity-scale-codec 2.1.1",
  "serde",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
@@ -6087,37 +5999,37 @@ dependencies = [
  "bp-test-utils 0.1.0",
  "finality-grandpa 0.14.0",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "num-traits",
  "parity-scale-codec 2.1.1",
  "serde",
  "sp-finality-grandpa",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
 name = "pallet-bridge-messages"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-rialto 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "num-traits",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6128,8 +6040,8 @@ dependencies = [
  "bp-rialto 0.1.0",
  "bp-runtime 0.1.0",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hex",
  "hex-literal 0.3.1",
  "log",
@@ -6137,10 +6049,10 @@ dependencies = [
  "pallet-balances",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6148,15 +6060,15 @@ name = "pallet-collective"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6165,16 +6077,16 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "frame-election-provider-support",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
+ "sp-io",
  "sp-npos-elections",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
  "static_assertions",
 ]
 
@@ -6184,20 +6096,20 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "pallet-authorship",
  "pallet-session",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
@@ -6207,13 +6119,13 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "enumflags2",
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6221,18 +6133,18 @@ name = "pallet-im-online"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "pallet-authorship",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
@@ -6240,13 +6152,13 @@ name = "pallet-membership"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6254,14 +6166,14 @@ name = "pallet-multisig"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6269,15 +6181,15 @@ name = "pallet-offences"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "pallet-balances",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
@@ -6285,14 +6197,14 @@ name = "pallet-proxy"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6300,12 +6212,12 @@ name = "pallet-randomness-collective-flip"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "safe-mix",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6314,13 +6226,13 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "enumflags2",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6329,14 +6241,14 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6344,47 +6256,47 @@ name = "pallet-session"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "impl-trait-for-tuples",
  "pallet-timestamp",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
  "sp-session",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-staking",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
 name = "pallet-shift-session-manager"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "pallet-session",
  "parity-scale-codec 2.1.1",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
 name = "pallet-shift-session-manager"
 version = "0.1.0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "pallet-session",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
@@ -6392,13 +6304,13 @@ name = "pallet-society"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "rand_chacha 0.2.2",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6406,13 +6318,13 @@ name = "pallet-sudo"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6421,32 +6333,16 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "frame-benchmarking",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
  "sp-timestamp",
-]
-
-[[package]]
-name = "pallet-transaction-payment"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "parity-scale-codec 2.1.1",
- "serde",
- "smallvec 1.6.1",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6454,15 +6350,15 @@ name = "pallet-transaction-payment"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
  "smallvec 1.6.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6475,11 +6371,11 @@ dependencies = [
  "jsonrpc-derive",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-rpc",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -6487,10 +6383,10 @@ name = "pallet-transaction-payment-rpc-runtime-api"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -6498,14 +6394,14 @@ name = "pallet-utility"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6547,8 +6443,8 @@ dependencies = [
  "dvm-rpc-runtime-api",
  "ethereum-primitives",
  "frame-executive",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "log",
@@ -6575,28 +6471,28 @@ dependencies = [
  "pallet-society",
  "pallet-sudo",
  "pallet-timestamp",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-utility",
  "parity-scale-codec 2.1.1",
  "serde",
  "smallvec 1.6.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
  "sp-authority-discovery",
  "sp-block-builder",
  "sp-consensus-babe",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
  "sp-npos-elections",
  "sp-offchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-staking",
+ "sp-std",
  "sp-transaction-pool",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "static_assertions",
  "substrate-wasm-builder 4.0.0",
 ]
@@ -7578,19 +7474,19 @@ dependencies = [
 [[package]]
 name = "relay-kusama-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-kusama 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7598,16 +7494,16 @@ name = "relay-kusama-client"
 version = "0.1.0"
 dependencies = [
  "bp-kusama 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7615,34 +7511,34 @@ name = "relay-millau-client"
 version = "0.1.0"
 source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature/s2s#980243a4040ceeed1a8d5702e0d004a5cfbe00e0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "millau-runtime 2.2.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-millau-client"
 version = "0.1.0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
  "millau-runtime 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7652,35 +7548,35 @@ source = "git+https://github.com/darwinia-network/darwinia-common?branch=feature
 dependencies = [
  "darwinia-ethereum-relay",
  "drml-primitives",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "pangolin-runtime",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-polkadot-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-polkadot 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7688,69 +7584,69 @@ name = "relay-polkadot-client"
 version = "0.1.0"
 dependencies = [
  "bp-polkadot 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-rialto-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "rialto-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-rialto-client"
 version = "0.1.0"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
  "rialto-runtime 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-rococo-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-rococo 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7758,22 +7654,22 @@ name = "relay-rococo-client"
 version = "0.1.0"
 dependencies = [
  "bp-rococo 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-substrate-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "async-std",
  "async-trait",
@@ -7781,8 +7677,8 @@ dependencies = [
  "bp-messages 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "finality-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "futures 0.3.14",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "jsonrpsee-proc-macros",
@@ -7794,13 +7690,13 @@ dependencies = [
  "rand 0.7.3",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "sc-rpc-api",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
+ "sp-storage",
+ "sp-trie",
+ "sp-version",
 ]
 
 [[package]]
@@ -7813,8 +7709,8 @@ dependencies = [
  "bp-messages 0.1.0",
  "bp-runtime 0.1.0",
  "finality-relay 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "futures 0.3.14",
  "headers-relay 0.1.0",
  "jsonrpsee-proc-macros",
@@ -7826,19 +7722,19 @@ dependencies = [
  "rand 0.7.3",
  "relay-utils 0.1.0",
  "sc-rpc-api",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-std",
+ "sp-storage",
+ "sp-trie",
+ "sp-version",
 ]
 
 [[package]]
 name = "relay-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "ansi_term 0.12.1",
  "async-std",
@@ -7879,19 +7775,19 @@ dependencies = [
 [[package]]
 name = "relay-westend-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-westend 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7899,34 +7795,34 @@ name = "relay-westend-client"
 version = "0.1.0"
 dependencies = [
  "bp-westend 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "relay-wococo-client"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-wococo 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-utils 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-keyring 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -7934,16 +7830,16 @@ name = "relay-wococo-client"
 version = "0.1.0"
 dependencies = [
  "bp-wococo 0.1.0",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "headers-relay 0.1.0",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "parity-scale-codec 2.1.1",
  "relay-substrate-client 0.1.0",
  "relay-utils 0.1.0",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -8001,10 +7897,10 @@ dependencies = [
  "serde_json",
  "sp-consensus",
  "sp-consensus-aura",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-runtime",
  "structopt",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
@@ -8013,7 +7909,7 @@ dependencies = [
 [[package]]
 name = "rialto-runtime"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#d8bfc9da1db3be6a6249b6f12a36752397ba8ead"
+source = "git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s#b80791cb813c28924692610789327d147ef2a757"
 dependencies = [
  "bp-currency-exchange 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "bp-eth-poa 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
@@ -8026,8 +7922,8 @@ dependencies = [
  "bridge-runtime-common 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "frame-benchmarking",
  "frame-executive",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "frame-system-rpc-runtime-api",
  "hex-literal 0.3.1",
  "log",
@@ -8044,24 +7940,24 @@ dependencies = [
  "pallet-shift-session-manager 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "pallet-sudo",
  "pallet-timestamp",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-io",
  "sp-offchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
  "sp-transaction-pool",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
+ "sp-version",
  "substrate-wasm-builder 3.0.0",
 ]
 
@@ -8080,8 +7976,8 @@ dependencies = [
  "bridge-runtime-common 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "frame-benchmarking",
  "frame-executive",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "frame-system-rpc-runtime-api",
  "hex-literal 0.3.1",
  "libsecp256k1",
@@ -8099,24 +7995,24 @@ dependencies = [
  "pallet-shift-session-manager 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "pallet-sudo",
  "pallet-timestamp",
- "pallet-transaction-payment 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-io",
  "sp-offchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
  "sp-transaction-pool",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
+ "sp-version",
  "substrate-wasm-builder 3.0.0",
 ]
 
@@ -8309,12 +8205,12 @@ dependencies = [
  "sc-client-api",
  "sc-proposer-metrics",
  "sc-telemetry",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
  "sp-transaction-pool",
  "substrate-prometheus-endpoint",
 ]
@@ -8326,13 +8222,13 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "parity-scale-codec 2.1.1",
  "sc-client-api",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-block-builder",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-state-machine",
 ]
 
 [[package]]
@@ -8352,8 +8248,8 @@ dependencies = [
  "serde_json",
  "sp-chain-spec",
  "sp-consensus-babe",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -8392,13 +8288,13 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-panic-handler 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keyring",
+ "sp-keystore",
+ "sp-panic-handler",
+ "sp-runtime",
  "sp-utils",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "structopt",
  "thiserror",
  "tiny-bip39",
@@ -8420,22 +8316,22 @@ dependencies = [
  "parity-scale-codec 2.1.1",
  "parking_lot 0.11.1",
  "sc-executor",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-database",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-externalities",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-storage",
  "sp-transaction-pool",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
  "sp-utils",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "substrate-prometheus-endpoint",
 ]
 
@@ -8458,14 +8354,14 @@ dependencies = [
  "sc-client-api",
  "sc-executor",
  "sc-state-db",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-database",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-trie",
  "substrate-prometheus-endpoint",
 ]
 
@@ -8478,7 +8374,7 @@ dependencies = [
  "sc-client-api",
  "sp-blockchain",
  "sp-consensus",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -8496,20 +8392,20 @@ dependencies = [
  "sc-client-api",
  "sc-consensus-slots",
  "sc-telemetry",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-aura",
  "sp-consensus-slots",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
+ "sp-keystore",
+ "sp-runtime",
  "sp-timestamp",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "substrate-prometheus-endpoint",
 ]
 
@@ -8541,22 +8437,22 @@ dependencies = [
  "sc-telemetry",
  "schnorrkel",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-babe",
  "sp-consensus-slots",
  "sp-consensus-vrf",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
+ "sp-keystore",
+ "sp-runtime",
  "sp-timestamp",
  "sp-utils",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "substrate-prometheus-endpoint",
 ]
 
@@ -8570,7 +8466,7 @@ dependencies = [
  "sc-client-api",
  "sc-consensus",
  "sp-blockchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -8585,18 +8481,18 @@ dependencies = [
  "parity-scale-codec 2.1.1",
  "sc-client-api",
  "sc-telemetry",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-slots",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-state-machine",
  "sp-timestamp",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
  "thiserror",
 ]
 
@@ -8609,9 +8505,9 @@ dependencies = [
  "sc-client-api",
  "sp-authorship",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -8629,17 +8525,17 @@ dependencies = [
  "sc-executor-common",
  "sc-executor-wasmi",
  "sc-executor-wasmtime",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-panic-handler 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-externalities",
+ "sp-io",
+ "sp-panic-handler",
+ "sp-runtime-interface",
  "sp-serializer",
  "sp-tasks",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
+ "sp-version",
+ "sp-wasm-interface",
  "wasmi",
 ]
 
@@ -8653,9 +8549,9 @@ dependencies = [
  "parity-wasm 0.41.0",
  "pwasm-utils",
  "sp-allocator",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-serializer",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-wasm-interface",
  "thiserror",
  "wasmi",
 ]
@@ -8669,9 +8565,9 @@ dependencies = [
  "parity-scale-codec 2.1.1",
  "sc-executor-common",
  "sp-allocator",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime-interface",
+ "sp-wasm-interface",
  "wasmi",
 ]
 
@@ -8687,9 +8583,9 @@ dependencies = [
  "sc-executor-common",
  "scoped-tls",
  "sp-allocator",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime-interface",
+ "sp-wasm-interface",
  "wasmtime",
 ]
 
@@ -8719,16 +8615,16 @@ dependencies = [
  "sc-network-gossip",
  "sc-telemetry",
  "serde_json",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
  "sp-utils",
  "substrate-prometheus-endpoint",
 ]
@@ -8753,8 +8649,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -8769,7 +8665,7 @@ dependencies = [
  "sc-client-api",
  "sc-network",
  "sp-blockchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-transaction-pool",
  "sp-utils",
  "wasm-timer",
@@ -8789,9 +8685,9 @@ dependencies = [
  "parking_lot 0.11.1",
  "rand 0.7.3",
  "serde_json",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-keystore",
  "subtle 2.4.0",
 ]
 
@@ -8806,12 +8702,12 @@ dependencies = [
  "parking_lot 0.11.1",
  "sc-client-api",
  "sc-executor",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
+ "sp-runtime",
+ "sp-state-machine",
 ]
 
 [[package]]
@@ -8853,11 +8749,11 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec 1.6.1",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
  "sp-utils",
  "substrate-prometheus-endpoint",
  "thiserror",
@@ -8878,7 +8774,7 @@ dependencies = [
  "log",
  "lru",
  "sc-network",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "substrate-prometheus-endpoint",
  "tracing",
  "wasm-timer",
@@ -8904,10 +8800,10 @@ dependencies = [
  "sc-client-api",
  "sc-keystore",
  "sc-network",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
  "sp-offchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-utils",
  "threadpool",
 ]
@@ -8953,19 +8849,19 @@ dependencies = [
  "sc-rpc-api",
  "sc-tracing",
  "serde_json",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
  "sp-chain-spec",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-keystore",
  "sp-offchain",
  "sp-rpc",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-session",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-state-machine",
  "sp-transaction-pool",
  "sp-utils",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
 ]
 
 [[package]]
@@ -8985,11 +8881,11 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-chain-spec",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-rpc",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "sp-transaction-pool",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
 ]
 
 [[package]]
@@ -9006,7 +8902,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "substrate-prometheus-endpoint",
 ]
 
@@ -9048,24 +8944,24 @@ dependencies = [
  "sc-transaction-pool",
  "serde",
  "serde_json",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
+ "sp-inherents",
+ "sp-io",
+ "sp-keystore",
+ "sp-runtime",
  "sp-session",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-state-machine",
+ "sp-tracing",
  "sp-transaction-pool",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-trie",
  "sp-utils",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "substrate-prometheus-endpoint",
  "tempfile",
  "thiserror",
@@ -9085,7 +8981,7 @@ dependencies = [
  "parity-util-mem-derive",
  "parking_lot 0.11.1",
  "sc-client-api",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "thiserror",
 ]
 
@@ -9126,7 +9022,7 @@ dependencies = [
  "sc-tracing-proc-macro",
  "serde",
  "serde_json",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-tracing",
  "thiserror",
  "tracing",
  "tracing-core",
@@ -9161,8 +9057,8 @@ dependencies = [
  "retain_mut",
  "serde",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
  "sp-transaction-pool",
  "sp-utils",
  "thiserror",
@@ -9183,11 +9079,11 @@ dependencies = [
  "parking_lot 0.11.1",
  "sc-client-api",
  "sc-transaction-graph",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
+ "sp-tracing",
  "sp-transaction-pool",
  "sp-utils",
  "substrate-prometheus-endpoint",
@@ -9523,15 +9419,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f173ac3d1a7e3b28003f40de0b5ce7fe2710f9b9dc3fc38664cebee46b3b6527"
 
 [[package]]
-name = "slog"
-version = "2.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8347046d4ebd943127157b94d63abb990fcf729dc4e9978927fdf4ac3c998d06"
-dependencies = [
- "erased-serde",
-]
-
-[[package]]
 name = "sluice"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9618,26 +9505,9 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "log",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "thiserror",
-]
-
-[[package]]
-name = "sp-api"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "hash-db",
- "log",
- "parity-scale-codec 2.1.1",
- "sp-api-proc-macro 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-state-machine 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-version 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-core",
+ "sp-std",
+ "sp-wasm-interface",
  "thiserror",
 ]
 
@@ -9649,25 +9519,13 @@ dependencies = [
  "hash-db",
  "log",
  "parity-scale-codec 2.1.1",
- "sp-api-proc-macro 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api-proc-macro",
+ "sp-core",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-version",
  "thiserror",
-]
-
-[[package]]
-name = "sp-api-proc-macro"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "blake2-rfc",
- "proc-macro-crate 1.0.0",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -9685,39 +9543,13 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "parity-scale-codec 2.1.1",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
-]
-
-[[package]]
-name = "sp-application-crypto"
-version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-arithmetic"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "integer-sqrt",
- "num-traits",
- "parity-scale-codec 2.1.1",
- "serde",
- "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "static_assertions",
+ "sp-core",
+ "sp-io",
+ "sp-std",
 ]
 
 [[package]]
@@ -9729,8 +9561,8 @@ dependencies = [
  "num-traits",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-debug-derive 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-debug-derive",
+ "sp-std",
 ]
 
 [[package]]
@@ -9739,10 +9571,10 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -9751,9 +9583,9 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -9762,10 +9594,10 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -9778,11 +9610,11 @@ dependencies = [
  "lru",
  "parity-scale-codec 2.1.1",
  "parking_lot 0.11.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-consensus",
  "sp-database",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
+ "sp-state-machine",
  "thiserror",
 ]
 
@@ -9808,15 +9640,15 @@ dependencies = [
  "parity-scale-codec 2.1.1",
  "parking_lot 0.11.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-trie",
  "sp-utils",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-version",
  "substrate-prometheus-endpoint",
  "thiserror",
  "wasm-timer",
@@ -9828,13 +9660,13 @@ version = "0.9.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
  "sp-consensus",
  "sp-consensus-slots",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
  "sp-timestamp",
 ]
 
@@ -9846,16 +9678,16 @@ dependencies = [
  "merlin",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-application-crypto",
  "sp-consensus",
  "sp-consensus-slots",
  "sp-consensus-vrf",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-std",
  "sp-timestamp",
 ]
 
@@ -9865,8 +9697,8 @@ version = "0.9.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -9876,53 +9708,9 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "parity-scale-codec 2.1.1",
  "schnorrkel",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-core"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "base58",
- "blake2-rfc",
- "byteorder",
- "dyn-clonable",
- "ed25519-dalek",
- "futures 0.3.14",
- "hash-db",
- "hash256-std-hasher",
- "hex",
- "impl-serde",
- "lazy_static",
- "libsecp256k1",
- "log",
- "merlin",
- "num-traits",
- "parity-scale-codec 2.1.1",
- "parity-util-mem",
- "parking_lot 0.11.1",
- "primitive-types",
- "rand 0.7.3",
- "regex",
- "schnorrkel",
- "secrecy",
- "serde",
- "sha2 0.9.4",
- "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "substrate-bip39",
- "thiserror",
- "tiny-bip39",
- "tiny-keccak",
- "twox-hash",
- "wasmi",
- "zeroize",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -9955,11 +9743,11 @@ dependencies = [
  "secrecy",
  "serde",
  "sha2 0.9.4",
- "sp-debug-derive 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-debug-derive",
+ "sp-externalities",
+ "sp-runtime-interface",
+ "sp-std",
+ "sp-storage",
  "substrate-bip39",
  "thiserror",
  "tiny-bip39",
@@ -9981,16 +9769,6 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "sp-debug-derive"
-version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "proc-macro2",
@@ -10001,23 +9779,12 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.9.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "environmental",
- "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
-]
-
-[[package]]
-name = "sp-externalities"
-version = "0.9.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "environmental",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
+ "sp-storage",
 ]
 
 [[package]]
@@ -10029,26 +9796,12 @@ dependencies = [
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-inherents"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "async-trait",
- "impl-trait-for-tuples",
- "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "thiserror",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -10058,33 +9811,9 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "parity-scale-codec 2.1.1",
  "parking_lot 0.11.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-std",
  "thiserror",
-]
-
-[[package]]
-name = "sp-io"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "futures 0.3.14",
- "hash-db",
- "libsecp256k1",
- "log",
- "parity-scale-codec 2.1.1",
- "parking_lot 0.11.1",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-keystore 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-state-machine 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-trie 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "tracing",
- "tracing-core",
 ]
 
 [[package]]
@@ -10098,28 +9827,17 @@ dependencies = [
  "log",
  "parity-scale-codec 2.1.1",
  "parking_lot 0.11.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-keystore 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
+ "sp-keystore",
+ "sp-runtime-interface",
+ "sp-state-machine",
+ "sp-std",
+ "sp-tracing",
+ "sp-trie",
+ "sp-wasm-interface",
  "tracing",
  "tracing-core",
-]
-
-[[package]]
-name = "sp-keyring"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "lazy_static",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "strum",
 ]
 
 [[package]]
@@ -10128,25 +9846,9 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "lazy_static",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
  "strum",
-]
-
-[[package]]
-name = "sp-keystore"
-version = "0.9.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "async-trait",
- "derive_more",
- "futures 0.3.14",
- "merlin",
- "parity-scale-codec 2.1.1",
- "parking_lot 0.11.1",
- "schnorrkel",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
 ]
 
 [[package]]
@@ -10162,8 +9864,8 @@ dependencies = [
  "parking_lot 0.11.1",
  "schnorrkel",
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
 ]
 
 [[package]]
@@ -10173,10 +9875,10 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-arithmetic",
+ "sp-core",
  "sp-npos-elections-compact",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
 ]
 
 [[package]]
@@ -10195,17 +9897,9 @@ name = "sp-offchain"
 version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-panic-handler"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "backtrace",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -10222,28 +9916,7 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "serde",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-runtime"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "either",
- "hash256-std-hasher",
- "impl-trait-for-tuples",
- "log",
- "parity-scale-codec 2.1.1",
- "parity-util-mem",
- "paste",
- "rand 0.7.3",
- "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-arithmetic 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-core",
 ]
 
 [[package]]
@@ -10260,28 +9933,11 @@ dependencies = [
  "paste",
  "rand 0.7.3",
  "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-arithmetic 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-runtime-interface"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "impl-trait-for-tuples",
- "parity-scale-codec 2.1.1",
- "primitive-types",
- "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-runtime-interface-proc-macro 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "static_assertions",
+ "sp-application-crypto",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-std",
 ]
 
 [[package]]
@@ -10292,25 +9948,13 @@ dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec 2.1.1",
  "primitive-types",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface-proc-macro 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-storage 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-tracing 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-externalities",
+ "sp-runtime-interface-proc-macro",
+ "sp-std",
+ "sp-storage",
+ "sp-tracing",
+ "sp-wasm-interface",
  "static_assertions",
-]
-
-[[package]]
-name = "sp-runtime-interface-proc-macro"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "Inflector",
- "proc-macro-crate 1.0.0",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -10340,21 +9984,11 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-staking 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-staking"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "parity-scale-codec 2.1.1",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
@@ -10363,31 +9997,8 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-state-machine"
-version = "0.9.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "hash-db",
- "log",
- "num-traits",
- "parity-scale-codec 2.1.1",
- "parking_lot 0.11.1",
- "rand 0.7.3",
- "smallvec 1.6.1",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-panic-handler 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-trie 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "thiserror",
- "tracing",
- "trie-db",
- "trie-root",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -10402,11 +10013,11 @@ dependencies = [
  "parking_lot 0.11.1",
  "rand 0.7.3",
  "smallvec 1.6.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-panic-handler 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
+ "sp-panic-handler",
+ "sp-std",
+ "sp-trie",
  "thiserror",
  "trie-db",
  "trie-root",
@@ -10415,25 +10026,7 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-
-[[package]]
-name = "sp-std"
-version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
-
-[[package]]
-name = "sp-storage"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "impl-serde",
- "parity-scale-codec 2.1.1",
- "ref-cast",
- "serde",
- "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
-]
 
 [[package]]
 name = "sp-storage"
@@ -10444,8 +10037,8 @@ dependencies = [
  "parity-scale-codec 2.1.1",
  "ref-cast",
  "serde",
- "sp-debug-derive 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-debug-derive",
+ "sp-std",
 ]
 
 [[package]]
@@ -10454,11 +10047,11 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "log",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-externalities 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-externalities",
+ "sp-io",
+ "sp-runtime-interface",
+ "sp-std",
 ]
 
 [[package]]
@@ -10467,29 +10060,11 @@ version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "parity-scale-codec 2.1.1",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-inherents 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
  "wasm-timer",
-]
-
-[[package]]
-name = "sp-tracing"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "erased-serde",
- "log",
- "parity-scale-codec 2.1.1",
- "parking_lot 0.10.2",
- "serde",
- "serde_json",
- "slog",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "tracing",
- "tracing-core",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -10499,7 +10074,7 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "log",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
  "tracing",
  "tracing-core",
  "tracing-subscriber",
@@ -10515,24 +10090,10 @@ dependencies = [
  "log",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-blockchain",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-runtime",
  "thiserror",
-]
-
-[[package]]
-name = "sp-trie"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "hash-db",
- "memory-db",
- "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "trie-db",
- "trie-root",
 ]
 
 [[package]]
@@ -10543,8 +10104,8 @@ dependencies = [
  "hash-db",
  "memory-db",
  "parity-scale-codec 2.1.1",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-std",
  "trie-db",
  "trie-root",
 ]
@@ -10564,36 +10125,13 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "impl-serde",
- "parity-scale-codec 2.1.1",
- "serde",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
-]
-
-[[package]]
-name = "sp-version"
-version = "3.0.0"
 source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639df330f8a8b966362e34e4b720e8d7a32"
 dependencies = [
  "impl-serde",
  "parity-scale-codec 2.1.1",
  "serde",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
-]
-
-[[package]]
-name = "sp-wasm-interface"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=master#e5437efefa82bd8eb567f1245f0a7443ac4e4fe7"
-dependencies = [
- "impl-trait-for-tuples",
- "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=master)",
- "wasmi",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -10603,7 +10141,7 @@ source = "git+https://github.com/darwinia-network/substrate?branch=s2s#97f1b639d
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec 2.1.1",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-std",
  "wasmi",
 ]
 
@@ -10702,19 +10240,19 @@ dependencies = [
  "bp-test-utils 0.1.0",
  "env_logger 0.8.3",
  "finality-grandpa 0.12.3",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "frame-system 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
+ "frame-system",
  "hash-db",
  "honggfuzz",
  "log",
  "parity-scale-codec 1.3.7",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-io 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-state-machine 0.9.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-std 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-io",
+ "sp-runtime",
+ "sp-state-machine",
+ "sp-std",
+ "sp-trie",
 ]
 
 [[package]]
@@ -10833,11 +10371,11 @@ dependencies = [
  "sc-client-api",
  "sc-rpc-api",
  "serde",
- "sp-api 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-api",
  "sp-block-builder",
  "sp-blockchain",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
+ "sp-runtime",
  "sp-transaction-pool",
 ]
 
@@ -10876,7 +10414,7 @@ dependencies = [
  "drml-primitives",
  "finality-grandpa 0.14.0",
  "finality-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "frame-support 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "frame-support",
  "futures 0.3.14",
  "headers-relay 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "hex",
@@ -10902,12 +10440,12 @@ dependencies = [
  "relay-westend-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "relay-wococo-client 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
  "rialto-runtime 0.1.0 (git+https://github.com/darwinia-network/parity-bridges-common?branch=s2s)",
- "sp-core 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-core",
  "sp-finality-grandpa",
- "sp-keyring 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-runtime 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-trie 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
- "sp-version 3.0.0 (git+https://github.com/darwinia-network/substrate?branch=s2s)",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-trie",
+ "sp-version",
  "structopt",
 ]
 
