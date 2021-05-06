@@ -14,17 +14,19 @@ serde = { version = "1.0.124", optional = true, features = ["derive"] }
 
 # Bridge dependencies
 
-bp-header-chain = { path = "../../../primitives/header-chain", default-features = false }
-bp-messages = { path = "../../../primitives/messages", default-features = false }
-bp-millau = { path = "../../../primitives/chain-millau", default-features = false }
-bp-rialto = { path = "../../../primitives/chain-rialto", default-features = false }
-bp-runtime = { path = "../../../primitives/runtime", default-features = false }
-bp-westend = { path = "../../../primitives/chain-westend", default-features = false }
-bridge-runtime-common = { path = "../../runtime-common", default-features = false }
-pallet-bridge-dispatch = { path = "../../../modules/dispatch", default-features = false }
-pallet-bridge-grandpa = { path = "../../../modules/grandpa", default-features = false }
-pallet-bridge-messages = { path = "../../../modules/messages", default-features = false }
-pallet-shift-session-manager = { path = "../../../modules/shift-session-manager", default-features = false }
+bp-header-chain = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+bp-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+bp-millau = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+bp-rialto = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+bp-runtime = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+bp-westend = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+bridge-runtime-common = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+pallet-bridge-dispatch = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+pallet-bridge-grandpa = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+pallet-bridge-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+pallet-shift-session-manager = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
+
+drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s", default-features = false }
 
 # Substrate Dependencies
 
@@ -100,6 +102,8 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-trie/std",
 	"sp-version/std",
+
+	"drml-primitives/std",
 ]
 # TODO: https://github.com/paritytech/parity-bridges-common/issues/390
 # I've left the feature flag here to test our CI configuration

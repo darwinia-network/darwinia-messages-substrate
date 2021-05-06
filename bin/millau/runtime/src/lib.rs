@@ -31,8 +31,10 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod rialto_messages;
+pub mod pangolin_messages;
 
 use crate::rialto_messages::{ToRialtoMessagePayload, WithRialtoMessageBridge};
+use crate::pangolin_messages::{ToPangolinMessagePayload, WithPangolinMessageBridge};
 
 use bridge_runtime_common::messages::{source::estimate_message_dispatch_and_delivery_fee, MessageBridge};
 use codec::Decode;
@@ -67,6 +69,8 @@ pub use pallet_bridge_grandpa::Call as BridgeGrandpaWestendCall;
 pub use pallet_bridge_messages::Call as MessagesCall;
 pub use pallet_sudo::Call as SudoCall;
 pub use pallet_timestamp::Call as TimestampCall;
+
+pub use pallet_bridge_grandpa::Call as BridgeGrandpaPangolinCall;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -208,13 +212,30 @@ impl frame_system::Config for Runtime {
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 }
-impl pallet_bridge_dispatch::Config for Runtime {
+
+pub type WithRialtoDispatchInstance = pallet_bridge_dispatch::Instance0;
+
+impl pallet_bridge_dispatch::Config<WithRialtoDispatchInstance> for Runtime {
 	type Event = Event;
 	type MessageId = (bp_messages::LaneId, bp_messages::MessageNonce);
 	type Call = Call;
 	type CallFilter = ();
 	type EncodedCall = crate::rialto_messages::FromRialtoEncodedCall;
 	type SourceChainAccountId = bp_rialto::AccountId;
+	type TargetChainAccountPublic = MultiSigner;
+	type TargetChainSignature = MultiSignature;
+	type AccountIdConverter = bp_millau::AccountIdConverter;
+}
+
+pub type WithPangolinDispatchInstance = pallet_bridge_dispatch::Instance2;
+
+impl pallet_bridge_dispatch::Config<WithPangolinDispatchInstance> for Runtime {
+	type Event = Event;
+	type MessageId = (bp_messages::LaneId, bp_messages::MessageNonce);
+	type Call = Call;
+	type CallFilter = ();
+	type EncodedCall = crate::pangolin_messages::FromPangolinEncodedCall;
+	type SourceChainAccountId = drml_primitives::AccountId;
 	type TargetChainAccountPublic = MultiSigner;
 	type TargetChainSignature = MultiSignature;
 	type AccountIdConverter = bp_millau::AccountIdConverter;
@@ -308,6 +329,7 @@ parameter_types! {
 	// Note that once this is hit the pallet will essentially throttle incoming requests down to one
 	// call per block.
 	pub const MaxRequests: u32 = 50;
+	pub const WestendValidatorCount: u32 = 255;
 
 	// Number of headers to keep.
 	//
@@ -316,8 +338,8 @@ parameter_types! {
 	pub const HeadersToKeep: u32 = 7 * bp_millau::DAYS as u32;
 }
 
-pub type RialtoGrandpaInstance = ();
-impl pallet_bridge_grandpa::Config for Runtime {
+pub type WithRialtoGrandpaInstance = pallet_bridge_grandpa::Instance0;
+impl pallet_bridge_grandpa::Config<WithRialtoGrandpaInstance> for Runtime {
 	type BridgedChain = bp_rialto::Rialto;
 	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
@@ -336,6 +358,17 @@ impl pallet_bridge_grandpa::Config<WestendGrandpaInstance> for Runtime {
 	type WeightInfo = pallet_bridge_grandpa::weights::RialtoWeight<Runtime>;
 }
 
+pub type WithPangolinGrandpaInstance = pallet_bridge_grandpa::Instance2;
+impl pallet_bridge_grandpa::Config<WithPangolinGrandpaInstance> for Runtime {
+	type BridgedChain = drml_primitives::PangolinSubstrateChain;
+	type MaxRequests = MaxRequests;
+	type HeadersToKeep = HeadersToKeep;
+
+	// TODO [#391]: Use weights generated for the Millau runtime instead of Rialto ones.
+	type WeightInfo = pallet_bridge_grandpa::weights::RialtoWeight<Runtime>;
+}
+
+
 impl pallet_shift_session_manager::Config for Runtime {}
 
 parameter_types! {
@@ -351,7 +384,7 @@ parameter_types! {
 }
 
 /// Instance of the messages pallet used to relay messages to/from Rialto chain.
-pub type WithRialtoMessagesInstance = pallet_bridge_messages::DefaultInstance;
+pub type WithRialtoMessagesInstance = pallet_bridge_messages::Instance0;
 
 impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
 	type Event = Event;
@@ -384,15 +417,49 @@ impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
 	type MessageDispatch = crate::rialto_messages::FromRialtoMessageDispatch;
 }
 
+/// Instance of the message pallet used to relay message to/from Pangolin chain.
+pub type WithPangolinMessagesInstance = pallet_bridge_messages::Instance2;
+
+impl pallet_bridge_messages::Config<WithPangolinMessagesInstance> for Runtime {
+	type Event = Event;
+	// TODO: https://github.com/paritytech/parity-bridges-common/issues/390
+	type WeightInfo = pallet_bridge_messages::weights::RialtoWeight<Runtime>;
+	type Parameter = pangolin_messages::MillauToPangolinMessagesParameter;
+	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+
+	type OutboundPayload = crate::pangolin_messages::ToPangolinMessagePayload;
+	type OutboundMessageFee = Balance;
+
+	type InboundPayload = crate::pangolin_messages::FromPangolinMessagePayload;
+	type InboundMessageFee = drml_primitives::Balance;
+	type InboundRelayer = drml_primitives::AccountId;
+
+	type AccountIdConverter = drml_primitives::AccountIdConverter;
+
+	type TargetHeaderChain = crate::pangolin_messages::PangolinChainWithMessagesInMillau;
+	type LaneMessageVerifier = crate::pangolin_messages::ToPangolinMessageVerifier;
+	type MessageDeliveryAndDispatchPayment = pallet_bridge_messages::instant_payments::InstantCurrencyPayments<
+		Runtime,
+		pallet_balances::Pallet<Runtime>,
+		GetDeliveryConfirmationTransactionFee,
+		RootAccountForPayments,
+	>;
+
+	type SourceHeaderChain = crate::pangolin_messages::PangolinChainWithMessagesInMillau;
+	type MessageDispatch = crate::pangolin_messages::FromPangolinMessageDispatch;
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
 		NodeBlock = opaque::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		BridgeRialtoMessages: pallet_bridge_messages::{Pallet, Call, Storage, Event<T>},
-		BridgeDispatch: pallet_bridge_dispatch::{Pallet, Event<T>},
-		BridgeRialtoGrandpa: pallet_bridge_grandpa::{Pallet, Call, Storage},
+		BridgeRialtoMessages: pallet_bridge_messages::<Instance0>::{Pallet, Call, Storage, Event<T>},
+		BridgeDispatch: pallet_bridge_dispatch::<Instance0>::{Pallet, Event<T>},
+		BridgeRialtoGrandpa: pallet_bridge_grandpa::<Instance0>::{Pallet, Call, Storage},
 		BridgeWestendGrandpa: pallet_bridge_grandpa::<Instance1>::{Pallet, Call, Config<T>, Storage},
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage},
@@ -404,6 +471,10 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
 		ShiftSessionManager: pallet_shift_session_manager::{Pallet},
+
+		BridgePangolinMessages: pallet_bridge_messages::<Instance2>::{Pallet, Call, Storage, Event<T>},
+		BridgePangolinGrandpa: pallet_bridge_grandpa::<Instance2>::{Pallet, Call, Config<T>, Storage},
+		BridgePangolinDispatch: pallet_bridge_dispatch::<Instance2>::{Pallet, Event<T>},
 	}
 );
 
@@ -639,6 +710,68 @@ impl_runtime_apis! {
 			BridgeRialtoMessages::inbound_unrewarded_relayers_state(lane)
 		}
 	}
+
+	impl drml_primitives::PangolinFinalityApi<Block> for Runtime {
+		fn best_finalized() -> (drml_primitives::BlockNumber, drml_primitives::Hash) {
+			let header = BridgePangolinGrandpa::best_finalized();
+			(header.number, header.hash())
+		}
+
+		fn is_known_header(hash: drml_primitives::Hash) -> bool {
+			BridgePangolinGrandpa::is_known_header(hash)
+		}
+	}
+
+
+	impl drml_primitives::ToPangolinOutboundLaneApi<Block, Balance, ToPangolinMessagePayload> for Runtime {
+		fn estimate_message_delivery_and_dispatch_fee(
+			_lane_id: bp_messages::LaneId,
+			payload: ToPangolinMessagePayload,
+		) -> Option<Balance> {
+			estimate_message_dispatch_and_delivery_fee::<WithPangolinMessageBridge>(
+				&payload,
+				WithPangolinMessageBridge::RELAYER_FEE_PERCENT,
+			).ok()
+		}
+
+		fn messages_dispatch_weight(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<(bp_messages::MessageNonce, Weight, u32)> {
+			(begin..=end).filter_map(|nonce| {
+				let encoded_payload = BridgePangolinMessages::outbound_message_payload(lane, nonce)?;
+				let decoded_payload = pangolin_messages::ToPangolinMessagePayload::decode(
+					&mut &encoded_payload[..]
+				).ok()?;
+				Some((nonce, decoded_payload.weight, encoded_payload.len() as _))
+			})
+			.collect()
+		}
+
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgePangolinMessages::outbound_latest_received_nonce(lane)
+		}
+
+		fn latest_generated_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgePangolinMessages::outbound_latest_generated_nonce(lane)
+		}
+	}
+
+	impl drml_primitives::FromPangolinInboundLaneApi<Block> for Runtime {
+		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgePangolinMessages::inbound_latest_received_nonce(lane)
+		}
+
+		fn latest_confirmed_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
+			BridgePangolinMessages::inbound_latest_confirmed_nonce(lane)
+		}
+
+		fn unrewarded_relayers_state(lane: bp_messages::LaneId) -> bp_messages::UnrewardedRelayersState {
+			BridgePangolinMessages::inbound_unrewarded_relayers_state(lane)
+		}
+	}
+
 }
 
 /// Rialto account ownership digest from Millau.
