@@ -29,12 +29,12 @@ bp-rococo = { git = "https://github.com/darwinia-network/parity-bridges-common",
 bp-wococo = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 bp-runtime = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 bp-westend = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+bp-message-dispatch = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 bridge-runtime-common = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 finality-grandpa = { version = "0.14.0" }
 finality-relay = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 headers-relay = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 messages-relay = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
-pallet-bridge-dispatch = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 pallet-bridge-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 relay-kusama-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 relay-polkadot-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }

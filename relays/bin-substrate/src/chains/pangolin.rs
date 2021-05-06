@@ -3,12 +3,11 @@ use crate::cli::{
 	encode_call::{self, Call, CliEncodeCall},
 	encode_message, send_message, CliChain,
 };
+use bp_message_dispatch::{CallOrigin, MessagePayload};
 use codec::Decode;
 use frame_support::weights::{GetDispatchInfo, Weight};
-use pallet_bridge_dispatch::{CallOrigin, MessagePayload};
 use relay_pangolin_client::PangolinRelayChain;
 use sp_version::RuntimeVersion;
-
 
 impl CliEncodeCall for PangolinRelayChain {
 	fn max_extrinsic_size() -> u32 {
@@ -18,14 +17,14 @@ impl CliEncodeCall for PangolinRelayChain {
 	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
 		Ok(match call {
 			Call::Raw { data } => Decode::decode(&mut &*data.0)?,
-			Call::Remark { remark_payload, .. } => pangolin_runtime::Call::System(pangolin_runtime::SystemCall::remark(
-				remark_payload.as_ref().map(|x| x.0.clone()).unwrap_or_default(),
-			)),
+			Call::Remark { remark_payload, .. } => pangolin_runtime::Call::System(
+				pangolin_runtime::SystemCall::remark(remark_payload.as_ref().map(|x| x.0.clone()).unwrap_or_default()),
+			),
 			Call::Transfer { recipient, amount } => pangolin_runtime::Call::Balances(
 				// todo: there need correct it
 				pangolin_runtime::BalanceRingCall::transfer(
 					sp_runtime::MultiAddress::Id(recipient.raw_id()),
-					amount.cast() as u128
+					amount.cast() as u128,
 				),
 			),
 			Call::BridgeSendMessage {
@@ -37,11 +36,7 @@ impl CliEncodeCall for PangolinRelayChain {
 				bridge::PANGOLIN_TO_MILLAU_INDEX => {
 					let payload = Decode::decode(&mut &*payload.0)?;
 					pangolin_runtime::Call::BridgeMillauMessages(
-						pangolin_runtime::bridge::s2s::MessagesCall::send_message(
-							lane.0,
-							payload,
-							fee.cast() as u128,
-						)
+						pangolin_runtime::bridge::s2s::MessagesCall::send_message(lane.0, payload, fee.cast() as u128),
 					)
 				}
 				_ => anyhow::bail!(
@@ -53,17 +48,12 @@ impl CliEncodeCall for PangolinRelayChain {
 	}
 }
 
-
 impl CliChain for PangolinRelayChain {
 	const RUNTIME_VERSION: RuntimeVersion = pangolin_runtime::VERSION;
 
 	type KeyPair = sp_core::sr25519::Pair;
-	type MessagePayload = MessagePayload<
-		drml_primitives::AccountId,
-		bp_millau::AccountSigner,
-		bp_millau::Signature,
-		Vec<u8>
-	>;
+	type MessagePayload =
+		MessagePayload<drml_primitives::AccountId, bp_millau::AccountSigner, bp_millau::Signature, Vec<u8>>;
 
 	fn ss58_format() -> u16 {
 		pangolin_runtime::SS58Prefix::get() as u16
@@ -85,10 +75,7 @@ impl CliChain for PangolinRelayChain {
 				sender.enforce_chain::<Source>();
 				let spec_version = Target::RUNTIME_VERSION.spec_version;
 				let origin = CallOrigin::SourceAccount(sender.raw_id());
-				encode_call::preprocess_call::<Source, Target>(
-					&mut call,
-					bridge::PANGOLIN_TO_MILLAU_INDEX
-				);
+				encode_call::preprocess_call::<Source, Target>(&mut call, bridge::PANGOLIN_TO_MILLAU_INDEX);
 				let call = Target::encode_call(&call).map_err(|e| e.to_string())?;
 				let weight = call.get_dispatch_info().weight;
 
@@ -97,4 +84,3 @@ impl CliChain for PangolinRelayChain {
 		}
 	}
 }
-
