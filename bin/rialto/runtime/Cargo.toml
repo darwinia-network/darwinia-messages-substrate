@@ -31,8 +31,7 @@ pallet-bridge-grandpa = { git = "https://github.com/darwinia-network/parity-brid
 pallet-bridge-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
 pallet-shift-session-manager = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
 
-#bp-millau = { path = "../../../primitives/chain-millau", default-features = false }
-bp-millau = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s", default-features = false }
+bp-millau = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
 
 # Substrate Dependencies
 

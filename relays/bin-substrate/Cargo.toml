@@ -46,9 +46,9 @@ relay-utils = { git = "https://github.com/darwinia-network/parity-bridges-common
 relay-westend-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 rialto-runtime = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 
-bp-millau = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
-relay-millau-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
-millau-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+bp-millau = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+relay-millau-client = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
+millau-runtime = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s" }
 
 drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 relay-pangolin-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
