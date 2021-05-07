@@ -42,15 +42,6 @@ mod snapshot;
 mod utils;
 mod verification;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-
-#[cfg(test)]
-mod mock;
-
-#[cfg(any(feature = "runtime-benchmarks", test))]
-pub mod test_utils;
-
 /// Maximal number of blocks we're pruning in single import call.
 const MAX_BLOCKS_TO_PRUNE_IN_SINGLE_IMPORT: u64 = 8;
 
