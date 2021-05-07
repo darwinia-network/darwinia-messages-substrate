@@ -16,7 +16,7 @@
 
 //! Everything required to serve Millau <-> Rialto messages.
 
-use crate::{Runtime, WithRialtoGrandpaInstance};
+use crate::Runtime;
 
 use bp_messages::{
 	source_chain::TargetHeaderChain,
@@ -214,7 +214,11 @@ impl TargetHeaderChain<ToRialtoMessagePayload, bp_rialto::AccountId> for Rialto 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
 	) -> Result<(LaneId, InboundLaneData<bp_millau::AccountId>), Self::Error> {
-		messages::source::verify_messages_delivery_proof::<WithRialtoMessageBridge, Runtime, crate::WithRialtoGrandpaInstance>(proof)
+		messages::source::verify_messages_delivery_proof::<
+			WithRialtoMessageBridge,
+			Runtime,
+			crate::WithRialtoGrandpaInstance,
+		>(proof)
 	}
 }
 
@@ -231,7 +235,10 @@ impl SourceHeaderChain<bp_rialto::Balance> for Rialto {
 		proof: Self::MessagesProof,
 		messages_count: u32,
 	) -> Result<ProvedMessages<Message<bp_rialto::Balance>>, Self::Error> {
-		messages::target::verify_messages_proof::<WithRialtoMessageBridge, Runtime, crate::WithRialtoGrandpaInstance>(proof, messages_count)
+		messages::target::verify_messages_proof::<WithRialtoMessageBridge, Runtime, crate::WithRialtoGrandpaInstance>(
+			proof,
+			messages_count,
+		)
 	}
 }
 

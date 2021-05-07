@@ -54,7 +54,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use pangolin_runtime::bridge::s2s;
+use pangolin_runtime_params::s2s;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{

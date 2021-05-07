@@ -13,7 +13,7 @@ use frame_support::{
 	weights::{DispatchClass, Weight},
 	RuntimeDebug,
 };
-use pangolin_runtime::bridge::s2s;
+use pangolin_runtime_params::s2s;
 use sp_runtime::{FixedPointNumber, FixedU128};
 use sp_std::{convert::TryFrom, ops::RangeInclusive};
 
@@ -137,13 +137,14 @@ impl messages::ChainWithMessages for PangolinChainWithMessagesInMillau {
 
 impl messages::BridgedChainWithMessages for PangolinChainWithMessagesInMillau {
 	fn maximal_extrinsic_size() -> u32 {
-		pangolin_runtime::max_extrinsic_size()
+		pangolin_runtime_params::system::max_extrinsic_size()
 	}
 
 	fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Weight> {
 		// we don't want to relay too large messages + keep reserve for future upgrades
-		let upper_limit =
-			messages::target::maximal_incoming_message_dispatch_weight(pangolin_runtime::max_extrinsic_weight());
+		let upper_limit = messages::target::maximal_incoming_message_dispatch_weight(
+			pangolin_runtime_params::system::max_extrinsic_weight(),
+		);
 
 		// we're charging for payload bytes in `WithRialtoMessageBridge::transaction_payment` function
 		//
@@ -175,7 +176,7 @@ impl messages::BridgedChainWithMessages for PangolinChainWithMessagesInMillau {
 	fn transaction_payment(transaction: MessageTransaction<Weight>) -> drml_primitives::Balance {
 		// in our testnets, both per-byte fee and weight-to-fee are 1:1
 		messages::transaction_payment(
-			pangolin_runtime::RuntimeBlockWeights::get()
+			pangolin_runtime_params::system::RuntimeBlockWeights::get()
 				.get(DispatchClass::Normal)
 				.base_extrinsic,
 			1,
