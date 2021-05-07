@@ -11,7 +11,7 @@ use sp_version::RuntimeVersion;
 
 impl CliEncodeCall for PangolinRelayChain {
 	fn max_extrinsic_size() -> u32 {
-		drml_primitives::max_extrinsic_size()
+		pangolin_runtime_params::system::max_extrinsic_size()
 	}
 
 	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
@@ -60,7 +60,7 @@ impl CliChain for PangolinRelayChain {
 	}
 
 	fn max_extrinsic_weight() -> Weight {
-		drml_primitives::max_extrinsic_weight()
+		pangolin_runtime_params::system::max_extrinsic_weight()
 	}
 
 	// TODO [#854|#843] support multiple bridges?

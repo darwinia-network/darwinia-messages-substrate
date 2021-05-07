@@ -53,6 +53,7 @@ millau-runtime = { git = "https://github.com/darwinia-network/parity-bridges-com
 drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 relay-pangolin-client = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 pangolin-runtime = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
+pangolin-runtime-params = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s" }
 
 # Substrate Dependencies
 

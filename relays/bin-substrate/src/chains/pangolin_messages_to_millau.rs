@@ -1,8 +1,5 @@
 use crate::messages_lane::{
-	select_delivery_transaction_limits,
-	MessagesRelayParams,
-	SubstrateMessageLane,
-	SubstrateMessageLaneToSubstrate,
+	select_delivery_transaction_limits, MessagesRelayParams, SubstrateMessageLane, SubstrateMessageLaneToSubstrate,
 };
 use crate::messages_source::SubstrateMessagesSource;
 use crate::messages_target::SubstrateMessagesTarget;
@@ -13,12 +10,9 @@ use bridge_runtime_common::messages::target::FromBridgedChainMessagesProof;
 use codec::Encode;
 use frame_support::dispatch::GetDispatchInfo;
 use messages_relay::message_lane::MessageLane;
+use pangolin_runtime_params::s2s as s2s_params;
 use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams};
-use relay_pangolin_client::{
-	HeaderId as PangolinHeaderId,
-	PangolinRelayChain,
-	SigningParams as PangolinSigningParams,
-};
+use relay_pangolin_client::{HeaderId as PangolinHeaderId, PangolinRelayChain, SigningParams as PangolinSigningParams};
 use relay_substrate_client::{
 	metrics::{FloatStorageValueMetric, StorageProofOverheadMetric},
 	Chain, TransactionSignScheme,
@@ -26,35 +20,25 @@ use relay_substrate_client::{
 use sp_core::{Bytes, Pair};
 use std::{ops::RangeInclusive, time::Duration};
 
-
 /// Pangolin-to-Millau message lane.
-pub type PangolinMessagesToMillau = SubstrateMessageLaneToSubstrate<
-	PangolinRelayChain,
-	PangolinSigningParams,
-	Millau,
-	MillauSigningParams
->;
-
+pub type PangolinMessagesToMillau =
+	SubstrateMessageLaneToSubstrate<PangolinRelayChain, PangolinSigningParams, Millau, MillauSigningParams>;
 
 impl SubstrateMessageLane for PangolinMessagesToMillau {
 	const OUTBOUND_LANE_MESSAGES_DISPATCH_WEIGHT_METHOD: &'static str =
 		bp_millau::TO_MILLAU_MESSAGES_DISPATCH_WEIGHT_METHOD;
 	const OUTBOUND_LANE_LATEST_GENERATED_NONCE_METHOD: &'static str =
 		bp_millau::TO_MILLAU_LATEST_GENERATED_NONCE_METHOD;
-	const OUTBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		bp_millau::TO_MILLAU_LATEST_RECEIVED_NONCE_METHOD;
+	const OUTBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str = bp_millau::TO_MILLAU_LATEST_RECEIVED_NONCE_METHOD;
 
 	const INBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		drml_primitives::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		s2s_params::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
 	const INBOUND_LANE_LATEST_CONFIRMED_NONCE_METHOD: &'static str =
-		drml_primitives::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
-	const INBOUND_LANE_UNREWARDED_RELAYERS_STATE: &'static str =
-		drml_primitives::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
+		s2s_params::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
+	const INBOUND_LANE_UNREWARDED_RELAYERS_STATE: &'static str = s2s_params::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
 
-	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str =
-		drml_primitives::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
-	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str =
-		bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
+	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str = s2s_params::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
+	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str = bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
 
 	type SourceChain = PangolinRelayChain;
 	type TargetChain = Millau;
@@ -63,7 +47,6 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		(*self.source_sign.public().as_array_ref()).into()
 	}
 
-
 	fn make_messages_receiving_proof_transaction(
 		&self,
 		transaction_nonce: <PangolinRelayChain as Chain>::Index,
@@ -71,25 +54,19 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		proof: <Self as MessageLane>::MessagesReceivingProof,
 	) -> Bytes {
 		let (relayers_state, proof) = proof;
-		let call: pangolin_runtime::Call = pangolin_runtime::bridge::s2s::MessagesCall::receive_messages_delivery_proof(
-			proof,
-			relayers_state,
-		).into();
+		let call: pangolin_runtime::Call =
+			pangolin_runtime::bridge::s2s::MessagesCall::receive_messages_delivery_proof(proof, relayers_state).into();
 		let call_weight = call.get_dispatch_info().weight;
 		let genesis_hash = *self.source_client.genesis_hash();
-		let transaction = PangolinRelayChain::sign_transaction(
-			genesis_hash,
-			&self.source_sign,
-			transaction_nonce,
-			call,
-		);
+		let transaction =
+			PangolinRelayChain::sign_transaction(genesis_hash, &self.source_sign, transaction_nonce, call);
 		log::trace!(
 			target: "bridge",
 			"Prepared Millau -> Pangolin confirmation transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
-			drml_primitives::max_extrinsic_weight(),
+			pangolin_runtime_params::system::max_extrinsic_weight(),
 			transaction.encode().len(),
-			drml_primitives::max_extrinsic_size(),
+			pangolin_runtime_params::system::max_extrinsic_size(),
 		);
 		Bytes(transaction.encode())
 	}
@@ -97,7 +74,6 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 	fn target_transactions_author(&self) -> drml_primitives::AccountId {
 		(*self.target_sign.public().as_array_ref()).into()
 	}
-
 
 	fn make_messages_delivery_transaction(
 		&self,
@@ -125,12 +101,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		.into();
 		let call_weight = call.get_dispatch_info().weight;
 		let genesis_hash = *self.target_client.genesis_hash();
-		let transaction = Millau::sign_transaction(
-			genesis_hash,
-			&self.target_sign,
-			transaction_nonce,
-			call,
-		);
+		let transaction = Millau::sign_transaction(genesis_hash, &self.target_sign, transaction_nonce, call);
 		log::trace!(
 			target: "bridge",
 			"Prepared Pangolin -> Millau delivery transaction. Weight: {}/{}, size: {}/{}",
@@ -142,7 +113,6 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 		Bytes(transaction.encode())
 	}
 }
-
 
 /// Pangolin node as messages source.
 type PangolinSourceClient = SubstrateMessagesSource<
@@ -179,9 +149,7 @@ pub async fn run(
 	// 2/3 is reserved for proofs and tx overhead
 	let max_messages_size_in_single_batch = bp_millau::max_extrinsic_size() as usize / 3;
 	let (max_messages_in_single_batch, max_messages_weight_in_single_batch) =
-		select_delivery_transaction_limits::<
-			pallet_bridge_messages::weights::RialtoWeight<rialto_runtime::Runtime>
-		>(
+		select_delivery_transaction_limits::<pallet_bridge_messages::weights::RialtoWeight<rialto_runtime::Runtime>>(
 			bp_millau::max_extrinsic_weight(),
 			bp_millau::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
 		);
@@ -198,7 +166,6 @@ pub async fn run(
 		max_messages_size_in_single_batch,
 		max_messages_weight_in_single_batch,
 	);
-
 
 	messages_relay::message_lane_loop::run(
 		messages_relay::message_lane_loop::Params {
@@ -235,33 +202,30 @@ pub async fn run(
 			>(&lane_id)),
 			params.metrics_params,
 		)
-			.standalone_metric(|registry, prefix| {
-				StorageProofOverheadMetric::new(
-					registry,
-					prefix,
-					source_client.clone(),
-					"pangolin_storage_proof_overhead".into(),
-					"Pangolin storage proof overhead".into(),
-				)
-			})?
-			.standalone_metric(|registry, prefix| {
-				FloatStorageValueMetric::<_, sp_runtime::FixedU128>::new(
-					registry,
-					prefix,
-					source_client,
-					sp_core::storage::StorageKey(
-						pangolin_runtime::bridge::s2s::millau_messages::MillauToPangolinConversionRate::key().to_vec(),
-					),
-					Some(pangolin_runtime::bridge::s2s::millau_messages::INITIAL_MILLAU_TO_PANGOLIN_CONVERSION_RATE),
-					"pangolin_millau_to_pangolin_conversion_rate".into(),
-					"Millau to Pangolin tokens conversion rate (used by Millau)".into(),
-				)
-			})?
-			.into_params(),
+		.standalone_metric(|registry, prefix| {
+			StorageProofOverheadMetric::new(
+				registry,
+				prefix,
+				source_client.clone(),
+				"pangolin_storage_proof_overhead".into(),
+				"Pangolin storage proof overhead".into(),
+			)
+		})?
+		.standalone_metric(|registry, prefix| {
+			FloatStorageValueMetric::<_, sp_runtime::FixedU128>::new(
+				registry,
+				prefix,
+				source_client,
+				sp_core::storage::StorageKey(
+					pangolin_runtime::bridge::s2s::millau_messages::MillauToPangolinConversionRate::key().to_vec(),
+				),
+				Some(pangolin_runtime::bridge::s2s::millau_messages::INITIAL_MILLAU_TO_PANGOLIN_CONVERSION_RATE),
+				"pangolin_millau_to_pangolin_conversion_rate".into(),
+				"Millau to Pangolin tokens conversion rate (used by Millau)".into(),
+			)
+		})?
+		.into_params(),
 		futures::future::pending(),
 	)
-		.await
+	.await
 }
-
-
-
