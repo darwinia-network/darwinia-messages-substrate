@@ -34,6 +34,8 @@ use sp_runtime::{
 	RuntimeDebug,
 };
 use sp_std::{cmp::Ord, collections::btree_map::BTreeMap, prelude::*};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use time_utils::CheckedSystemTime;
 
 mod error;
 mod finality;
@@ -43,6 +45,7 @@ mod utils;
 mod verification;
 
 /// Maximal number of blocks we're pruning in single import call.
+/// CHECKME
 const MAX_BLOCKS_TO_PRUNE_IN_SINGLE_IMPORT: u64 = 8;
 
 /// CliqueVariant engine configuration parameters.
@@ -100,20 +103,6 @@ pub struct HeaderToImport<Submitter> {
 	pub header: CliqueHeader,
 	/// Total chain difficulty at the header.
 	pub total_difficulty: U256,
-	/// New validators set and the hash of block where it has been scheduled (if applicable).
-	/// Some if set is is enacted by this header.
-	pub enacted_change: Option<ChangeToEnact>,
-}
-
-/// Header that we're importing.
-#[derive(RuntimeDebug)]
-#[cfg_attr(test, derive(Clone, PartialEq))]
-pub struct ChangeToEnact {
-	/// The id of the header where change has been scheduled.
-	/// None if it is a first set within current `ValidatorsSource`.
-	pub enacted_block: Option<HeaderId>,
-	/// Validators set that is enacted.
-	pub validators: Vec<Address>,
 }
 
 /// Blocks range that we want to prune.
@@ -221,12 +210,12 @@ pub trait PruningStrategy: Default {
 	///
 	/// Pallet may prune both finalized and unfinalized blocks. But it can't give any
 	/// guarantees on when it will happen. Example: if some unfinalized block at height N
-	/// has scheduled validators set change, then the module won't prune any blocks with
+	/// is checkpoint block, then the module won't prune any blocks with
 	/// number >= N even if strategy allows that.
 	///
 	/// If your strategy allows pruning unfinalized blocks, this could lead to switch
-	/// between finalized forks (only if authorities are misbehaving). But since 50%+1 (or 2/3)
-	/// authorities are able to do whatever they want with the chain, this isn't considered
+	/// between finalized forks (only if authorities are misbehaving). But since V/2 + 1
+	/// validators are able to do whatever they want with the chain, this isn't considered
 	/// fatal. If your strategy only prunes finalized blocks, we'll never be able to finalize
 	/// header that isn't descendant of current best finalized block.
 	fn pruning_upper_bound(&mut self, best_number: u64, best_finalized_number: u64) -> u64;
@@ -250,8 +239,13 @@ impl ChainTime for () {
 	///
 	/// Check whether `timestamp` is ahead (i.e greater than) the current on-chain
 	/// time. If so, return `true`, `false` otherwise.
-	fn is_timestamp_ahead(&self, _: u64) -> bool {
-		false
+	fn is_timestamp_ahead(&self, timestamp: u64) -> bool {
+		// This should succeed under the contraints that the system clock works
+		let now = SystemTime::now()
+			.duration_since(UNIX_EPOCH)
+			.unwrap_or_default(Duration::from_secs(0));
+
+		Duration::from_secs(timestamp) > now
 	}
 }
 
@@ -322,7 +316,6 @@ decl_module! {
 				&mut BridgeStorage::<T, I>::new(),
 				&mut T::PruningStrategy::default(),
 				&T::CliqueVariantConfiguration::get(),
-				&T::ValidatorsConfiguration::get(),
 				Some(submitter.clone()),
 				&T::ChainTime::default(),
 				&mut finalized_headers,
@@ -364,19 +357,12 @@ decl_storage! {
 		Headers: map hasher(identity) H256 => Option<StoredHeader<T::AccountId>>;
 		/// Map of imported header hashes by number.
 		HeadersByNumber: map hasher(blake2_128_concat) u64 => Option<Vec<H256>>;
-		/// Map of cached finality data by header hash.
-		FinalityCache: map hasher(identity) H256 => Option<FinalityVotes<T::AccountId>>;
 	}
 	add_extra_genesis {
 		config(initial_header): CliqueHeader;
-		config(initial_difficulty): U256;
+		config(initial_total_difficulty): U256;
 		config(initial_validators): Vec<Address>;
 		build(|config| {
-			// the initial blocks should be selected so that:
-			// 1) it doesn't signal validators changes;
-			// 2) there are no scheduled validators changes from previous blocks;
-			// 3) (implied) all direct children of initial block are authored by the same validators set.
-
 			assert!(
 				!config.initial_validators.is_empty(),
 				"Initial validators set can't be empty",
@@ -384,7 +370,7 @@ decl_storage! {
 
 			initialize_storage::<T, I>(
 				&config.initial_header,
-				config.initial_difficulty,
+				config.initial_total_difficulty, // CHECKME it should be total difficulity right?
 				&config.initial_validators,
 			);
 		})
@@ -482,6 +468,7 @@ impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
 			}
 
 			// read hashes of blocks with given number and try to prune these blocks
+			// CHECKME why we have multiple blocks with same block number?
 			let blocks_at_number = HeadersByNumber::<I>::take(number);
 			if let Some(mut blocks_at_number) = blocks_at_number {
 				self.prune_blocks_by_hashes(
@@ -489,6 +476,7 @@ impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
 					finalized_number,
 					number,
 					&mut blocks_at_number,
+					&T::CliqueVariantConfiguration::get(),
 				);
 
 				// if we haven't pruned all blocks, remember unpruned
@@ -502,7 +490,7 @@ impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
 			new_pruning_range.oldest_unpruned_block = number + 1;
 			log::trace!(
 				target: "runtime",
-				"Oldest unpruned PoA header is now: {}",
+				"Oldest unpruned clique variant header now at: {}",
 				new_pruning_range.oldest_unpruned_block,
 			);
 		}
@@ -520,9 +508,14 @@ impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
 		finalized_number: u64,
 		number: u64,
 		blocks_at_number: &mut Vec<H256>,
+		clique_variant_config: &CliqueVariantConfiguration,
 	) {
-		// ensure that unfinalized headers we want to prune do not have scheduled changes
-		if number > finalized_number && blocks_at_number.iter().any(ScheduledChanges::<I>::contains_key) {
+		// ensure that unfinalized headers we want to prune do not have validator changes
+		if number > finalized_number
+			&& blocks_at_number.iter().any(|block| match self.header(&block) {
+				Some((header, _)) => header.number % clique_variant_config.epoch_length,
+				None => false,
+			}) {
 			return;
 		}
 
@@ -531,20 +524,10 @@ impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
 			let header = Headers::<T, I>::take(&hash);
 			log::trace!(
 				target: "runtime",
-				"Pruning PoA header: ({}, {})",
+				"Pruning clique variants header: ({}, {})",
 				number,
 				hash,
 			);
-
-			ScheduledChanges::<I>::remove(hash);
-			FinalityCache::<T, I>::remove(hash);
-			if let Some(header) = header {
-				ValidatorsSetsRc::<I>::mutate(header.next_validators_set_id, |rc| match *rc {
-					Some(rc) if rc > 1 => Some(rc - 1),
-					_ => None,
-				});
-			}
-
 			// check if we have already pruned too much headers in this call
 			*max_blocks_to_prune -= 1;
 			if *max_blocks_to_prune == 0 {
@@ -566,7 +549,7 @@ impl<T: Config<I>, I: Instance> Storage for BridgeStorage<T, I> {
 	}
 
 	fn header(&self, hash: &H256) -> Option<(CliqueHeader, Option<Self::Submitter>)> {
-		Headers::<T, I>::get(hash).map(|header| (header.header, header.submitter))
+		Headers::<T, I>::get(hash).map(|stored_header| (stored_header.header, stored_header.submitter))
 	}
 
 	fn import_context(
@@ -574,11 +557,11 @@ impl<T: Config<I>, I: Instance> Storage for BridgeStorage<T, I> {
 		submitter: Option<Self::Submitter>,
 		parent_hash: &H256,
 	) -> Option<ImportContext<Self::Submitter>> {
-		Headers::<T, I>::get(parent_hash).map(|parent_header| ImportContext {
+		Headers::<T, I>::get(parent_hash).map(|stored_header| ImportContext {
 			submitter,
 			parent_hash: *parent_hash,
-			parent_header: parent_header.header,
-			parent_total_difficulty: parent_header.total_difficulty,
+			parent_header: stored_header.header,
+			parent_total_difficulty: stored_header.total_difficulty,
 		})
 	}
 
@@ -631,7 +614,7 @@ impl<T: Config<I>, I: Instance> Storage for BridgeStorage<T, I> {
 #[cfg(any(feature = "std", feature = "runtime-benchmarks"))]
 pub(crate) fn initialize_storage<T: Config<I>, I: Instance>(
 	initial_header: &CliqueHeader,
-	initial_difficulty: U256,
+	initial_total_difficulty: U256,
 	initial_validators: &[Address],
 ) {
 	let initial_hash = initial_header.compute_hash();
@@ -646,7 +629,7 @@ pub(crate) fn initialize_storage<T: Config<I>, I: Instance>(
 		number: initial_header.number,
 		hash: initial_hash,
 	};
-	BestBlock::<I>::put((initial_id, initial_difficulty));
+	BestBlock::<I>::put((initial_id, initial_total_difficulty));
 	FinalizedBlock::<I>::put(initial_id);
 	BlocksToPrune::<I>::put(PruningRange {
 		oldest_unpruned_block: initial_header.number,
@@ -658,7 +641,7 @@ pub(crate) fn initialize_storage<T: Config<I>, I: Instance>(
 		StoredHeader {
 			submitter: None,
 			header: initial_header.clone(),
-			total_difficulty: initial_difficulty,
+			total_difficulty: initial_total_difficulty,
 		},
 	);
 }
@@ -722,7 +705,6 @@ pub fn verify_transaction_finalized<S: Storage>(
 			block,
 			finalized.hash,
 		);
-
 		return false;
 	}
 

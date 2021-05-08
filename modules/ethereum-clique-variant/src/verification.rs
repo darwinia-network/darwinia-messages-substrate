@@ -51,7 +51,6 @@ pub fn is_importable_header<S: Storage>(storage: &S, header: &CliqueHeader) -> R
 pub fn accept_clique_header_into_pool<S: Storage, CT: ChainTime>(
 	storage: &S,
 	config: &CliqueVariantConfiguration,
-	validators_config: &ValidatorsConfiguration,
 	pool_config: &PoolConfiguration,
 	header: &CliqueHeader,
 	chain_time: &CT,
@@ -229,30 +228,6 @@ fn contextual_checks<Submitter>(
 	// Ensure that the block's timestamp isn't too close to it's parent
 	if header.timestamp < context.parent_header().timestamp.saturating_add(config.period) {
 		return Err(Error::HeaderTimestampTooClose);
-	}
-
-	Ok(())
-}
-
-/// Check that block is produced by expected validator.
-fn validator_checks(
-	config: &CliqueVariantConfiguration,
-	validators: &[Address],
-	header: &CliqueHeader,
-	header_step: u64,
-) -> Result<(), Error> {
-	let expected_validator = *step_validator(validators, header_step);
-	if header.coinbase != expected_validator {
-		return Err(Error::NotValidator);
-	}
-
-	let validator_signature = header.signature().ok_or(Error::MissingSignature)?;
-	let header_seal_hash = header
-		.seal_hash(header.number >= config.empty_steps_transition)
-		.ok_or(Error::MissingEmptySteps)?;
-	let is_invalid_proposer = !verify_signature(&expected_validator, &validator_signature, &header_seal_hash);
-	if is_invalid_proposer {
-		return Err(Error::NotValidator);
 	}
 
 	Ok(())

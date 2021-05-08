@@ -4710,6 +4710,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+ "time-utils",
 ]
 
 [[package]]
@@ -8851,6 +8852,12 @@ dependencies = [
  "standback",
  "syn",
 ]
+
+[[package]]
+name = "time-utils"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "affd5da3ec334f9165b7022478bf4bb821f84b147addf93ba7669a4224c42b61"
 
 [[package]]
 name = "tiny-bip39"

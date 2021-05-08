@@ -16,7 +16,6 @@
 
 use crate::error::Error;
 use crate::finality::finalize_blocks;
-use crate::validators::{Validators, ValidatorsConfiguration};
 use crate::verification::{is_importable_header, verify_clique_variant_header};
 use crate::{ChainTime, ChangeToEnact, CliqueVariantConfiguration, PruningStrategy, Storage};
 use bp_eth_clique::{CliqueHeader, HeaderId, Receipt};
@@ -220,10 +219,6 @@ mod tests {
 	#[test]
 	fn import_header_works() {
 		run_test(TOTAL_VALIDATORS, |ctx| {
-			let validators_config = ValidatorsConfiguration::Multi(vec![
-				(0, ValidatorsSource::List(ctx.addresses.clone())),
-				(1, ValidatorsSource::List(validators_addresses(2))),
-			]);
 			let mut storage = BridgeStorage::<TestRuntime>::new();
 			let header = HeaderBuilder::with_parent(&ctx.genesis).sign_by(&validator(1));
 			let hash = header.compute_hash();
@@ -251,129 +246,6 @@ mod tests {
 		});
 	}
 
-	#[test]
-	fn headers_are_pruned_during_import() {
-		run_test(TOTAL_VALIDATORS, |ctx| {
-			let validators_config =
-				ValidatorsConfiguration::Single(ValidatorsSource::Contract([3; 20].into(), ctx.addresses.clone()));
-			let validators = vec![validator(0), validator(1), validator(2)];
-			let mut storage = BridgeStorage::<TestRuntime>::new();
-
-			// header [0..11] are finalizing blocks [0; 9]
-			// => since we want to keep 10 finalized blocks, we aren't pruning anything
-			let mut latest_block_id = Default::default();
-			for i in 1..11 {
-				let header = HeaderBuilder::with_parent_number(i - 1).sign_by_set(&validators);
-				let parent_id = header.parent_id().unwrap();
-
-				let (rolling_last_block_id, finalized_blocks) = import_header(
-					&mut storage,
-					&mut KeepSomeHeadersBehindBest::default(),
-					&test_clique_variant_config(),
-					&validators_config,
-					Some(100),
-					header,
-					&(),
-					None,
-				)
-				.unwrap();
-				match i {
-					2..=10 => assert_eq!(finalized_blocks, vec![(parent_id, Some(100))], "At {}", i,),
-					_ => assert_eq!(finalized_blocks, vec![], "At {}", i),
-				}
-				latest_block_id = rolling_last_block_id;
-			}
-			assert!(storage.header(&ctx.genesis.compute_hash()).is_some());
-
-			// header 11 finalizes headers [10] AND schedules change
-			// => we prune header#0
-			let header11 = HeaderBuilder::with_parent_number(10)
-				.log_bloom((&[0xff; 256]).into())
-				.receipts_root(
-					"ead6c772ba0083bbff497ba0f4efe47c199a2655401096c21ab7450b6c466d97"
-						.parse()
-						.unwrap(),
-				)
-				.sign_by_set(&validators);
-			let parent_id = header11.parent_id().unwrap();
-			let (rolling_last_block_id, finalized_blocks) = import_header(
-				&mut storage,
-				&mut KeepSomeHeadersBehindBest::default(),
-				&test_clique_variant_config(),
-				&validators_config,
-				Some(101),
-				header11.clone(),
-				&(),
-				Some(vec![validators_change_receipt(latest_block_id.hash)]),
-			)
-			.unwrap();
-			assert_eq!(finalized_blocks, vec![(parent_id, Some(100))],);
-			assert!(storage.header(&ctx.genesis.compute_hash()).is_none());
-			latest_block_id = rolling_last_block_id;
-
-			// and now let's say validators 1 && 2 went offline
-			// => in the range 12-25 no blocks are finalized, but we still continue to prune old headers
-			// until header#11 is met. we can't prune #11, because it schedules change
-			let mut step = 56u64;
-			let mut expected_blocks = vec![(header11.compute_id(), Some(101))];
-			for i in 12..25 {
-				let header = HeaderBuilder::with_parent_hash(latest_block_id.hash)
-					.difficulty(i.into())
-					.step(step)
-					.sign_by_set(&validators);
-				expected_blocks.push((header.compute_id(), Some(102)));
-				let (rolling_last_block_id, finalized_blocks) = import_header(
-					&mut storage,
-					&mut KeepSomeHeadersBehindBest::default(),
-					&test_clique_variant_config(),
-					&validators_config,
-					Some(102),
-					header,
-					&(),
-					None,
-				)
-				.unwrap();
-				assert_eq!(finalized_blocks, vec![],);
-				latest_block_id = rolling_last_block_id;
-				step += 3;
-			}
-			assert_eq!(
-				BlocksToPrune::<DefaultInstance>::get(),
-				PruningRange {
-					oldest_unpruned_block: 11,
-					oldest_block_to_keep: 14,
-				},
-			);
-
-			// now let's insert block signed by validator 1
-			// => blocks 11..24 are finalized and blocks 11..14 are pruned
-			step -= 2;
-			let header = HeaderBuilder::with_parent_hash(latest_block_id.hash)
-				.difficulty(25.into())
-				.step(step)
-				.sign_by_set(&validators);
-			let (_, finalized_blocks) = import_header(
-				&mut storage,
-				&mut KeepSomeHeadersBehindBest::default(),
-				&test_clique_variant_config(),
-				&validators_config,
-				Some(103),
-				header,
-				&(),
-				None,
-			)
-			.unwrap();
-			assert_eq!(finalized_blocks, expected_blocks);
-			assert_eq!(
-				BlocksToPrune::<DefaultInstance>::get(),
-				PruningRange {
-					oldest_unpruned_block: 15,
-					oldest_block_to_keep: 15,
-				},
-			);
-		});
-	}
-
 	fn import_custom_block<S: Storage>(
 		storage: &mut S,
 		validators: &[SecretKey],
@@ -384,10 +256,6 @@ mod tests {
 			storage,
 			&mut KeepSomeHeadersBehindBest::default(),
 			&test_clique_variant_config(),
-			&ValidatorsConfiguration::Single(ValidatorsSource::Contract(
-				[0; 20].into(),
-				validators.iter().map(secret_to_address).collect(),
-			)),
 			None,
 			header,
 			&(),

@@ -27,7 +27,7 @@ pub use rlp::encode as rlp_encode;
 use codec::{Decode, Encode};
 use ethbloom::{Bloom as EthBloom, Input as BloomInput};
 use fixed_hash::construct_fixed_hash;
-use rlp::{Decodable, DecoderError, Rlp, RlpStream};
+use rlp::{DecoderError, Rlp, RlpStream};
 use sp_io::hashing::keccak_256;
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
@@ -220,12 +220,7 @@ impl CliqueHeader {
 		check_merkle_proof(self.transactions_root, transactions.into_iter())
 	}
 
-	/// Gets the seal hash of this header.
-	pub fn seal_hash(&self) -> Option<H256> {
-		Some(keccak_256(&self.rlp(false)).into())
-	}
-
-	/// Returns header RLP with or without seals.
+	/// Returns header RLP
 	fn rlp(&self) -> Bytes {
 		let mut s = RlpStream::new();
 		s.begin_list(14);
@@ -235,14 +230,14 @@ impl CliqueHeader {
 		s.append(&self.state_root);
 		s.append(&self.transactions_root);
 		s.append(&self.receipts_root);
-		s.append(&EthBloom::from(self.log_bloom.0));
+		s.append(&EthBloom::from(self.log_bloom.0)); // CHECKME self.log_bloom in openethereum
 		s.append(&self.difficulty);
 		s.append(&self.number);
 		s.append(&self.gas_limit);
 		s.append(&self.gas_used);
 		s.append(&self.timestamp);
 		s.append(&self.extra_data);
-		s.append(&self.nonce);
+		s.append(&self.nonce); // CHECKME no nonce in openethereum
 
 		s.out().to_vec()
 	}

@@ -32,8 +32,6 @@ use secp256k1::{Message, PublicKey};
 pub trait SignHeader {
 	/// Signs header by given author.
 	fn sign_by(self, author: &SecretKey) -> CliqueHeader;
-	/// Signs header by given authors set.
-	fn sign_by_set(self, authors: &[SecretKey]) -> CliqueHeader;
 }
 
 /// Utilities for signing transactions.
@@ -48,15 +46,8 @@ impl SignHeader for CliqueHeader {
 
 		let message = self.seal_hash().unwrap();
 		let signature = sign(author, message);
-		self.seal[1] = rlp_encode(&signature).to_vec();
-		self.extra_data.extend_from_slice(&sig[..]);
+		self.extra_data.extend_from_slice(&rlp(signature[..]));
 		self
-	}
-
-	fn sign_by_set(self, authors: &[SecretKey]) -> Self {
-		let step = self.step().unwrap();
-		let author = step_validator(authors, step);
-		self.sign_by(author)
 	}
 }
 
