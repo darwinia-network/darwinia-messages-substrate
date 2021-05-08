@@ -106,14 +106,12 @@ pub enum Error {
 	CheckpointNoSigner = 31,
 	/// Signature or author field does not belong to an authority.
 	NotAuthorized(Address) = 32,
-	/// The signer signed a block to recently
+	/// The signer signed a block too recently
 	TooRecentlySigned(Address) = 33,
-	/// Wrong checkpoint authors recovered
-	FaultyRecoveredSigners(Vec<String>) = 34,
 	/// Parent given is unknown.
-	UnknownParent(H256) = 35,
+	UnknownParent(H256) = 34,
 	/// Checkpoint is missing
-	MissingCheckpoint(H256),
+	MissingCheckpoint(H256) = 35,
 }
 
 impl Error {
@@ -142,7 +140,19 @@ impl Error {
 			Error::HeaderTimestampIsAhead => "Header timestamp is ahead of on-chain timestamp",
 			Error::MissingVanity => "Extra-data 32 byte vanity prefix missing",
 			Error::MissingSignature => "Extra-data 65 byte signature suffix missing",
-			_ => "TODO :)",
+			Error::ExtraValidators => "Non-checkpoint block contains extra validator list",
+			Error::InvalidCheckpointValidators => "Invalid validator list on checkpoint block",
+			Error::InvalidMixDigest => "Non-zero mix digest",
+			Error::InvalidUncleHash => "Non empty uncle hash",
+			Error::InvalidNonce => "Non empty nonce",
+			Error::UnknownAncestor => "Unknow ancestor",
+			Error::HeaderTimestampTooClose => "Header timestamp too close",
+			Error::CheckpointNoSigner => "Missing signers",
+			Error::NotAuthorized(address) => format!("Address {} not authorized", address),
+			Error::TooRecentlySigned(block) => format!("The signer {} signed a block too recently"),
+			Error::UnknownParent(parent) => format!("Unknown parent {}", parent),
+			Error::MissingCheckpoint(hash) => format!("Missing checkpoint {}", hash),
+			_ => "Unknown error.",
 		}
 	}
 
