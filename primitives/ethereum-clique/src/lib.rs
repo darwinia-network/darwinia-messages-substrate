@@ -31,6 +31,11 @@ use rlp::{DecoderError, Rlp, RlpStream};
 use sp_io::hashing::keccak_256;
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
+use lru_cache::LruCache;
+use parking_lot::RwLock;
+
+#[macro_use]
+extern crate lazy_static;
 
 use impl_rlp::impl_fixed_hash_rlp;
 #[cfg(feature = "std")]

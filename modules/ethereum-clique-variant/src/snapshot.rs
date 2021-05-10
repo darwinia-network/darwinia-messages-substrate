@@ -31,6 +31,7 @@ use rand::Rng;
 /// How many CliqueBlockState to cache in the memory.
 pub const SNAP_CACHE_NUM: usize = 128;
 
+// CHECKME
 lazy_static! {
 	/// key: header hash
 	/// value: creator address
@@ -64,7 +65,7 @@ pub struct Snapshot<CT: ChainTime> {
 	pub next_timestamp_noturn: Option<CT>,
 }
 
-impl fmt::Display for Snapshot {
+impl fmt::Display for Snapshot<CT: ChainTime> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let signers: Vec<String> = self.signers.iter().map(|s| format!("{}", s,)).collect();
 
@@ -78,7 +79,7 @@ impl fmt::Display for Snapshot {
 	}
 }
 
-impl Snapshot {
+impl Snapshot<CT: ChainTime> {
 	/// Create new state with given information, this is used creating new state from Checkpoint block.
 	pub fn new(signers: BTreeSet<Address>) -> Self {
 		Snapshot {

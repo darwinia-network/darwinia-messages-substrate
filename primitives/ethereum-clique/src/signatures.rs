@@ -43,10 +43,8 @@ pub trait SignTransaction {
 impl SignHeader for CliqueHeader {
 	fn sign_by(mut self, author: &SecretKey) -> Self {
 		self.coinbase = secret_to_address(author);
-
-		let message = self.seal_hash().unwrap();
-		let signature = sign(author, message);
-		self.extra_data.extend_from_slice(&rlp(signature[..]));
+		let signature = sign(author, self.compute_hash());
+		self.extra_data.extend_from_slice(&rlp_encode(&signature));
 		self
 	}
 }
