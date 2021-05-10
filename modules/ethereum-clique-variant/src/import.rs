@@ -16,10 +16,10 @@
 
 use crate::error::Error;
 use crate::finality::finalize_blocks;
-use crate::verification::{is_importable_header, verify_clique_variant_header};
 use crate::snapshot::Snapshot;
-use crate::{ChainTime, ChangeToEnact, CliqueVariantConfiguration, PruningStrategy, Storage};
-use bp_eth_clique::{CliqueHeader, HeaderId, Receipt};
+use crate::verification::{is_importable_header, verify_clique_variant_header};
+use crate::{ChainTime, CliqueVariantConfiguration, PruningStrategy, Storage};
+use bp_eth_clique::{CliqueHeader, HeaderId};
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 /// Imports bunch of headers and updates blocks finality.
@@ -97,7 +97,7 @@ pub fn import_header<S: Storage, PS: PruningStrategy, CT: ChainTime>(
 	// verify validator
 	// Retrieve the parent state
 	// TODO how to init snapshot?
-	let parent_state = Snapshot<chain_time>::new().retrieve(storage, &header.parent_hash, clique_variant_config)?;
+	let parent_state = Snapshot::<chain_time>::new().retrieve(storage, &header.parent_hash, clique_variant_config)?;
 	// Try to apply current state, apply() will further check signer and recent signer.
 	let mut new_state = parent_state.clone();
 	new_state.apply(header, header.number() % clique_variant_config.epoch_length == 0)?;

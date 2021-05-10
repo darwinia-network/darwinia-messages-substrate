@@ -18,10 +18,6 @@
 // Runtime-generated enums
 #![allow(clippy::large_enum_variant)]
 
-use crate::{
-	finality::{CachedFinalityVotes, FinalityVotes},
-	snapshot::Snapshot,
-};
 use bp_eth_clique::{Address, CliqueHeader, HeaderId, RawTransaction};
 use codec::{Decode, Encode};
 use frame_support::{decl_module, decl_storage, traits::Get};
@@ -35,7 +31,6 @@ use sp_runtime::{
 };
 use sp_std::{cmp::Ord, collections::btree_map::BTreeMap, prelude::*};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use time_utils::CheckedSystemTime;
 
 mod error;
 mod finality;
@@ -309,7 +304,7 @@ decl_module! {
 		/// This should be used with caution - passing too many headers could lead to
 		/// enormous block production/import time.
 		#[weight = 0] // TODO: update me (https://github.com/paritytech/parity-bridges-common/issues/78)
-		pub fn import_signed_headers(origin, headers: Vec<liqueHeader>) {
+		pub fn import_signed_headers(origin, headers: Vec<CliqueHeader>) {
 			let submitter = frame_system::ensure_signed(origin)?;
 			let mut finalized_headers = BTreeMap::new();
 			let import_result = import::import_headers(
@@ -651,7 +646,7 @@ pub fn verify_transaction_finalized<S: Storage>(
 	storage: &S,
 	block: H256,
 	tx_index: u64,
-	proof: &[(RawTransaction)],
+	proof: &[RawTransaction],
 ) -> bool {
 	if tx_index >= proof.len() as _ {
 		log::trace!(

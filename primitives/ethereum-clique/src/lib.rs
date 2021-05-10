@@ -27,12 +27,12 @@ pub use rlp::encode as rlp_encode;
 use codec::{Decode, Encode};
 use ethbloom::{Bloom as EthBloom, Input as BloomInput};
 use fixed_hash::construct_fixed_hash;
+use lru_cache::LruCache;
+use parking_lot::RwLock;
 use rlp::{DecoderError, Rlp, RlpStream};
 use sp_io::hashing::keccak_256;
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
-use lru_cache::LruCache;
-use parking_lot::RwLock;
 
 #[macro_use]
 extern crate lazy_static;

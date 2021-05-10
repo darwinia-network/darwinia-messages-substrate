@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
+use bp_eth_clique::Address;
+use primitive_types::H256;
 use sp_runtime::RuntimeDebug;
 use std::fmt;
 
@@ -37,81 +39,81 @@ impl<T: fmt::Display> fmt::Display for Mismatch<T> {
 #[cfg_attr(feature = "std", derive(PartialEq))]
 pub enum Error {
 	/// The header is beyond last finalized and can not be imported.
-	AncientHeader = 0,
+	AncientHeader,
 	/// The header is already imported.
-	KnownHeader = 1,
+	KnownHeader,
 	/// Seal has an incorrect format.
-	InvalidSealArity = 2,
+	InvalidSealArity,
 	/// Block number isn't sensible.
-	RidiculousNumber = 3,
+	RidiculousNumber,
 	/// Block has too much gas used.
-	TooMuchGasUsed = 4,
+	TooMuchGasUsed,
 	/// Gas limit header field is invalid.
-	InvalidGasLimit = 5,
+	InvalidGasLimit,
 	/// Extra data is of an invalid length.
-	ExtraDataOutOfBounds = 6,
+	ExtraDataOutOfBounds,
 	/// Timestamp header overflowed.
-	TimestampOverflow = 7,
+	TimestampOverflow,
 	/// The parent header is missing from the blockchain.
-	MissingParentBlock = 8,
+	MissingParentBlock,
 	/// Validation proof insufficient.
-	InsufficientProof = 13,
+	InsufficientProof,
 	/// Difficulty header field is invalid.
-	InvalidDifficulty = 14,
+	InvalidDifficulty,
 	/// The received block is from an incorrect proposer.
-	NotValidator = 15,
+	NotValidator,
 	/// Missing transaction receipts for the operation.
-	MissingTransactionsReceipts = 16,
+	MissingTransactionsReceipts,
 	/// Redundant transaction receipts are provided.
-	RedundantTransactionsReceipts = 17,
+	RedundantTransactionsReceipts,
 	/// Provided transactions receipts are not matching the header.
-	TransactionsReceiptsMismatch = 18,
+	TransactionsReceiptsMismatch,
 	/// Can't accept unsigned header from the far future.
-	UnsignedTooFarInTheFuture = 19,
+	UnsignedTooFarInTheFuture,
 	/// Trying to finalize sibling of finalized block.
-	TryingToFinalizeSibling = 20,
+	TryingToFinalizeSibling,
 	/// Header timestamp is ahead of on-chain timestamp
-	HeaderTimestampIsAhead = 21,
+	HeaderTimestampIsAhead,
 	/// extra-data 32 byte vanity prefix missing
 	/// MissingVanity is returned if a block's extra-data section is shorter than
 	/// 32 bytes, which is required to store the validator(signer) vanity.
-	MissingVanity = 22,
+	MissingVanity,
 	/// extra-data 65 byte signature suffix missing
 	/// MissingSignature is returned if a block's extra-data section doesn't seem
 	/// to contain a 65 byte secp256k1 signature
-	MissingSignature = 23,
+	MissingSignature,
 	/// non-checkpoint block contains extra validator list
 	/// ExtraValidators is returned if non-checkpoint block contain validator data in
 	/// their extra-data fields
-	ExtraValidators = 24,
+	ExtraValidators,
 	/// Invalid validator list on checkpoint block
 	/// errInvalidCheckpointValidators is returned if a checkpoint block contains an
 	/// invalid list of validators (i.e. non divisible by 20 bytes).
-	InvalidCheckpointValidators = 25,
+	InvalidCheckpointValidators,
 	/// Non-zero mix digest
 	/// InvalidMixDigest is returned if a block's mix digest is non-zero.
-	InvalidMixDigest = 26,
+	InvalidMixDigest,
 	/// Non empty uncle hash
 	/// InvalidUncleHash is returned if a block contains an non-empty uncle list.
-	InvalidUncleHash = 27,
+	InvalidUncleHash,
 	/// Non empty nonce
 	/// InvalidNonce is returned if a block header nonce is non-empty
-	InvalidNonce = 28,
+	InvalidNonce,
 	/// UnknownAncestor is returned when validating a block requires an ancestor that is unknown.
-	UnknownAncestor = 29,
+	UnknownAncestor,
 	/// Header timestamp too close
 	/// HeaderTimestampTooClose is returned when header timestamp is too close with parent's
-	HeaderTimestampTooClose = 30,
+	HeaderTimestampTooClose,
 	/// Missing signers
-	CheckpointNoSigner = 31,
+	CheckpointNoSigner,
 	/// Signature or author field does not belong to an authority.
-	NotAuthorized(Address) = 32,
+	NotAuthorized(Address),
 	/// The signer signed a block too recently
-	TooRecentlySigned(Address) = 33,
+	TooRecentlySigned(Address),
 	/// Parent given is unknown.
-	UnknownParent(H256) = 34,
+	UnknownParent(H256),
 	/// Checkpoint is missing
-	MissingCheckpoint(H256) = 35,
+	MissingCheckpoint(H256),
 }
 
 impl Error {
@@ -149,7 +151,7 @@ impl Error {
 			Error::HeaderTimestampTooClose => "Header timestamp too close",
 			Error::CheckpointNoSigner => "Missing signers",
 			Error::NotAuthorized(address) => format!("Address {} not authorized", address),
-			Error::TooRecentlySigned(block) => format!("The signer {} signed a block too recently"),
+			Error::TooRecentlySigned(signer) => format!("The signer {} signed a block too recently", signer),
 			Error::UnknownParent(parent) => format!("Unknown parent {}", parent),
 			Error::MissingCheckpoint(hash) => format!("Missing checkpoint {}", hash),
 			_ => "Unknown error.",

@@ -17,12 +17,13 @@
 use crate::error::Error;
 use std::collections::BTreeSet;
 
-use bp_eth_clique::{
-	public_to_address, Address, Address, CliqueHeader, ADDRESS_LENGTH, H160, H256, SIGNATURE_LENGTH, VANITY_LENGTH,
-};
+use bp_eth_clique::{public_to_address, CliqueHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
 use crypto::publickey::{recover as ec_recover, Signature};
 use lru_cache::LruCache;
 use parking_lot::RwLock;
+
+#[macro_use]
+extern crate lazy_static;
 
 /// How many recovered signature to cache in the memory.
 pub const CREATOR_CACHE_NUM: usize = 4096;

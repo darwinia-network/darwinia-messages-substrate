@@ -15,13 +15,10 @@
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::error::Error;
-use crate::validators::{Validators, ValidatorsConfiguration};
-use crate::{
-	ChainTime, CliqueVariantConfiguration, CliqueVariantScheduledChange, ImportContext, PoolConfiguration, Storage,
-};
+use crate::{ChainTime, CliqueVariantConfiguration, ImportContext, PoolConfiguration, Storage};
 use bp_eth_clique::{
-	public_to_address, step_validator, Address, CliqueHeader, HeaderId, ADDRESS_LENGTH, DIFF_INTURN, DIFF_NOTURN, H256,
-	H520, KECCAK_EMPTY_LIST_RLP, SIGNATURE_LENGTH, U128, U256, VANITY_LENGTH,
+	public_to_address, Address, CliqueHeader, HeaderId, ADDRESS_LENGTH, DIFF_INTURN, DIFF_NOTURN, H256, H520,
+	KECCAK_EMPTY_LIST_RLP, SIGNATURE_LENGTH, U128, U256, VANITY_LENGTH,
 };
 use codec::Encode;
 use sp_io::crypto::secp256k1_ecdsa_recover;
@@ -71,12 +68,22 @@ pub fn accept_clique_header_into_pool<S: Storage, CT: ChainTime>(
 		return Err(Error::UnsignedTooFarInTheFuture);
 	}
 
+	// we want to see at most one header with given number from single authority
+	// => every header is providing tag (block_number + authority)
+	// => since only one tx in the pool can provide the same tag, they're auto-deduplicated
+	let provides_number_and_authority_tag = (header.number, header.author).encode();
+
+	// we want to see several 'future' headers in the pool at once, but we may not have access to
+	// previous headers here
+	// => we can at least 'verify' that headers comprise a chain by providing and requiring
+	// tag (header.number, header.hash)
+	let provides_header_number_and_hash_tag = header_id.encode();
+
 	// depending on whether parent header is available, we either perform full or 'shortened' check
 	let context = storage.import_context(None, &header.parent_hash);
 	let tags = match context {
 		Some(context) => {
-			let header_step = contextual_checks(config, &context, None, header)?;
-			validator_checks(config, &context.validators_set().validators, header)?;
+			contextual_checks(config, &context, None, header)?;
 		}
 		None => {
 			// we know nothing about parent header
@@ -87,12 +94,6 @@ pub fn accept_clique_header_into_pool<S: Storage, CT: ChainTime>(
 				"import context is None only when header is missing from the storage;\
 							best header is always in the storage; qed",
 			);
-			let validators_check_result = validator_checks(config, &best_context.validators_set().validators, header);
-			if let Err(error) = validators_check_result {
-				find_next_validators_signal(storage, &best_context)
-					.ok_or(error)
-					.and_then(|next_validators| validator_checks(config, &next_validators, header, header_step))?;
-			}
 
 			// since our parent is missing from the storage, we **DO** require it
 			// to be in the transaction pool
@@ -134,8 +135,8 @@ pub fn verify_clique_variant_header<S: Storage, CT: ChainTime>(
 
 		Error::MissingParentBlock
 	})?;
-	let header_step = contextual_checks(config, &context, None, header)?;
-	validator_checks(config, &context.validators_set().validators, header, header_step)?;
+	contextual_checks(config, &context, None, header)?;
+	// TODO check validator
 
 	Ok(context)
 }

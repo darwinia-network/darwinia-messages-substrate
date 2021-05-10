@@ -17,15 +17,16 @@
 use std::{
 	collections::{BTreeSet, HashMap, VecDeque},
 	fmt,
-	time::{Duration, SystemTime, UNIX_EPOCH},
+	time::{Duration, Instant},
 };
 
 use crate::{
 	error::{Error, Mismatch},
 	utils::*,
-	ChainTime,
+	ChainTime, CliqueVariantConfiguration, Storage,
 };
-use bp_eth_clique::{Address, CliqueHeader, DIFF_INTURN, DIFF_NOTURN, NULL_AUTHOR, SIGNING_DELAY_NOTURN_MS};
+use bp_eth_clique::{Address, CliqueHeader, DIFF_INTURN, DIFF_NOTURN, SIGNING_DELAY_NOTURN_MS};
+use primitive_types::H256;
 use rand::Rng;
 
 /// How many CliqueBlockState to cache in the memory.
@@ -65,7 +66,7 @@ pub struct Snapshot<CT: ChainTime> {
 	pub next_timestamp_noturn: Option<CT>,
 }
 
-impl fmt::Display for Snapshot<CT: ChainTime> {
+impl fmt::Display for Snapshot<CT> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let signers: Vec<String> = self.signers.iter().map(|s| format!("{}", s,)).collect();
 
@@ -79,7 +80,7 @@ impl fmt::Display for Snapshot<CT: ChainTime> {
 	}
 }
 
-impl Snapshot<CT: ChainTime> {
+impl Snapshot<CT> {
 	/// Create new state with given information, this is used creating new state from Checkpoint block.
 	pub fn new(signers: BTreeSet<Address>) -> Self {
 		Snapshot {
@@ -88,12 +89,16 @@ impl Snapshot<CT: ChainTime> {
 		}
 	}
 
-	fn snap_no_backfill(&self, hash: &H256) -> Option<Snapshot> {
+	fn snap_no_backfill(&self, hash: &H256) -> Option<Snapshot<CT>> {
 		self.SNAPSHOT_BY_HASH.write().get_mut(hash).cloned()
 	}
 
 	/// Construct an new snapshot from given checkpoint header.
-	fn recover_from(&self, header: &Header, clique_variant_config: &CliqueVariantConfiguration) -> Result<Self, Error> {
+	fn recover_from(
+		&self,
+		header: &CliqueHeader,
+		clique_variant_config: &CliqueVariantConfiguration,
+	) -> Result<Self, Error> {
 		// must be checkpoint block header
 		debug_assert_eq!(header.number() % self.epoch_length, 0);
 
@@ -109,7 +114,7 @@ impl Snapshot<CT: ChainTime> {
 	fn retrieve<S: Storage>(
 		&self,
 		storage: &S,
-		header: &Header,
+		header: &CliqueHeader,
 		clique_variant_config: &CliqueVariantConfiguration,
 	) -> Result<Snapshot, Error> {
 		let mut snapshot_by_hash = SNAPSHOT_BY_HASH.write();
@@ -191,7 +196,7 @@ impl Snapshot<CT: ChainTime> {
 	}
 
 	// see https://github.com/ethereum/go-ethereum/blob/master/consensus/clique/clique.go#L474
-	fn verify(&self, header: &Header) -> Result<Address, Error> {
+	fn verify(&self, header: &CliqueHeader) -> Result<Address, Error> {
 		let creator = recover_creator(header)?.clone();
 
 		// The signer is not authorized
@@ -227,7 +232,7 @@ impl Snapshot<CT: ChainTime> {
 	}
 
 	/// Verify and apply a new header to current state
-	pub fn apply(&mut self, header: &Header, is_checkpoint: bool) -> Result<Address, Error> {
+	pub fn apply(&mut self, header: &CliqueHeader, is_checkpoint: bool) -> Result<Address, Error> {
 		let creator = self.verify(header)?;
 		self.recent_signers.push_front(creator);
 		self.rotate_recent_signers();

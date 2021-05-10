@@ -15,6 +15,9 @@ lru-cache = "0.1"
 parking_lot = "0.7"
 lazy_static = "1.2.0"
 time-utils = "0.1.0"
+primitive-types = { version = "0.9", default-features = false, features = ["codec", "rlp"] }
+parity-crypto = { version = "0.8.0", features = [ "publickey" ] }
+rand = "0.7.3"
 
 # Bridge dependencies
 
@@ -41,6 +44,8 @@ std = [
 	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
+	"primitive-types/std",
+	"primitive-types/serde",
 	"log/std",
 	"serde",
 	"sp-io/std",

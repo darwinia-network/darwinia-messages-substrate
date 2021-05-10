@@ -16,14 +16,13 @@
 
 use crate::error::Error;
 use crate::Storage;
-use bp_eth_clique::{public_to_address, Address, CliqueHeader, HeaderId, SealedEmptyStep, H256};
+use bp_eth_clique::{Address, CliqueHeader, HeaderId, H256};
 use codec::{Decode, Encode};
-use sp_io::crypto::secp256k1_ecdsa_recover;
+// use sp_io::crypto::secp256k1_ecdsa_recover;
 use sp_runtime::RuntimeDebug;
 use sp_std::collections::{
 	btree_map::{BTreeMap, Entry},
 	btree_set::BTreeSet,
-	vec_deque::VecDeque,
 };
 use sp_std::prelude::*;
 
@@ -51,45 +50,44 @@ pub struct FinalityAncestor<Submitter> {
 /// Tries to finalize blocks when given block is imported.
 ///
 /// Returns numbers and hashes of finalized blocks in ascending order.
-pub fn finalize_blocks<S: Storage>(
+pub fn finalize_blocks<S: Storage, CT: ChainTime>(
 	storage: &S,
 	best_finalized: HeaderId,
-	header_validators: (HeaderId, &[Address]),
+	snapshot: &Snapshot<CT>,
 	id: HeaderId,
 	submitter: Option<&S::Submitter>,
 	header: &CliqueHeader,
 	two_thirds_majority_transition: u64,
 ) -> Result<FinalityEffects<S::Submitter>, Error> {
-	// compute count of voters for every unfinalized block in ancestry
-	let validators = header_validators.1.iter().collect();
 
+	// TODO reimplement this
 	// now let's iterate in reverse order && find just finalized blocks
-	let mut finalized_headers = Vec::new();
-	for ancestor in &votes.ancestry {
-		if !is_finalized(
-			&validators,
-			&current_votes,
-			ancestor.id.number >= two_thirds_majority_transition,
-		) {
-			break;
-		}
+	// let mut finalized_headers = Vec::new();
+	// for ancestor in &votes.ancestry {
+	// 	if !is_finalized(
+	// 		&validators,
+	// 		&current_votes,
+	// 		ancestor.id.number >= two_thirds_majority_transition,
+	// 	) {
+	// 		break;
+	// 	}
 
-		remove_signers_votes(&ancestor.signers, &mut current_votes);
-		finalized_headers.push((ancestor.id, ancestor.submitter.clone()));
-	}
+	// 	finalized_headers.push((ancestor.id, ancestor.submitter.clone()));
+	// }
 
-	Ok(FinalityEffects {
-		finalized_headers,
-		votes,
-	})
+	// Ok(FinalityEffects {
+	// 	finalized_headers,
+	// 	votes,
+	// })
 }
 
-/// Returns true if there are enough votes to treat this header as finalized.
+/// Returns true if
 fn is_finalized(
 	validators: &BTreeSet<&Address>,
 	votes: &BTreeMap<Address, u64>,
 	requires_two_thirds_majority: bool,
 ) -> bool {
-	(!requires_two_thirds_majority && votes.len() * 2 > validators.len())
-		|| (requires_two_thirds_majority && votes.len() * 3 > validators.len() * 2)
+	// TODO reimplement this
+	// (!requires_two_thirds_majority && votes.len() * 2 > validators.len())
+	// 	|| (requires_two_thirds_majority && votes.len() * 3 > validators.len() * 2)
 }
