@@ -15,7 +15,7 @@
 // along with OpenEthereum.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::{
-	collections::{BTreeSet, HashMap, VecDeque},
+	collections::{BTreeSet, VecDeque},
 	fmt,
 	time::{Duration, Instant},
 };
@@ -26,6 +26,8 @@ use crate::{
 	ChainTime, CliqueVariantConfiguration, Storage,
 };
 use bp_eth_clique::{Address, CliqueHeader, DIFF_INTURN, DIFF_NOTURN, SIGNING_DELAY_NOTURN_MS};
+use lru_cache::LruCache;
+use parking_lot::RwLock;
 use primitive_types::H256;
 use rand::Rng;
 
@@ -36,7 +38,7 @@ pub const SNAP_CACHE_NUM: usize = 128;
 lazy_static! {
 	/// key: header hash
 	/// value: creator address
-	static ref SNAPSHOT_BY_HASH: RwLock<LruCache<H256, Snapshot>> = RwLock::new(LruCache::new(SNAP_CACHE_NUM));
+	static ref SNAPSHOT_BY_HASH: RwLock<LruCache<H256, Snapshot<CT>>> = RwLock::new(LruCache::new(SNAP_CACHE_NUM));
 }
 
 /// Clique state for each block.
@@ -66,7 +68,7 @@ pub struct Snapshot<CT: ChainTime> {
 	pub next_timestamp_noturn: Option<CT>,
 }
 
-impl fmt::Display for Snapshot<CT> {
+impl<CT: ChainTime> fmt::Display for Snapshot<CT> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let signers: Vec<String> = self.signers.iter().map(|s| format!("{}", s,)).collect();
 
@@ -80,16 +82,14 @@ impl fmt::Display for Snapshot<CT> {
 	}
 }
 
-impl Snapshot<CT> {
+impl<CT: ChainTime> Snapshot<CT> {
 	/// Create new state with given information, this is used creating new state from Checkpoint block.
 	pub fn new(signers: BTreeSet<Address>) -> Self {
-		Snapshot {
-			signers,
-			..Default::default()
-		}
+		// TODO Get init validators from genesis config
+		Self
 	}
 
-	fn snap_no_backfill(&self, hash: &H256) -> Option<Snapshot<CT>> {
+	fn snap_no_backfill(&self, hash: &H256) -> Option<Self> {
 		self.SNAPSHOT_BY_HASH.write().get_mut(hash).cloned()
 	}
 
@@ -100,12 +100,12 @@ impl Snapshot<CT> {
 		clique_variant_config: &CliqueVariantConfiguration,
 	) -> Result<Self, Error> {
 		// must be checkpoint block header
-		debug_assert_eq!(header.number() % self.epoch_length, 0);
+		debug_assert_eq!(header.number % clique_variant_config.epoch_length, 0);
 
 		self.signers = extract_signers(header)?;
 
 		// TODO(niklasad1): refactor to perform this check in the `Snapshot` constructor instead
-		self.calc_next_timestamp(header.timestamp(), clique_variant_config.period)?;
+		self.calc_next_timestamp(header.timestamp, clique_variant_config.period)?;
 
 		Ok(Self)
 	}
@@ -116,7 +116,7 @@ impl Snapshot<CT> {
 		storage: &S,
 		header: &CliqueHeader,
 		clique_variant_config: &CliqueVariantConfiguration,
-	) -> Result<Snapshot, Error> {
+	) -> Result<Snapshot<CT>, Error> {
 		let mut snapshot_by_hash = SNAPSHOT_BY_HASH.write();
 		if let Some(snap) = snapshot_by_hash.get_mut(&header.hash()) {
 			return Ok(snap.clone());
@@ -133,7 +133,7 @@ impl Snapshot<CT> {
 
 		// Catching up state, note that we don't really store block state for intermediary blocks,
 		// for speed.
-		let backfill_start = time::Instant::now();
+		let backfill_start = Instant::now();
 		log::trace!(target: "snapshot",
 					"Back-filling snapshot. last_checkpoint_number: {}, target: {}({}).",
 					last_checkpoint_number, header.number(), header.hash());

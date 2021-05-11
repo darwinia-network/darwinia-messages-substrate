@@ -30,7 +30,7 @@ pub struct Mismatch<T> {
 
 impl<T: fmt::Display> fmt::Display for Mismatch<T> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		f.write_fmt(format_args!("Expected {}, found {}", self.expected, self.found))
+		f.write_fmt(format_args!("Expected {}, found {}", self.expect, self.found))
 	}
 }
 
@@ -128,9 +128,6 @@ impl Error {
 			Error::ExtraDataOutOfBounds => "Header has too large extra data",
 			Error::TimestampOverflow => "Header has too large timestamp",
 			Error::MissingParentBlock => "Header has unknown parent hash",
-			Error::MissingStep => "Header is missing step seal",
-			Error::MissingEmptySteps => "Header is missing empty steps seal",
-			Error::DoubleVote => "Header has invalid step in seal",
 			Error::InsufficientProof => "Header has insufficient proof",
 			Error::InvalidDifficulty => "Header has invalid difficulty",
 			Error::NotValidator => "Header is sealed by unexpected validator",
@@ -150,7 +147,7 @@ impl Error {
 			Error::UnknownAncestor => "Unknow ancestor",
 			Error::HeaderTimestampTooClose => "Header timestamp too close",
 			Error::CheckpointNoSigner => "Missing signers",
-			Error::NotAuthorized(address) => format!("Address {} not authorized", address),
+			Error::NotAuthorized(address) => format!("Address {} not authorized", address), // TODO how to format this and return a static str?
 			Error::TooRecentlySigned(signer) => format!("The signer {} signed a block too recently", signer),
 			Error::UnknownParent(parent) => format!("Unknown parent {}", parent),
 			Error::MissingCheckpoint(hash) => format!("Missing checkpoint {}", hash),

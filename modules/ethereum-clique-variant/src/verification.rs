@@ -18,7 +18,7 @@ use crate::error::Error;
 use crate::{ChainTime, CliqueVariantConfiguration, ImportContext, PoolConfiguration, Storage};
 use bp_eth_clique::{
 	public_to_address, Address, CliqueHeader, HeaderId, ADDRESS_LENGTH, DIFF_INTURN, DIFF_NOTURN, H256, H520,
-	KECCAK_EMPTY_LIST_RLP, SIGNATURE_LENGTH, U128, U256, VANITY_LENGTH,
+	KECCAK_EMPTY_LIST_RLP, SIGNATURE_LENGTH, VANITY_LENGTH,
 };
 use codec::Encode;
 use sp_io::crypto::secp256k1_ecdsa_recover;
@@ -196,7 +196,7 @@ fn contextless_checks<CT: ChainTime>(
 		return Err(Error::InvalidNonce);
 	}
 	// Ensure that the block's difficulty is meaningful (may not be correct at this point)
-	if header.number > 0 && header.Difficulty.is_zero() {
+	if header.number > 0 && header.difficulty.is_zero() {
 		return Err(Error::InvalidDifficulty);
 	}
 	if header.gas_used > header.gas_limit {

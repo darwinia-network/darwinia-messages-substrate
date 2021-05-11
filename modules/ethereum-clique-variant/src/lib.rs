@@ -32,6 +32,11 @@ use sp_runtime::{
 use sp_std::{cmp::Ord, collections::btree_map::BTreeMap, prelude::*};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+#[macro_use]
+extern crate lazy_static;
+
+extern crate parity_crypto as crypto;
+
 mod error;
 mod finality;
 mod import;
@@ -53,11 +58,9 @@ pub struct CliqueVariantConfiguration {
 	/// Maximum gas limit.
 	pub max_gas_limit: U256,
 	/// epoch length
-	pub epoch_length: u32,
-	/// HashLength is the expected length of the hash
-	pub hash_length: u32,
+	pub epoch_length: u64,
 	/// block period
-	pub period: u32,
+	pub period: u64,
 }
 
 /// Transaction pool configuration.
@@ -236,9 +239,7 @@ impl ChainTime for () {
 	/// time. If so, return `true`, `false` otherwise.
 	fn is_timestamp_ahead(&self, timestamp: u64) -> bool {
 		// This should succeed under the contraints that the system clock works
-		let now = SystemTime::now()
-			.duration_since(UNIX_EPOCH)
-			.unwrap_or_default(Duration::from_secs(0));
+		let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
 
 		Duration::from_secs(timestamp) > now
 	}
@@ -392,7 +393,7 @@ impl<T: Config<I>, I: Instance> Pallet<T, I> {
 
 	/// Verify that transaction is included into given finalized block.
 	pub fn verify_transaction_finalized(block: H256, tx_index: u64, proof: &[RawTransaction]) -> bool {
-		crate::verify_transaction_finalized(&BridgeStorage::<T, I>::new(), block, tx_index)
+		crate::verify_transaction_finalized(&BridgeStorage::<T, I>::new(), block, tx_index, proof)
 	}
 }
 
@@ -508,7 +509,7 @@ impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
 		// ensure that unfinalized headers we want to prune do not have validator changes
 		if number > finalized_number
 			&& blocks_at_number.iter().any(|block| match self.header(&block) {
-				Some((header, _)) => header.number % clique_variant_config.epoch_length, // CHECKME
+				Some((header, _)) => header.number % clique_variant_config.epoch_length == 0, // CHECKME
 				None => false,
 			}) {
 			return;
@@ -704,7 +705,7 @@ pub fn verify_transaction_finalized<S: Storage>(
 	}
 
 	// verify that transaction is included in the block
-	if let Err(computed_root) = header.check_transactions_root(proof.iter().map(|(tx, _)| tx)) {
+	if let Err(computed_root) = header.check_transactions_root(proof) {
 		log::trace!(
 			target: "runtime",
 			"Tx finality check failed: transactions root mismatch. Expected: {}, computed: {}",

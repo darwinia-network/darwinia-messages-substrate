@@ -97,10 +97,10 @@ pub fn import_header<S: Storage, PS: PruningStrategy, CT: ChainTime>(
 	// verify validator
 	// Retrieve the parent state
 	// TODO how to init snapshot?
-	let parent_state = Snapshot::<chain_time>::new().retrieve(storage, &header.parent_hash, clique_variant_config)?;
+	let parent_state = Snapshot::<CT>::new().retrieve(storage, &header.parent_hash, clique_variant_config)?;
 	// Try to apply current state, apply() will further check signer and recent signer.
 	let mut new_state = parent_state.clone();
-	new_state.apply(header, header.number() % clique_variant_config.epoch_length == 0)?;
+	new_state.apply(header, header.number % clique_variant_config.epoch_length == 0)?;
 	new_state.calc_next_timestamp(header.timestamp, clique_variant_config.period)?;
 	new_state.verify(header)?;
 

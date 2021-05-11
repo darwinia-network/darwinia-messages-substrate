@@ -14,16 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::error::Error;
-use crate::Storage;
-use bp_eth_clique::{Address, CliqueHeader, HeaderId, H256};
+use crate::{error::Error, snapshot::Snapshot, ChainTime, Storage};
+use bp_eth_clique::{Address, CliqueHeader, HeaderId};
 use codec::{Decode, Encode};
 // use sp_io::crypto::secp256k1_ecdsa_recover;
 use sp_runtime::RuntimeDebug;
-use sp_std::collections::{
-	btree_map::{BTreeMap, Entry},
-	btree_set::BTreeSet,
-};
+use sp_std::collections::{btree_map::BTreeMap, btree_set::BTreeSet};
 use sp_std::prelude::*;
 
 /// Finality effects.
