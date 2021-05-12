@@ -40,9 +40,9 @@ rialto-runtime = { path = "../../bin/rialto/runtime" }
 
 # Substrate Dependencies
 
-frame-system = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
-pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
-sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
-sp-keyring = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
-substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate", branch = "s2s" }
+frame-system = { git = "https://github.com/darwinia-network/substrate", tag = "s2s-v1.0" }
+pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate", tag = "s2s-v1.0" }
+sp-core = { git = "https://github.com/darwinia-network/substrate", tag = "s2s-v1.0" }
+sp-keyring = { git = "https://github.com/darwinia-network/substrate", tag = "s2s-v1.0" }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate", tag = "s2s-v1.0" }
+substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate", tag = "s2s-v1.0" }
