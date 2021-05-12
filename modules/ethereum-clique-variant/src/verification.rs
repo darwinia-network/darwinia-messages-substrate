@@ -51,7 +51,7 @@ pub fn accept_clique_header_into_pool<S: Storage, CT: ChainTime>(
 	pool_config: &PoolConfiguration,
 	header: &CliqueHeader,
 	chain_time: &CT,
-) -> Result<(Vec<TransactionTag>, Vec<TransactionTag>), Error> {
+) -> Result<(), Error> {
 	// check if we can verify further
 	let (header_id, _) = is_importable_header(storage, header)?;
 
@@ -83,7 +83,7 @@ pub fn accept_clique_header_into_pool<S: Storage, CT: ChainTime>(
 	let context = storage.import_context(None, &header.parent_hash);
 	let tags = match context {
 		Some(context) => {
-			contextual_checks(config, &context, None, header)?;
+			contextual_checks(config, &context, header)?;
 		}
 		None => {
 			// we know nothing about parent header
@@ -103,10 +103,8 @@ pub fn accept_clique_header_into_pool<S: Storage, CT: ChainTime>(
 				hash: header.parent_hash,
 			}
 			.encode();
-			(
-				vec![requires_header_number_and_hash_tag],
-				vec![provides_number_and_authority_tag, provides_header_number_and_hash_tag],
-			)
+
+			Ok(())
 		}
 	};
 
@@ -135,7 +133,7 @@ pub fn verify_clique_variant_header<S: Storage, CT: ChainTime>(
 
 		Error::MissingParentBlock
 	})?;
-	contextual_checks(config, &context, None, header)?;
+	contextual_checks(config, &context,  header)?;
 	// TODO check validator
 
 	Ok(context)
@@ -149,17 +147,17 @@ fn contextless_checks<CT: ChainTime>(
 ) -> Result<(), Error> {
 	// he genesis block is the always valid dead-end
 	if header.number == 0 {
-		Ok(())
+		return Ok(())
 	}
 	// Don't waste time checking blocks from the future
 	if chain_time.is_timestamp_ahead(header.timestamp) {
 		return Err(Error::HeaderTimestampIsAhead);
 	}
 	// Check that the extra-data contains the vanity, validators and signature.
-	if header.extra_data.size() < VANITY_LENGTH {
+	if header.extra_data.len() < VANITY_LENGTH {
 		return Err(Error::MissingVanity);
 	}
-	if header.extra_data.size() < VANITY_LENGTH + SIGNATURE_LENGTH {
+	if header.extra_data.len() < VANITY_LENGTH + SIGNATURE_LENGTH {
 		return Err(Error::MissingSignature);
 	}
 	if header.number >= u64::max_value() {
@@ -167,7 +165,7 @@ fn contextless_checks<CT: ChainTime>(
 	}
 	// Ensure that the extra-data contains a validator list on checkpoint, but none otherwise
 	let is_checkpoint = header.number % config.epoch_length == 0;
-	let validator_bytes_len = header.extra_data.size() - (VANITY_LENGTH + SIGNATURE_LENGTH);
+	let validator_bytes_len = header.extra_data.len() - (VANITY_LENGTH + SIGNATURE_LENGTH);
 	if !is_checkpoint && validator_bytes_len != 0 {
 		return Err(Error::ExtraValidators);
 	}
@@ -192,7 +190,7 @@ fn contextless_checks<CT: ChainTime>(
 		return Err(Error::InvalidDifficulty);
 	}
 	// Ensure that none is empty
-	if !header.nonce.is_zero() {
+	if !header.nonce.len() != 0 {
 		return Err(Error::InvalidNonce);
 	}
 	// Ensure that the block's difficulty is meaningful (may not be correct at this point)
@@ -216,10 +214,8 @@ fn contextless_checks<CT: ChainTime>(
 fn contextual_checks<Submitter>(
 	config: &CliqueVariantConfiguration,
 	context: &ImportContext<Submitter>,
-	validators_override: Option<&[Address]>,
 	header: &CliqueHeader,
 ) -> Result<(), Error> {
-	let validators = validators_override.unwrap_or_else(|| &context.validators_set().validators);
 
 	// parent sanity check
 	if context.parent_hash != header.parent_hash || context.parent_header().number + 1 != header.number {
@@ -594,7 +590,7 @@ mod tests {
 
 		// when header author is invalid
 		let mut header = good_header.clone();
-		header.author = Default::default();
+		header.coinbase = Default::default();
 		assert_eq!(default_verify(&header), Err(Error::NotValidator));
 
 		// when header signature is invalid

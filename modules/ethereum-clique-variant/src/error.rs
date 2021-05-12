@@ -90,6 +90,8 @@ pub enum Error {
 	/// errInvalidCheckpointValidators is returned if a checkpoint block contains an
 	/// invalid list of validators (i.e. non divisible by 20 bytes).
 	InvalidCheckpointValidators,
+	/// Wrong checkpoint authors recovered
+	FaultyRecoveredSigners(),
 	/// Non-zero mix digest
 	/// InvalidMixDigest is returned if a block's mix digest is non-zero.
 	InvalidMixDigest,
@@ -114,6 +116,10 @@ pub enum Error {
 	UnknownParent(H256),
 	/// Checkpoint is missing
 	MissingCheckpoint(H256),
+	/// EC_RECOVER error
+	RecoverPubkeyFail,
+	/// List of signers is invalid
+	CheckpointInvalidSigners(usize),
 }
 
 impl Error {
@@ -147,16 +153,19 @@ impl Error {
 			Error::UnknownAncestor => "Unknow ancestor",
 			Error::HeaderTimestampTooClose => "Header timestamp too close",
 			Error::CheckpointNoSigner => "Missing signers",
-			Error::NotAuthorized(address) => format!("Address {} not authorized", address), // TODO how to format this and return a static str?
-			Error::TooRecentlySigned(signer) => format!("The signer {} signed a block too recently", signer),
-			Error::UnknownParent(parent) => format!("Unknown parent {}", parent),
-			Error::MissingCheckpoint(hash) => format!("Missing checkpoint {}", hash),
+			// TODO how to format this and return a static str?
+			Error::NotAuthorized(address) => "Address not authorized",
+			Error::TooRecentlySigned(signer) => "The signer signed a block too recently",
+			Error::UnknownParent(parent) => "Unknown parent",
+			Error::MissingCheckpoint(hash) => "Missing checkpoint",
+			Error::NotAuthorized(address) => "Address not authorized",
+			Error::RecoverPubkeyFail => "Recover pubkey from signature error",
+			// Error::NotAuthorized(address) => format!("Address {} not authorized", address), // TODO how to format this and return a static str?
+			// Error::TooRecentlySigned(signer) => format!("The signer {} signed a block too recently", signer),
+			// Error::UnknownParent(parent) => format!("Unknown parent {}", parent),
+			// Error::MissingCheckpoint(hash) => format!("Missing checkpoint {}", hash),
+			// Error::NotAuthorized(address) => format!("Address {} not authorized", address), // TODO how to format this and return a static str?
 			_ => "Unknown error.",
 		}
-	}
-
-	/// Return unique error code.
-	pub fn code(&self) -> u8 {
-		*self as u8
 	}
 }

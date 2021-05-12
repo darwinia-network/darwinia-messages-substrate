@@ -107,6 +107,7 @@ pub fn import_header<S: Storage, PS: PruningStrategy, CT: ChainTime>(
 	let finalized_blocks = finalize_blocks(
 		storage,
 		finalized_id,
+		new_state,
 		header_id,
 		import_context.submitter(),
 		&header,

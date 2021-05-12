@@ -134,7 +134,7 @@ pub struct CliqueHeader {
 	/// MixDigest
 	pub mix_digest: H256,
 	/// Nonce(64 bit in ethereum)
-	pub nonce: u64,
+	pub nonce: Vec<u8>,
 }
 
 /// Parsed ethereum transaction.

@@ -18,10 +18,10 @@ use crate::error::Error;
 use std::collections::BTreeSet;
 
 use bp_eth_clique::{public_to_address, Address, CliqueHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
-use crypto::publickey::{recover as ec_recover, Signature};
 use lru_cache::LruCache;
 use parking_lot::RwLock;
 use primitive_types::H256;
+use sp_io::crypto::secp256k1_ecdsa_recover;
 
 /// How many recovered signature to cache in the memory.
 pub const CREATOR_CACHE_NUM: usize = 4096;
@@ -36,17 +36,17 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 	// Initialization
 	let mut cache = CREATOR_BY_HASH.write();
 
-	if let Some(creator) = cache.get_mut(&header.hash()) {
+	if let Some(creator) = cache.get_mut(&header.compute_hash()) {
 		return Ok(*creator);
 	}
 
-	let data = header.extra_data();
+	let data = header.extra_data;
 	if data.len() < VANITY_LENGTH {
-		Err(Error::CliqueMissingVanity)?
+		Err(Error::MissingVanity)?
 	}
 
 	if data.len() < VANITY_LENGTH + SIGNATURE_LENGTH {
-		Err(Error::CliqueMissingSignature)?
+		Err(Error::MissingSignature)?
 	}
 
 	// Split `signed_extra data` and `signature`
@@ -61,13 +61,14 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 
 	// modify header and hash it
 	let unsigned_header = &mut header.clone();
-	unsigned_header.set_extra_data(signed_data_slice.to_vec());
-	let msg = unsigned_header.hash();
+	unsigned_header.extra_data = signed_data_slice.to_vec();
+	let msg = unsigned_header.compute_hash();
 
-	let pubkey = ec_recover(&Signature::from(signature), &msg)?;
+	let pubkey = secp256k1_ecdsa_recover(signature.as_fixed_bytes(), msg.as_fixed_bytes())
+		.map_err(|| Err(Error::RecoverPubkeyFail))?;
 	let creator = public_to_address(&pubkey);
 
-	cache.insert(header.hash(), creator.clone());
+	cache.insert(header.compute_hash(), creator.clone());
 	Ok(creator)
 }
 
@@ -80,17 +81,17 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 /// Signature: 65 bytes
 /// --
 pub fn extract_signers(header: &CliqueHeader) -> Result<BTreeSet<Address>, Error> {
-	let data = header.extra_data();
+	let data = header.extra_data;
 
 	if data.len() <= VANITY_LENGTH + SIGNATURE_LENGTH {
-		Err(Error::CliqueCheckpointNoSigner)?
+		Err(Error::CheckpointNoSigner)?
 	}
 
 	// extract only the portion of extra_data which includes the signer list
 	let signers_raw = &data[(VANITY_LENGTH)..data.len() - (SIGNATURE_LENGTH)];
 
 	if signers_raw.len() % ADDRESS_LENGTH != 0 {
-		Err(Error::CliqueCheckpointInvalidSigners(signers_raw.len()))?
+		Err(Error::CheckpointInvalidSigners(signers_raw.len()))?
 	}
 
 	let num_signers = signers_raw.len() / 20;

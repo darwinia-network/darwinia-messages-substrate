@@ -34,11 +34,11 @@ use rand::Rng;
 /// How many CliqueBlockState to cache in the memory.
 pub const SNAP_CACHE_NUM: usize = 128;
 
-// CHECKME
+// TODO how to support generics?
 lazy_static! {
 	/// key: header hash
 	/// value: creator address
-	static ref SNAPSHOT_BY_HASH: RwLock<LruCache<H256, Snapshot<CT>>> = RwLock::new(LruCache::new(SNAP_CACHE_NUM));
+	static ref SNAPSHOT_BY_HASH<CT: ChainTime>: RwLock<LruCache<H256, Snapshot<CT>>> = RwLock::new(LruCache::new(SNAP_CACHE_NUM));
 }
 
 /// Clique state for each block.
@@ -84,9 +84,9 @@ impl<CT: ChainTime> fmt::Display for Snapshot<CT> {
 
 impl<CT: ChainTime> Snapshot<CT> {
 	/// Create new state with given information, this is used creating new state from Checkpoint block.
-	pub fn new(signers: BTreeSet<Address>) -> Self {
+	pub fn new() -> Self {
 		// TODO Get init validators from genesis config
-		Self
+		Self { .. }
 	}
 
 	fn snap_no_backfill(&self, hash: &H256) -> Option<Self> {
@@ -107,7 +107,7 @@ impl<CT: ChainTime> Snapshot<CT> {
 		// TODO(niklasad1): refactor to perform this check in the `Snapshot` constructor instead
 		self.calc_next_timestamp(header.timestamp, clique_variant_config.period)?;
 
-		Ok(Self)
+		Ok(self)
 	}
 
 	/// Get `Snapshot` for given header, backfill from last checkpoint if needed.
@@ -117,29 +117,29 @@ impl<CT: ChainTime> Snapshot<CT> {
 		header: &CliqueHeader,
 		clique_variant_config: &CliqueVariantConfiguration,
 	) -> Result<Snapshot<CT>, Error> {
-		let mut snapshot_by_hash = SNAPSHOT_BY_HASH.write();
-		if let Some(snap) = snapshot_by_hash.get_mut(&header.hash()) {
+		let mut snapshot_by_hash = SNAPSHOT_BY_HASH::<CT>.write();
+		if let Some(snap) = snapshot_by_hash.get_mut(&header.compute_hash()) {
 			return Ok(snap.clone());
 		}
 		// If we are looking for an checkpoint block state, we can directly reconstruct it.
-		if header.number % self.epoch_length == 0 {
-			let snap = self.recover_from(header)?;
-			snapshot_by_hash.insert(header.hash(), snap.clone());
+		if header.number % clique_variant_config.epoch_length == 0 {
+			let snap = self.recover_from(header, clique_variant_config)?;
+			snapshot_by_hash.insert(header.compute_hash(), snap.clone());
 			return Ok(snap);
 		}
 		// BlockState is not found in memory, which means we need to reconstruct state from last checkpoint.
-		let last_checkpoint_number = header.number() - header.number() % clique_variant_config.epoch_length as u64;
-		debug_assert_ne!(last_checkpoint_number, header.number());
+		let last_checkpoint_number = header.number - header.number % clique_variant_config.epoch_length as u64;
+		debug_assert_ne!(last_checkpoint_number, header.number);
 
 		// Catching up state, note that we don't really store block state for intermediary blocks,
 		// for speed.
 		let backfill_start = Instant::now();
 		log::trace!(target: "snapshot",
 					"Back-filling snapshot. last_checkpoint_number: {}, target: {}({}).",
-					last_checkpoint_number, header.number(), header.hash());
+					last_checkpoint_number, header.number, header.compute_hash());
 
 		let chain: &mut VecDeque<CliqueHeader> =
-			&mut VecDeque::with_capacity((header.number() - last_checkpoint_number + 1) as usize);
+			&mut VecDeque::with_capacity((header.number - last_checkpoint_number + 1) as usize);
 
 		// Put ourselves in.
 		chain.push_front(header.clone());
@@ -148,47 +148,44 @@ impl<CT: ChainTime> Snapshot<CT> {
 		loop {
 			let (last_parent_hash, last_num) = {
 				let l = chain.front().expect("chain has at least one element; qed");
-				(*l.parent_hash, l.number)
+				(l.parent_hash, l.number)
 			};
 
 			if last_num == last_checkpoint_number + 1 {
 				break;
 			}
 			match Storage::header(last_parent_hash) {
-				None => {
+				(_, None) => {
 					return Err(Error::UnknownParent(last_parent_hash))?;
 				}
-				Some(next) => {
+				(_, Some(next)) => {
 					chain.push_front(next);
 				}
 			}
 		}
 
 		// Get the state for last checkpoint.
-		let last_checkpoint_hash = *chain
-			.front()
-			.expect("chain has at least one element; qed")
-			.parent_hash();
+		let last_checkpoint_hash = *chain.front().expect("chain has at least one element; qed").parent_hash;
 
 		let last_checkpoint_header = match Storage::header(last_checkpoint_hash) {
 			None => return Err(Error::MissingCheckpoint(last_checkpoint_hash))?,
-			Some(header) => header,
+			Some(header, _) => header,
 		};
 
 		let last_checkpoint_state = match snapshot_by_hash.get_mut(&last_checkpoint_hash) {
 			Some(state) => state.clone(),
-			None => self.recover_from(&last_checkpoint_header)?,
+			None => self.recover_from(&last_checkpoint_header, clique_variant_config)?,
 		};
 
-		snapshot_by_hash.insert(last_checkpoint_header.hash(), last_checkpoint_state.clone());
+		snapshot_by_hash.insert(last_checkpoint_header.hash, last_checkpoint_state.clone());
 
 		// Backfill!
 		let mut new_state = last_checkpoint_state.clone();
 		for item in chain {
 			new_state.apply(item, false)?;
 		}
-		new_state.calc_next_timestamp(header.timestamp(), clique_variant_config.period)?;
-		snapshot_by_hash.insert(header.hash(), new_state.clone());
+		new_state.calc_next_timestamp(header.timestamp, clique_variant_config.period)?;
+		snapshot_by_hash.insert(header.compute_hash(), new_state.clone());
 
 		let elapsed = backfill_start.elapsed();
 		log::trace!(target: "snapshot", "Back-filling succeed, took {} ms.", elapsed.as_millis());
@@ -214,18 +211,12 @@ impl<CT: ChainTime> Snapshot<CT> {
 		// Wrong difficulty
 		let inturn = self.is_inturn(header.number, &creator);
 
-		if inturn && *header.difficulty != DIFF_INTURN {
-			Err(Error::InvalidDifficulty(Mismatch {
-				expect: DIFF_INTURN,
-				found: *header.difficulty,
-			}))?
+		if inturn && header.difficulty != DIFF_INTURN {
+			Err(Error::InvalidDifficulty)
 		}
 
-		if !inturn && *header.difficulty() != DIFF_NOTURN {
-			Err(Error::InvalidDifficulty(Mismatch {
-				expect: DIFF_NOTURN,
-				found: *header.difficulty,
-			}))?
+		if !inturn && header.difficulty != DIFF_NOTURN {
+			Err(Error::InvalidDifficulty)
 		}
 
 		Ok(creator)
@@ -246,7 +237,7 @@ impl<CT: ChainTime> Snapshot<CT> {
 					.filter(|s| !self.signers.contains(s))
 					.map(|s| format!("{}", s))
 					.collect();
-				Err(Error::CliqueFaultyRecoveredSigners(invalid_signers))?
+				Err(Error::FaultyRecoveredSigners)?
 			};
 		}
 
@@ -261,7 +252,7 @@ impl<CT: ChainTime> Snapshot<CT> {
 	pub fn calc_next_timestamp(&mut self, timestamp: u64, period: u64) -> Result<(), Error> {
 		let inturn = timestamp.saturating_add(period);
 
-		self.next_timestamp_inturn = inturn;
+		self.next_timestamp_inturn = Some(inturn);
 
 		let delay = Duration::from_millis(
 			rand::thread_rng().gen_range(0u64, (self.signers.len() as u64 / 2 + 1) * SIGNING_DELAY_NOTURN_MS),
