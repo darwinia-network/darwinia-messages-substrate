@@ -48,6 +48,7 @@ sp-core = { git = "https://github.com/darwinia-network/substrate.git", branch = 
 sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate.git", branch = "s2s" }
 sp-inherents = { git = "https://github.com/darwinia-network/substrate.git", branch = "s2s" }
 sp-runtime = { git = "https://github.com/darwinia-network/substrate.git", branch = "s2s" }
+sp-timestamp = { git = "https://github.com/darwinia-network/substrate.git", branch = "s2s" }
 substrate-frame-rpc-system = { git = "https://github.com/darwinia-network/substrate.git", branch = "s2s" }
 
 [build-dependencies]
