@@ -16,8 +16,8 @@
 
 use bp_millau::derive_account_from_rialto_id;
 use millau_runtime::{
-	AccountId, AuraConfig, BalancesConfig, BridgePangolinGrandpaConfig, BridgeWestendGrandpaConfig, GenesisConfig,
-	GrandpaConfig, SessionConfig, SessionKeys, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+	AccountId, AuraConfig, BalancesConfig, BridgeWestendGrandpaConfig, GenesisConfig, GrandpaConfig, SessionConfig,
+	SessionKeys, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
@@ -72,7 +72,7 @@ impl Alternative {
 				"tokenDecimals": 9,
 				"tokenSymbol": "MLAU",
 				"bridgeIds": {
-					"Rialto": bp_runtime::RIALTO_BRIDGE_INSTANCE
+					"Rialto": bp_runtime::RIALTO_CHAIN_ID,
 				}
 			})
 			.as_object()

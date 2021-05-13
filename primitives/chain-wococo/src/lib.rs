@@ -37,7 +37,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: sp_version::create_runtime_str!("rococo"),
 	impl_name: sp_version::create_runtime_str!("parity-rococo-v1.5"),
 	authoring_version: 0,
-	spec_version: 232,
+	spec_version: 9001,
 	impl_version: 0,
 	apis: sp_version::create_apis_vec![[]],
 	transaction_version: 0,
@@ -86,7 +86,7 @@ impl sp_runtime::traits::Dispatchable for Call {
 // We use this to get the account on Wococo (target) which is derived from Rococo's (source)
 // account.
 pub fn derive_account_from_rococo_id(id: bp_runtime::SourceAccount<AccountId>) -> AccountId {
-	let encoded_id = bp_runtime::derive_account_id(bp_runtime::ROCOCO_BRIDGE_INSTANCE, id);
+	let encoded_id = bp_runtime::derive_account_id(bp_runtime::ROCOCO_CHAIN_ID, id);
 	AccountIdConverter::convert(encoded_id)
 }
 
