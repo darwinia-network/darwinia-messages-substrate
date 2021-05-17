@@ -29,6 +29,7 @@ pallet-shift-session-manager = { git = "https://github.com/darwinia-network/pari
 drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
 pangolin-bridge-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
 pangolin-constants = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
+pangolin-runtime-system-params = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
 
 # Substrate Dependencies
 
@@ -108,6 +109,7 @@ std = [
 	"drml-primitives/std",
 	"pangolin-constants/std",
 	"pangolin-bridge-primitives/std",
+	"pangolin-runtime-system-params/std",
 ]
 # TODO: https://github.com/paritytech/parity-bridges-common/issues/390
 # I've left the feature flag here to test our CI configuration

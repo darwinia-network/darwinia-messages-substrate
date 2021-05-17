@@ -54,8 +54,6 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use pangolin_runtime_params::s2s;
-
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
@@ -362,7 +360,7 @@ impl pallet_bridge_grandpa::Config<WestendGrandpaInstance> for Runtime {
 
 pub type WithPangolinGrandpaInstance = pallet_bridge_grandpa::Instance2;
 impl pallet_bridge_grandpa::Config<WithPangolinGrandpaInstance> for Runtime {
-	type BridgedChain = s2s::PangolinSubstrateChain;
+	type BridgedChain = pangolin_bridge_primitives::Pangolin;
 	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
 
@@ -437,7 +435,7 @@ impl pallet_bridge_messages::Config<WithPangolinMessagesInstance> for Runtime {
 	type InboundMessageFee = drml_primitives::Balance;
 	type InboundRelayer = drml_primitives::AccountId;
 
-	type AccountIdConverter = s2s::AccountIdConverter;
+	type AccountIdConverter = pangolin_bridge_primitives::AccountIdConverter;
 
 	type TargetHeaderChain = crate::pangolin_messages::PangolinChainWithMessagesInMillau;
 	type LaneMessageVerifier = crate::pangolin_messages::ToPangolinMessageVerifier;
@@ -708,7 +706,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl s2s::PangolinFinalityApi<Block> for Runtime {
+	impl pangolin_bridge_primitives::PangolinFinalityApi<Block> for Runtime {
 		fn best_finalized() -> (drml_primitives::BlockNumber, drml_primitives::Hash) {
 			let header = BridgePangolinGrandpa::best_finalized();
 			(header.number, header.hash())
@@ -720,7 +718,7 @@ impl_runtime_apis! {
 	}
 
 
-	impl s2s::ToPangolinOutboundLaneApi<Block, Balance, ToPangolinMessagePayload> for Runtime {
+	impl pangolin_bridge_primitives::ToPangolinOutboundLaneApi<Block, Balance, ToPangolinMessagePayload> for Runtime {
 		fn estimate_message_delivery_and_dispatch_fee(
 			_lane_id: bp_messages::LaneId,
 			payload: ToPangolinMessagePayload,
@@ -755,7 +753,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl s2s::FromPangolinInboundLaneApi<Block> for Runtime {
+	impl pangolin_bridge_primitives::FromPangolinInboundLaneApi<Block> for Runtime {
 		fn latest_received_nonce(lane: bp_messages::LaneId) -> bp_messages::MessageNonce {
 			BridgePangolinMessages::inbound_latest_received_nonce(lane)
 		}
