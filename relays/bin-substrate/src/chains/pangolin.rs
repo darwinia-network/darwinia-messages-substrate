@@ -11,7 +11,7 @@ use sp_version::RuntimeVersion;
 
 impl CliEncodeCall for PangolinRelayChain {
 	fn max_extrinsic_size() -> u32 {
-		pangolin_runtime_params::system::max_extrinsic_size()
+		pangolin_runtime_system_params::max_extrinsic_size()
 	}
 
 	fn encode_call(call: &Call) -> anyhow::Result<Self::Call> {
@@ -32,18 +32,20 @@ impl CliEncodeCall for PangolinRelayChain {
 				payload,
 				fee,
 				bridge_instance_index,
-			} => match *bridge_instance_index {
-				bridge::PANGOLIN_TO_MILLAU_INDEX => {
-					let payload = Decode::decode(&mut &*payload.0)?;
-					pangolin_runtime::Call::BridgeMillauMessages(
-						pangolin_runtime::bridge::s2s::MessagesCall::send_message(lane.0, payload, fee.cast() as u128),
-					)
+			} => {
+				match *bridge_instance_index {
+					bridge::PANGOLIN_TO_MILLAU_INDEX => {
+						let payload = Decode::decode(&mut &*payload.0)?;
+						pangolin_runtime::Call::BridgeMillauMessages(
+							pangolin_runtime::BridgeMessagesCall::send_message(lane.0, payload, fee.cast() as u128),
+						)
+					}
+					_ => anyhow::bail!(
+						"Unsupported target bridge pallet with instance index: {}",
+						bridge_instance_index
+					),
 				}
-				_ => anyhow::bail!(
-					"Unsupported target bridge pallet with instance index: {}",
-					bridge_instance_index
-				),
-			},
+			}
 		})
 	}
 }
@@ -60,7 +62,7 @@ impl CliChain for PangolinRelayChain {
 	}
 
 	fn max_extrinsic_weight() -> Weight {
-		pangolin_runtime_params::system::max_extrinsic_weight()
+		pangolin_runtime_system_params::max_extrinsic_weight()
 	}
 
 	// TODO [#854|#843] support multiple bridges?

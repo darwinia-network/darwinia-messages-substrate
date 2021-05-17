@@ -10,7 +10,6 @@ use bridge_runtime_common::messages::target::FromBridgedChainMessagesProof;
 use codec::Encode;
 use frame_support::dispatch::GetDispatchInfo;
 use messages_relay::message_lane::MessageLane;
-use pangolin_runtime_params::s2s as s2s_params;
 use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams};
 use relay_pangolin_client::{HeaderId as PangolinHeaderId, PangolinRelayChain, SigningParams as PangolinSigningParams};
 use relay_substrate_client::{
@@ -32,12 +31,14 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 	const OUTBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str = bp_millau::TO_MILLAU_LATEST_RECEIVED_NONCE_METHOD;
 
 	const INBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		s2s_params::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		pangolin_bridge_primitives::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
 	const INBOUND_LANE_LATEST_CONFIRMED_NONCE_METHOD: &'static str =
-		s2s_params::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
-	const INBOUND_LANE_UNREWARDED_RELAYERS_STATE: &'static str = s2s_params::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
+		pangolin_bridge_primitives::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
+	const INBOUND_LANE_UNREWARDED_RELAYERS_STATE: &'static str =
+		pangolin_bridge_primitives::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
 
-	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str = s2s_params::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
+	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str =
+		pangolin_bridge_primitives::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
 	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str = bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
 
 	type SourceChain = PangolinRelayChain;
@@ -55,7 +56,7 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 	) -> Bytes {
 		let (relayers_state, proof) = proof;
 		let call: pangolin_runtime::Call =
-			pangolin_runtime::bridge::s2s::MessagesCall::receive_messages_delivery_proof(proof, relayers_state).into();
+			pangolin_runtime::BridgeMessagesCall::receive_messages_delivery_proof(proof, relayers_state).into();
 		let call_weight = call.get_dispatch_info().weight;
 		let genesis_hash = *self.source_client.genesis_hash();
 		let transaction =
@@ -64,9 +65,9 @@ impl SubstrateMessageLane for PangolinMessagesToMillau {
 			target: "bridge",
 			"Prepared Millau -> Pangolin confirmation transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
-			pangolin_runtime_params::system::max_extrinsic_weight(),
+			pangolin_runtime_system_params::max_extrinsic_weight(),
 			transaction.encode().len(),
-			pangolin_runtime_params::system::max_extrinsic_size(),
+			pangolin_runtime_system_params::max_extrinsic_size(),
 		);
 		Bytes(transaction.encode())
 	}
@@ -119,7 +120,7 @@ type PangolinSourceClient = SubstrateMessagesSource<
 	PangolinRelayChain,
 	PangolinMessagesToMillau,
 	pangolin_runtime::Runtime,
-	pangolin_runtime::bridge::s2s::WithMillauMessagesInstance,
+	pangolin_runtime::WithMillauMessages,
 >;
 
 /// Millau node as messages target.
@@ -217,9 +218,9 @@ pub async fn run(
 				prefix,
 				source_client,
 				sp_core::storage::StorageKey(
-					pangolin_runtime::bridge::s2s::millau_messages::MillauToPangolinConversionRate::key().to_vec(),
+					pangolin_runtime::millau_messages::MillauToPangolinConversionRate::key().to_vec(),
 				),
-				Some(pangolin_runtime::bridge::s2s::millau_messages::INITIAL_MILLAU_TO_PANGOLIN_CONVERSION_RATE),
+				Some(pangolin_runtime::millau_messages::INITIAL_MILLAU_TO_PANGOLIN_CONVERSION_RATE),
 				"pangolin_millau_to_pangolin_conversion_rate".into(),
 				"Millau to Pangolin tokens conversion rate (used by Millau)".into(),
 			)

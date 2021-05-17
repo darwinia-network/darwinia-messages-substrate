@@ -10,7 +10,6 @@ use bridge_runtime_common::messages::target::FromBridgedChainMessagesProof;
 use codec::Encode;
 use frame_support::dispatch::GetDispatchInfo;
 use messages_relay::message_lane::MessageLane;
-use pangolin_runtime_params::s2s as s2s_params;
 use relay_millau_client::{HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams};
 use relay_pangolin_client::{HeaderId as PangolinHeaderId, PangolinRelayChain, SigningParams as PangolinSigningParams};
 use relay_substrate_client::{
@@ -26,11 +25,11 @@ pub type MillauMessagesToPangolin =
 
 impl SubstrateMessageLane for MillauMessagesToPangolin {
 	const OUTBOUND_LANE_MESSAGES_DISPATCH_WEIGHT_METHOD: &'static str =
-		s2s_params::TO_PANGOLIN_MESSAGES_DISPATCH_WEIGHT_METHOD;
+		pangolin_bridge_primitives::TO_PANGOLIN_MESSAGES_DISPATCH_WEIGHT_METHOD;
 	const OUTBOUND_LANE_LATEST_GENERATED_NONCE_METHOD: &'static str =
-		s2s_params::TO_PANGOLIN_LATEST_GENERATED_NONCE_METHOD;
+		pangolin_bridge_primitives::TO_PANGOLIN_LATEST_GENERATED_NONCE_METHOD;
 	const OUTBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		s2s_params::TO_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		pangolin_bridge_primitives::TO_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
 
 	const INBOUND_LANE_LATEST_RECEIVED_NONCE_METHOD: &'static str = bp_millau::FROM_MILLAU_LATEST_RECEIVED_NONCE_METHOD;
 	const INBOUND_LANE_LATEST_CONFIRMED_NONCE_METHOD: &'static str =
@@ -38,7 +37,8 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 	const INBOUND_LANE_UNREWARDED_RELAYERS_STATE: &'static str = bp_millau::FROM_MILLAU_UNREWARDED_RELAYERS_STATE;
 
 	const BEST_FINALIZED_SOURCE_HEADER_ID_AT_TARGET: &'static str = bp_millau::BEST_FINALIZED_MILLAU_HEADER_METHOD;
-	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str = s2s_params::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
+	const BEST_FINALIZED_TARGET_HEADER_ID_AT_SOURCE: &'static str =
+		pangolin_bridge_primitives::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
 
 	type SourceChain = Millau;
 	type TargetChain = PangolinRelayChain;
@@ -91,7 +91,7 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 			..
 		} = proof;
 		let messages_count = nonces_end - nonces_start + 1;
-		let call: pangolin_runtime::Call = pangolin_runtime::bridge::s2s::MessagesCall::receive_messages_proof(
+		let call: pangolin_runtime::Call = pangolin_runtime::BridgeMessagesCall::receive_messages_proof(
 			self.relayer_id_at_source.clone(),
 			proof,
 			messages_count as _,
@@ -106,9 +106,9 @@ impl SubstrateMessageLane for MillauMessagesToPangolin {
 			target: "bridge",
 			"Prepared Millau -> Pangolin delivery transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
-			pangolin_runtime_params::system::max_extrinsic_weight(),
+			pangolin_runtime_system_params::max_extrinsic_weight(),
 			transaction.encode().len(),
-			pangolin_runtime_params::system::max_extrinsic_size(),
+			pangolin_runtime_system_params::max_extrinsic_size(),
 		);
 		Bytes(transaction.encode())
 	}
@@ -127,7 +127,7 @@ type PangolinTargetClient = SubstrateMessagesTarget<
 	PangolinRelayChain,
 	MillauMessagesToPangolin,
 	pangolin_runtime::Runtime,
-	pangolin_runtime::bridge::s2s::WithMillauMessagesInstance,
+	pangolin_runtime::WithMillauMessages,
 >;
 
 /// Run Millau-to-Pangolin messages sync.
@@ -148,12 +148,12 @@ pub async fn run(
 	};
 
 	// 2/3 is reserved for proofs and tx overhead
-	let max_messages_size_in_single_batch = pangolin_runtime_params::system::max_extrinsic_size() as usize / 3;
+	let max_messages_size_in_single_batch = pangolin_runtime_system_params::max_extrinsic_size() as usize / 3;
 	// TODO: use Millau weights after https://github.com/paritytech/parity-bridges-common/issues/390
 	let (max_messages_in_single_batch, max_messages_weight_in_single_batch) =
 		select_delivery_transaction_limits::<pallet_bridge_messages::weights::RialtoWeight<millau_runtime::Runtime>>(
-			pangolin_runtime_params::system::max_extrinsic_weight(),
-			s2s_params::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
+			pangolin_runtime_system_params::max_extrinsic_weight(),
+			pangolin_bridge_primitives::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
 		);
 
 	log::info!(
@@ -177,8 +177,9 @@ pub async fn run(
 			reconnect_delay: relay_utils::relay_loop::RECONNECT_DELAY,
 			stall_timeout,
 			delivery_params: messages_relay::message_lane_loop::MessageDeliveryParams {
-				max_unrewarded_relayer_entries_at_target: s2s_params::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
-				max_unconfirmed_nonces_at_target: s2s_params::MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE,
+				max_unrewarded_relayer_entries_at_target:
+					pangolin_bridge_primitives::MAX_UNREWARDED_RELAYER_ENTRIES_AT_INBOUND_LANE,
+				max_unconfirmed_nonces_at_target: pangolin_bridge_primitives::MAX_UNCONFIRMED_MESSAGES_AT_INBOUND_LANE,
 				max_messages_in_single_batch,
 				max_messages_weight_in_single_batch,
 				max_messages_size_in_single_batch,
