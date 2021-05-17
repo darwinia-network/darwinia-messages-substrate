@@ -26,8 +26,9 @@ pallet-bridge-grandpa = { git = "https://github.com/darwinia-network/parity-brid
 pallet-bridge-messages = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
 pallet-shift-session-manager = { git = "https://github.com/darwinia-network/parity-bridges-common", branch = "s2s", default-features = false }
 
-drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s", default-features = false }
-pangolin-runtime-params = { git = "https://github.com/darwinia-network/darwinia-common", branch = "feature/s2s", default-features = false }
+drml-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
+pangolin-bridge-primitives = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
+pangolin-constants = { git = "https://github.com/darwinia-network/darwinia-common", branch = "s2s", default-features = false }
 
 # Substrate Dependencies
 
@@ -105,7 +106,8 @@ std = [
 	"sp-version/std",
 
 	"drml-primitives/std",
-	"pangolin-runtime-params/std",
+	"pangolin-constants/std",
+	"pangolin-bridge-primitives/std",
 ]
 # TODO: https://github.com/paritytech/parity-bridges-common/issues/390
 # I've left the feature flag here to test our CI configuration
