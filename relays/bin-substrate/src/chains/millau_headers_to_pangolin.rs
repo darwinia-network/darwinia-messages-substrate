@@ -28,7 +28,7 @@ impl SubstrateFinalitySyncPipeline for MillauFinalityToPangolin {
 	) -> Bytes {
 		let call = pangolin_runtime::BridgeGrandpaCall::<
 			pangolin_runtime::Runtime,
-			pangolin_runtime::MillauGrandpa,
+			pangolin_runtime::WithMillauGrandpa,
 		>::submit_finality_proof(header.into_inner(), proof)
 		.into();
 
