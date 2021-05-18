@@ -65,7 +65,7 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 	let msg = unsigned_header.compute_hash();
 
 	let pubkey = secp256k1_ecdsa_recover(signature.as_fixed_bytes(), msg.as_fixed_bytes())
-		.map_err(|| Err(Error::RecoverPubkeyFail))?;
+		.map_err(|_| "Recover pubkey fail".into())?;
 	let creator = public_to_address(&pubkey);
 
 	cache.insert(header.compute_hash(), creator.clone());

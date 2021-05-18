@@ -38,12 +38,6 @@ impl<T: fmt::Display> fmt::Display for Mismatch<T> {
 #[derive(Clone, Copy, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(PartialEq))]
 pub enum Error {
-	/// The header is beyond last finalized and can not be imported.
-	AncientHeader,
-	/// The header is already imported.
-	KnownHeader,
-	/// Seal has an incorrect format.
-	InvalidSealArity,
 	/// Block number isn't sensible.
 	RidiculousNumber,
 	/// Block has too much gas used.
@@ -60,18 +54,6 @@ pub enum Error {
 	InsufficientProof,
 	/// Difficulty header field is invalid.
 	InvalidDifficulty,
-	/// The received block is from an incorrect proposer.
-	NotValidator,
-	/// Missing transaction receipts for the operation.
-	MissingTransactionsReceipts,
-	/// Redundant transaction receipts are provided.
-	RedundantTransactionsReceipts,
-	/// Provided transactions receipts are not matching the header.
-	TransactionsReceiptsMismatch,
-	/// Can't accept unsigned header from the far future.
-	UnsignedTooFarInTheFuture,
-	/// Trying to finalize sibling of finalized block.
-	TryingToFinalizeSibling,
 	/// Header timestamp is ahead of on-chain timestamp
 	HeaderTimestampIsAhead,
 	/// extra-data 32 byte vanity prefix missing
@@ -125,23 +107,13 @@ pub enum Error {
 impl Error {
 	pub fn msg(&self) -> &'static str {
 		match *self {
-			Error::AncientHeader => "Header is beyound last finalized and can not be imported",
-			Error::KnownHeader => "Header is already imported",
-			Error::InvalidSealArity => "Header has an incorrect seal",
 			Error::RidiculousNumber => "Header has too large number",
-			Error::TooMuchGasUsed => "Header has too much gas used",
 			Error::InvalidGasLimit => "Header has invalid gas limit",
 			Error::ExtraDataOutOfBounds => "Header has too large extra data",
 			Error::TimestampOverflow => "Header has too large timestamp",
 			Error::MissingParentBlock => "Header has unknown parent hash",
 			Error::InsufficientProof => "Header has insufficient proof",
 			Error::InvalidDifficulty => "Header has invalid difficulty",
-			Error::NotValidator => "Header is sealed by unexpected validator",
-			Error::MissingTransactionsReceipts => "The import operation requires transactions receipts",
-			Error::RedundantTransactionsReceipts => "Redundant transactions receipts are provided",
-			Error::TransactionsReceiptsMismatch => "Invalid transactions receipts provided",
-			Error::UnsignedTooFarInTheFuture => "The unsigned header is too far in future",
-			Error::TryingToFinalizeSibling => "Trying to finalize sibling of finalized block",
 			Error::HeaderTimestampIsAhead => "Header timestamp is ahead of on-chain timestamp",
 			Error::MissingVanity => "Extra-data 32 byte vanity prefix missing",
 			Error::MissingSignature => "Extra-data 65 byte signature suffix missing",
