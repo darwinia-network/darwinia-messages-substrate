@@ -92,7 +92,7 @@ pub fn contextless_checks<CT: ChainTime>(
 }
 
 /// Perform checks that require access to parent header.
-pub fn contextual_checks<Submitter>(
+pub fn contextual_checks(
 	config: &CliqueVariantConfiguration,
 	header: &CliqueHeader,
 	parent: &CliqueHeader,

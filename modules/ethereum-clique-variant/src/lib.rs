@@ -23,7 +23,7 @@ use codec::{Decode, Encode};
 use frame_support::{decl_error, decl_module, decl_storage, ensure, traits::Get};
 use primitive_types::U256;
 use sp_runtime::RuntimeDebug;
-use sp_std::{cmp::Ord, collections::btree_set::BTreeSet, prelude::*};
+use sp_std::{collections::btree_set::BTreeSet, prelude::*};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 extern crate parity_crypto as crypto;
@@ -46,29 +46,6 @@ pub struct CliqueVariantConfiguration {
 	pub epoch_length: u64,
 	/// block period
 	pub period: u64,
-}
-
-/// The storage that is used by the client.
-///
-/// Storage modification must be discarded if block import has failed.
-pub trait Storage {
-	/// Header submitter identifier.
-	type Submitter: Clone + Ord;
-
-	/// Get finalized authority set
-	fn finalized_authority(&self) -> Vec<Address>;
-
-	/// Get finalized checkpoint header
-	fn finalized_checkpoint(&self) -> CliqueHeader;
-
-	/// Put updated authority set into storage
-	fn save_finalized_authority(&mut self, authority_set: Vec<Address>);
-
-	/// Save finalized checkpoint header
-	fn save_checkpoint(&mut self, checkpoint: CliqueHeader);
-
-	/// Return true if signer in finanlized authority set
-	fn contains(&self, signers: Vec<Address>, signer: Address) -> bool;
 }
 
 /// ChainTime represents the runtime on-chain time
@@ -104,23 +81,23 @@ pub trait OnHeadersSubmitted<AccountId> {
 	/// could produce and submit multiple valid headers (without relaying them to other peers) and
 	/// get rewarded. Instead, the provider could track submitters and stop rewarding if too many
 	/// headers have been submitted without finalization.
-	fn on_valid_headers_submitted(submitter: AccountId, headers: Vec<CliqueHeader>);
+	fn on_valid_headers_submitted(submitter: AccountId, headers: &Vec<CliqueHeader>);
 	/// Called when invalid headers have been submitted.
 	fn on_invalid_headers_submitted(submitter: AccountId);
 	/// Called when earlier submitted headers have been finalized.
 	///
 	/// finalized is the finalized authority set
-	fn on_valid_authority_finalized(submitter: AccountId, finalized: Vec<Address>);
+	fn on_valid_authority_finalized(submitter: AccountId, finalized: &Vec<Address>);
 }
 
 impl<AccountId> OnHeadersSubmitted<AccountId> for () {
-	fn on_valid_headers_submitted(_submitter: AccountId, _headers: Vec<CliqueHeader>) {}
+	fn on_valid_headers_submitted(_submitter: AccountId, _headers: &Vec<CliqueHeader>) {}
 	fn on_invalid_headers_submitted(_submitter: AccountId) {}
-	fn on_valid_authority_finalized(_submitter: AccountId, _finalized: Vec<Address>) {}
+	fn on_valid_authority_finalized(_submitter: AccountId, _finalized: &Vec<Address>) {}
 }
 
 /// The module configuration trait.
-pub trait Config<I = DefaultInstance>: frame_system::Config {
+pub trait Config: frame_system::Config {
 	/// CliqueVariant configuration.
 	type CliqueVariantConfiguration: Get<CliqueVariantConfiguration>;
 	/// Header timestamp verification against current on-chain time.
@@ -147,102 +124,144 @@ decl_error! {
 }
 
 decl_module! {
-	pub struct Module<T: Config<I>, I: Instance = DefaultInstance> for enum Call where origin: T::Origin {
+	pub struct Module<T: Config> for enum Call where origin: T::Origin {
+		type Error = Error<T>;
+
 		/// Verify unsigned relayed headers and finalize authority set
 		#[weight = 0]
 		pub fn verify_and_update_authority_set_unsigned(origin, headers: Vec<CliqueHeader>) {
 			// ensure not signed
 			frame_system::ensure_none(origin)?;
+
 			// get finalized authority set from storage
-			let last_authority_set = BridgeStorage::<T, I>::new().finalized_authority();
+			let last_authority_set = &FinalizedAuthority::get();
+
 			// ensure valid length
 			assert!(last_authority_set.len() / 2 + 1 <= headers.len(), "Invalid headers size");
-			let last_checkpoint = BridgeStorage::<T, I>::new().finalized_checkpoint();
-			let cfg = T::CliqueVariantConfiguration::get();
-			let checkpoint = headers[0];
+
+			let last_checkpoint = FinalizedCheckpoint::get();
+			let checkpoint = &headers[0];
+
+			// get configuration
+			let cfg: CliqueVariantConfiguration = T::CliqueVariantConfiguration::get();
+
 			// ensure valid header number
 			// CHECKME it should be <= or == ?
 			assert!(last_checkpoint.number + cfg.epoch_length == checkpoint.number, "Ridiculous checkpoint header number");
+
 			// ensure first element is checkpoint block header
 			assert!(checkpoint.number % cfg.epoch_length == 0, "First element is not checkpoint");
 
 			// verify checkpoint
-			verification::contextless_checks(cfg, checkpoint, &T::ChainTime::default());
-			let signer = utils::recover_creator(&checkpoint)?;
-			ensure!(BridgeStorage::<T, I>::new().contains(last_authority_set, signer), Error::<T>::InvalidSigner);
+			// basic checks
+			verification::contextless_checks(&cfg, checkpoint, &T::ChainTime::default()).map_err(|e|e.msg())?;
+			// check signer
+			let signer = utils::recover_creator(checkpoint).map_err(|e| e.msg())?;
+			ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 
-			let mut recently = BTreeSet::new()?;
-			let new_authority_set = utils::extract_signers(checkpoint);
+
+			// extract new authority set from submitted checkpoint header
+			let new_authority_set = &utils::extract_signers(checkpoint).map_err(|e| e.msg())?;
+
+			// log already signed signer
+			let mut recently = BTreeSet::<Address>::new();
+
 			for i in 1..headers.len() {
-				verification::contextless_checks(cfg, headers[i], &T::ChainTime::default()).map_err(|e|e.msg())?;
-				verification::contextual_checks(cfg, headers[i], headers[i-1]).map_err(|e|e.msg())?;
-				let signer = utils::recover_creator(&headers[i])?;
-				// signed by last authority set
-				ensure!(BridgeStorage::<T, I>::new().contains(last_authority_set, signer), "Signer not authorized")?;
+				verification::contextless_checks(&cfg, &headers[i], &T::ChainTime::default()).map_err(|e|e.msg())?;
+				// check parent
+				verification::contextual_checks(&cfg, &headers[i], &headers[i-1]).map_err(|e|e.msg())?;
+				// who signed this header
+				let signer = utils::recover_creator(&headers[i]).map_err(|e| e.msg())?;
+				// signed must in last authority set
+				ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 				// headers submitted must signed by different authority
-				ensure!(!recently.contains(&signer), "Signer signed recently");
-				if new_authority_set.len() == last_authority_set.len() {
+				ensure!(!recently.contains(&signer), <Error::<T>>::SignedRecently);
+				recently.insert(signer);
+
+				// enough proof to finalize new authority set
+				if recently.len() >= last_authority_set.len()/2 {
 					// finalize new authroity set
-					BridgeStorage::<T, I>::new().save_finalized_authority(new_authority_set);
-					BridgeStorage::<T, I>::new().save_checkpoint(checkpoint);
+					FinalizedAuthority::put(new_authority_set);
+					FinalizedCheckpoint::put(checkpoint);
+					// skip the rest submitted headers
 					return Ok(());
 				}
 			}
 
-			Err(Error::<T>::HeadersNotEnough)
+			// <Error::<T>>::HeadersNotEnough
 		}
 
 		/// Verify signed relayed headers and finalize authority set
 		#[weight = 0]
 		pub fn verify_and_update_authority_set_signed(origin, headers: Vec<CliqueHeader>) {
 			let submitter = frame_system::ensure_signed(origin)?;
-			let last_authority_set = BridgeStorage::<T, I>::new().finalized_authority();
+
+			// get finalized authority set from storage
+			let last_authority_set = &FinalizedAuthority::get();
+
 			// ensure valid length
-			assert!(last_authority_set.len() / 2 + 1 <= headers.len(),  "Invalid headers size");
-			let last_checkpoint = BridgeStorage::<T, I>::new().finalized_checkpoint();
-			let cfg = T::CliqueVariantConfiguration::get();
-			let checkpoint = headers[0];
+			assert!(last_authority_set.len() / 2 + 1 <= headers.len(), "Invalid headers size");
+
+			let last_checkpoint = FinalizedCheckpoint::get();
+			let checkpoint = &headers[0];
+
+			// get configuration
+			let cfg: CliqueVariantConfiguration = T::CliqueVariantConfiguration::get();
+
 			// ensure valid header number
 			// CHECKME it should be <= or == ?
 			assert!(last_checkpoint.number + cfg.epoch_length == checkpoint.number, "Ridiculous checkpoint header number");
+
 			// ensure first element is checkpoint block header
 			assert!(checkpoint.number % cfg.epoch_length == 0, "First element is not checkpoint");
 
 			// verify checkpoint
-			verification::contextless_checks(cfg, checkpoint, &T::ChainTime::default());
-			let signer = utils::recover_creator(&checkpoint)?;
-			ensure!(BridgeStorage::<T, I>::new().contains(last_authority_set, signer), "Signer not authorized");
+			// basic checks
+			verification::contextless_checks(&cfg, checkpoint, &T::ChainTime::default()).map_err(|e|e.msg())?;
+			// check signer
+			let signer = utils::recover_creator(checkpoint).map_err(|e| e.msg())?;
+			ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 
-			let mut recently = BTreeSet::new();
-			let new_authority_set = utils::extract_signers(checkpoint);
+
+			// extract new authority set from submitted checkpoint header
+			let new_authority_set = &utils::extract_signers(checkpoint).map_err(|e| e.msg())?;
+
+			// log already signed signer
+			let mut recently = BTreeSet::<Address>::new();
+
 			for i in 1..headers.len() {
-				verification::contextless_checks(cfg, headers[i], &T::ChainTime::default()).map_err(|e|e.msg())?;
-				verification::contextual_checks(cfg, headers[i], headers[i-1]).map_err(|e|e.msg())?;
-				let signer = utils::recover_creator(&headers[i])?;
-				// signed by last authority set
-				ensure!(BridgeStorage::<T, I>::new().contains(last_authority_set, signer), "Signer not authorized")?;
+				verification::contextless_checks(&cfg, &headers[i], &T::ChainTime::default()).map_err(|e|e.msg())?;
+				// check parent
+				verification::contextual_checks(&cfg, &headers[i], &headers[i-1]).map_err(|e|e.msg())?;
+				// who signed this header
+				let signer = utils::recover_creator(&headers[i]).map_err(|e| e.msg())?;
+				// signed must in last authority set
+				ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 				// headers submitted must signed by different authority
-				ensure!(!recently.contains(signer), "Signer signed recently");
-				if new_authority_set.len() == last_authority_set.len() {
+				ensure!(!recently.contains(&signer), <Error::<T>>::SignedRecently);
+				recently.insert(signer);
+
+				// enough proof to finalize new authority set
+				if recently.len() >= last_authority_set.len()/2 {
 					// finalize new authroity set
-					BridgeStorage::<T, I>::new().save_finalized_authority(new_authority_set);
-					BridgeStorage::<T, I>::new().save_checkpoint(checkpoint);
+					FinalizedAuthority::put(new_authority_set);
+					FinalizedCheckpoint::put(checkpoint);
+					// skip the rest submitted headers
 					T::OnHeadersSubmitted::on_valid_authority_finalized(submitter, new_authority_set);
 					return Ok(());
 				}
 			}
 			T::OnHeadersSubmitted::on_invalid_headers_submitted(submitter);
-
-			Err(Error::<T>::HeadersNotEnough)
+			// <Error::<T>>::HeadersNotEnough
 		}
 	}
 }
 
 decl_storage! {
-	trait Store for Pallet<T: Config<I>, I: Instance = DefaultInstance> as Bridge {
+	trait Store for Module<T: Config> as Bridge {
 		/// Finalized authority set.
-		FinalizedAuthority: Vec<Address>;
-		FinalizedCheckpoint: CliqueHeader;
+		FinalizedAuthority get(fn finalized_authority) config(): Vec<Address>;
+		FinalizedCheckpoint get(fn finalized_checkpoint) config(): CliqueHeader;
 	}
 	add_extra_genesis {
 		config(initial_validators): Vec<Address>;
@@ -252,61 +271,21 @@ decl_storage! {
 				"Initial validators set can't be empty",
 			);
 
-			initialize_storage::<T, I>(
+			initialize_storage::<T>(
 				&config.initial_validators,
 			);
 		})
 	}
 }
 
-impl<T: Config<I>, I: Instance> Pallet<T, I> {
-	/// Returns finalized authority set
-	pub fn finalized_authority() -> Vec<Address> {
-		BridgeStorage::<T, I>::new().finalized_authority()
-	}
-}
-
-/// Runtime bridge storage.
-#[derive(Default)]
-pub struct BridgeStorage<T, I: Instance = DefaultInstance>(sp_std::marker::PhantomData<(T, I)>);
-
-impl<T: Config<I>, I: Instance> BridgeStorage<T, I> {
-	/// Create new BridgeStorage.
-	pub fn new() -> Self {
-		BridgeStorage(sp_std::marker::PhantomData::<(T, I)>::default())
-	}
-}
-
-impl<T: Config<I>, I: Instance> Storage for BridgeStorage<T, I> {
-	type Submitter = T::AccountId;
-
-	fn finalized_authority(&self) -> Vec<Address> {
-		FinalizedAuthority::<T, I>::get()
-	}
-
-	fn finalized_checkpoint(&self) -> CliqueHeader {
-		FinalizedCheckpoint::<T, I>::get()
-	}
-
-	fn save_finalized_authority(&mut self, authority_set: Vec<Address>) {
-		FinalizedAuthority::<I>::put(authority_set);
-	}
-
-	fn save_checkpoint(&mut self, checkpoint: CliqueHeader) {
-		FinalizedCheckpoint::<T, I>::put(checkpoint);
-	}
-
-	fn contains(&self, signers: Vec<Address>, signer: Address) -> bool {
-		match signers.binary_search(&signer) {
-			// If the search succeeds, the caller is already a member, so just return
-			Ok(_) => true,
-			Err(_) => false,
-		}
-	}
-}
-
 /// Initialize storage.
 #[cfg(any(feature = "std", feature = "runtime-benchmarks"))]
-pub(crate) fn initialize_storage<T: Config<I>, I: Instance>(initial_validators: &[Address]) {
-	FinalizedAuthority::<I>::put(initial_validators);
+pub(crate) fn initialize_storage<T: Config>(initial_validators: &[Address]) {
+	FinalizedAuthority::put(initial_validators);
+}
+
+impl<T: Config> Module<T> {
+	pub fn contains(signers: &Vec<Address>, signer: Address) -> bool {
+		signers.iter().any(|i| *i == signer)
+	}
 }

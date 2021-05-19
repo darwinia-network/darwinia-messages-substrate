@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-use bp_eth_clique::Address;
-use primitive_types::H256;
 use sp_runtime::RuntimeDebug;
 use std::fmt;
 
@@ -44,14 +42,6 @@ pub enum Error {
 	TooMuchGasUsed,
 	/// Gas limit header field is invalid.
 	InvalidGasLimit,
-	/// Extra data is of an invalid length.
-	ExtraDataOutOfBounds,
-	/// Timestamp header overflowed.
-	TimestampOverflow,
-	/// The parent header is missing from the blockchain.
-	MissingParentBlock,
-	/// Validation proof insufficient.
-	InsufficientProof,
 	/// Difficulty header field is invalid.
 	InvalidDifficulty,
 	/// Header timestamp is ahead of on-chain timestamp
@@ -72,8 +62,6 @@ pub enum Error {
 	/// errInvalidCheckpointValidators is returned if a checkpoint block contains an
 	/// invalid list of validators (i.e. non divisible by 20 bytes).
 	InvalidCheckpointValidators,
-	/// Wrong checkpoint authors recovered
-	FaultyRecoveredSigners(),
 	/// Non-zero mix digest
 	/// InvalidMixDigest is returned if a block's mix digest is non-zero.
 	InvalidMixDigest,
@@ -90,14 +78,6 @@ pub enum Error {
 	HeaderTimestampTooClose,
 	/// Missing signers
 	CheckpointNoSigner,
-	/// Signature or author field does not belong to an authority.
-	NotAuthorized(Address),
-	/// The signer signed a block too recently
-	TooRecentlySigned(Address),
-	/// Parent given is unknown.
-	UnknownParent(H256),
-	/// Checkpoint is missing
-	MissingCheckpoint(H256),
 	/// EC_RECOVER error
 	RecoverPubkeyFail,
 	/// List of signers is invalid
@@ -109,10 +89,6 @@ impl Error {
 		match *self {
 			Error::RidiculousNumber => "Header has too large number",
 			Error::InvalidGasLimit => "Header has invalid gas limit",
-			Error::ExtraDataOutOfBounds => "Header has too large extra data",
-			Error::TimestampOverflow => "Header has too large timestamp",
-			Error::MissingParentBlock => "Header has unknown parent hash",
-			Error::InsufficientProof => "Header has insufficient proof",
 			Error::InvalidDifficulty => "Header has invalid difficulty",
 			Error::HeaderTimestampIsAhead => "Header timestamp is ahead of on-chain timestamp",
 			Error::MissingVanity => "Extra-data 32 byte vanity prefix missing",
@@ -126,17 +102,7 @@ impl Error {
 			Error::HeaderTimestampTooClose => "Header timestamp too close",
 			Error::CheckpointNoSigner => "Missing signers",
 			// TODO how to format this and return a static str?
-			Error::NotAuthorized(address) => "Address not authorized",
-			Error::TooRecentlySigned(signer) => "The signer signed a block too recently",
-			Error::UnknownParent(parent) => "Unknown parent",
-			Error::MissingCheckpoint(hash) => "Missing checkpoint",
-			Error::NotAuthorized(address) => "Address not authorized",
 			Error::RecoverPubkeyFail => "Recover pubkey from signature error",
-			// Error::NotAuthorized(address) => format!("Address {} not authorized", address), // TODO how to format this and return a static str?
-			// Error::TooRecentlySigned(signer) => format!("The signer {} signed a block too recently", signer),
-			// Error::UnknownParent(parent) => format!("Unknown parent {}", parent),
-			// Error::MissingCheckpoint(hash) => format!("Missing checkpoint {}", hash),
-			// Error::NotAuthorized(address) => format!("Address {} not authorized", address), // TODO how to format this and return a static str?
 			_ => "Unknown error.",
 		}
 	}

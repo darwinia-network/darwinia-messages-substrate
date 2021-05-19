@@ -15,7 +15,6 @@
 // along with OpenEthereum.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::error::Error;
-use std::collections::BTreeSet;
 
 use bp_eth_clique::{public_to_address, Address, CliqueHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
 use lru_cache::LruCache;
@@ -40,7 +39,7 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 		return Ok(*creator);
 	}
 
-	let data = header.extra_data;
+	let data = &header.extra_data;
 	if data.len() < VANITY_LENGTH {
 		Err(Error::MissingVanity)?
 	}
@@ -64,8 +63,7 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 	unsigned_header.extra_data = signed_data_slice.to_vec();
 	let msg = unsigned_header.compute_hash();
 
-	let pubkey = secp256k1_ecdsa_recover(signature.as_fixed_bytes(), msg.as_fixed_bytes())
-		.map_err(|_| "Recover pubkey fail".into())?;
+	let pubkey = secp256k1_ecdsa_recover(&signature, msg.as_fixed_bytes()).map_err(|_| Error::RecoverPubkeyFail)?;
 	let creator = public_to_address(&pubkey);
 
 	cache.insert(header.compute_hash(), creator.clone());
@@ -80,8 +78,8 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 /// Signers: N * 32 bytes as hex encoded (20 characters)
 /// Signature: 65 bytes
 /// --
-pub fn extract_signers(header: &CliqueHeader) -> Result<BTreeSet<Address>, Error> {
-	let data = header.extra_data;
+pub fn extract_signers(header: &CliqueHeader) -> Result<Vec<Address>, Error> {
+	let data = &header.extra_data;
 
 	if data.len() <= VANITY_LENGTH + SIGNATURE_LENGTH {
 		Err(Error::CheckpointNoSigner)?
@@ -96,7 +94,7 @@ pub fn extract_signers(header: &CliqueHeader) -> Result<BTreeSet<Address>, Error
 
 	let num_signers = signers_raw.len() / 20;
 
-	let signers: BTreeSet<Address> = (0..num_signers)
+	let signers: Vec<Address> = (0..num_signers)
 		.map(|i| {
 			let start = i * ADDRESS_LENGTH;
 			let end = start + ADDRESS_LENGTH;
