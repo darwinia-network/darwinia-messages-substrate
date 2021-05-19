@@ -81,19 +81,19 @@ pub trait OnHeadersSubmitted<AccountId> {
 	/// could produce and submit multiple valid headers (without relaying them to other peers) and
 	/// get rewarded. Instead, the provider could track submitters and stop rewarding if too many
 	/// headers have been submitted without finalization.
-	fn on_valid_headers_submitted(submitter: AccountId, headers: &Vec<CliqueHeader>);
+	fn on_valid_headers_submitted(submitter: AccountId, headers: &[CliqueHeader]);
 	/// Called when invalid headers have been submitted.
 	fn on_invalid_headers_submitted(submitter: AccountId);
 	/// Called when earlier submitted headers have been finalized.
 	///
 	/// finalized is the finalized authority set
-	fn on_valid_authority_finalized(submitter: AccountId, finalized: &Vec<Address>);
+	fn on_valid_authority_finalized(submitter: AccountId, finalized: &[Address]);
 }
 
 impl<AccountId> OnHeadersSubmitted<AccountId> for () {
-	fn on_valid_headers_submitted(_submitter: AccountId, _headers: &Vec<CliqueHeader>) {}
+	fn on_valid_headers_submitted(_submitter: AccountId, _headers: &[CliqueHeader]) {}
 	fn on_invalid_headers_submitted(_submitter: AccountId) {}
-	fn on_valid_authority_finalized(_submitter: AccountId, _finalized: &Vec<Address>) {}
+	fn on_valid_authority_finalized(_submitter: AccountId, _finalized: &[Address]) {}
 }
 
 /// The module configuration trait.
@@ -137,7 +137,7 @@ decl_module! {
 			let last_authority_set = &FinalizedAuthority::get();
 
 			// ensure valid length
-			assert!(last_authority_set.len() / 2 + 1 <= headers.len(), "Invalid headers size");
+			assert!(last_authority_set.len() / 2 < headers.len(), "Invalid headers size");
 
 			let last_checkpoint = FinalizedCheckpoint::get();
 			let checkpoint = &headers[0];
@@ -200,7 +200,7 @@ decl_module! {
 			let last_authority_set = &FinalizedAuthority::get();
 
 			// ensure valid length
-			assert!(last_authority_set.len() / 2 + 1 <= headers.len(), "Invalid headers size");
+			assert!(last_authority_set.len() / 2 < headers.len(), "Invalid headers size");
 
 			let last_checkpoint = FinalizedCheckpoint::get();
 			let checkpoint = &headers[0];
@@ -285,7 +285,7 @@ pub(crate) fn initialize_storage<T: Config>(initial_validators: &[Address]) {
 }
 
 impl<T: Config> Module<T> {
-	pub fn contains(signers: &Vec<Address>, signer: Address) -> bool {
+	pub fn contains(signers: &[Address], signer: Address) -> bool {
 		signers.iter().any(|i| *i == signer)
 	}
 }

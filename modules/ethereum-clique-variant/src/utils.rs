@@ -41,11 +41,11 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 
 	let data = &header.extra_data;
 	if data.len() < VANITY_LENGTH {
-		Err(Error::MissingVanity)?
+		return Err(Error::MissingVanity);
 	}
 
 	if data.len() < VANITY_LENGTH + SIGNATURE_LENGTH {
-		Err(Error::MissingSignature)?
+		return Err(Error::MissingSignature);
 	}
 
 	// Split `signed_extra data` and `signature`
@@ -66,7 +66,7 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 	let pubkey = secp256k1_ecdsa_recover(&signature, msg.as_fixed_bytes()).map_err(|_| Error::RecoverPubkeyFail)?;
 	let creator = public_to_address(&pubkey);
 
-	cache.insert(header.compute_hash(), creator.clone());
+	cache.insert(header.compute_hash(), creator);
 	Ok(creator)
 }
 
@@ -82,14 +82,14 @@ pub fn extract_signers(header: &CliqueHeader) -> Result<Vec<Address>, Error> {
 	let data = &header.extra_data;
 
 	if data.len() <= VANITY_LENGTH + SIGNATURE_LENGTH {
-		Err(Error::CheckpointNoSigner)?
+		return Err(Error::CheckpointNoSigner);
 	}
 
 	// extract only the portion of extra_data which includes the signer list
 	let signers_raw = &data[(VANITY_LENGTH)..data.len() - (SIGNATURE_LENGTH)];
 
 	if signers_raw.len() % ADDRESS_LENGTH != 0 {
-		Err(Error::CheckpointInvalidSigners(signers_raw.len()))?
+		return Err(Error::CheckpointInvalidSigners(signers_raw.len()));
 	}
 
 	let num_signers = signers_raw.len() / 20;
