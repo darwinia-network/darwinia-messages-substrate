@@ -15,15 +15,15 @@
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::error::Error;
-use crate::{ChainTime, CliqueVariantConfiguration};
-use bp_eth_clique::{
-	CliqueHeader, ADDRESS_LENGTH, DIFF_INTURN, DIFF_NOTURN, KECCAK_EMPTY_LIST_RLP, SIGNATURE_LENGTH, VANITY_LENGTH,
+use crate::{BSCConfiguration, ChainTime};
+use bp_bsc::{
+	BSCHeader, ADDRESS_LENGTH, DIFF_INTURN, DIFF_NOTURN, KECCAK_EMPTY_LIST_RLP, SIGNATURE_LENGTH, VANITY_LENGTH,
 };
 
 /// Perform basic checks that only require header itself.
 pub fn contextless_checks<CT: ChainTime>(
-	config: &CliqueVariantConfiguration,
-	header: &CliqueHeader,
+	config: &BSCConfiguration,
+	header: &BSCHeader,
 	chain_time: &CT,
 ) -> Result<(), Error> {
 	// he genesis block is the always valid dead-end
@@ -92,11 +92,7 @@ pub fn contextless_checks<CT: ChainTime>(
 }
 
 /// Perform checks that require access to parent header.
-pub fn contextual_checks(
-	config: &CliqueVariantConfiguration,
-	header: &CliqueHeader,
-	parent: &CliqueHeader,
-) -> Result<(), Error> {
+pub fn contextual_checks(config: &BSCConfiguration, header: &BSCHeader, parent: &BSCHeader) -> Result<(), Error> {
 	// parent sanity check
 	if parent.compute_hash() != header.parent_hash || parent.number + 1 != header.number {
 		return Err(Error::UnknownAncestor);

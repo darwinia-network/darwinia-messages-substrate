@@ -101,10 +101,10 @@ pub struct HeaderId {
 	pub hash: H256,
 }
 
-/// An Clique header.
+/// An BSC header.
 #[derive(Clone, Default, Encode, Decode, PartialEq, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct CliqueHeader {
+pub struct BSCHeader {
 	/// Parent block hash.
 	pub parent_hash: H256,
 	/// Block uncles hash.
@@ -193,7 +193,7 @@ pub struct Bloom(#[cfg_attr(feature = "std", serde(with = "BigArray"))] [u8; 256
 #[cfg(feature = "std")]
 big_array! { BigArray; }
 
-impl CliqueHeader {
+impl BSCHeader {
 	/// Compute id of this header.
 	pub fn compute_id(&self) -> HeaderId {
 		HeaderId {

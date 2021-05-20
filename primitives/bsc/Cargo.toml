@@ -1,6 +1,6 @@
 [package]
-name = "bp-eth-clique"
-description = "Primitives of Ethereum Clique Bridge module."
+name = "bp-bsc"
+description = "Primitives of BSC Bridge module."
 version = "0.1.0"
 authors = ["Darwinia Network <tianyi.song@itering.com>"]
 edition = "2018"

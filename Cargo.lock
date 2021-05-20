@@ -700,17 +700,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-currency-exchange"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "parity-scale-codec 2.0.1",
- "sp-api",
- "sp-std",
-]
-
-[[package]]
-name = "bp-eth-clique"
+name = "bp-bsc"
 version = "0.1.0"
 dependencies = [
  "ethbloom 0.10.0",
@@ -735,6 +725,16 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "triehash",
+]
+
+[[package]]
+name = "bp-currency-exchange"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec 2.0.1",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
@@ -4777,10 +4777,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-bridge-eth-clique-variant"
+name = "pallet-bridge-eth-bsc"
 version = "0.1.0"
 dependencies = [
- "bp-eth-clique",
+ "bp-bsc",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

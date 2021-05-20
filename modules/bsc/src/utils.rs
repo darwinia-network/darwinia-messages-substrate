@@ -16,7 +16,7 @@
 
 use crate::error::Error;
 
-use bp_eth_clique::{public_to_address, Address, CliqueHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
+use bp_bsc::{public_to_address, Address, BSCHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
 use lru_cache::LruCache;
 use parking_lot::RwLock;
 use primitive_types::H256;
@@ -31,7 +31,7 @@ lazy_static! {
 }
 
 /// Recover block creator from signature
-pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
+pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 	// Initialization
 	let mut cache = CREATOR_BY_HASH.write();
 
@@ -78,7 +78,7 @@ pub fn recover_creator(header: &CliqueHeader) -> Result<Address, Error> {
 /// Signers: N * 32 bytes as hex encoded (20 characters)
 /// Signature: 65 bytes
 /// --
-pub fn extract_signers(header: &CliqueHeader) -> Result<Vec<Address>, Error> {
+pub fn extract_signers(header: &BSCHeader) -> Result<Vec<Address>, Error> {
 	let data = &header.extra_data;
 
 	if data.len() <= VANITY_LENGTH + SIGNATURE_LENGTH {

@@ -22,16 +22,14 @@
 // reexport to avoid direct secp256k1 deps by other crates
 pub use secp256k1::SecretKey;
 
-use crate::{
-	public_to_address, rlp_encode, Address, CliqueHeader, RawTransaction, UnsignedTransaction, H256, H520, U256,
-};
+use crate::{public_to_address, rlp_encode, Address, BSCHeader, RawTransaction, UnsignedTransaction, H256, H520, U256};
 
 use secp256k1::{Message, PublicKey};
 
 /// Utilities for signing headers.
 pub trait SignHeader {
 	/// Signs header by given author.
-	fn sign_by(self, author: &SecretKey) -> CliqueHeader;
+	fn sign_by(self, author: &SecretKey) -> BSCHeader;
 }
 
 /// Utilities for signing transactions.
@@ -40,7 +38,7 @@ pub trait SignTransaction {
 	fn sign_by(self, author: &SecretKey, chain_id: Option<u64>) -> RawTransaction;
 }
 
-impl SignHeader for CliqueHeader {
+impl SignHeader for BSCHeader {
 	fn sign_by(mut self, author: &SecretKey) -> Self {
 		self.coinbase = secret_to_address(author);
 		let signature = sign(author, self.compute_hash());

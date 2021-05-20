@@ -1,8 +1,8 @@
 [package]
-name = "pallet-bridge-eth-clique-variant"
-description = "A Substrate Runtime module that is able to verify Clique(PoA) variant(+PoS) headers and their finality."
+name = "pallet-bridge-eth-bsc"
+description = "A Substrate Runtime module that is able to verify bsc headers and authority set finality."
 version = "0.1.0"
-authors = ["Darwinia Network <tianyi.song@itering.io>"]
+authors = ["Darwinia Network <tianyi.song@itering.com>"]
 edition = "2018"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 
@@ -21,7 +21,7 @@ rand = "0.7.3"
 
 # Bridge dependencies
 
-bp-eth-clique= { path = "../../primitives/ethereum-clique", default-features = false }
+bp-bsc = { path = "../../primitives/bsc", default-features = false }
 
 # Substrate Dependencies
 
@@ -39,7 +39,7 @@ hex-literal = "0.3"
 [features]
 default = ["std"]
 std = [
-	"bp-eth-clique/std",
+	"bp-bsc/std",
 	"codec/std",
 	"frame-benchmarking/std",
 	"frame-support/std",
