@@ -161,7 +161,7 @@ decl_module! {
 
 
 			// extract new authority set from submitted checkpoint header
-			let new_authority_set = &utils::extract_signers(checkpoint).map_err(|e| e.msg())?;
+			let new_authority_set = &utils::extract_authorities(checkpoint).map_err(|e| e.msg())?;
 
 			// log already signed signer
 			let mut recently = BTreeSet::<Address>::new();
@@ -224,7 +224,7 @@ decl_module! {
 
 
 			// extract new authority set from submitted checkpoint header
-			let new_authority_set = &utils::extract_signers(checkpoint).map_err(|e| e.msg())?;
+			let new_authority_set = &utils::extract_authorities(checkpoint).map_err(|e| e.msg())?;
 
 			// log already signed signer
 			let mut recently = BTreeSet::<Address>::new();
@@ -242,12 +242,13 @@ decl_module! {
 				recently.insert(signer);
 
 				// enough proof to finalize new authority set
-				if recently.len() >= last_authority_set.len()/2 {
+				if recently.len() == last_authority_set.len()/2 {
+					// already have N/2 valid headers signed by different authority separately
 					// finalize new authroity set
 					FinalizedAuthority::put(new_authority_set);
 					FinalizedCheckpoint::put(checkpoint);
-					// skip the rest submitted headers
 					T::OnHeadersSubmitted::on_valid_authority_finalized(submitter, new_authority_set);
+					// skip the rest submitted headers
 					return Ok(());
 				}
 			}
@@ -278,7 +279,7 @@ decl_storage! {
 #[cfg(any(feature = "std", feature = "runtime-benchmarks"))]
 pub(crate) fn initialize_storage<T: Config>(header: &BSCHeader) {
 	// extract initial authority set checkpoint header
-	let initial_authority_set = &utils::extract_signers(header);
+	let initial_authority_set = &utils::extract_authorities(header);
 	assert!(initial_authority_set.is_ok());
 	FinalizedAuthority::put(initial_authority_set.as_ref().unwrap());
 	FinalizedCheckpoint::put(header)

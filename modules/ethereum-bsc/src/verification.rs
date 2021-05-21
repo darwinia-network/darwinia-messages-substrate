@@ -99,6 +99,7 @@ pub fn contextual_checks(config: &BSCConfiguration, header: &BSCHeader, parent: 
 	}
 
 	// Ensure that the block's timestamp isn't too close to it's parent
+	// And header.timestamp is greater than parents'
 	if header.timestamp < parent.timestamp.saturating_add(config.period) {
 		return Err(Error::HeaderTimestampTooClose);
 	}

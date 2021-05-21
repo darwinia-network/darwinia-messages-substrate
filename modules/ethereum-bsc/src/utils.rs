@@ -70,7 +70,7 @@ pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 	Ok(creator)
 }
 
-/// Extract signer list from extra_data.
+/// Extract authority set from extra_data.
 ///
 /// Layout of extra_data:
 /// ----
@@ -78,7 +78,7 @@ pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 /// Signers: N * 32 bytes as hex encoded (20 characters)
 /// Signature: 65 bytes
 /// --
-pub fn extract_signers(header: &BSCHeader) -> Result<Vec<Address>, Error> {
+pub fn extract_authorities(header: &BSCHeader) -> Result<Vec<Address>, Error> {
 	let data = &header.extra_data;
 
 	if data.len() <= VANITY_LENGTH + SIGNATURE_LENGTH {
