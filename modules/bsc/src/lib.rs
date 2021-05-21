@@ -264,15 +264,11 @@ decl_storage! {
 		FinalizedCheckpoint get(fn finalized_checkpoint) config(): BSCHeader;
 	}
 	add_extra_genesis {
-		config(initial_validators): Vec<Address>;
+		config(initial_header): BSCHeader;
 		build(|config| {
-			assert!(
-				!config.initial_validators.is_empty(),
-				"Initial validators set can't be empty",
-			);
-
+			// TODO should we verify this header?
 			initialize_storage::<T>(
-				&config.initial_validators,
+				&config.initial_header,
 			);
 		})
 	}
@@ -280,8 +276,12 @@ decl_storage! {
 
 /// Initialize storage.
 #[cfg(any(feature = "std", feature = "runtime-benchmarks"))]
-pub(crate) fn initialize_storage<T: Config>(initial_validators: &[Address]) {
-	FinalizedAuthority::put(initial_validators);
+pub(crate) fn initialize_storage<T: Config>(header: &BSCHeader) {
+	// extract initial authority set checkpoint header
+	let initial_authority_set = &utils::extract_signers(header);
+	assert!(initial_authority_set.is_ok());
+	FinalizedAuthority::put(initial_authority_set.as_ref().unwrap());
+	FinalizedCheckpoint::put(header)
 }
 
 impl<T: Config> Module<T> {
