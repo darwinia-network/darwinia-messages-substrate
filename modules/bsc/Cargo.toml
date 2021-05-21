@@ -1,5 +1,5 @@
 [package]
-name = "pallet-bridge-eth-bsc"
+name = "pallet-bridge-bsc"
 description = "A Substrate Runtime module that is able to verify bsc headers and authority set finality."
 version = "0.1.0"
 authors = ["Darwinia Network <tianyi.song@itering.com>"]
