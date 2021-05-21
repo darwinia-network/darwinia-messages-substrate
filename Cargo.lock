@@ -4742,6 +4742,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bridge-bsc"
+version = "0.1.0"
+dependencies = [
+ "bp-bsc",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "lazy_static",
+ "libsecp256k1",
+ "log",
+ "lru-cache",
+ "parity-crypto",
+ "parity-scale-codec 2.0.1",
+ "parking_lot 0.7.1",
+ "primitive-types",
+ "rand 0.7.3",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "time-utils",
+]
+
+[[package]]
 name = "pallet-bridge-currency-exchange"
 version = "0.1.0"
 dependencies = [
@@ -4774,31 +4799,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-bridge-eth-bsc"
-version = "0.1.0"
-dependencies = [
- "bp-bsc",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "hex-literal 0.3.1",
- "lazy_static",
- "libsecp256k1",
- "log",
- "lru-cache",
- "parity-crypto",
- "parity-scale-codec 2.0.1",
- "parking_lot 0.7.1",
- "primitive-types",
- "rand 0.7.3",
- "serde",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "time-utils",
 ]
 
 [[package]]
