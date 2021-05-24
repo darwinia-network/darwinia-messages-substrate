@@ -235,14 +235,14 @@ impl BSCHeader {
 		s.append(&self.state_root);
 		s.append(&self.transactions_root);
 		s.append(&self.receipts_root);
-		s.append(&EthBloom::from(self.log_bloom.0)); // CHECKME self.log_bloom in openethereum
+		s.append(&EthBloom::from(self.log_bloom.0));
 		s.append(&self.difficulty);
 		s.append(&self.number);
 		s.append(&self.gas_limit);
 		s.append(&self.gas_used);
 		s.append(&self.timestamp);
 		s.append(&self.extra_data);
-		s.append(&self.nonce); // CHECKME no nonce in openethereum
+		s.append(&self.nonce);
 
 		s.out().to_vec()
 	}
