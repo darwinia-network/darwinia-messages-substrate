@@ -137,7 +137,7 @@ decl_module! {
 			let last_authority_set = &FinalizedAuthority::get();
 
 			// ensure valid length
-			assert!(last_authority_set.len() / 2 < headers.len(), "Invalid headers size");
+			ensure!(last_authority_set.len() / 2 < headers.len(), <Error::<T>>::InvalidHeadersSize);
 
 			let last_checkpoint = FinalizedCheckpoint::get();
 			let checkpoint = &headers[0];
@@ -146,11 +146,13 @@ decl_module! {
 			let cfg: BSCConfiguration = T::BSCConfiguration::get();
 
 			// ensure valid header number
-			// CHECKME it should be <= or == ?
-			assert!(last_checkpoint.number + cfg.epoch_length == checkpoint.number, "Ridiculous checkpoint header number");
+			// the first group headers that relayer submitted should exactly follow the initial checkpoint
+			// eg. the initial header number is x, the first call of this extrinsic shoule submit
+			// headers with nunbers [x + epoch_length, x + epoch_length + 1, ...]
+			ensure!(last_checkpoint.number + cfg.epoch_length == checkpoint.number, <Error::<T>>::RidiculousNumber);
 
 			// ensure first element is checkpoint block header
-			assert!(checkpoint.number % cfg.epoch_length == 0, "First element is not checkpoint");
+			ensure!(checkpoint.number % cfg.epoch_length == 0, <Error::<T>>::NotCheckpoint);
 
 			// verify checkpoint
 			// basic checks
@@ -180,6 +182,7 @@ decl_module! {
 
 				// enough proof to finalize new authority set
 				if recently.len() >= last_authority_set.len()/2 {
+					// already have N/2 valid headers signed by different authority separately
 					// finalize new authroity set
 					FinalizedAuthority::put(new_authority_set);
 					FinalizedCheckpoint::put(checkpoint);
@@ -200,7 +203,7 @@ decl_module! {
 			let last_authority_set = &FinalizedAuthority::get();
 
 			// ensure valid length
-			assert!(last_authority_set.len() / 2 < headers.len(), "Invalid headers size");
+			ensure!(last_authority_set.len() / 2 < headers.len(), <Error::<T>>::InvalidHeadersSize);
 
 			let last_checkpoint = FinalizedCheckpoint::get();
 			let checkpoint = &headers[0];
@@ -209,11 +212,10 @@ decl_module! {
 			let cfg: BSCConfiguration = T::BSCConfiguration::get();
 
 			// ensure valid header number
-			// CHECKME it should be <= or == ?
-			assert!(last_checkpoint.number + cfg.epoch_length == checkpoint.number, "Ridiculous checkpoint header number");
+			ensure!(last_checkpoint.number + cfg.epoch_length == checkpoint.number, <Error::<T>>::RidiculousNumber);
 
 			// ensure first element is checkpoint block header
-			assert!(checkpoint.number % cfg.epoch_length == 0, "First element is not checkpoint");
+			ensure!(checkpoint.number % cfg.epoch_length == 0, <Error::<T>>::NotCheckpoint);
 
 			// verify checkpoint
 			// basic checks
@@ -267,7 +269,6 @@ decl_storage! {
 	add_extra_genesis {
 		config(initial_header): BSCHeader;
 		build(|config| {
-			// TODO should we verify this header?
 			initialize_storage::<T>(
 				&config.initial_header,
 			);
@@ -276,7 +277,7 @@ decl_storage! {
 }
 
 /// Initialize storage.
-#[cfg(any(feature = "std", feature = "runtime-benchmarks"))]
+#[cfg(any(feature = "std"))]
 pub(crate) fn initialize_storage<T: Config>(header: &BSCHeader) {
 	// extract initial authority set checkpoint header
 	let initial_authority_set = &utils::extract_authorities(header);
