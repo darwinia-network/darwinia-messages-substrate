@@ -179,6 +179,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "698b65a961a9d730fb45b6b0327e20207810c9f61ee421b082b27ba003f49e2b"
 
 [[package]]
+name = "array-bytes"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d709a11595cecbc902e04927043d6b472a13f65fe3c47bfb89a6d3a7b0a9d5b5"
+
+[[package]]
 name = "array_tool"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -703,6 +709,7 @@ dependencies = [
 name = "bp-bsc"
 version = "0.1.0"
 dependencies = [
+ "array-bytes",
  "ethbloom 0.10.0",
  "fixed-hash",
  "hash-db",
@@ -720,6 +727,7 @@ dependencies = [
  "rlp",
  "serde",
  "serde-big-array",
+ "serde_json",
  "sp-api",
  "sp-io",
  "sp-runtime",

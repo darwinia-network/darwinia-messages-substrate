@@ -246,6 +246,72 @@ impl BSCHeader {
 
 		s.out().to_vec()
 	}
+
+	#[cfg(any(feature = "deserialize", test))]
+	pub fn from_str_unchecked(s: &str) -> Self {
+		// --- std ---
+		use std::str::FromStr;
+
+		fn parse_value_unchecked(s: &str) -> &str {
+			s.splitn(2, ':').nth(1).unwrap_or_default().trim().trim_matches('"')
+		}
+
+		let s = s.trim().trim_start_matches('{').trim_end_matches('}').split(',');
+		let mut nested_array = 0u32;
+		let mut bsc_header = Self::default();
+		for s in s {
+			if s.is_empty() {
+				continue;
+			}
+
+			if s[s.find(':').unwrap_or_default() + 1..].trim_start().starts_with('[') && !s.ends_with(']') {
+				nested_array = nested_array.saturating_add(1);
+			} else if s.ends_with(']') {
+				nested_array = nested_array.saturating_sub(1);
+			}
+
+			if nested_array != 0 {
+				continue;
+			}
+
+			let s = s.trim();
+			if s.starts_with("\"difficulty") {
+				bsc_header.difficulty = str_to_u64(parse_value_unchecked(s)).into();
+			} else if s.starts_with("\"extraData") {
+				bsc_header.extra_data = array_bytes::hex2bytes_unchecked(parse_value_unchecked(s));
+			} else if s.starts_with("\"gasLimit") {
+				bsc_header.gas_limit = str_to_u64(parse_value_unchecked(s)).into();
+			} else if s.starts_with("\"gasUsed") {
+				bsc_header.gas_used = str_to_u64(parse_value_unchecked(s)).into();
+			} else if s.starts_with("\"logsBloom") {
+				let s = parse_value_unchecked(s);
+				let s = if s.starts_with("0x") { &s[2..] } else { s };
+				bsc_header.log_bloom = Bloom(*(EthBloom::from_str(s).unwrap_or_default().data()));
+			} else if s.starts_with("\"miner") {
+				bsc_header.coinbase = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 20).into();
+			} else if s.starts_with("\"mixHash") {
+				bsc_header.mix_digest = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 32).into();
+			} else if s.starts_with("\"nonce") {
+				bsc_header.nonce = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 8).into();
+			} else if s.starts_with("\"number") {
+				bsc_header.number = str_to_u64(parse_value_unchecked(s));
+			} else if s.starts_with("\"parentHash") {
+				bsc_header.parent_hash = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 32).into();
+			} else if s.starts_with("\"receiptsRoot") {
+				bsc_header.receipts_root = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 32).into();
+			} else if s.starts_with("\"sha3Uncles") {
+				bsc_header.uncle_hash = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 32).into();
+			} else if s.starts_with("\"stateRoot") {
+				bsc_header.state_root = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 32).into();
+			} else if s.starts_with("\"timestamp") {
+				bsc_header.timestamp = str_to_u64(parse_value_unchecked(s));
+			} else if s.starts_with("\"transactionsRoot") {
+				bsc_header.transactions_root = array_bytes::hex2array_unchecked!(parse_value_unchecked(s), 32).into();
+			}
+		}
+
+		bsc_header
+	}
 }
 
 impl UnsignedTransaction {
@@ -414,38 +480,75 @@ pub fn compute_merkle_root<T: AsRef<[u8]>>(items: impl Iterator<Item = T>) -> H2
 	triehash::ordered_trie_root::<Keccak256Hasher, _>(items)
 }
 
-sp_api::decl_runtime_apis! {
-	/// API for querying information about headers from the Rialto Bridge Pallet
-	pub trait RialtoPoAHeaderApi {
-		/// Returns number and hash of the best block known to the bridge module.
-		///
-		/// The caller should only submit an `import_header` transaction that makes
-		/// (or leads to making) other header the best one.
-		fn best_block() -> (u64, H256);
-		/// Returns number and hash of the best finalized block known to the bridge module.
-		fn finalized_block() -> (u64, H256);
-		/// Returns true if header is known to the runtime.
-		fn is_known_block(hash: H256) -> bool;
+#[cfg(any(feature = "deserialize", test))]
+pub fn str_to_u64(s: &str) -> u64 {
+	if s.starts_with("0x") {
+		u64::from_str_radix(&s[2..], 16).unwrap_or_default()
+	} else {
+		s.parse().unwrap_or_default()
 	}
+}
 
-	/// API for querying information about headers from the Kovan Bridge Pallet
-	pub trait KovanHeaderApi {
-		/// Returns number and hash of the best block known to the bridge module.
-		///
-		/// The caller should only submit an `import_header` transaction that makes
-		/// (or leads to making) other header the best one.
-		fn best_block() -> (u64, H256);
-		/// Returns number and hash of the best finalized block known to the bridge module.
-		fn finalized_block() -> (u64, H256);
-		/// Returns true if header is known to the runtime.
-		fn is_known_block(hash: H256) -> bool;
-	}
+#[cfg(any(feature = "deserialize", test))]
+pub fn bytes_from_string<'de, D>(deserializer: D) -> Result<Bytes, D::Error>
+where
+	D: serde::Deserializer<'de>,
+{
+	Ok(array_bytes::hex2bytes_unchecked(&String::deserialize(deserializer)?))
+}
+
+#[cfg(any(feature = "deserialize", test))]
+fn u256_from_u64<'de, D>(deserializer: D) -> Result<U256, D::Error>
+where
+	D: serde::Deserializer<'de>,
+{
+	Ok(u64::deserialize(deserializer)?.into())
+}
+
+#[cfg(any(feature = "deserialize", test))]
+fn bytes_array_from_string<'de, D>(deserializer: D) -> Result<Vec<Bytes>, D::Error>
+where
+	D: serde::Deserializer<'de>,
+{
+	Ok(<Vec<String>>::deserialize(deserializer)?
+		.into_iter()
+		.map(|s| array_bytes::hex2bytes_unchecked(&s))
+		.collect())
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
 	use hex_literal::hex;
+	use serde_json;
+
+	#[test]
+	fn header_compute_hash_works() {
+		let j_h7705800 = r#"
+		{
+			"difficulty": "0x2",
+			"extraData": "0xd883010100846765746888676f312e31352e35856c696e7578000000fc3ca6b72465176c461afb316ebc773c61faee85a6515daa295e26495cef6f69dfa69911d9d8e4f3bbadb89b29a97c6effb8a411dabc6adeefaa84f5067c8bbe2d4c407bbe49438ed859fe965b140dcf1aab71a93f349bbafec1551819b8be1efea2fc46ca749aa14430b3230294d12c6ab2aac5c2cd68e80b16b581685b1ded8013785d6623cc18d214320b6bb6475970f657164e5b75689b64b7fd1fa275f334f28e1872b61c6014342d914470ec7ac2975be345796c2b7ae2f5b9e386cd1b50a4550696d957cb4900f03a8b6c8fd93d6f4cea42bbb345dbc6f0dfdb5bec739bb832254baf4e8b4cc26bd2b52b31389b56e98b9f8ccdafcc39f3c7d6ebf637c9151673cbc36b88a6f79b60359f141df90a0c745125b131caaffd12b8f7166496996a7da21cf1f1b04d9b3e26a3d077be807dddb074639cd9fa61b47676c064fc50d62cce2fd7544e0b2cc94692d4a704debef7bcb61328e2d3a739effcd3a99387d015e260eefac72ebea1e9ae3261a475a27bb1028f140bc2a7c843318afdea0a6e3c511bbd10f4519ece37dc24887e11b55dee226379db83cffc681495730c11fdde79ba4c0c0670403d7dfc4c816a313885fe04b850f96f27b2e9fd88b147c882ad7caf9b964abfe6543625fcca73b56fe29d3046831574b0681d52bf5383d6f2187b6276c100",
+			"gasLimit": "0x38ff37a",
+			"gasUsed": "0x1364017",
+			"logsBloom": "0x2c30123db854d838c878e978cd2117896aa092e4ce08f078424e9ec7f2312f1909b35e579fb2702d571a3be04a8f01328e51af205100a7c32e3dd8faf8222fcf03f3545655314abf91c4c0d80cea6aa46f122c2a9c596c6a99d5842786d40667eb195877bbbb128890a824506c81a9e5623d4355e08a16f384bf709bf4db598bbcb88150abcd4ceba89cc798000bdccf5cf4d58d50828d3b7dc2bc5d8a928a32d24b845857da0b5bcf2c5dec8230643d4bec452491ba1260806a9e68a4a530de612e5c2676955a17400ce1d4fd6ff458bc38a8b1826e1c1d24b9516ef84ea6d8721344502a6c732ed7f861bb0ea017d520bad5fa53cfc67c678a2e6f6693c8ee",
+			"miner": "0xe9ae3261a475a27bb1028f140bc2a7c843318afd",
+			"mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+			"nonce": "0x0000000000000000",
+			"number": "0x7594c8",
+			"parentHash": "0x5cb4b6631001facd57be810d5d1383ee23a31257d2430f097291d25fc1446d4f",
+			"receiptsRoot": "0x1bfba16a9e34a12ff7c4b88be484ccd8065b90abea026f6c1f97c257fdb4ad2b",
+			"sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+			"stateRoot": "0xa6cd7017374dfe102e82d2b3b8a43dbe1d41cc0e4569f3dc45db6c4e687949ae",
+			"timestamp": "0x60ac7137",
+			"transactionsRoot": "0x657f5876113ac9abe5cf0460aa8d6b3b53abfc336cea4ab3ee594586f8b584ca",
+		  }"#;
+		let h7705800 = BSCHeader::from_str_unchecked(j_h7705800);
+		println!("{}", serde_json::to_string(&h7705800).unwrap());
+		assert_eq!(
+			format!("{:#x}", h7705800.compute_hash()),
+			"0x7e1db1179427e17c11a42019f19a3dddf326b6177b0266749639c85c78c607bb".to_owned()
+		);
+	}
 
 	#[test]
 	fn transfer_transaction_decode_works() {

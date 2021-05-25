@@ -102,7 +102,7 @@ pub fn test_bsc_config() -> BSCConfiguration {
 	BSCConfiguration {
 		min_gas_limit: 0x1388.into(),
 		max_gas_limit: U256::max_value(),
-		period: 0x03,
+		period: 0x03, // 3s
 		epoch_length: 0xc8, // 200
 	}
 }
