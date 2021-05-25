@@ -17,28 +17,10 @@
 use crate::error::Error;
 
 use bp_bsc::{public_to_address, Address, BSCHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
-use lru_cache::LruCache;
-use parking_lot::RwLock;
-use primitive_types::H256;
 use sp_io::crypto::secp256k1_ecdsa_recover;
-
-/// How many recovered signature to cache in the memory.
-pub const CREATOR_CACHE_NUM: usize = 4096;
-lazy_static! {
-	/// key: header hash
-	/// value: creator address
-	static ref CREATOR_BY_HASH: RwLock<LruCache<H256, Address>> = RwLock::new(LruCache::new(CREATOR_CACHE_NUM));
-}
 
 /// Recover block creator from signature
 pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
-	// Initialization
-	let mut cache = CREATOR_BY_HASH.write();
-
-	if let Some(creator) = cache.get_mut(&header.compute_hash()) {
-		return Ok(*creator);
-	}
-
 	let data = &header.extra_data;
 	if data.len() < VANITY_LENGTH {
 		return Err(Error::MissingVanity);
@@ -66,7 +48,6 @@ pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 	let pubkey = secp256k1_ecdsa_recover(&signature, msg.as_fixed_bytes()).map_err(|_| Error::RecoverPubkeyFail)?;
 	let creator = public_to_address(&pubkey);
 
-	cache.insert(header.compute_hash(), creator);
 	Ok(creator)
 }
 

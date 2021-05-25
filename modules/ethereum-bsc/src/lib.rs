@@ -28,9 +28,6 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 extern crate parity_crypto as crypto;
 
-#[macro_use]
-extern crate lazy_static;
-
 mod error;
 mod utils;
 mod verification;

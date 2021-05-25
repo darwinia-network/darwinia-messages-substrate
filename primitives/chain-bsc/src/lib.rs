@@ -27,15 +27,10 @@ pub use rlp::encode as rlp_encode;
 use codec::{Decode, Encode};
 use ethbloom::{Bloom as EthBloom, Input as BloomInput};
 use fixed_hash::construct_fixed_hash;
-use lru_cache::LruCache;
-use parking_lot::RwLock;
 use rlp::{DecoderError, Rlp, RlpStream};
 use sp_io::hashing::keccak_256;
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
-
-#[macro_use]
-extern crate lazy_static;
 
 use impl_rlp::impl_fixed_hash_rlp;
 #[cfg(feature = "std")]
@@ -70,14 +65,6 @@ pub const DIFF_INTURN: U256 = U256([2, 0, 0, 0]);
 pub const DIFF_NOTURN: U256 = U256([1, 0, 0, 0]);
 /// Default noturn block wiggle factor defined in spec.
 pub const SIGNING_DELAY_NOTURN_MS: u64 = 500;
-
-/// How many recovered signature to cache in the memory.
-pub const CREATOR_CACHE_NUM: usize = 210;
-lazy_static! {
-	/// key: header hash
-	/// value: creator address
-	static ref CREATOR_BY_HASH: RwLock<LruCache<H256, Address>> = RwLock::new(LruCache::new(CREATOR_CACHE_NUM));
-}
 
 construct_fixed_hash! { pub struct H520(65); }
 impl_fixed_hash_rlp!(H520, 65);
