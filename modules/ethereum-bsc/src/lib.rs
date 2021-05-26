@@ -29,8 +29,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 extern crate parity_crypto as crypto;
 
 mod error;
-#[cfg(feature = "test")]
+#[cfg(test)]
 mod mock;
+#[cfg(test)]
+mod tests;
 mod utils;
 mod verification;
 
@@ -289,25 +291,4 @@ impl<T: Config> Module<T> {
 	pub fn contains(signers: &[Address], signer: Address) -> bool {
 		signers.iter().any(|i| *i == signer)
 	}
-}
-
-#[cfg(test)]
-pub(crate) mod tests {
-	use super::*;
-	use crate::mock::{genesis, run_test, run_test_with_genesis, TestRuntime};
-
-	#[test]
-	fn initialize_storage_should_works() {
-		run_test(|ctx| {
-			initialize_storage::<TestRuntime>(&ctx.genesis);
-		})
-	}
-
-	// #[test]
-	// fn verify_and_update_authority_set_unsigned_should_not_work() {
-	// 	let df = BSCHeader::Default();
-	// 	run_test(|_|{
-	// 		ctx
-	// 	})
-	// }
 }

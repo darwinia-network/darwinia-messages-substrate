@@ -106,7 +106,6 @@ pub fn test_bsc_config() -> BSCConfiguration {
 }
 
 /// Genesis header that is used in tests by default.
-#[cfg(feature = "test")]
 pub fn genesis() -> BSCHeader {
 	let j_h7705800 = r#"
 	{
@@ -140,6 +139,7 @@ pub fn run_test_with_genesis<T>(genesis: BSCHeader, test: impl FnOnce(TestContex
 	sp_io::TestExternalities::new(
 		CrateGenesisConfig {
 			initial_header: genesis.clone(),
+			..Default::default()
 		}
 		.build_storage::<TestRuntime>()
 		.unwrap(),

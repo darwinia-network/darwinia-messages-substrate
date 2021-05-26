@@ -18,7 +18,7 @@ rand = "0.7.3"
 
 # Bridge dependencies
 
-bp-bsc = { path = "../../primitives/chain-bsc", default-features = false}
+bp-bsc = { path = "../../primitives/chain-bsc", default-features = false }
 
 # Substrate Dependencies
 
@@ -32,6 +32,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "master" , 
 [dev-dependencies]
 libsecp256k1 = { version = "0.3.4", features = ["hmac"] }
 hex-literal = "0.3"
+bp-bsc = { path = "../../primitives/chain-bsc", features = ["deserialize"] }
 
 [features]
 default = ["std"]

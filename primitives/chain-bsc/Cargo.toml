@@ -57,3 +57,5 @@ std = [
 	"sp-std/std",
 	"triehash/std",
 ]
+
+deserialize = []
