@@ -18,7 +18,7 @@ rand = "0.7.3"
 
 # Bridge dependencies
 
-bp-bsc = { path = "../../primitives/chain-bsc", default-features = false }
+bp-bsc = { path = "../../primitives/chain-bsc", default-features = false}
 
 # Substrate Dependencies
 
