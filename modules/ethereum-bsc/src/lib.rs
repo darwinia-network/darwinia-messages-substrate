@@ -20,11 +20,13 @@
 
 use bp_bsc::{Address, BSCHeader};
 use codec::{Decode, Encode};
-use frame_support::{decl_error, decl_module, decl_storage, ensure, traits::Get};
+use frame_support::{
+	decl_error, decl_module, decl_storage, ensure,
+	traits::{Get, UnixTime},
+};
 use primitive_types::U256;
 use sp_runtime::RuntimeDebug;
 use sp_std::{collections::btree_set::BTreeSet, prelude::*};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 extern crate parity_crypto as crypto;
 
@@ -47,31 +49,6 @@ pub struct BSCConfiguration {
 	pub epoch_length: u64,
 	/// block period
 	pub period: u64,
-}
-
-/// ChainTime represents the runtime on-chain time
-pub trait ChainTime: Default {
-	/// Is a header timestamp ahead of the current on-chain time.
-	///
-	/// Check whether `timestamp` is ahead (i.e greater than) the current on-chain
-	/// time. If so, return `true`, `false` otherwise.
-	fn is_timestamp_ahead(&self, timestamp: u64) -> bool;
-}
-
-/// ChainTime implementation for the empty type.
-///
-/// This implementation will allow a runtime without the timestamp pallet to use
-/// the empty type as its ChainTime associated type.
-impl ChainTime for () {
-	/// Is a header timestamp ahead of the current on-chain time.
-	///
-	/// Check whether `timestamp` is ahead (i.e greater than) the current on-chain
-	/// time. If so, return `true`, `false` otherwise.
-	fn is_timestamp_ahead(&self, timestamp: u64) -> bool {
-		// This should succeed under the contraints that the system clock works
-		let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default();
-		Duration::from_secs(timestamp) > now
-	}
 }
 
 /// Callbacks for header submission rewards/penalties.
@@ -102,7 +79,7 @@ pub trait Config: frame_system::Config {
 	/// BSC configuration.
 	type BSCConfiguration: Get<BSCConfiguration>;
 	/// Header timestamp verification against current on-chain time.
-	type ChainTime: ChainTime;
+	type UnixTime: UnixTime;
 	/// Handler for headers submission result.
 	type OnHeadersSubmitted: OnHeadersSubmitted<Self::AccountId>;
 }
@@ -157,7 +134,7 @@ decl_module! {
 
 			// verify checkpoint
 			// basic checks
-			verification::contextless_checks(&cfg, checkpoint, &T::ChainTime::default()).map_err(|e|e.msg())?;
+			verification::contextless_checks::<T>(&cfg, checkpoint).map_err(|e|e.msg())?;
 			// check signer
 			let signer = utils::recover_creator(checkpoint).map_err(|e| e.msg())?;
 			ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
@@ -170,7 +147,7 @@ decl_module! {
 			let mut recently = BTreeSet::<Address>::new();
 
 			for i in 1..headers.len() {
-				verification::contextless_checks(&cfg, &headers[i], &T::ChainTime::default()).map_err(|e|e.msg())?;
+				verification::contextless_checks::<T>(&cfg, &headers[i]).map_err(|e|e.msg())?;
 				// check parent
 				verification::contextual_checks(&cfg, &headers[i], &headers[i-1]).map_err(|e|e.msg())?;
 				// who signed this header
@@ -192,7 +169,7 @@ decl_module! {
 				}
 			}
 
-			// <Error::<T>>::HeadersNotEnough
+			Err(<Error::<T>>::HeadersNotEnough)?
 		}
 
 		/// Verify signed relayed headers and finalize authority set
@@ -220,7 +197,7 @@ decl_module! {
 
 			// verify checkpoint
 			// basic checks
-			verification::contextless_checks(&cfg, checkpoint, &T::ChainTime::default()).map_err(|e|e.msg())?;
+			verification::contextless_checks::<T>(&cfg, checkpoint).map_err(|e|e.msg())?;
 			// check signer
 			let signer = utils::recover_creator(checkpoint).map_err(|e| e.msg())?;
 			ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
@@ -233,7 +210,7 @@ decl_module! {
 			let mut recently = BTreeSet::<Address>::new();
 
 			for i in 1..headers.len() {
-				verification::contextless_checks(&cfg, &headers[i], &T::ChainTime::default()).map_err(|e|e.msg())?;
+				verification::contextless_checks::<T>(&cfg, &headers[i]).map_err(|e|e.msg())?;
 				// check parent
 				verification::contextual_checks(&cfg, &headers[i], &headers[i-1]).map_err(|e|e.msg())?;
 				// who signed this header

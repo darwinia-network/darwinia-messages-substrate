@@ -68,10 +68,12 @@ fn initialize_storage_should_works() {
 	})
 }
 
-// #[test]
-// fn verify_and_update_authority_set_unsigned_should_not_work() {
-// 	let df = BSCHeader::Default();
-// 	run_test(|_|{
-// 		ctx
-// 	})
-// }
+#[test]
+fn verify_and_update_authority_set_unsigned_should_not_work() {
+	let df: BSCHeader = Default::default();
+	run_test(|_| {
+		let r = BSC::verify_and_update_authority_set_unsigned(Origin::root(), vec![df]);
+		assert!(!r.is_ok());
+		println!("{:?}", r.unwrap_err());
+	})
+}

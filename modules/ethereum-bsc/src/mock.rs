@@ -19,14 +19,15 @@
 
 pub use bp_bsc::signatures::secret_to_address;
 
-use crate::{BSCConfiguration, ChainTime, Config, GenesisConfig as CrateGenesisConfig};
+use crate::{BSCConfiguration, Config, GenesisConfig as CrateGenesisConfig};
 use bp_bsc::{Address, BSCHeader, H256, U256};
-use frame_support::{parameter_types, weights::Weight};
+use frame_support::{parameter_types, traits::UnixTime, weights::Weight};
 use sp_runtime::{
 	testing::Header as SubstrateHeader,
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub type AccountId = u64;
 
@@ -42,7 +43,7 @@ frame_support::construct_runtime! {
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		BSC: pallet_bsc::{Pallet, Call},
+		BSC: pallet_bsc::{Pallet, Config, Call},
 	}
 }
 
@@ -85,7 +86,7 @@ parameter_types! {
 
 impl Config for TestRuntime {
 	type BSCConfiguration = TestBSCConfiguration;
-	type ChainTime = ConstChainTime;
+	type UnixTime = ConstChainTime;
 	type OnHeadersSubmitted = ();
 }
 
@@ -151,9 +152,8 @@ pub fn run_test_with_genesis<T>(genesis: BSCHeader, test: impl FnOnce(TestContex
 #[derive(Default)]
 pub struct ConstChainTime;
 
-impl ChainTime for ConstChainTime {
-	fn is_timestamp_ahead(&self, timestamp: u64) -> bool {
-		let now = i32::max_value() as u64 / 2;
-		timestamp > now
+impl UnixTime for ConstChainTime {
+	fn now() -> Duration {
+		SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default()
 	}
 }
