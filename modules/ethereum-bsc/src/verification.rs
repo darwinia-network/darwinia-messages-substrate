@@ -39,9 +39,6 @@ where
 	if header.extra_data.len() < VANITY_LENGTH + SIGNATURE_LENGTH {
 		return Err(Error::MissingSignature);
 	}
-	if header.number >= u64::max_value() {
-		return Err(Error::RidiculousNumber);
-	}
 	// Ensure that the extra-data contains a validator list on checkpoint, but none otherwise
 	let is_checkpoint = header.number % config.epoch_length == 0;
 	let validator_bytes_len = header.extra_data.len() - (VANITY_LENGTH + SIGNATURE_LENGTH);
