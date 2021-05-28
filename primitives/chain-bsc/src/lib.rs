@@ -530,6 +530,7 @@ mod tests {
 			"transactionsRoot": "0x657f5876113ac9abe5cf0460aa8d6b3b53abfc336cea4ab3ee594586f8b584ca",
 		  }"#;
 		let h7705800 = BSCHeader::from_str_unchecked(j_h7705800);
+		println!("{:?}", h7705800);
 		println!("{:?}", h7705800.rlp());
 		println!("{}", serde_json::to_string(&h7705800).unwrap());
 		println!("{:?}", h7705800.log_bloom.0);
