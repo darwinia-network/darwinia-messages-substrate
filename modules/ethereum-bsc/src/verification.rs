@@ -41,7 +41,7 @@ where
 	}
 	// Ensure that the extra-data contains a validator list on checkpoint, but none otherwise
 	let is_checkpoint = header.number % config.epoch_length == 0;
-	let validator_bytes_len = header.extra_data.len() - (VANITY_LENGTH + SIGNATURE_LENGTH);
+	let validator_bytes_len = header.extra_data.len().saturating_sub(VANITY_LENGTH + SIGNATURE_LENGTH);
 	if !is_checkpoint && validator_bytes_len != 0 {
 		return Err(Error::ExtraValidators);
 	}
