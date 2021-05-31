@@ -215,7 +215,7 @@ impl BSCHeader {
 	/// Returns header RLP
 	fn rlp(&self) -> Bytes {
 		let mut s = RlpStream::new();
-		s.begin_list(14);
+		s.begin_list(15);
 		s.append(&self.parent_hash);
 		s.append(&self.uncle_hash);
 		s.append(&self.coinbase);
@@ -229,6 +229,7 @@ impl BSCHeader {
 		s.append(&self.gas_used);
 		s.append(&self.timestamp);
 		s.append(&self.extra_data);
+		s.append(&self.mix_digest);
 		s.append(&self.nonce);
 
 		s.out().to_vec()
@@ -484,30 +485,10 @@ where
 	Ok(array_bytes::hex2bytes_unchecked(&String::deserialize(deserializer)?))
 }
 
-#[cfg(any(feature = "deserialize", test))]
-fn u256_from_u64<'de, D>(deserializer: D) -> Result<U256, D::Error>
-where
-	D: serde::Deserializer<'de>,
-{
-	Ok(u64::deserialize(deserializer)?.into())
-}
-
-#[cfg(any(feature = "deserialize", test))]
-fn bytes_array_from_string<'de, D>(deserializer: D) -> Result<Vec<Bytes>, D::Error>
-where
-	D: serde::Deserializer<'de>,
-{
-	Ok(<Vec<String>>::deserialize(deserializer)?
-		.into_iter()
-		.map(|s| array_bytes::hex2bytes_unchecked(&s))
-		.collect())
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
 	use hex_literal::hex;
-	use serde_json;
 
 	#[test]
 	fn header_compute_hash_works() {
@@ -530,11 +511,6 @@ mod tests {
 			"transactionsRoot": "0x657f5876113ac9abe5cf0460aa8d6b3b53abfc336cea4ab3ee594586f8b584ca",
 		  }"#;
 		let h7705800 = BSCHeader::from_str_unchecked(j_h7705800);
-		println!("{:?}", h7705800);
-		println!("{:?}", h7705800.rlp());
-		println!("{}", serde_json::to_string(&h7705800).unwrap());
-		println!("{:?}", h7705800.log_bloom.0);
-		println!("{:?}", h7705800.extra_data);
 		assert_eq!(
 			format!("{:#x}", h7705800.compute_hash()),
 			"0x7e1db1179427e17c11a42019f19a3dddf326b6177b0266749639c85c78c607bb".to_owned()
