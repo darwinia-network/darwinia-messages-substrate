@@ -66,7 +66,7 @@ where
 		return Err(Error::InvalidDifficulty);
 	}
 	// Ensure that none is empty
-	if header.nonce.len() != 8 || array_bytes::bytes2hex("0x", &header.nonce) != "0x0000000000000000" {
+	if header.nonce.as_slice() != [0; 8] {
 		return Err(Error::InvalidNonce);
 	}
 	// Ensure that the block's difficulty is meaningful (may not be correct at this point)
