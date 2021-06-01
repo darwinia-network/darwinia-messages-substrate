@@ -49,6 +49,8 @@ pub struct BSCConfiguration {
 	pub epoch_length: u64,
 	/// block period
 	pub period: u64,
+	/// Chain ID
+	pub chain_id: u64,
 }
 
 /// Callbacks for header submission rewards/penalties.
@@ -136,7 +138,7 @@ decl_module! {
 			// basic checks
 			verification::contextless_checks::<T>(&cfg, checkpoint).map_err(|e|e.msg())?;
 			// check signer
-			let signer = utils::recover_creator(checkpoint).map_err(|e| e.msg())?;
+			let signer = utils::recover_creator(checkpoint, &cfg).map_err(|e| e.msg())?;
 			ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 
 
@@ -151,7 +153,7 @@ decl_module! {
 				// check parent
 				verification::contextual_checks(&cfg, &headers[i], &headers[i-1]).map_err(|e|e.msg())?;
 				// who signed this header
-				let signer = utils::recover_creator(&headers[i]).map_err(|e| e.msg())?;
+				let signer = utils::recover_creator(&headers[i], &cfg).map_err(|e| e.msg())?;
 				// signed must in last authority set
 				ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 				// headers submitted must signed by different authority
@@ -199,7 +201,7 @@ decl_module! {
 			// basic checks
 			verification::contextless_checks::<T>(&cfg, checkpoint).map_err(|e|e.msg())?;
 			// check signer
-			let signer = utils::recover_creator(checkpoint).map_err(|e| e.msg())?;
+			let signer = utils::recover_creator(checkpoint, &cfg).map_err(|e| e.msg())?;
 			ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 
 
@@ -214,7 +216,7 @@ decl_module! {
 				// check parent
 				verification::contextual_checks(&cfg, &headers[i], &headers[i-1]).map_err(|e|e.msg())?;
 				// who signed this header
-				let signer = utils::recover_creator(&headers[i]).map_err(|e| e.msg())?;
+				let signer = utils::recover_creator(&headers[i], &cfg).map_err(|e| e.msg())?;
 				// signed must in last authority set
 				ensure!(Self::contains(last_authority_set, signer), <Error::<T>>::InvalidSigner);
 				// headers submitted must signed by different authority

@@ -4,7 +4,7 @@ use bp_bsc::BSCHeader;
 #[test]
 fn utils_should_works() {
 	let h: BSCHeader = genesis();
-	let r = utils::recover_creator(&h);
+	let r = utils::recover_creator(&h, &test_bsc_config());
 	assert!(r.is_ok());
 	assert_eq!(
 		// format!("{:#x}", r.unwrap()),

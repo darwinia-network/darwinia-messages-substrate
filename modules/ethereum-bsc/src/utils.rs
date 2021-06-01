@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with OpenEthereum.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::error::Error;
+use crate::{error::Error, BSCConfiguration};
 
 use bp_bsc::{Address, BSCHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
 use crypto::publickey::{public_to_address, recover as ec_recover, Signature};
 
 /// Recover block creator from signature
-pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
+pub fn recover_creator(header: &BSCHeader, cfg: &BSCConfiguration) -> Result<Address, Error> {
 	let data = &header.extra_data;
 	if data.len() < VANITY_LENGTH {
 		return Err(Error::MissingVanity);
@@ -41,7 +41,7 @@ pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 	// modify header and hash it
 	let unsigned_header = &mut header.clone();
 	unsigned_header.extra_data = signed_data_slice.to_vec();
-	let msg = unsigned_header.compuate_hash_with_chain_id(56);
+	let msg = unsigned_header.compuate_hash_with_chain_id(cfg.chain_id);
 
 	let pubkey = ec_recover(&Signature::from(signature), &msg).map_err(|_| Error::RecoverPubkeyFail)?;
 	let creator = public_to_address(&pubkey);

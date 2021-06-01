@@ -103,6 +103,7 @@ pub fn test_bsc_config() -> BSCConfiguration {
 		max_gas_limit: U256::max_value(),
 		period: 0x03,       // 3s
 		epoch_length: 0xc8, // 200
+		chain_id: 56,
 	}
 }
 
