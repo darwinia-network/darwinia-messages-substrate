@@ -16,8 +16,8 @@
 
 use crate::error::Error;
 
-use bp_bsc::{public_to_address, Address, BSCHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
-use sp_io::crypto::secp256k1_ecdsa_recover;
+use bp_bsc::{Address, BSCHeader, ADDRESS_LENGTH, H160, SIGNATURE_LENGTH, VANITY_LENGTH};
+use crypto::publickey::{public_to_address, recover as ec_recover, Signature};
 
 /// Recover block creator from signature
 pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
@@ -29,8 +29,6 @@ pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 	if data.len() < VANITY_LENGTH + SIGNATURE_LENGTH {
 		return Err(Error::MissingSignature);
 	}
-
-	// Split `signed_extra data` and `signature`
 	let (signed_data_slice, signature_slice) = data.split_at(data.len() - SIGNATURE_LENGTH);
 
 	// convert `&[u8]` to `[u8; 65]`
@@ -43,9 +41,9 @@ pub fn recover_creator(header: &BSCHeader) -> Result<Address, Error> {
 	// modify header and hash it
 	let unsigned_header = &mut header.clone();
 	unsigned_header.extra_data = signed_data_slice.to_vec();
-	let msg = unsigned_header.compute_hash();
+	let msg = unsigned_header.compuate_hash_with_chain_id(56);
 
-	let pubkey = secp256k1_ecdsa_recover(&signature, msg.as_fixed_bytes()).map_err(|_| Error::RecoverPubkeyFail)?;
+	let pubkey = ec_recover(&Signature::from(signature), &msg).map_err(|_| Error::RecoverPubkeyFail)?;
 	let creator = public_to_address(&pubkey);
 
 	Ok(creator)

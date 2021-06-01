@@ -7,8 +7,9 @@ fn utils_should_works() {
 	let r = utils::recover_creator(&h);
 	assert!(r.is_ok());
 	assert_eq!(
-		format!("{:#x}", r.unwrap()),
-		"0xe9ae3261a475a27bb1028f140bc2a7c843318afd"
+		// format!("{:#x}", r.unwrap()),
+		r.unwrap(),
+		h.coinbase,
 	);
 
 	let r_signers = utils::extract_authorities(&h);
@@ -330,7 +331,6 @@ fn verify_and_update_authority_set_signed_should_works() {
 				h7706010,
 			],
 		);
-		println!("{:?}", r.unwrap_err());
 		assert!(r.is_ok());
 	})
 }

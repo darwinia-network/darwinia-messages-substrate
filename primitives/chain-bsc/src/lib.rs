@@ -194,6 +194,10 @@ impl BSCHeader {
 		keccak_256(&self.rlp()).into()
 	}
 
+	pub fn compuate_hash_with_chain_id(&self, chain_id: u64) -> H256 {
+		keccak_256(&self.rlp_chain_id(chain_id)).into()
+	}
+
 	/// Get id of this header' parent. Returns None if this is genesis header.
 	pub fn parent_id(&self) -> Option<HeaderId> {
 		self.number.checked_sub(1).map(|parent_number| HeaderId {
@@ -216,6 +220,29 @@ impl BSCHeader {
 	fn rlp(&self) -> Bytes {
 		let mut s = RlpStream::new();
 		s.begin_list(15);
+		s.append(&self.parent_hash);
+		s.append(&self.uncle_hash);
+		s.append(&self.coinbase);
+		s.append(&self.state_root);
+		s.append(&self.transactions_root);
+		s.append(&self.receipts_root);
+		s.append(&EthBloom::from(self.log_bloom.0));
+		s.append(&self.difficulty);
+		s.append(&self.number);
+		s.append(&self.gas_limit);
+		s.append(&self.gas_used);
+		s.append(&self.timestamp);
+		s.append(&self.extra_data);
+		s.append(&self.mix_digest);
+		s.append(&self.nonce);
+
+		s.out().to_vec()
+	}
+
+	fn rlp_chain_id(&self, chain_id: u64) -> Bytes {
+		let mut s = RlpStream::new();
+		s.begin_list(16);
+		s.append(&chain_id);
 		s.append(&self.parent_hash);
 		s.append(&self.uncle_hash);
 		s.append(&self.coinbase);

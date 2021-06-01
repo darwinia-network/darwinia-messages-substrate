@@ -20,7 +20,7 @@
 pub use bp_bsc::signatures::secret_to_address;
 
 use crate::{BSCConfiguration, Config, GenesisConfig as CrateGenesisConfig};
-use bp_bsc::{Address, BSCHeader, H256, U256};
+use bp_bsc::{BSCHeader, H256, U256};
 use frame_support::{parameter_types, traits::UnixTime, weights::Weight};
 use sp_runtime::{
 	testing::Header as SubstrateHeader,
