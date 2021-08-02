@@ -1,64 +1,62 @@
 [package]
-name = "millau-bridge-node"
+authors     = ["Parity Technologies <admin@parity.io>"]
+build       = "build.rs"
 description = "Substrate node compatible with Millau runtime"
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2018"
-build = "build.rs"
-homepage = "https://substrate.dev"
-repository = "https://github.com/paritytech/parity-bridges-common/"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+edition     = "2018"
+homepage    = "https://substrate.dev"
+license     = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name        = "millau-bridge-node"
+repository  = "https://github.com/paritytech/parity-bridges-common/"
+version     = "0.1.0"
 
 [dependencies]
 jsonrpc-core = "15.1.0"
-structopt = "0.3.21"
-serde_json = "1.0.59"
+serde_json   = "1.0.59"
+structopt    = "0.3.21"
 
 # Bridge dependencies
 
-bp-messages = { path = "../../../primitives/messages" }
-bp-millau= { path = "../../../primitives/chain-millau" }
-bp-runtime = { path = "../../../primitives/runtime" }
-millau-runtime = { path = "../runtime" }
+bp-messages            = { path = "../../../primitives/messages" }
+bp-millau              = { path = "../../../primitives/chain-millau" }
+bp-runtime             = { path = "../../../primitives/runtime" }
+millau-runtime         = { path = "../runtime" }
 pallet-bridge-messages = { path = "../../../modules/messages" }
 
 # Substrate Dependencies
 
-frame-benchmarking = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-node-inspect = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-basic-authorship = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-cli = { git = "https://github.com/darwinia-network/substrate", branch = "main", features = ["wasmtime"] }
-sc-client-api = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-consensus = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-consensus-aura = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-executor = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-finality-grandpa-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-keystore = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-rpc = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-service = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-telemetry = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sc-transaction-pool = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-consensus = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-consensus-aura = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-inherents = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-sp-timestamp = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
-substrate-frame-rpc-system = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
+frame-benchmarking             = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+frame-benchmarking-cli         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+node-inspect                   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+pallet-transaction-payment-rpc = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-basic-authorship            = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-cli                         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2", features = ["wasmtime"] }
+sc-client-api                  = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-consensus                   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-consensus-aura              = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-executor                    = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-finality-grandpa            = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-finality-grandpa-rpc        = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-keystore                    = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-rpc                         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-service                     = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-telemetry                   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sc-transaction-pool            = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-consensus                   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-consensus-aura              = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-core                        = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-finality-grandpa            = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-inherents                   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-runtime                     = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+sp-timestamp                   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
+substrate-frame-rpc-system     = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
 
 [build-dependencies]
+frame-benchmarking-cli       = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.2" }
 substrate-build-script-utils = "3.0.0"
-frame-benchmarking-cli = { git = "https://github.com/darwinia-network/substrate", branch = "main"}
 
 [features]
 default = []
 
 # TODO: https://github.com/paritytech/parity-bridges-common/issues/390
 # I've left the feature flag here to test our CI configuration
-runtime-benchmarks = [
-	# "millau-runtime/runtime-benchmarks",
-]
+runtime-benchmarks = []
