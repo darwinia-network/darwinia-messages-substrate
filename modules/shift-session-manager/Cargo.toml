@@ -1,26 +1,26 @@
 [package]
-name = "pallet-shift-session-manager"
+authors     = ["Parity Technologies <admin@parity.io>"]
 description = "A Substrate Runtime module that selects 2/3 of initial validators for every session"
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2018"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+edition     = "2018"
+license     = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name        = "pallet-shift-session-manager"
+version     = "0.1.0"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "master" , default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "master" , default-features = false }
-pallet-session = { git = "https://github.com/paritytech/substrate", branch = "master" , default-features = false }
-sp-staking = { git = "https://github.com/paritytech/substrate", branch = "master" , default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "master" , default-features = false }
+frame-support  = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
+frame-system   = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
+pallet-session = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
+sp-staking     = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
+sp-std         = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
 
 [dev-dependencies]
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master" }
-serde = "1.0"
+serde      = "1.0"
+sp-core    = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 
 [features]
 default = ["std"]
