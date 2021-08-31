@@ -36,12 +36,12 @@ bp-messages = { path = "../../primitives/messages" }
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-finality-grandpa = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-trie = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-version = { git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-support       = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-core             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-runtime          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-trie             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+sp-version          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
 
 [dev-dependencies]
 relay-millau-client = { path = "../client-millau" }
