@@ -21,15 +21,15 @@ pallet-bridge-dispatch = { path = "../dispatch", default-features = false }
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
-frame-system  = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
-sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
-sp-io         = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
-sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false }
-sp-std        = { git = "https://github.com/darwinia-network/substrate", branch = "main", default-features = false, optional = true }
+frame-support = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+frame-system  = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+sp-io         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+sp-std        = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false, optional = true }
 
 [dev-dependencies]
-pallet-balances = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+pallet-balances = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
 
 [features]
 default = ["std"]

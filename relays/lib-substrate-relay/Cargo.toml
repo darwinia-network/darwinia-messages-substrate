@@ -1,51 +1,51 @@
 [package]
-name = "substrate-relay-helper"
-version = "0.1.0"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2018"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name    = "substrate-relay-helper"
+version = "0.1.0"
 
 [dependencies]
-anyhow = "1.0"
-async-std = "1.9.0"
+anyhow      = "1.0"
+async-std   = "1.9.0"
 async-trait = "0.1.42"
-codec = { package = "parity-scale-codec", version = "2.2.0" }
-futures = "0.3.12"
-num-format = "0.4"
-num-traits = "0.2"
-log = "0.4.14"
+codec       = { package = "parity-scale-codec", version = "2.2.0" }
+futures     = "0.3.12"
+log         = "0.4.14"
+num-format  = "0.4"
+num-traits  = "0.2"
 
 
 # Bridge dependencies
 
-bp-header-chain = { path = "../../primitives/header-chain" }
+bp-header-chain       = { path = "../../primitives/header-chain" }
 bridge-runtime-common = { path = "../../bin/runtime-common" }
 
-finality-grandpa = { version = "0.14.0" }
-finality-relay = { path = "../finality" }
-relay-utils = { path = "../utils" }
-headers-relay = { path = "../headers" }
-messages-relay = { path = "../messages" }
+finality-grandpa       = { version = "0.14.0" }
+finality-relay         = { path = "../finality" }
+headers-relay          = { path = "../headers" }
+messages-relay         = { path = "../messages" }
 relay-substrate-client = { path = "../client-substrate" }
+relay-utils            = { path = "../utils" }
 
 pallet-bridge-messages = { path = "../../modules/messages" }
 
-bp-runtime = { path = "../../primitives/runtime" }
 bp-messages = { path = "../../primitives/messages" }
+bp-runtime  = { path = "../../primitives/runtime" }
 
 
 # Substrate Dependencies
 
-frame-support       = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sp-core             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sp-runtime          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sp-trie             = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
-sp-version          = { git = "https://github.com/darwinia-network/substrate", branch = "main" }
+frame-support       = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
+sp-core             = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
+sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
+sp-runtime          = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
+sp-trie             = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
+sp-version          = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
 
 [dev-dependencies]
+bp-millau           = { path = "../../primitives/chain-millau" }
+bp-rialto           = { path = "../../primitives/chain-rialto" }
 relay-millau-client = { path = "../client-millau" }
 relay-rialto-client = { path = "../client-rialto" }
-bp-rialto = { path = "../../primitives/chain-rialto" }
-bp-millau = { path = "../../primitives/chain-millau" }
-rialto-runtime = { path = "../../bin/rialto/runtime" }
+rialto-runtime      = { path = "../../bin/rialto/runtime" }
