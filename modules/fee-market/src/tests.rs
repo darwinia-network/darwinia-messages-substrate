@@ -121,9 +121,7 @@ frame_support::construct_runtime! {
 	}
 }
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::default()
-		.build_storage::<Test>()
-		.unwrap();
+	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	darwinia_balances::GenesisConfig::<Test, RingInstance> {
 		balances: vec![(1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (12, 10)],
 	}
@@ -300,10 +298,7 @@ fn test_locked_ring_list_works() {
 fn test_update_price_basic_storage_works() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(FeeMarket::register(Origin::signed(1), 5, None));
-		assert_err!(
-			FeeMarket::update_fee(Origin::signed(1), 1),
-			<Error<Test>>::TooLowFee
-		);
+		assert_err!(FeeMarket::update_fee(Origin::signed(1), 1), <Error<Test>>::TooLowFee);
 
 		assert_ok!(FeeMarket::update_fee(Origin::signed(1), 2));
 		assert_eq!(FeeMarket::relayer_price(&1), 2);

@@ -28,12 +28,12 @@ pub mod weights;
 use crate::weights::WeightInfo;
 
 use codec::{Decode, Encode};
-use darwinia_support::balance::{LockFor, LockableCurrency};
+// use darwinia_support::balance::{LockFor, LockableCurrency};
 use frame_support::{
 	dispatch::DispatchError,
 	ensure,
 	pallet_prelude::*,
-	traits::{Currency, Get, LockIdentifier, WithdrawReasons},
+	traits::{Currency, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
 	transactional, PalletId,
 };
 use frame_system::{ensure_signed, pallet_prelude::*};
@@ -106,8 +106,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_relayer)]
-	pub type RelayersMap<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::AccountId, Relayer<T>, ValueQuery>;
+	pub type RelayersMap<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, Relayer<T>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn relayers)]
@@ -151,10 +150,7 @@ pub mod pallet {
 			fee: Option<Fee<T>>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			ensure!(
-				lock_value >= T::MiniumLockValue::get(),
-				<Error<T>>::TooLowLockValue
-			);
+			ensure!(lock_value >= T::MiniumLockValue::get(), <Error<T>>::TooLowLockValue);
 			ensure!(
 				T::RingCurrency::free_balance(&who) >= lock_value,
 				<Error<T>>::InsufficientBalance
@@ -168,7 +164,8 @@ pub mod pallet {
 			T::RingCurrency::set_lock(
 				T::LockId::get(),
 				&who,
-				LockFor::Common { amount: lock_value },
+				// LockFor::Common { amount: lock_value },
+				lock_value,
 				WithdrawReasons::all(),
 			);
 
@@ -183,15 +180,9 @@ pub mod pallet {
 		/// Relayer update locked balance
 		#[pallet::weight(10000)]
 		#[transactional]
-		pub fn update_locked_balance(
-			origin: OriginFor<T>,
-			new_lock: RingBalance<T>,
-		) -> DispatchResultWithPostInfo {
+		pub fn update_locked_balance(origin: OriginFor<T>, new_lock: RingBalance<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			ensure!(
-				Self::is_registered(&who),
-				<Error<T>>::RegisterBeforeUpdateLock
-			);
+			ensure!(Self::is_registered(&who), <Error<T>>::RegisterBeforeUpdateLock);
 			ensure!(
 				T::RingCurrency::free_balance(&who) >= new_lock,
 				<Error<T>>::InsufficientBalance
@@ -201,7 +192,7 @@ pub mod pallet {
 				<Error<T>>::InvalidNewLockValue
 			);
 
-			T::RingCurrency::extend_lock(T::LockId::get(), &who, new_lock, WithdrawReasons::all())?;
+			T::RingCurrency::extend_lock(T::LockId::get(), &who, new_lock, WithdrawReasons::all());
 			<RelayersMap<T>>::mutate(who.clone(), |relayer| {
 				relayer.lock_balance = new_lock;
 			});
@@ -214,10 +205,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn cancel_register(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			ensure!(
-				Self::is_registered(&who),
-				<Error<T>>::RegisterBeforeUpdateLock
-			);
+			ensure!(Self::is_registered(&who), <Error<T>>::RegisterBeforeUpdateLock);
 
 			T::RingCurrency::remove_lock(T::LockId::get(), &who);
 			RelayersMap::<T>::remove(who.clone());
@@ -233,10 +221,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn update_fee(origin: OriginFor<T>, p: Fee<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			ensure!(
-				Self::is_registered(&who),
-				<Error<T>>::InvalidSubmitPriceOrigin
-			);
+			ensure!(Self::is_registered(&who), <Error<T>>::InvalidSubmitPriceOrigin);
 			ensure!(p >= T::MinimumFee::get(), <Error<T>>::TooLowFee);
 
 			<RelayersMap<T>>::mutate(who.clone(), |relayer| {
@@ -258,10 +243,7 @@ impl<T: Config> Pallet<T> {
 	pub fn update_relayer_fees() -> Result<(), DispatchError> {
 		<PriorRelayers<T>>::kill();
 
-		let mut relayers: Vec<Relayer<T>> = <Relayers<T>>::get()
-			.iter()
-			.map(RelayersMap::<T>::get)
-			.collect();
+		let mut relayers: Vec<Relayer<T>> = <Relayers<T>>::get().iter().map(RelayersMap::<T>::get).collect();
 		relayers.sort();
 
 		// If the registered relayers number >= the PriorRelayersNumber,
@@ -318,11 +300,7 @@ pub struct Relayer<T: Config> {
 
 impl<T: Config> Relayer<T> {
 	pub fn new(id: T::AccountId, lock_balance: RingBalance<T>, fee: Fee<T>) -> Relayer<T> {
-		Relayer {
-			id,
-			lock_balance,
-			fee,
-		}
+		Relayer { id, lock_balance, fee }
 	}
 }
 
