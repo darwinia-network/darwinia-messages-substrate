@@ -4943,6 +4943,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bridge-fee-market"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
 dependencies = [
