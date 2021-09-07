@@ -7,6 +7,11 @@ CHAIN=$1
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 REPO_PATH="$( cd "$( dirname "$0" )" && cd ../ && pwd )"
 
+if [[ "$CHAIN" != "millau" ]] && [[ "$CHAIN" != "rialto" ]] ; then
+  echo "Missing chain name or not support chain, only supports [millau] or [rialto]"
+  exit 1
+fi
+
 LOG_DIR=$DIR/logs/${CHAIN}
 mkdir -p $LOG_DIR
 
@@ -26,6 +31,9 @@ fi
 if [[ "$CHAIN" == "rialto" ]] ; then
   index=200
 fi
+
+RUST_LOG=runtime=trace,runtime::bridge=trace
+export RUST_LOG
 
 for validator in alice bob charlie dave eve ferdie
 do
