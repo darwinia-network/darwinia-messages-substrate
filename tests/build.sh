@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# This script helps build a basic test network with 5 validators.
+#
+# Build Millau Netowork: ./tests/build.sh millau
+# Build Rialto Netowork: ./tests/build.sh rialto
+
 set -e
 
 CHAIN=$1
@@ -18,7 +23,7 @@ mkdir -p $LOG_DIR
 DATA_DIR=$DIR/data
 mkdir -p $DATA_DIR
 
-echo "Build node"
+echo "### Build node"
 cargo build -p ${CHAIN}-bridge-node --release
 
 EXECUTABLE=$REPO_PATH/target/release/${CHAIN}-bridge-node
@@ -35,6 +40,7 @@ fi
 RUST_LOG=runtime=trace,runtime::bridge=trace
 export RUST_LOG
 
+echo "### Start validators"
 for validator in alice bob charlie dave eve ferdie
 do
   echo "Purge $validator's \`db\`, \`network\`"
@@ -54,4 +60,3 @@ do
 
   index=$((index + 1))
 done
-
