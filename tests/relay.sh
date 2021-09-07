@@ -19,7 +19,7 @@ RUST_LOG=bridge=trace
 export RUST_LOG
 
 echo "Initialize Millau > Rialto bridge"
-${EXECUTABLE}
+${EXECUTABLE} \
   init-bridge millau-to-rialto \
   --source-host=$MILLAU_HOST\
 	--source-port=$MILLAU_ALICE_PORT\
