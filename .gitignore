@@ -24,3 +24,7 @@ hfuzz_workspace
 *.iml
 *.swp
 *.swo
+
+# Test Data
+tests/data
+tests/logs
