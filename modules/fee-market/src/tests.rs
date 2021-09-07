@@ -17,6 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // --- substrate ---
+use crate::{self as pallet_bridges_fee_market, *};
 use frame_support::{
 	assert_err, assert_ok,
 	traits::{GenesisBuild, LockIdentifier},
@@ -29,14 +30,10 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	RuntimeDebug,
 };
-// --- darwinia ---
-use crate::{self as darwinia_fee_market, *};
 
 type Block = MockBlock<Test>;
 type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
 type Balance = u64;
-
-darwinia_support::impl_test_account_data! {}
 
 impl frame_system::Config for Test {
 	type BaseCallFilter = ();
@@ -56,7 +53,7 @@ impl frame_system::Config for Test {
 	type BlockHashCount = ();
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = AccountData<Balance>;
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -67,16 +64,17 @@ impl frame_system::Config for Test {
 frame_support::parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
 }
-impl darwinia_balances::Config<RingInstance> for Test {
+
+impl pallet_balances::Config for Test {
+	type MaxLocks = ();
 	type Balance = Balance;
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type BalanceInfo = AccountData<Balance>;
-	type AccountStore = System;
-	type MaxLocks = ();
-	type OtherCurrencies = ();
+	type AccountStore = frame_system::Pallet<Test>;
 	type WeightInfo = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = ();
 }
 
 frame_support::parameter_types! {
@@ -104,7 +102,7 @@ impl Config for Test {
 	type MinimumFee = MinimumFee;
 	type PriorRelayersNumber = PriorRelayersNumber;
 	type LockId = FeeMarketLockId;
-	type RingCurrency = Ring;
+	type RingCurrency = Balances;
 	type WeightInfo = ();
 }
 
@@ -116,13 +114,13 @@ frame_support::construct_runtime! {
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
-		Ring: darwinia_balances::<Instance1>::{Pallet, Call, Storage, Config<T>, Event<T>},
-		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Config, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		FeeMarket: pallet_bridges_fee_market::{Pallet, Call, Storage, Config, Event<T>},
 	}
 }
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	darwinia_balances::GenesisConfig::<Test, RingInstance> {
+	pallet_balances::GenesisConfig::<Test> {
 		balances: vec![(1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (12, 10)],
 	}
 	.assimilate_storage(&mut t)
@@ -136,7 +134,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 #[test]
 fn test_register_workflow_works() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Ring::free_balance(1), 10);
+		assert_eq!(Balances::free_balance(1), 10);
 		assert_err!(
 			FeeMarket::register(Origin::signed(1), 1, None),
 			<Error<Test>>::TooLowLockValue
@@ -149,7 +147,7 @@ fn test_register_workflow_works() {
 		assert_ok!(FeeMarket::register(Origin::signed(1), 5, None));
 		assert!(FeeMarket::is_registered(&1));
 		assert_eq!(FeeMarket::relayers().len(), 1);
-		assert_eq!(Ring::usable_balance(&1), 5);
+		assert_eq!(Balances::usable_balance(&1), 5);
 		assert_eq!(FeeMarket::relayer_locked_balance(&1), 5);
 		assert_eq!(FeeMarket::best_relayer(), (1, 2));
 
@@ -186,7 +184,7 @@ fn test_update_locked_balance_success() {
 
 		// update lock balance from 5 to 8
 		assert_ok!(FeeMarket::update_locked_balance(Origin::signed(1), 8));
-		assert_eq!(Ring::usable_balance(&1), 2);
+		assert_eq!(Balances::usable_balance(&1), 2);
 		assert_eq!(FeeMarket::relayer_locked_balance(&1), 8);
 		assert_eq!(FeeMarket::best_relayer(), (1, 2));
 	});
@@ -209,7 +207,7 @@ fn test_update_locked_balance_failed() {
 			FeeMarket::update_locked_balance(Origin::signed(1), 3),
 			<Error<Test>>::InvalidNewLockValue
 		);
-		assert_eq!(Ring::usable_balance(&1), 2);
+		assert_eq!(Balances::usable_balance(&1), 2);
 		assert_eq!(FeeMarket::relayer_locked_balance(&1), 8);
 	});
 }
@@ -224,7 +222,7 @@ fn test_cancel_register() {
 
 		assert_ok!(FeeMarket::register(Origin::signed(1), 5, None));
 		assert!(FeeMarket::is_registered(&1));
-		assert_eq!(Ring::usable_balance(&1), 5);
+		assert_eq!(Balances::usable_balance(&1), 5);
 		assert_eq!(FeeMarket::relayer_locked_balance(&1), 5);
 
 		assert_ok!(FeeMarket::cancel_register(Origin::signed(1)));
