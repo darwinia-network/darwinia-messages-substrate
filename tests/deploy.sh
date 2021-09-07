@@ -14,7 +14,7 @@ DATA_DIR=$DIR/data
 mkdir -p $DATA_DIR
 
 echo "Build node"
-cargo build -p ${CHAIN}-bridge-node
+cargo build -p ${CHAIN}-bridge-node --release
 
 EXECUTABLE=$REPO_PATH/target/release/${CHAIN}-bridge-node
 index=100
@@ -30,8 +30,8 @@ fi
 for validator in alice bob charlie dave eve ferdie
 do
   echo "Purge $validator's \`db\`, \`network\`"
-  rm -rf $DATA_DIR/$validator/chains/$CHAIN/db
-  rm -rf $DATA_DIR/$validator/chains/$CHAIN/network
+  rm -rf $DATA_DIR/$validator/chains/${CHAIN}_local/db
+  rm -rf $DATA_DIR/$validator/chains/${CHAIN}_local/network
 
   echo "Firing ${CHAIN} Node ${validator}"
   ${EXECUTABLE} \
