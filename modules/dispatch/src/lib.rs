@@ -150,6 +150,8 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 		message: Result<Self::Message, ()>,
 		pay_dispatch_fee: P,
 	) -> MessageDispatchResult {
+		log::debug!(target: "runtime::bridge-dispatch", "bear: dispatch, source_chain {:?}, target_chain {:?}, message id {:?}",
+			source_chain, target_chain, id);
 		// emit special even if message has been rejected by external component
 		let message = match message {
 			Ok(message) => message,
@@ -177,6 +179,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 			dispatch_fee_paid_during_dispatch: false,
 		};
 		let expected_version = <T as frame_system::Config>::Version::get().spec_version;
+		log::debug!(target: "runtime::bridge-dispatch", "bear: dispatch, message spec_version {:?}, expected_version {:?}", message.spec_version, expected_version);
 		if message.spec_version != expected_version {
 			log::trace!(
 				"Message {:?}/{:?}: spec_version mismatch. Expected {:?}, got {:?}",
@@ -214,7 +217,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 			CallOrigin::SourceRoot => {
 				let hex_id = derive_account_id::<T::SourceChainAccountId>(source_chain, SourceAccount::Root);
 				let target_id = T::AccountIdConverter::convert(hex_id);
-				log::trace!(target: "runtime::bridge-dispatch", "Root Account: {:?}", &target_id);
+				log::debug!(target: "runtime::bridge-dispatch", "Root Account: {:?}", &target_id);
 				target_id
 			}
 			CallOrigin::TargetAccount(source_account_id, target_public, target_signature) => {
@@ -240,13 +243,13 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 					return dispatch_result;
 				}
 
-				log::trace!(target: "runtime::bridge-dispatch", "Target Account: {:?}", &target_account);
+				log::debug!(target: "runtime::bridge-dispatch", "Target Account: {:?}", &target_account);
 				target_account
 			}
 			CallOrigin::SourceAccount(source_account_id) => {
 				let hex_id = derive_account_id(source_chain, SourceAccount::Account(source_account_id));
 				let target_id = T::AccountIdConverter::convert(hex_id);
-				log::trace!(target: "runtime::bridge-dispatch", "Source Account: {:?}", &target_id);
+				log::debug!(target: "runtime::bridge-dispatch", "Source Account: {:?}", &target_id);
 				target_id
 			}
 		};
@@ -269,6 +272,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 		// because otherwise Calls may be dispatched at lower price)
 		let dispatch_info = call.get_dispatch_info();
 		let expected_weight = dispatch_info.weight;
+		log::trace!(target: "runtime::bridge-dispatch", "bear: --- dispatch, expected weight {:?}, message weight {:?}", expected_weight, message.weight);
 		if message.weight < expected_weight {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
@@ -289,6 +293,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain = message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
+		log::trace!(target: "runtime::bridge-dispatch", "bear: --- dispatch, pay_dispatch_fee_at_target_chain {:?}", pay_dispatch_fee_at_target_chain);
 		if pay_dispatch_fee_at_target_chain && pay_dispatch_fee(&origin_account, message.weight).is_err() {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
@@ -310,13 +315,13 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 		// finally dispatch message
 		let origin = RawOrigin::Signed(origin_account).into();
 
-		log::trace!(target: "runtime::bridge-dispatch", "Message being dispatched is: {:.4096?}", &call);
+		log::debug!(target: "runtime::bridge-dispatch", "Message being dispatched is: {:.4096?}", &call);
 		let result = call.dispatch(origin);
 		let actual_call_weight = extract_actual_weight(&result, &dispatch_info);
 		dispatch_result.dispatch_result = result.is_ok();
 		dispatch_result.unspent_weight = message.weight.saturating_sub(actual_call_weight);
 
-		log::trace!(
+		log::debug!(
 			target: "runtime::bridge-dispatch",
 			"Message {:?}/{:?} has been dispatched. Weight: {} of {}. Result: {:?}. Call dispatch result: {:?}",
 			source_chain,

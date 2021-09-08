@@ -162,9 +162,9 @@ fn pay_relayer_reward<Currency, AccountId>(
 	);
 
 	match pay_result {
-		Ok(_) => log::trace!(
+		Ok(_) => log::debug!(
 			target: "runtime::bridge-messages",
-			"Rewarded relayer {:?} with {:?}",
+			"bear: --- Rewarded relayer {:?} with {:?}",
 			relayer_account,
 			reward,
 		),

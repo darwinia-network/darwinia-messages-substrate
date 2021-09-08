@@ -19,7 +19,7 @@ cargo build -p substrate-relay --release
 
 EXECUTABLE=$REPO_PATH/target/release/substrate-relay
 
-RUST_LOG=bridge=trace
+RUST_LOG=bridge=debug
 export RUST_LOG
 
 echo "### Initialize Millau > Rialto bridge and wait 60s"

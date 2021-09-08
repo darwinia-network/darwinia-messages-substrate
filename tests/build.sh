@@ -37,7 +37,7 @@ if [[ "$CHAIN" == "rialto" ]] ; then
   index=200
 fi
 
-RUST_LOG=runtime=trace,runtime::bridge=trace
+RUST_LOG=runtime=debug,runtime::bridge=debug
 export RUST_LOG
 
 echo "### Start validators"

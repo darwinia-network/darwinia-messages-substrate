@@ -260,6 +260,7 @@ pub async fn run<P: MessageLane>(
 	metrics_params: MetricsParams,
 	exit_signal: impl Future<Output = ()> + Send + 'static,
 ) -> anyhow::Result<()> {
+	log::debug!(target: "bridge","bear: --- run message lane loop");
 	let exit_signal = exit_signal.shared();
 	relay_utils::relay_loop(source_client, target_client)
 		.reconnect_delay(params.reconnect_delay)

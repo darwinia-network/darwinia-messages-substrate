@@ -92,9 +92,9 @@ impl SubstrateMessageLane for MillauMessagesToRialto {
 			transaction_nonce,
 			call,
 		);
-		log::trace!(
+		log::debug!(
 			target: "bridge",
-			"Prepared Rialto -> Millau confirmation transaction. Weight: {}/{}, size: {}/{}",
+			"bear: --- Prepared Rialto -> Millau confirmation transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
 			bp_millau::max_extrinsic_weight(),
 			transaction.encode().len(),
@@ -137,9 +137,9 @@ impl SubstrateMessageLane for MillauMessagesToRialto {
 			transaction_nonce,
 			call,
 		);
-		log::trace!(
+		log::debug!(
 			target: "bridge",
-			"Prepared Millau -> Rialto delivery transaction. Weight: {}/{}, size: {}/{}",
+			"bear: --- Prepared Millau -> Rialto delivery transaction. Weight: {}/{}, size: {}/{}",
 			call_weight,
 			bp_rialto::max_extrinsic_weight(),
 			transaction.encode().len(),

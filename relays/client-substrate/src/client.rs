@@ -158,6 +158,7 @@ impl<C: Chain> Client<C> {
 impl<C: Chain> Client<C> {
 	/// Returns true if client is connected to at least one peer and is in synced state.
 	pub async fn ensure_synced(&self) -> Result<()> {
+		log::trace!(target: "bridge", "bear: --- client: ensure_synced");
 		self.jsonrpsee_execute(|client| async move {
 			let health = Substrate::<C>::system_health(&*client).await?;
 			let is_synced = !health.is_syncing && (!health.should_have_peers || health.peers > 0);
@@ -172,11 +173,13 @@ impl<C: Chain> Client<C> {
 
 	/// Return hash of the genesis block.
 	pub fn genesis_hash(&self) -> &C::Hash {
+		log::trace!(target: "bridge", "bear: --- client: genesis hash");
 		&self.genesis_hash
 	}
 
 	/// Return hash of the best finalized block.
 	pub async fn best_finalized_header_hash(&self) -> Result<C::Hash> {
+		log::trace!(target: "bridge", "bear: --- client: best_finalized_header_hash");
 		self.jsonrpsee_execute(|client| async move { Ok(Substrate::<C>::chain_get_finalized_head(&*client).await?) })
 			.await
 	}
@@ -186,12 +189,14 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
+		log::trace!(target: "bridge", "bear: --- client: best header");
 		self.jsonrpsee_execute(|client| async move { Ok(Substrate::<C>::chain_get_header(&*client, None).await?) })
 			.await
 	}
 
 	/// Get a Substrate block from its hash.
 	pub async fn get_block(&self, block_hash: Option<C::Hash>) -> Result<C::SignedBlock> {
+		log::trace!(target: "bridge", "bear: --- client: get_block");
 		self.jsonrpsee_execute(
 			move |client| async move { Ok(Substrate::<C>::chain_get_block(&*client, block_hash).await?) },
 		)
@@ -203,6 +208,7 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
+		log::trace!(target: "bridge", "bear: --- client: get_header_by_hash");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::chain_get_header(&*client, block_hash).await?)
 		})
@@ -211,6 +217,7 @@ impl<C: Chain> Client<C> {
 
 	/// Get a Substrate block hash by its number.
 	pub async fn block_hash_by_number(&self, number: C::BlockNumber) -> Result<C::Hash> {
+		log::trace!(target: "bridge", "bear: --- client: get block hash by number");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::chain_get_block_hash(&*client, number).await?)
 		})
@@ -222,6 +229,7 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
+		log::trace!(target: "bridge", "bear: --- client: get header by number");
 		let block_hash = Self::block_hash_by_number(self, block_number).await?;
 		let header_by_hash = Self::header_by_hash(self, block_hash).await?;
 		Ok(header_by_hash)
@@ -303,7 +311,7 @@ impl<C: Chain> Client<C> {
 		self.jsonrpsee_execute(move |client| async move {
 			let extrinsic = prepare_extrinsic(best_header_id, transaction_nonce);
 			let tx_hash = Substrate::<C>::author_submit_extrinsic(&*client, extrinsic).await?;
-			log::trace!(target: "bridge", "Sent transaction to {} node: {:?}", C::NAME, tx_hash);
+			log::debug!(target: "bridge", "bear: --- Sent transaction to {} node: {:?}", C::NAME, tx_hash);
 			Ok(tx_hash)
 		})
 		.await
