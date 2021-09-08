@@ -133,7 +133,7 @@ async fn prepare_initialization_data<SourceChain: Chain>(
 		(justification.commit.target_hash, justification.commit.target_number);
 
 	let initial_header = source_header(&source_client, initial_header_hash).await?;
-	log::trace!(target: "bridge", "Selected {} initial header: {}/{}",
+	log::debug!(target: "bridge", "Selected {} initial header: {}/{}",
 		SourceChain::NAME,
 		initial_header_number,
 		initial_header_hash,
@@ -141,7 +141,7 @@ async fn prepare_initialization_data<SourceChain: Chain>(
 
 	// Read GRANDPA authorities set at initial header.
 	let initial_authorities_set = source_authorities_set(&source_client, initial_header_hash).await?;
-	log::trace!(target: "bridge", "Selected {} initial authorities set: {:?}",
+	log::debug!(target: "bridge", "Selected {} initial authorities set: {:?}",
 		SourceChain::NAME,
 		initial_authorities_set,
 	);

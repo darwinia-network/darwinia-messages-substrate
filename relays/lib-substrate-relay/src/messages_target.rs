@@ -126,6 +126,7 @@ where
 	<P::MessageLane as MessageLane>::SourceHeaderHash: Decode,
 {
 	async fn state(&self) -> Result<TargetClientState<P::MessageLane>, SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message target, read state");
 		// we can't continue to deliver messages if target node is out of sync, because
 		// it may have already received (some of) messages that we're going to deliver
 		self.client.ensure_synced().await?;
@@ -152,6 +153,7 @@ where
 			.await?;
 		let latest_received_nonce: MessageNonce =
 			Decode::decode(&mut &encoded_response.0[..]).map_err(SubstrateError::ResponseParseFailed)?;
+		log::trace!(target: "bridge", "bear: --- message target, last_received_nonce {:?}", latest_received_nonce);
 		Ok((id, latest_received_nonce))
 	}
 
@@ -169,6 +171,7 @@ where
 			.await?;
 		let latest_received_nonce: MessageNonce =
 			Decode::decode(&mut &encoded_response.0[..]).map_err(SubstrateError::ResponseParseFailed)?;
+		log::trace!(target: "bridge", "bear: --- message target, latest_received_nonce {:?}", latest_received_nonce);
 		Ok((id, latest_received_nonce))
 	}
 
@@ -186,6 +189,7 @@ where
 			.await?;
 		let unrewarded_relayers_state: UnrewardedRelayersState =
 			Decode::decode(&mut &encoded_response.0[..]).map_err(SubstrateError::ResponseParseFailed)?;
+		log::trace!(target: "bridge", "bear: --- message target, unrearded_relayer_state");
 		Ok((id, unrewarded_relayers_state))
 	}
 
@@ -199,6 +203,7 @@ where
 		),
 		SubstrateError,
 	> {
+		log::trace!(target: "bridge", "bear: --- message target, prove_message_receiving");
 		let (id, relayers_state) = self.unrewarded_relayers_state(id).await?;
 		let inbound_data_key = pallet_bridge_messages::storage_keys::inbound_lane_data_key(
 			P::MESSAGE_PALLET_NAME_AT_TARGET,
@@ -224,6 +229,7 @@ where
 		nonces: RangeInclusive<MessageNonce>,
 		proof: <P::MessageLane as MessageLane>::MessagesProof,
 	) -> Result<RangeInclusive<MessageNonce>, SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message target, submit_message_proof");
 		let lane = self.lane.clone();
 		let nonces_clone = nonces.clone();
 		self.client
@@ -235,6 +241,7 @@ where
 	}
 
 	async fn require_source_header_on_target(&self, id: SourceHeaderIdOf<P::MessageLane>) {
+		log::trace!(target: "bridge", "bear: --- message target, require_source_header_on_target");
 		if let Some(ref source_to_target_headers_relay) = self.source_to_target_headers_relay {
 			source_to_target_headers_relay.require_finalized_header(id).await;
 		}
@@ -247,6 +254,7 @@ where
 		total_dispatch_weight: Weight,
 		total_size: u32,
 	) -> Result<<P::MessageLane as MessageLane>::SourceChainBalance, SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message target, estimate_delivery_transaction_in_source_tokens");
 		let conversion_rate = self
 			.metric_values
 			.target_to_source_conversion_rate()
@@ -316,9 +324,9 @@ where
 			inclusion_fee_in_target_tokens.saturating_sub(expected_refund_in_target_tokens),
 		);
 
-		log::trace!(
+		log::debug!(
 			target: "bridge",
-			"Estimated {} -> {} messages delivery transaction.\n\t\
+			"bear -- Estimated {} -> {} messages delivery transaction.\n\t\
 				Total nonces: {:?}\n\t\
 				Prepaid messages: {}\n\t\
 				Total messages size: {}\n\t\
