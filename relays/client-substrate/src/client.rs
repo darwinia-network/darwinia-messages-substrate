@@ -158,7 +158,6 @@ impl<C: Chain> Client<C> {
 impl<C: Chain> Client<C> {
 	/// Returns true if client is connected to at least one peer and is in synced state.
 	pub async fn ensure_synced(&self) -> Result<()> {
-		log::trace!(target: "bridge", "bear: --- client: ensure_synced");
 		self.jsonrpsee_execute(|client| async move {
 			let health = Substrate::<C>::system_health(&*client).await?;
 			let is_synced = !health.is_syncing && (!health.should_have_peers || health.peers > 0);
@@ -173,13 +172,13 @@ impl<C: Chain> Client<C> {
 
 	/// Return hash of the genesis block.
 	pub fn genesis_hash(&self) -> &C::Hash {
-		log::trace!(target: "bridge", "bear: --- client: genesis hash");
+		log::debug!(target: "bridge", "bear: --- client: genesis hash");
 		&self.genesis_hash
 	}
 
 	/// Return hash of the best finalized block.
 	pub async fn best_finalized_header_hash(&self) -> Result<C::Hash> {
-		log::trace!(target: "bridge", "bear: --- client: best_finalized_header_hash");
+		log::debug!(target: "bridge", "bear: --- client: best_finalized_header_hash");
 		self.jsonrpsee_execute(|client| async move { Ok(Substrate::<C>::chain_get_finalized_head(&*client).await?) })
 			.await
 	}
@@ -189,14 +188,14 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
-		log::trace!(target: "bridge", "bear: --- client: best header");
+		log::debug!(target: "bridge", "bear: --- client: best header");
 		self.jsonrpsee_execute(|client| async move { Ok(Substrate::<C>::chain_get_header(&*client, None).await?) })
 			.await
 	}
 
 	/// Get a Substrate block from its hash.
 	pub async fn get_block(&self, block_hash: Option<C::Hash>) -> Result<C::SignedBlock> {
-		log::trace!(target: "bridge", "bear: --- client: get_block");
+		log::debug!(target: "bridge", "bear: --- client: get_block");
 		self.jsonrpsee_execute(
 			move |client| async move { Ok(Substrate::<C>::chain_get_block(&*client, block_hash).await?) },
 		)
@@ -208,7 +207,7 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
-		log::trace!(target: "bridge", "bear: --- client: get_header_by_hash");
+		log::debug!(target: "bridge", "bear: --- client: get_header_by_hash");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::chain_get_header(&*client, block_hash).await?)
 		})
@@ -217,7 +216,7 @@ impl<C: Chain> Client<C> {
 
 	/// Get a Substrate block hash by its number.
 	pub async fn block_hash_by_number(&self, number: C::BlockNumber) -> Result<C::Hash> {
-		log::trace!(target: "bridge", "bear: --- client: get block hash by number");
+		log::debug!(target: "bridge", "bear: --- client: get block hash by number");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::chain_get_block_hash(&*client, number).await?)
 		})
@@ -229,7 +228,7 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
-		log::trace!(target: "bridge", "bear: --- client: get header by number");
+		log::debug!(target: "bridge", "bear: --- client: get header by number");
 		let block_hash = Self::block_hash_by_number(self, block_number).await?;
 		let header_by_hash = Self::header_by_hash(self, block_hash).await?;
 		Ok(header_by_hash)
@@ -237,14 +236,14 @@ impl<C: Chain> Client<C> {
 
 	/// Return runtime version.
 	pub async fn runtime_version(&self) -> Result<RuntimeVersion> {
-		log::trace!(target: "bridge", "bear: --- client: runtime version");
+		log::debug!(target: "bridge", "bear: --- client: runtime version");
 		self.jsonrpsee_execute(move |client| async move { Ok(Substrate::<C>::state_runtime_version(&*client).await?) })
 			.await
 	}
 
 	/// Read value from runtime storage.
 	pub async fn storage_value<T: Send + Decode + 'static>(&self, storage_key: StorageKey) -> Result<Option<T>> {
-		log::trace!(target: "bridge", "bear: --- client: storage_value");
+		log::debug!(target: "bridge", "bear: --- client: storage_value, storage_key: {:?}", storage_key);
 		self.jsonrpsee_execute(move |client| async move {
 			Substrate::<C>::state_get_storage(&*client, storage_key)
 				.await?
@@ -259,7 +258,7 @@ impl<C: Chain> Client<C> {
 	where
 		C: ChainWithBalances,
 	{
-		log::trace!(target: "bridge", "bear: --- client: free_native_balance");
+		log::debug!(target: "bridge", "bear: --- client: free_native_balance");
 		self.jsonrpsee_execute(move |client| async move {
 			let storage_key = C::account_info_storage_key(&account);
 			let encoded_account_data = Substrate::<C>::state_get_storage(&*client, storage_key)
@@ -277,7 +276,7 @@ impl<C: Chain> Client<C> {
 	///
 	/// Note: It's the caller's responsibility to make sure `account` is a valid SS58 address.
 	pub async fn next_account_index(&self, account: C::AccountId) -> Result<C::Index> {
-		log::trace!(target: "bridge", "bear: --- client: next_account_index");
+		log::debug!(target: "bridge", "bear: --- client: next_account_index");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::system_account_next_index(&*client, account).await?)
 		})
@@ -288,7 +287,7 @@ impl<C: Chain> Client<C> {
 	///
 	/// Note: The given transaction needs to be SCALE encoded beforehand.
 	pub async fn submit_unsigned_extrinsic(&self, transaction: Bytes) -> Result<C::Hash> {
-		log::trace!(target: "bridge", "bear: --- client: submit_unsigned_extrinsic");
+		log::debug!(target: "bridge", "bear: --- client: submit_unsigned_extrinsic");
 		self.jsonrpsee_execute(move |client| async move {
 			let tx_hash = Substrate::<C>::author_submit_extrinsic(&*client, transaction).await?;
 			log::trace!(target: "bridge", "Sent transaction to Substrate node: {:?}", tx_hash);
@@ -309,7 +308,7 @@ impl<C: Chain> Client<C> {
 		extrinsic_signer: C::AccountId,
 		prepare_extrinsic: impl FnOnce(HeaderIdOf<C>, C::Index) -> Bytes + Send + 'static,
 	) -> Result<C::Hash> {
-		log::trace!(target: "bridge", "bear: --- client: submit_signed_extrinsic");
+		log::debug!(target: "bridge", "bear: --- client: submit_signed_extrinsic");
 		let _guard = self.submit_signed_extrinsic_lock.lock().await;
 		let transaction_nonce = self.next_account_index(extrinsic_signer).await?;
 		let best_header = self.best_header().await?;
@@ -325,7 +324,7 @@ impl<C: Chain> Client<C> {
 
 	/// Estimate fee that will be spent on given extrinsic.
 	pub async fn estimate_extrinsic_fee(&self, transaction: Bytes) -> Result<InclusionFee<C::Balance>> {
-		log::trace!(target: "bridge", "bear: --- client: estimate_extrinsic_fee");
+		log::debug!(target: "bridge", "bear: --- client: estimate_extrinsic_fee");
 		self.jsonrpsee_execute(move |client| async move {
 			let fee_details = Substrate::<C>::payment_query_fee_details(&*client, transaction, None).await?;
 			let inclusion_fee = fee_details
@@ -350,7 +349,7 @@ impl<C: Chain> Client<C> {
 
 	/// Get the GRANDPA authority set at given block.
 	pub async fn grandpa_authorities_set(&self, block: C::Hash) -> Result<OpaqueGrandpaAuthoritiesSet> {
-		log::trace!(target: "bridge", "bear: --- client: grandpa_authorities_set");
+		log::debug!(target: "bridge", "bear: --- client: grandpa_authorities_set");
 		self.jsonrpsee_execute(move |client| async move {
 			let call = SUB_API_GRANDPA_AUTHORITIES.to_string();
 			let data = Bytes(Vec::new());
@@ -365,7 +364,7 @@ impl<C: Chain> Client<C> {
 
 	/// Execute runtime call at given block.
 	pub async fn state_call(&self, method: String, data: Bytes, at_block: Option<C::Hash>) -> Result<Bytes> {
-		log::trace!(target: "bridge", "bear: --- client: state_call, method {:?}, at_block {:?}", method, at_block);
+		log::debug!(target: "bridge", "bear: --- client: state_call, method {:?}, at_block {:?}", method, at_block);
 		self.jsonrpsee_execute(move |client| async move {
 			Substrate::<C>::state_call(&*client, method, data, at_block)
 				.await
@@ -376,7 +375,7 @@ impl<C: Chain> Client<C> {
 
 	/// Returns storage proof of given storage keys.
 	pub async fn prove_storage(&self, keys: Vec<StorageKey>, at_block: C::Hash) -> Result<StorageProof> {
-		log::trace!(target: "bridge", "bear: --- client: prove_storage, keys: {:?}, at_block: {:?}", keys, at_block);
+		log::debug!(target: "bridge", "bear: --- client: prove_storage, keys: {:?}, at_block: {:?}", keys, at_block);
 		self.jsonrpsee_execute(move |client| async move {
 			Substrate::<C>::state_prove_storage(&*client, keys, Some(at_block))
 				.await
@@ -388,7 +387,7 @@ impl<C: Chain> Client<C> {
 
 	/// Return new justifications stream.
 	pub async fn subscribe_justifications(&self) -> Result<JustificationsSubscription> {
-		log::trace!(target: "bridge", "bear: --- client: subscribe_justifications");
+		log::debug!(target: "bridge", "bear: --- client: subscribe_justifications");
 		let mut subscription = self
 			.jsonrpsee_execute(move |client| async move {
 				Ok(client
@@ -441,7 +440,6 @@ impl<C: Chain> Client<C> {
 		F: Future<Output = Result<T>> + Send,
 		T: Send + 'static,
 	{
-		log::trace!(target: "bridge", "bear: --- client: jsonrpsee_execute");
 		let client = self.client.clone();
 		self.tokio
 			.spawn(async move { make_jsonrpsee_future(client).await })

@@ -29,7 +29,8 @@ pub type Sender<AccountId> = frame_system::RawOrigin<AccountId>;
 pub type RelayersRewards<AccountId, Balance> = BTreeMap<AccountId, RelayerRewards<Balance>>;
 
 /// Single relayer rewards.
-#[derive(RuntimeDebug, Default)]
+// #[derive(RuntimeDebug, Default)]
+#[derive(Debug, Default)]
 pub struct RelayerRewards<Balance> {
 	/// Total rewards that are to be paid to the relayer.
 	pub reward: Balance,

@@ -27,7 +27,8 @@ use sp_std::{collections::btree_map::BTreeMap, fmt::Debug, prelude::*};
 pub type ProvedMessages<Message> = BTreeMap<LaneId, ProvedLaneMessages<Message>>;
 
 /// Proved messages from single lane of the source chain.
-#[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
+// #[derive(RuntimeDebug, Encode, Decode, Clone, PartialEq, Eq)]
+#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq)]
 pub struct ProvedLaneMessages<Message> {
 	/// Optional outbound lane state.
 	pub lane_state: Option<OutboundLaneData>,
@@ -36,7 +37,8 @@ pub struct ProvedLaneMessages<Message> {
 }
 
 /// Message data with decoded dispatch payload.
-#[derive(RuntimeDebug)]
+// #[derive(RuntimeDebug)]
+#[derive(Debug)]
 pub struct DispatchMessageData<DispatchPayload, Fee> {
 	/// Result of dispatch payload decoding.
 	pub payload: Result<DispatchPayload, CodecError>,
@@ -45,7 +47,8 @@ pub struct DispatchMessageData<DispatchPayload, Fee> {
 }
 
 /// Message with decoded dispatch payload.
-#[derive(RuntimeDebug)]
+// #[derive(RuntimeDebug)]
+#[derive(Debug)]
 pub struct DispatchMessage<DispatchPayload, Fee> {
 	/// Message key.
 	pub key: MessageKey,

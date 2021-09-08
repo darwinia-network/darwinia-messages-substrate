@@ -272,7 +272,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 		// because otherwise Calls may be dispatched at lower price)
 		let dispatch_info = call.get_dispatch_info();
 		let expected_weight = dispatch_info.weight;
-		log::trace!(target: "runtime::bridge-dispatch", "bear: --- dispatch, expected weight {:?}, message weight {:?}", expected_weight, message.weight);
+		log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, expected weight {:?}, message weight {:?}", expected_weight, message.weight);
 		if message.weight < expected_weight {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
@@ -293,7 +293,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain = message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		log::trace!(target: "runtime::bridge-dispatch", "bear: --- dispatch, pay_dispatch_fee_at_target_chain {:?}", pay_dispatch_fee_at_target_chain);
+		log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, pay_dispatch_fee_at_target_chain {:?}", pay_dispatch_fee_at_target_chain);
 		if pay_dispatch_fee_at_target_chain && pay_dispatch_fee(&origin_account, message.weight).is_err() {
 			log::trace!(
 				target: "runtime::bridge-dispatch",

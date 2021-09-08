@@ -81,7 +81,8 @@ pub type MessageId = (LaneId, MessageNonce);
 pub type MessagePayload = Vec<u8>;
 
 /// Message key (unique message identifier) as it is stored in the storage.
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+// #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
 pub struct MessageKey {
 	/// ID of the message lane.
 	pub lane_id: LaneId,
@@ -90,7 +91,8 @@ pub struct MessageKey {
 }
 
 /// Message data as it is stored in the storage.
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+// #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
 pub struct MessageData<Fee> {
 	/// Message payload.
 	pub payload: MessagePayload,
@@ -99,7 +101,8 @@ pub struct MessageData<Fee> {
 }
 
 /// Message as it is stored in the storage.
-#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+// #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
 pub struct Message<Fee> {
 	/// Message key.
 	pub key: MessageKey,
@@ -108,7 +111,8 @@ pub struct Message<Fee> {
 }
 
 /// Inbound lane data.
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+// #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+#[derive(Encode, Decode, Clone, Debug, PartialEq, Eq)]
 pub struct InboundLaneData<RelayerId> {
 	/// Identifiers of relayers and messages that they have delivered to this lane (ordered by message nonce).
 	///
@@ -174,7 +178,8 @@ impl<RelayerId> InboundLaneData<RelayerId> {
 }
 
 /// Message details, returned by runtime APIs.
-#[derive(Clone, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+// #[derive(Clone, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+#[derive(Clone, Encode, Decode, Debug, PartialEq, Eq)]
 pub struct MessageDetails<OutboundMessageFee> {
 	/// Nonce assigned to the message.
 	pub nonce: MessageNonce,
@@ -195,7 +200,8 @@ pub type DispatchResultsBitVec = BitVec<Msb0, u8>;
 ///
 /// This struct represents a continuous range of messages that have been delivered by the same relayer
 /// and whose confirmations are still pending.
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+// #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+#[derive(Encode, Decode, Clone, Debug, PartialEq, Eq)]
 pub struct UnrewardedRelayer<RelayerId> {
 	/// Identifier of the relayer.
 	pub relayer: RelayerId,
@@ -204,7 +210,8 @@ pub struct UnrewardedRelayer<RelayerId> {
 }
 
 /// Delivered messages with their dispatch result.
-#[derive(Clone, Default, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+// #[derive(Clone, Default, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+#[derive(Clone, Default, Encode, Decode, Debug, PartialEq, Eq)]
 pub struct DeliveredMessages {
 	/// Nonce of the first message that has been delivered (inclusive).
 	pub begin: MessageNonce,
@@ -275,7 +282,8 @@ pub struct UnrewardedRelayersState {
 }
 
 /// Outbound lane data.
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+// #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
+#[derive(Encode, Decode, Clone, Debug, PartialEq, Eq)]
 pub struct OutboundLaneData {
 	/// Nonce of the oldest message that we haven't yet pruned. May point to not-yet-generated message if
 	/// all sent messages are already pruned.

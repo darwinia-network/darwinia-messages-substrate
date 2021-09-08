@@ -20,7 +20,8 @@ use codec::{Decode, Encode};
 use frame_support::{weights::Weight, RuntimeDebug};
 
 /// Where message dispatch fee is paid?
-#[derive(Encode, Decode, RuntimeDebug, Clone, Copy, PartialEq, Eq)]
+// #[derive(Encode, Decode, RuntimeDebug, Clone, Copy, PartialEq, Eq)]
+#[derive(Encode, Decode, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DispatchFeePayment {
 	/// The dispatch fee is paid at the source chain.
 	AtSourceChain,
@@ -34,7 +35,8 @@ pub enum DispatchFeePayment {
 }
 
 /// Message dispatch result.
-#[derive(Encode, Decode, RuntimeDebug, Clone, PartialEq, Eq)]
+// #[derive(Encode, Decode, RuntimeDebug, Clone, PartialEq, Eq)]
+#[derive(Encode, Decode, Debug, Clone, PartialEq, Eq)]
 pub struct MessageDispatchResult {
 	/// Dispatch result flag. This flag is relayed back to the source chain and, generally
 	/// speaking, may bring any (that fits in single bit) information from the dispatcher at
