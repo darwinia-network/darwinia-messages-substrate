@@ -126,6 +126,7 @@ where
 	<P::MessageLane as MessageLane>::SourceChainBalance: AtLeast32BitUnsigned,
 {
 	async fn state(&self) -> Result<SourceClientState<P::MessageLane>, SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message source, state");
 		// we can't continue to deliver confirmations if source node is out of sync, because
 		// it may have already received confirmations that we're going to deliver
 		self.client.ensure_synced().await?;
@@ -142,6 +143,7 @@ where
 		&self,
 		id: SourceHeaderIdOf<P::MessageLane>,
 	) -> Result<(SourceHeaderIdOf<P::MessageLane>, MessageNonce), SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message source, lastest_generated_nonce");
 		let encoded_response = self
 			.client
 			.state_call(
@@ -159,6 +161,7 @@ where
 		&self,
 		id: SourceHeaderIdOf<P::MessageLane>,
 	) -> Result<(SourceHeaderIdOf<P::MessageLane>, MessageNonce), SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message source, lastest confirmed_received_nonce");
 		let encoded_response = self
 			.client
 			.state_call(
@@ -177,6 +180,7 @@ where
 		id: SourceHeaderIdOf<P::MessageLane>,
 		nonces: RangeInclusive<MessageNonce>,
 	) -> Result<MessageDetailsMap<<P::MessageLane as MessageLane>::SourceChainBalance>, SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message source, generated message details, nonces {:?}", nonces);
 		let encoded_response = self
 			.client
 			.state_call(
@@ -205,6 +209,7 @@ where
 		),
 		SubstrateError,
 	> {
+		log::trace!(target: "bridge", "bear: --- message source, prove_messages, nonces {:?}, params {:?}", nonces, proof_parameters);
 		let mut storage_keys = Vec::with_capacity(nonces.end().saturating_sub(*nonces.start()) as usize + 1);
 		let mut message_nonce = *nonces.start();
 		while message_nonce <= *nonces.end() {
@@ -244,6 +249,7 @@ where
 		generated_at_block: TargetHeaderIdOf<P::MessageLane>,
 		proof: <P::MessageLane as MessageLane>::MessagesReceivingProof,
 	) -> Result<(), SubstrateError> {
+		log::trace!(target: "bridge", "bear: --- message source, submit_message_receiving_proof");
 		let lane = self.lane.clone();
 		self.client
 			.submit_signed_extrinsic(self.lane.source_transactions_author(), move |_, transaction_nonce| {
@@ -260,6 +266,7 @@ where
 	}
 
 	async fn estimate_confirmation_transaction(&self) -> <P::MessageLane as MessageLane>::SourceChainBalance {
+		log::trace!(target: "bridge", "bear: --- message source, estimate confirmation transaction");
 		self.client
 			.estimate_extrinsic_fee(self.lane.make_messages_receiving_proof_transaction(
 				Zero::zero(),

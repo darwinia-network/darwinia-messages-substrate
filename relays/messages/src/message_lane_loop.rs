@@ -360,7 +360,7 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 					|new_source_state| {
 						log::debug!(
 							target: "bridge",
-							"Received state from {} node: {:?}",
+							"bear --- Received state from {} node: {:?}",
 							P::SOURCE_NAME,
 							new_source_state,
 						);
@@ -391,7 +391,7 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 					|new_target_state| {
 						log::debug!(
 							target: "bridge",
-							"Received state from {} node: {:?}",
+							"bear: --- Received state from {} node: {:?}",
 							P::TARGET_NAME,
 							new_target_state,
 						);
