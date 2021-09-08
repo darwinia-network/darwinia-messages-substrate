@@ -421,7 +421,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			ensure_not_halted::<T, I>()?;
 			let relayer_id_at_this_chain = ensure_signed(origin)?;
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive message proof, relayer id at this chain {:?}, at bridged chain {:?}, message count {:?}, dispatch_weight {:?}",
+			log::debug!(target: "runtime::bridge-messages", "bear --- receive_message_proof, relayer id at this chain {:?}, at bridged chain {:?}, message count {:?}, dispatch_weight {:?}",
 				relayer_id_at_this_chain, relayer_id_at_bridged_chain, messages_count, dispatch_weight);
 
 			// reject transactions that are declaring too many messages
@@ -441,7 +441,7 @@ pub mod pallet {
 			// The DeclaredWeight is exactly what's computed here. Unfortunately it is impossible
 			// to get pre-computed value (and it has been already computed by the executive).
 			let declared_weight = T::WeightInfo::receive_messages_proof_weight(&proof, messages_count, dispatch_weight);
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_proof, declared_weight {:?}", declared_weight);
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, declared_weight {:?}", declared_weight);
 			let mut actual_weight = declared_weight;
 
 			// verify messages proof && convert proof into messages
@@ -465,11 +465,11 @@ pub mod pallet {
 			let mut valid_messages = 0;
 			let mut dispatch_weight_left = dispatch_weight;
 			for (lane_id, lane_data) in messages {
-				log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_proof, go through => lane_id {:?}", lane_id);
+				log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, go through => lane_id {:?}", lane_id);
 				let mut lane = inbound_lane::<T, I>(lane_id);
 
 				if let Some(lane_state) = lane_data.lane_state {
-					log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_proof, out-bound lane data {:?}", lane_state);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, out-bound lane data {:?}", lane_state);
 					let updated_latest_confirmed_nonce = lane.receive_state_update(lane_state);
 					if let Some(updated_latest_confirmed_nonce) = updated_latest_confirmed_nonce {
 						log::debug!(
@@ -482,14 +482,14 @@ pub mod pallet {
 				}
 
 				for message in lane_data.messages {
-					log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_proof, go through => message key {:?}", message.key);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, go through => message key {:?}", message.key);
 					debug_assert_eq!(message.key.lane_id, lane_id);
 
 					// ensure that relayer has declared enough weight for dispatching next message on
 					// this lane. We can't dispatch lane messages out-of-order, so if declared weight
 					// is not enough, let's move to next lane
 					let dispatch_weight = T::MessageDispatch::dispatch_weight(&message);
-					log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_proof, dispatch weight {:?}", dispatch_weight);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, dispatch weight {:?}", dispatch_weight);
 					if dispatch_weight > dispatch_weight_left {
 						log::debug!(
 							target: "runtime::bridge-messages",
@@ -508,7 +508,7 @@ pub mod pallet {
 						message.key.nonce,
 						message.data,
 					);
-					log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_proof,  receival_result {:?}", receival_result);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof,  receival_result {:?}", receival_result);
 
 					// note that we're returning unspent weight to relayer even if message has been
 					// rejected by the lane. This allows relayers to submit spam transactions with
@@ -546,7 +546,7 @@ pub mod pallet {
 
 			log::debug!(
 				target: "runtime::bridge-messages",
-				"bear: --- Received messages: total={}, valid={}. Weight used: {}/{}",
+				"bear: --- received messages: total={}, valid={}. Weight used: {}/{}",
 				total_messages,
 				valid_messages,
 				actual_weight,

@@ -35,7 +35,7 @@ pub mod target_chain;
 pub use frame_support::weights::Weight;
 
 /// Messages pallet operating mode.
-#[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug)]
+#[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, Debug)]
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub enum OperatingMode {
 	/// Normal mode, when all operations are allowed.
@@ -270,7 +270,7 @@ impl DeliveredMessages {
 }
 
 /// Gist of `InboundLaneData::relayers` field used by runtime APIs.
-#[derive(Clone, Default, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+#[derive(Clone, Default, Encode, Decode, Debug, PartialEq, Eq)]
 pub struct UnrewardedRelayersState {
 	/// Number of entries in the `InboundLaneData::relayers` set.
 	pub unrewarded_relayer_entries: MessageNonce,

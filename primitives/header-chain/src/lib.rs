@@ -39,7 +39,7 @@ pub trait Parameter: Codec + EncodeLike + Clone + Eq + Debug {}
 impl<T> Parameter for T where T: Codec + EncodeLike + Clone + Eq + Debug {}
 
 /// A GRANDPA Authority List and ID.
-#[derive(Default, Encode, Decode, RuntimeDebug, PartialEq, Clone)]
+#[derive(Default, Encode, Decode, Debug, PartialEq, Clone)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct AuthoritySet {
 	/// List of GRANDPA authorities for the current round.
@@ -58,7 +58,7 @@ impl AuthoritySet {
 /// Data required for initializing the bridge pallet.
 ///
 /// The bridge needs to know where to start its sync from, and this provides that initial context.
-#[derive(Default, Encode, Decode, RuntimeDebug, PartialEq, Eq, Clone)]
+#[derive(Default, Encode, Decode, Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct InitializationData<H: HeaderT> {
 	/// The header from which we should start syncing.

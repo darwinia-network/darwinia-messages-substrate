@@ -87,7 +87,7 @@ pub trait ChainWithMessages {
 }
 
 /// Message related transaction parameters estimation.
-#[derive(RuntimeDebug)]
+#[derive(Debug)]
 pub struct MessageTransaction<Weight> {
 	/// The estimated dispatch weight of the transaction.
 	pub dispatch_weight: Weight,
@@ -202,7 +202,7 @@ pub mod source {
 	/// - hash of finalized header;
 	/// - storage proof of inbound lane state;
 	/// - lane id.
-	#[derive(Clone, Decode, Encode, Eq, PartialEq, RuntimeDebug)]
+	#[derive(Clone, Decode, Encode, Eq, PartialEq, Debug)]
 	pub struct FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash> {
 		/// Hash of the bridge header the proof is for.
 		pub bridged_header_hash: BridgedHeaderHash,
@@ -433,7 +433,7 @@ pub mod target {
 	/// - storage proof of messages and (optionally) outbound lane state;
 	/// - lane id;
 	/// - nonces (inclusive range) of messages which are included in this proof.
-	#[derive(Clone, Decode, Encode, Eq, PartialEq, RuntimeDebug)]
+	#[derive(Clone, Decode, Encode, Eq, PartialEq, Debug)]
 	pub struct FromBridgedChainMessagesProof<BridgedHeaderHash> {
 		/// Hash of the finalized bridged header the proof is for.
 		pub bridged_header_hash: BridgedHeaderHash,
@@ -484,7 +484,7 @@ pub mod target {
 	}
 
 	/// Dispatching Bridged -> This chain messages.
-	#[derive(RuntimeDebug, Clone, Copy)]
+	#[derive(Debug, Clone, Copy)]
 	pub struct FromBridgedChainMessageDispatch<B, ThisRuntime, ThisCurrency, ThisDispatchInstance> {
 		_marker: PhantomData<(B, ThisRuntime, ThisCurrency, ThisDispatchInstance)>,
 	}

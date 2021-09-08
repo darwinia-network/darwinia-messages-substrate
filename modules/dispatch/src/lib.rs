@@ -150,7 +150,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 		message: Result<Self::Message, ()>,
 		pay_dispatch_fee: P,
 	) -> MessageDispatchResult {
-		log::debug!(target: "runtime::bridge-dispatch", "bear: dispatch, source_chain {:?}, target_chain {:?}, message id {:?}",
+		log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, source_chain {:?}, target_chain {:?}, message id {:?}",
 			source_chain, target_chain, id);
 		// emit special even if message has been rejected by external component
 		let message = match message {
@@ -179,7 +179,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 			dispatch_fee_paid_during_dispatch: false,
 		};
 		let expected_version = <T as frame_system::Config>::Version::get().spec_version;
-		log::debug!(target: "runtime::bridge-dispatch", "bear: dispatch, message spec_version {:?}, expected_version {:?}", message.spec_version, expected_version);
+		log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, message spec_version {:?}, expected_version {:?}", message.spec_version, expected_version);
 		if message.spec_version != expected_version {
 			log::trace!(
 				"Message {:?}/{:?}: spec_version mismatch. Expected {:?}, got {:?}",
@@ -217,7 +217,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 			CallOrigin::SourceRoot => {
 				let hex_id = derive_account_id::<T::SourceChainAccountId>(source_chain, SourceAccount::Root);
 				let target_id = T::AccountIdConverter::convert(hex_id);
-				log::debug!(target: "runtime::bridge-dispatch", "Root Account: {:?}", &target_id);
+				log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, root Account: {:?}", &target_id);
 				target_id
 			}
 			CallOrigin::TargetAccount(source_account_id, target_public, target_signature) => {
@@ -243,13 +243,13 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 					return dispatch_result;
 				}
 
-				log::debug!(target: "runtime::bridge-dispatch", "Target Account: {:?}", &target_account);
+				log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, target Account: {:?}", &target_account);
 				target_account
 			}
 			CallOrigin::SourceAccount(source_account_id) => {
 				let hex_id = derive_account_id(source_chain, SourceAccount::Account(source_account_id));
 				let target_id = T::AccountIdConverter::convert(hex_id);
-				log::debug!(target: "runtime::bridge-dispatch", "Source Account: {:?}", &target_id);
+				log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, source Account: {:?}", &target_id);
 				target_id
 			}
 		};
@@ -315,7 +315,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 		// finally dispatch message
 		let origin = RawOrigin::Signed(origin_account).into();
 
-		log::debug!(target: "runtime::bridge-dispatch", "Message being dispatched is: {:.4096?}", &call);
+		log::trace!(target: "runtime::bridge-dispatch", "bear: --- dispatch, message being dispatched is: {:.4096?}", &call);
 		let result = call.dispatch(origin);
 		let actual_call_weight = extract_actual_weight(&result, &dispatch_info);
 		dispatch_result.dispatch_result = result.is_ok();
@@ -323,7 +323,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 
 		log::debug!(
 			target: "runtime::bridge-dispatch",
-			"Message {:?}/{:?} has been dispatched. Weight: {} of {}. Result: {:?}. Call dispatch result: {:?}",
+			"bear: --- dispatch, message {:?}/{:?} has been dispatched. Weight: {} of {}. Result: {:?}. Call dispatch result: {:?}",
 			source_chain,
 			id,
 			actual_call_weight,

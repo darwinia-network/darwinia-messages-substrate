@@ -44,7 +44,7 @@ pub trait OutboundLaneStorage {
 }
 
 /// Result of messages receival confirmation.
-#[derive(RuntimeDebug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ReceivalConfirmationResult {
 	/// New messages have been confirmed by the confirmation transaction.
 	ConfirmedMessages(DeliveredMessages),

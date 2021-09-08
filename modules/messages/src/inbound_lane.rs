@@ -44,7 +44,7 @@ pub trait InboundLaneStorage {
 }
 
 /// Result of single message receival.
-#[derive(RuntimeDebug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ReceivalResult {
 	/// Message has been received and dispatched. Note that we don't care whether dispatch has
 	/// been successful or not - in both case message falls into this category.

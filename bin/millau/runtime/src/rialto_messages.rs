@@ -259,7 +259,7 @@ impl SourceHeaderChain<bp_rialto::Balance> for Rialto {
 }
 
 /// Millau -> Rialto message lane pallet parameters.
-#[derive(RuntimeDebug, Clone, Encode, Decode, PartialEq, Eq)]
+#[derive(Debug, Clone, Encode, Decode, PartialEq, Eq)]
 pub enum MillauToRialtoMessagesParameter {
 	/// The conversion formula we use is: `MillauTokens = RialtoTokens * conversion_rate`.
 	RialtoToMillauConversionRate(FixedU128),

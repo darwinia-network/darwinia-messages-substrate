@@ -178,7 +178,6 @@ impl<C: Chain> Client<C> {
 
 	/// Return hash of the best finalized block.
 	pub async fn best_finalized_header_hash(&self) -> Result<C::Hash> {
-		log::debug!(target: "bridge", "bear: --- client: best_finalized_header_hash");
 		self.jsonrpsee_execute(|client| async move { Ok(Substrate::<C>::chain_get_finalized_head(&*client).await?) })
 			.await
 	}
@@ -188,14 +187,12 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
-		log::debug!(target: "bridge", "bear: --- client: best header");
 		self.jsonrpsee_execute(|client| async move { Ok(Substrate::<C>::chain_get_header(&*client, None).await?) })
 			.await
 	}
 
 	/// Get a Substrate block from its hash.
 	pub async fn get_block(&self, block_hash: Option<C::Hash>) -> Result<C::SignedBlock> {
-		log::debug!(target: "bridge", "bear: --- client: get_block");
 		self.jsonrpsee_execute(
 			move |client| async move { Ok(Substrate::<C>::chain_get_block(&*client, block_hash).await?) },
 		)
@@ -207,7 +204,6 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
-		log::debug!(target: "bridge", "bear: --- client: get_header_by_hash");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::chain_get_header(&*client, block_hash).await?)
 		})
@@ -216,7 +212,6 @@ impl<C: Chain> Client<C> {
 
 	/// Get a Substrate block hash by its number.
 	pub async fn block_hash_by_number(&self, number: C::BlockNumber) -> Result<C::Hash> {
-		log::debug!(target: "bridge", "bear: --- client: get block hash by number");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::chain_get_block_hash(&*client, number).await?)
 		})
@@ -228,7 +223,6 @@ impl<C: Chain> Client<C> {
 	where
 		C::Header: DeserializeOwned,
 	{
-		log::debug!(target: "bridge", "bear: --- client: get header by number");
 		let block_hash = Self::block_hash_by_number(self, block_number).await?;
 		let header_by_hash = Self::header_by_hash(self, block_hash).await?;
 		Ok(header_by_hash)

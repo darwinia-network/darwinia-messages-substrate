@@ -143,7 +143,6 @@ where
 		&self,
 		id: SourceHeaderIdOf<P::MessageLane>,
 	) -> Result<(SourceHeaderIdOf<P::MessageLane>, MessageNonce), SubstrateError> {
-		log::debug!(target: "bridge", "bear: --- message source, lastest_generated_nonce");
 		let encoded_response = self
 			.client
 			.state_call(
@@ -161,7 +160,6 @@ where
 		&self,
 		id: SourceHeaderIdOf<P::MessageLane>,
 	) -> Result<(SourceHeaderIdOf<P::MessageLane>, MessageNonce), SubstrateError> {
-		log::debug!(target: "bridge", "bear: --- message source, lastest confirmed_received_nonce");
 		let encoded_response = self
 			.client
 			.state_call(

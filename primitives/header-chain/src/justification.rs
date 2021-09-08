@@ -164,7 +164,7 @@ where
 }
 
 /// Votes ancestries with useful methods.
-#[derive(RuntimeDebug)]
+#[derive(Debug)]
 pub struct AncestryChain<Header: HeaderT> {
 	/// Header hash => parent header hash mapping.
 	pub parents: BTreeMap<Header::Hash, Header::Hash>,

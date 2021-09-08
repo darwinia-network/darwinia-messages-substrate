@@ -177,7 +177,7 @@ where
 		at_block: HeaderId<SourceHeaderHash, SourceHeaderNumber>,
 		nonces: SourceClientNonces<SourceNoncesRange>,
 	) {
-		log::debug!(target: "bridge", "bear: strategy, source_nonces_updated before: {:?}", self.source_queue);
+		log::debug!(target: "bridge", "bear: --- strategy, source_nonces_updated before: {:?}", self.source_queue);
 		let best_in_queue = self
 			.source_queue
 			.back()
@@ -191,7 +191,7 @@ where
 				.into_iter()
 				.map(move |range| (at_block.clone(), range)),
 		);
-		log::debug!(target: "bridge", "bear: strategy, source_nonces_updated after: {:?}", self.source_queue);
+		log::debug!(target: "bridge", "bear: --- strategy, source_nonces_updated after: {:?}", self.source_queue);
 	}
 
 	fn best_target_nonces_updated(
@@ -203,7 +203,7 @@ where
 			Proof,
 		>,
 	) {
-		log::debug!(target: "bridge", "bear: strategy, target_nonces_updated before: {:?}", self.best_target_nonce);
+		log::debug!(target: "bridge", "bear: --- strategy, target_nonces_updated before: {:?}", self.best_target_nonce);
 		let nonce = nonces.latest_nonce;
 
 		if let Some(best_target_nonce) = self.best_target_nonce {
@@ -245,7 +245,7 @@ where
 			self.best_target_nonce.unwrap_or(nonces.latest_nonce),
 			nonce,
 		));
-		log::debug!(target: "bridge", "bear: strategy, target_nonces_updated after: {:?}", self.best_target_nonce);
+		log::debug!(target: "bridge", "bear: --- strategy, target_nonces_updated after: {:?}", self.best_target_nonce);
 	}
 
 	fn finalized_target_nonces_updated(
@@ -257,12 +257,12 @@ where
 			Proof,
 		>,
 	) {
-		log::debug!(target: "bridge", "bear: strategy, finalized_target_nonces_updated before: {:?}", self.best_target_nonce);
+		log::debug!(target: "bridge", "bear: --- strategy, finalized_target_nonces_updated before: {:?}", self.best_target_nonce);
 		self.best_target_nonce = Some(std::cmp::max(
 			self.best_target_nonce.unwrap_or(nonces.latest_nonce),
 			nonces.latest_nonce,
 		));
-		log::debug!(target: "bridge", "bear: strategy, finalized_target_nonces_updated after: {:?}", self.best_target_nonce);
+		log::debug!(target: "bridge", "bear: --- strategy, finalized_target_nonces_updated after: {:?}", self.best_target_nonce);
 	}
 
 	async fn select_nonces_to_deliver(
