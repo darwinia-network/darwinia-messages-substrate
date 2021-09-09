@@ -74,6 +74,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 	pub fn receive_state_update(&mut self, outbound_lane_data: OutboundLaneData) -> Option<MessageNonce> {
 		let mut data = self.storage.data();
 		let last_delivered_nonce = data.last_delivered_nonce();
+		log::debug!(target: "runtime::bridge-messages", "bear: --- bear: --- receive_messages_proof, inbound last_delivered_nonce, {:?}", last_delivered_nonce);
 
 		if outbound_lane_data.latest_received_nonce > last_delivered_nonce {
 			// this is something that should never happen if proofs are correct
@@ -136,6 +137,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			return ReceivalResult::TooManyUnconfirmedMessages;
 		}
 
+		log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof,  start dispatch");
 		// then, dispatch message
 		let dispatch_result = P::dispatch(
 			relayer_at_this_chain,
@@ -147,6 +149,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 				data: message_data,
 			},
 		);
+		log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof,  end dispatch");
 
 		// now let's update inbound lane storage
 		let push_new = match data.relayers.back_mut() {
@@ -163,6 +166,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			});
 		}
 		self.storage.set_data(data);
+		log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof,  update inbound relayers data");
 
 		ReceivalResult::Dispatched(dispatch_result)
 	}

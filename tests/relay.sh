@@ -31,7 +31,18 @@ ${EXECUTABLE} \
 	--target-port=$RIALTO_ALICE_PORT\
 	--target-signer=//Alice
 
-sleep 60
+sleep 40
+
+echo "### Initialize Rialto > Millau bridge and wait 60s"
+${EXECUTABLE} \
+  init-bridge rialto-to-millau \
+  --source-host=$RIALTO_HOST\
+	--source-port=$RIALTO_ALICE_PORT\
+	--target-host=$MILLAU_HOST\
+	--target-port=$MILLAU_ALICE_PORT\
+	--target-signer=//Alice
+
+sleep 40
 
 echo "### Start header-message relay"
 ${EXECUTABLE} \

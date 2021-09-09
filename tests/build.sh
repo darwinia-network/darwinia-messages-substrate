@@ -24,7 +24,7 @@ DATA_DIR=$DIR/data
 mkdir -p $DATA_DIR
 
 echo "### Build node"
-cargo build -p ${CHAIN}-bridge-node --release
+# cargo build -p ${CHAIN}-bridge-node --release
 
 EXECUTABLE=$REPO_PATH/target/release/${CHAIN}-bridge-node
 index=100

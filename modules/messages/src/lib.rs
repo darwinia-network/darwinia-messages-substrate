@@ -259,7 +259,6 @@ pub mod pallet {
 
 				Error::<T, I>::MessageRejectedByChainVerifier
 			})?;
-			log::debug!(target: "runtime::bridge-messages", "bear --- send message, pass TargetHeaderChain check");
 
 			// now let's enforce any additional lane rules
 			let mut lane = outbound_lane::<T, I>(lane_id);
@@ -280,7 +279,7 @@ pub mod pallet {
 
 				Error::<T, I>::MessageRejectedByLaneVerifier
 			})?;
-			log::debug!(target: "runtime::bridge-messages", "bear --- send message, pass LaneMessageVerifier check");
+			log::debug!(target: "runtime::bridge-messages", "bear --- send message, two checks passed");
 
 			// let's withdraw delivery and dispatch fee from submitter
 			T::MessageDeliveryAndDispatchPayment::pay_delivery_and_dispatch_fee(
@@ -307,7 +306,7 @@ pub mod pallet {
 			let encoded_payload_len = encoded_payload.len();
 			let nonce = lane.send_message(MessageData {
 				payload: encoded_payload,
-				fee: delivery_and_dispatch_fee,
+				fee: delivery_and_dispatch_fee.clone(),
 			});
 
 			// message sender pays for pruning at most `MaxMessagesToPruneAtOnce` messages
@@ -321,10 +320,12 @@ pub mod pallet {
 
 			log::debug!(
 				target: "runtime::bridge-messages",
-				"bear: --- Accepted message {} to lane {:?}. Message size: {:?}",
+				"bear: --- Accepted message {} to lane {:?}. Message size: {:?}, delivery_and_dispatch_fee {:?}, actual_wight {:?}",
 				nonce,
 				lane_id,
 				encoded_payload_len,
+				delivery_and_dispatch_fee,
+				actual_weight,
 			);
 
 			Self::deposit_event(Event::MessageAccepted(lane_id, nonce));
@@ -421,8 +422,9 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			ensure_not_halted::<T, I>()?;
 			let relayer_id_at_this_chain = ensure_signed(origin)?;
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive_message_proof, relayer id at this chain {:?}, at bridged chain {:?}, message count {:?}, dispatch_weight {:?}",
-				relayer_id_at_this_chain, relayer_id_at_bridged_chain, messages_count, dispatch_weight);
+			log::debug!(target: "runtime::bridge-messages", "bear --- receive_message_proof, relayer id at this chain {:?}, at bridged chain {:?},
+				message count {:?}, dispatch_weight {:?}, message_proof {:?}",
+				relayer_id_at_this_chain, relayer_id_at_bridged_chain, messages_count, dispatch_weight, proof);
 
 			// reject transactions that are declaring too many messages
 			ensure!(
@@ -441,7 +443,6 @@ pub mod pallet {
 			// The DeclaredWeight is exactly what's computed here. Unfortunately it is impossible
 			// to get pre-computed value (and it has been already computed by the executive).
 			let declared_weight = T::WeightInfo::receive_messages_proof_weight(&proof, messages_count, dispatch_weight);
-			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, declared_weight {:?}", declared_weight);
 			let mut actual_weight = declared_weight;
 
 			// verify messages proof && convert proof into messages
@@ -459,22 +460,23 @@ pub mod pallet {
 
 				Error::<T, I>::InvalidMessagesProof
 			})?;
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, check passed");
 
 			// dispatch messages and (optionally) update lane(s) state(s)
 			let mut total_messages = 0;
 			let mut valid_messages = 0;
 			let mut dispatch_weight_left = dispatch_weight;
 			for (lane_id, lane_data) in messages {
-				log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, go through => lane_id {:?}", lane_id);
 				let mut lane = inbound_lane::<T, I>(lane_id);
+				log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, lane_id {:?}, lane_data {:?}, actual_weight {:?}, dispatch_weight_left {:?}",
+					lane_id, lane_data.lane_state, actual_weight, dispatch_weight_left);
 
 				if let Some(lane_state) = lane_data.lane_state {
-					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, out-bound lane data {:?}", lane_state);
 					let updated_latest_confirmed_nonce = lane.receive_state_update(lane_state);
 					if let Some(updated_latest_confirmed_nonce) = updated_latest_confirmed_nonce {
 						log::debug!(
 							target: "runtime::bridge-messages",
-							"bear: --- Received lane {:?} state update: latest_confirmed_nonce={}",
+							"bear: --- bear: --- receive_messages_proof, received lane {:?} state update: latest_confirmed_nonce={}",
 							lane_id,
 							updated_latest_confirmed_nonce,
 						);
@@ -482,14 +484,13 @@ pub mod pallet {
 				}
 
 				for message in lane_data.messages {
-					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, go through => message key {:?}", message.key);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, execute message {:?}", message.key.nonce);
 					debug_assert_eq!(message.key.lane_id, lane_id);
 
 					// ensure that relayer has declared enough weight for dispatching next message on
 					// this lane. We can't dispatch lane messages out-of-order, so if declared weight
 					// is not enough, let's move to next lane
 					let dispatch_weight = T::MessageDispatch::dispatch_weight(&message);
-					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, dispatch weight {:?}", dispatch_weight);
 					if dispatch_weight > dispatch_weight_left {
 						log::debug!(
 							target: "runtime::bridge-messages",
@@ -508,7 +509,7 @@ pub mod pallet {
 						message.key.nonce,
 						message.data,
 					);
-					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof,  receival_result {:?}", receival_result);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof,  dispatch_result {:?}", receival_result);
 
 					// note that we're returning unspent weight to relayer even if message has been
 					// rejected by the lane. This allows relayers to submit spam transactions with
@@ -541,6 +542,8 @@ pub mod pallet {
 							0
 						},
 					);
+					log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_proof, unspent_weight {:?}, dispatch_weight_left {:?}, actual_weight {:?}",
+						unspent_weight, dispatch_weight_left, actual_weight);
 				}
 			}
 
@@ -570,7 +573,8 @@ pub mod pallet {
 			proof: MessagesDeliveryProofOf<T, I>,
 			relayers_state: UnrewardedRelayersState,
 		) -> DispatchResultWithPostInfo {
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_delivery_proof, relayer state: {:?}", relayers_state);
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, relayer state: {:?}, proof {:?}",
+				relayers_state, proof);
 			ensure_not_halted::<T, I>()?;
 
 			// why do we need to know the weight of this (`receive_messages_delivery_proof`) call? Because
@@ -585,7 +589,6 @@ pub mod pallet {
 			let single_message_callback_overhead = T::WeightInfo::single_message_callback_overhead(T::DbWeight::get());
 			let declared_weight =
 				T::WeightInfo::receive_messages_delivery_proof_weight(&proof, &relayers_state, T::DbWeight::get());
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_delivery_proof, declared weight {:?}", declared_weight);
 			let mut actual_weight = declared_weight;
 
 			let confirmation_relayer = ensure_signed(origin)?;
@@ -598,7 +601,6 @@ pub mod pallet {
 
 				Error::<T, I>::InvalidMessagesDeliveryProof
 			})?;
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_delivery_proof, pass TargetHeaderChain check");
 
 			// verify that the relayer has declared correct `lane_data::relayers` state
 			// (we only care about total number of entries and messages, because this affects call weight)
@@ -608,11 +610,14 @@ pub mod pallet {
 					&& lane_data.relayers.len() as MessageNonce == relayers_state.unrewarded_relayer_entries,
 				Error::<T, I>::InvalidUnrewardedRelayersState
 			);
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, all check passed");
 
 			// mark messages as delivered
 			let mut lane = outbound_lane::<T, I>(lane_id);
 			let mut relayers_rewards: RelayersRewards<_, T::OutboundMessageFee> = RelayersRewards::new();
 			let last_delivered_nonce = lane_data.last_delivered_nonce();
+			// log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, declared weight {:?}", declared_weight);
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, start comfirm delivery");
 			let confirmed_messages =
 				match lane.confirm_delivery(relayers_state.total_messages, last_delivered_nonce, &lane_data.relayers) {
 					ReceivalConfirmationResult::ConfirmedMessages(confirmed_messages) => Some(confirmed_messages),
@@ -638,6 +643,7 @@ pub mod pallet {
 					}
 				};
 
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, end comfirm delivery, confirmed_messages {:?}", confirmed_messages);
 			if let Some(confirmed_messages) = confirmed_messages {
 				// handle messages delivery confirmation
 				let preliminary_callback_overhead = relayers_state
@@ -673,6 +679,7 @@ pub mod pallet {
 				// emit 'delivered' event
 				let received_range = confirmed_messages.begin..=confirmed_messages.end;
 				Self::deposit_event(Event::MessagesDelivered(lane_id, confirmed_messages));
+				log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, received range {:?}", received_range);
 
 				// remember to reward relayers that have delivered messages
 				// this loop is bounded by `T::MaxUnrewardedRelayerEntriesAtInboundLane` on the bridged chain
@@ -692,7 +699,7 @@ pub mod pallet {
 				}
 			}
 
-			log::debug!(target: "runtime::bridge-messages", "bear --- receive_messages_delivery_proof, relayers relayers {:?}", relayers_rewards);
+			log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, relayers relayers {:?}", relayers_rewards);
 			// if some new messages have been confirmed, reward relayers
 			if !relayers_rewards.is_empty() {
 				let relayer_fund_account = Self::relayer_fund_account_id();
@@ -705,9 +712,11 @@ pub mod pallet {
 
 			log::debug!(
 				target: "runtime::bridge-messages",
-				"bear: --- Received messages delivery proof up to (and including) {} at lane {:?}",
+				"bear: --- --- receive_messages_delivery_proof, received messages delivery proof up to (and including) {} at lane {:?}, declared_weight {:?}, actual weight {:?}",
 				last_delivered_nonce,
 				lane_id,
+				declared_weight,
+				actual_weight,
 			);
 
 			Ok(PostDispatchInfo {

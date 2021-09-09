@@ -104,6 +104,7 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		latest_delivered_nonce: MessageNonce,
 		relayers: &VecDeque<UnrewardedRelayer<RelayerId>>,
 	) -> ReceivalConfirmationResult {
+		log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, confirm_delivery");
 		let mut data = self.storage.data();
 		if latest_delivered_nonce <= data.latest_received_nonce {
 			return ReceivalConfirmationResult::NoNewConfirmations;
@@ -131,6 +132,7 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		let prev_latest_received_nonce = data.latest_received_nonce;
 		data.latest_received_nonce = latest_delivered_nonce;
 		self.storage.set_data(data);
+		log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, confirm_delivery, outbound data updated");
 
 		ReceivalConfirmationResult::ConfirmedMessages(DeliveredMessages {
 			begin: prev_latest_received_nonce + 1,
@@ -148,6 +150,7 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		let mut data = self.storage.data();
 		while pruned_messages < max_messages_to_prune && data.oldest_unpruned_nonce <= data.latest_received_nonce {
 			self.storage.remove_message(&data.oldest_unpruned_nonce);
+			log::debug!(target: "runtime::bridge-messages", "bear: --- outbound, prune message {:?}", data.oldest_unpruned_nonce);
 
 			anything_changed = true;
 			pruned_messages += 1;
