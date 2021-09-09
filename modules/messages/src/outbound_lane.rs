@@ -104,7 +104,6 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		latest_delivered_nonce: MessageNonce,
 		relayers: &VecDeque<UnrewardedRelayer<RelayerId>>,
 	) -> ReceivalConfirmationResult {
-		log::debug!(target: "runtime::bridge-messages", "bear: --- receive_messages_delivery_proof, confirm_delivery");
 		let mut data = self.storage.data();
 		if latest_delivered_nonce <= data.latest_received_nonce {
 			return ReceivalConfirmationResult::NoNewConfirmations;

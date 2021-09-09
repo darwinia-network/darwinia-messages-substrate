@@ -24,7 +24,7 @@ async_std::task_local! {
 
 /// Initialize relay environment.
 pub fn initialize_relay() {
-	initialize_logger(true);
+	initialize_logger(false);
 }
 
 /// Initialize Relay logger instance.
@@ -62,10 +62,18 @@ pub fn initialize_logger(with_timestamp: bool) {
 			let log_level = color_level(record.level());
 			let log_target = color_target(record.target());
 
+			// writeln!(
+			// 	buf,
+			// 	"{}{} {} {}",
+			// 	loop_name_prefix(),
+			// 	log_level,
+			// 	log_target,
+			// 	record.args(),
+			// )
 			writeln!(
 				buf,
-				"{}{} {} {}",
-				loop_name_prefix(),
+				"{} {} {}",
+				// loop_name_prefix(),
 				log_level,
 				log_target,
 				record.args(),

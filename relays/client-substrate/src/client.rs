@@ -358,7 +358,7 @@ impl<C: Chain> Client<C> {
 
 	/// Execute runtime call at given block.
 	pub async fn state_call(&self, method: String, data: Bytes, at_block: Option<C::Hash>) -> Result<Bytes> {
-		log::debug!(target: "bridge", "bear: --- client: state_call, method {:?}, at_block {:?}", method, at_block);
+		log::debug!(target: "bridge", "bear: ------ client: state_call, method {:?}, at_block {:?}", method, at_block);
 		self.jsonrpsee_execute(move |client| async move {
 			Substrate::<C>::state_call(&*client, method, data, at_block)
 				.await

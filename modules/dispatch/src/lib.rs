@@ -248,12 +248,9 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::MessageId> for P
 			CallOrigin::SourceAccount(source_account_id) => {
 				let hex_id = derive_account_id(source_chain, SourceAccount::Account(source_account_id));
 				let target_id = T::AccountIdConverter::convert(hex_id);
-				log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, source account: {:?}", &target_id);
 				target_id
 			}
 		};
-		log::debug!(target: "runtime::bridge-dispatch", "bear: --- dispatch, origin_account: {:?}", &origin_account);
-
 		// filter the call
 		if !T::CallFilter::filter(&call) {
 			log::trace!(
