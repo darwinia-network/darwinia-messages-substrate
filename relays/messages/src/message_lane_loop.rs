@@ -260,7 +260,7 @@ pub async fn run<P: MessageLane>(
 	metrics_params: MetricsParams,
 	exit_signal: impl Future<Output = ()> + Send + 'static,
 ) -> anyhow::Result<()> {
-	log::debug!(target: "bridge","bear: --- run message lane loop");
+	log::debug!(target: "bridge","bear: run message lane loop");
 	let exit_signal = exit_signal.shared();
 	relay_utils::relay_loop(source_client, target_client)
 		.reconnect_delay(params.reconnect_delay)
@@ -360,7 +360,7 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 					|new_source_state| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- lane loop, received state from {} node: {:?}",
+							"bear: - lane loop, source state comes, received state from {} node: {:?}",
 							P::SOURCE_NAME,
 							new_source_state,
 						);
@@ -380,7 +380,7 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 				source_client_is_online = true;
 			},
 			_ = source_tick_stream.next() => {
-				log::debug!(target: "bridge", "bear: --- source tick stream arrived");
+				log::debug!(target: "bridge", "bear: - lane loop, source tick stream arrived");
 				source_state_required = true;
 			},
 			new_target_state = target_state => {
@@ -392,7 +392,7 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 					|new_target_state| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- lane loop, received state from {} node: {:?}",
+							"bear: - lane loop, target state comes, received state from {} node: {:?}",
 							P::TARGET_NAME,
 							new_target_state,
 						);
@@ -412,7 +412,7 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 				target_client_is_online = true;
 			},
 			_ = target_tick_stream.next() => {
-				log::debug!(target: "bridge", "bear: --- target tick stream arrived");
+				log::debug!(target: "bridge", "bear: - lane loop, target tick stream arrived");
 				target_state_required = true;
 			},
 
@@ -435,13 +435,13 @@ async fn run_until_connection_lost<P: MessageLane, SC: SourceClient<P>, TC: Targ
 		}
 
 		if source_client_is_online && source_state_required {
-			log::debug!(target: "bridge", "bear: --- lane loop, asking {} node about its state", P::SOURCE_NAME);
+			log::debug!(target: "bridge", "bear: - lane loop, asking {} node about its state", P::SOURCE_NAME);
 			source_state.set(source_client.state().fuse());
 			source_client_is_online = false;
 		}
 
 		if target_client_is_online && target_state_required {
-			log::debug!(target: "bridge", "bear: --- lane loop, asking {} node about its state", P::TARGET_NAME);
+			log::debug!(target: "bridge", "bear: - lane loop, asking {} node about its state", P::TARGET_NAME);
 			target_state.set(target_client.state().fuse());
 			target_client_is_online = false;
 		}

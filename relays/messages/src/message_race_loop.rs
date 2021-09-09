@@ -265,7 +265,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					if is_source_state_updated {
 						source_nonces_required = true;
 						race_state.best_finalized_source_header_id_at_source = Some(source_state.best_finalized_self);
-						log::debug!(target: "bridge", "bear: --- race_loop, race source updated come, update best_finalized_source_header_id_at_source: {:?}", race_state);
+						log::debug!(target: "bridge", "bear: ----race_loop, race source updated come, update best_finalized_source_header_id_at_source: {:?}", race_state);
 					}
 				}
 			},
@@ -287,7 +287,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 						target_finalized_nonces_required = true;
 						race_state.best_finalized_target_header_id = Some(target_state.best_finalized_self);
 					}
-					log::debug!(target: "bridge", "bear: --- race_loop, race target updated come, update state {:?}", race_state);
+					log::debug!(target: "bridge", "bear: ----race_loop, race target updated come, update state {:?}", race_state);
 				}
 			},
 
@@ -301,7 +301,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					|(at_block, nonces)| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- race_loop, source nonces come, received nonces from {}: {:?}",
+							"bear: ----race_loop, source nonces come, received nonces from {}: {:?}",
 							P::source_name(),
 							nonces,
 						);
@@ -332,7 +332,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					|(_, nonces)| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- race_loop, target nonces come, received best nonces from {}: {:?}",
+							"bear: ----race_loop, target nonces come, received best nonces from {}: {:?}",
 							P::target_name(),
 							nonces,
 						);
@@ -357,7 +357,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					|(_, nonces)| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- race_loop, target finalized nonces come, received finalized nonces from {}: {:?}",
+							"bear: ----race_loop, target finalized nonces come, received finalized nonces from {}: {:?}",
 							P::target_name(),
 							nonces,
 						);
@@ -378,7 +378,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					|(at_block, nonces_range, proof)| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- race_loop, submit generated proof come, received proof for nonces in range {:?} from {}",
+							"bear: ----race_loop, submit generated proof come, received proof for nonces in range {:?} from {}",
 							nonces_range,
 							P::source_name(),
 						);
@@ -397,7 +397,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					|nonces_range| {
 						log::debug!(
 							target: "bridge",
-							"bear: --- race_loop, target_submit_proof come, Successfully submitted proof of nonces {:?} to {}",
+							"bear: ----race_loop, target_submit_proof come, Successfully submitted proof of nonces {:?} to {}",
 							nonces_range,
 							P::target_name(),
 						);
@@ -448,7 +448,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 			if let Some((at_block, nonces_range, proof_parameters)) = nonces_to_deliver {
 				log::debug!(
 					target: "bridge",
-					"bear: --- race_loop, nonces to deliver, asking {} to prove nonces in range {:?} at block {:?}",
+					"bear: ----race_loop, nonces to deliver, asking {} to prove nonces in range {:?} at block {:?}",
 					P::source_name(),
 					nonces_range,
 					at_block,
@@ -459,7 +459,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 						.fuse(),
 				);
 			} else if source_nonces_required && best_at_source.is_some() {
-				log::debug!(target: "bridge", "bear: --- race_loop, asking {} about message nonces", P::source_name());
+				log::debug!(target: "bridge", "bear: ----race_loop, asking {} about message nonces", P::source_name());
 				let at_block = race_state
 					.best_finalized_source_header_id_at_source
 					.as_ref()
@@ -494,7 +494,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 						.fuse(),
 				);
 			} else if target_best_nonces_required {
-				log::debug!(target: "bridge", "bear: --- race_loop, asking {} about best message nonces", P::target_name());
+				log::debug!(target: "bridge", "bear: ----race_loop, asking {} about best message nonces", P::target_name());
 				let at_block = race_state
 					.best_target_header_id
 					.as_ref()
@@ -502,7 +502,7 @@ pub async fn run<P: MessageRace, SC: SourceClient<P>, TC: TargetClient<P>>(
 					.clone();
 				target_best_nonces.set(race_target.nonces(at_block, false).fuse());
 			} else if target_finalized_nonces_required {
-				log::debug!(target: "bridge", "bear: --- race_loop, asking {} about finalized message nonces", P::target_name());
+				log::debug!(target: "bridge", "bear: ----race_loop, asking {} about finalized message nonces", P::target_name());
 				let at_block = race_state
 					.best_finalized_target_header_id
 					.as_ref()
@@ -549,7 +549,7 @@ where
 	let now_best_nonce_at_target = strategy.best_at_target();
 	log::info!(
 		target: "bridge",
-		"bear: --- synced {:?} of {:?} nonces in {} -> {} race",
+		"bear: ----race_loop, synced {:?} of {:?} nonces in {} -> {} race",
 		now_best_nonce_at_target,
 		now_best_nonce_at_source,
 		P::source_name(),

@@ -172,7 +172,6 @@ impl<C: Chain> Client<C> {
 
 	/// Return hash of the genesis block.
 	pub fn genesis_hash(&self) -> &C::Hash {
-		log::debug!(target: "bridge", "bear: --- client: genesis hash");
 		&self.genesis_hash
 	}
 
@@ -237,7 +236,6 @@ impl<C: Chain> Client<C> {
 
 	/// Read value from runtime storage.
 	pub async fn storage_value<T: Send + Decode + 'static>(&self, storage_key: StorageKey) -> Result<Option<T>> {
-		log::debug!(target: "bridge", "bear: --- client: storage_value, storage_key: {:?}", storage_key);
 		self.jsonrpsee_execute(move |client| async move {
 			Substrate::<C>::state_get_storage(&*client, storage_key)
 				.await?
@@ -270,7 +268,6 @@ impl<C: Chain> Client<C> {
 	///
 	/// Note: It's the caller's responsibility to make sure `account` is a valid SS58 address.
 	pub async fn next_account_index(&self, account: C::AccountId) -> Result<C::Index> {
-		log::debug!(target: "bridge", "bear: --- client: next_account_index");
 		self.jsonrpsee_execute(move |client| async move {
 			Ok(Substrate::<C>::system_account_next_index(&*client, account).await?)
 		})
@@ -302,7 +299,6 @@ impl<C: Chain> Client<C> {
 		extrinsic_signer: C::AccountId,
 		prepare_extrinsic: impl FnOnce(HeaderIdOf<C>, C::Index) -> Bytes + Send + 'static,
 	) -> Result<C::Hash> {
-		log::debug!(target: "bridge", "bear: --- client: submit_signed_extrinsic");
 		let _guard = self.submit_signed_extrinsic_lock.lock().await;
 		let transaction_nonce = self.next_account_index(extrinsic_signer).await?;
 		let best_header = self.best_header().await?;
@@ -381,7 +377,7 @@ impl<C: Chain> Client<C> {
 
 	/// Return new justifications stream.
 	pub async fn subscribe_justifications(&self) -> Result<JustificationsSubscription> {
-		log::debug!(target: "bridge", "bear: --- client: subscribe_justifications");
+		log::debug!(target: "bridge", "bear: ------ client: subscribe_justifications");
 		let mut subscription = self
 			.jsonrpsee_execute(move |client| async move {
 				Ok(client

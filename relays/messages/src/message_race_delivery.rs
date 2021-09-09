@@ -136,6 +136,7 @@ where
 		} else {
 			MessageDetailsMap::new()
 		};
+		log::debug!(target: "bridge", "bear: ------- delivery loop(source), new nonces {:?}: {:?}", new_nonces, latest_confirmed_nonce);
 
 		Ok((
 			at_block,
@@ -191,6 +192,7 @@ where
 				metrics_msg.update_target_latest_confirmed_nonce::<P>(latest_confirmed_nonce);
 			}
 		}
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), latest_received_nonce {:?}: latest_confirmed_nonce {:?}", latest_received_nonce, latest_confirmed_nonce);
 
 		Ok((
 			at_block,
@@ -210,6 +212,7 @@ where
 		nonces: RangeInclusive<MessageNonce>,
 		proof: P::MessagesProof,
 	) -> Result<RangeInclusive<MessageNonce>, Self::Error> {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), submit proof for nonce: {:?}", nonces);
 		self.client
 			.submit_messages_proof(generated_at_block, nonces, proof)
 			.await
@@ -320,6 +323,7 @@ where
 	}
 
 	fn required_source_header_at_target(&self, current_best: &SourceHeaderIdOf<P>) -> Option<SourceHeaderIdOf<P>> {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), required_source_header_at_target");
 		let header_required_for_messages_delivery = self.strategy.required_source_header_at_target(current_best);
 		let header_required_for_reward_confirmations_delivery =
 			self.latest_confirmed_nonces_at_source.back().map(|(id, _)| id.clone());
@@ -333,10 +337,12 @@ where
 	}
 
 	fn best_at_source(&self) -> Option<MessageNonce> {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), best_at_source");
 		self.strategy.best_at_source()
 	}
 
 	fn best_at_target(&self) -> Option<MessageNonce> {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), best_at_target");
 		self.strategy.best_at_target()
 	}
 
@@ -345,6 +351,7 @@ where
 		at_block: SourceHeaderIdOf<P>,
 		nonces: SourceClientNonces<Self::SourceNoncesRange>,
 	) {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), source_nonces_updated");
 		if let Some(confirmed_nonce) = nonces.confirmed_nonce {
 			let is_confirmed_nonce_updated = self
 				.latest_confirmed_nonces_at_source
@@ -364,6 +371,7 @@ where
 		nonces: TargetClientNonces<DeliveryRaceTargetNoncesData>,
 		race_state: &mut RaceState<SourceHeaderIdOf<P>, TargetHeaderIdOf<P>, P::MessagesProof>,
 	) {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), best_target_nonces_updated");
 		// best target nonces must always be ge than finalized target nonces
 		let mut target_nonces = self.target_nonces.take().unwrap_or_else(|| nonces.clone());
 		target_nonces.nonces_data = nonces.nonces_data.clone();
@@ -384,6 +392,7 @@ where
 		nonces: TargetClientNonces<DeliveryRaceTargetNoncesData>,
 		race_state: &mut RaceState<SourceHeaderIdOf<P>, TargetHeaderIdOf<P>, P::MessagesProof>,
 	) {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), finalized_target_nonces_updated");
 		if let Some(ref best_finalized_source_header_id_at_best_target) =
 			race_state.best_finalized_source_header_id_at_best_target
 		{
@@ -415,6 +424,7 @@ where
 		&mut self,
 		race_state: RaceState<SourceHeaderIdOf<P>, TargetHeaderIdOf<P>, P::MessagesProof>,
 	) -> Option<(RangeInclusive<MessageNonce>, Self::ProofParameters)> {
+		log::debug!(target: "bridge", "bear: ------ delivery loop(target), select_nonces_to_deliver");
 		let best_finalized_source_header_id_at_best_target =
 			race_state.best_finalized_source_header_id_at_best_target.clone()?;
 		let latest_confirmed_nonce_at_source = self
