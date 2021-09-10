@@ -121,6 +121,54 @@ pub mod pallet {
 	#[pallet::getter(fn best_relayer)]
 	pub type TopRelayer<T: Config> = StorageValue<_, (T::AccountId, Fee<T>), ValueQuery>;
 
+	// FeeMarket Progress Design:
+
+	// market pallet
+	// Storage:
+	// 		- pub type Orders = StorageMap<nonce, OrderState>, OrderState {send_time, confirm_time, first_relayer: { relayer1, start_time: send_time, deadline: send_time + T1 },
+	// 				second_relayer: {relayer2, start_time: send_time + T1, deadline: send_time + T1 + T2}, third_relayer: {relayer3, start_time: send_time + T1 + T2 , deadline: send_time + T1 + T2 + T3} }
+	//
+	// Config:
+	//      -  Relay time config: T1, T2, T3. Now, we assume that T1=T2=T3=50.
+	//      -  Provides `best_relayer(P3)`, `prior_relayers(P1, P2, P3)` according to their fee proposal(P1, P2, P3, P4....) before
+
+
+	// In fee market, we assume that there is a callback function already in messages pallet send_message() call, the fee pallet can catch the generated nonce and create an order in Orders storage above.
+	// *Something note: in current parity-bridges-common, this callback function is not implemented, we need add this*
+	// In this way, the fee market will record each message sent in messages pallet. Another thing is assigning first, second, third relayer to this message.
+
+	// Relay process(We don't need to hack relayer process after discuss with denny):
+	//      - a new `Market` relayer Mode
+
+	// In relayer race delivery process, Before select nonce to delivery, the relayer needs to check the following things:
+	// 		1. Get the latest source header number (Sh)
+	// 		2. Get the nonce order record in fee market pallet (sent_time, confirm_time(no yet), first_relayer{...}, second_relayer{...}, third_relayer{...})
+	//      3. Make a decision according to the `Our` delivery rule that whether the relayer should pick this nonce to deliver. If yes, pick this one, otherwise, do noting and check next nonce.
+
+	// `Our` delivery rule:
+	// For example: a message(m1) with four relayers(r1, r2, r3, r4), T1=T2=T3=50, Fee proposal: r1 -> P1, r2 -> P2 , r3 -> P3, r4 -> P4
+	// 1. Assume that the message order in fee market pallet like: <m1 nonce, OrderState {send_time: 30, confirm_time: none, first_relayer: {r3, deadline: 80}, second_relayer: {r1, deadline: 130(80+50)}, first_relayer: {r2, deadline: 180(80+50+50)}}>
+	// 2. Now, the relayer(r1), relayer(r2), relayer(r3), relayer(r4) all setup the relay loop and starting relaying message, the following analysis from each relayer perspective.
+	// - At source chain height 35:
+	//      - For r1, find this nonce in source chain and check the order relayers list, he is the second relayer and his relay rang is (80~130) and current source number is 35 < 80, so skip it.
+	//      - For r2, the same as r1.
+	//      - For r3, find this nonce in source chian and check the order relayers list, he is the first relayer and 35 is in his relay rang (30~80), so he pick it and deliver it to the target chain.
+	//      - For r4, the same as r1, r2
+	// - At source chain height 35 ~ 180
+	//      - similar to case of `At source chain height 35`
+	// - At source chain height 180~
+	//    - In most cases, the message won't waiting for so long and no relayer relaying message. If occurs, all relayers(r1, r2, r3, r4) have rights to pick this message and delivery.
+
+
+	// Confirm message and reward process:
+	// Once the message had delivered and dispatched, the confirmation relayer will send message delivery proof to the source chain.
+	// we assume that there is a callback function already in messages pallet receive_messages_delivery_proof() call, the fee pallet can catch the confirmation content `DeliveredMessages{begin, end, dispatch_result}`.
+	// *Something note*, in current parity-bridges-common, the call back input params does not contain the message delivery relayer info, we need to add this.
+	// The fee pallet check the delivered nonce corresponding order recorded before:
+
+
+
+
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {}
 	#[cfg(feature = "std")]
