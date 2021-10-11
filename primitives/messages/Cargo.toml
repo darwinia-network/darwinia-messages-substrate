@@ -1,16 +1,16 @@
 [package]
-name = "bp-messages"
+authors     = ["Parity Technologies <admin@parity.io>"]
 description = "Primitives of messages module."
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2018"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+edition     = "2018"
+license     = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name        = "bp-messages"
+version     = "0.1.0"
 
 [dependencies]
-bitvec = { version = "0.20", default-features = false, features = ["alloc"] }
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive", "bit-vec"] }
+bitvec                = { version = "0.20", default-features = false, features = ["alloc"] }
+codec                 = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive", "bit-vec"] }
 impl-trait-for-tuples = "0.2"
-serde = { version = "1.0", optional = true, features = ["derive"] }
+serde                 = { version = "1.0", optional = true, features = ["derive"] }
 
 # Bridge dependencies
 
@@ -18,9 +18,9 @@ bp-runtime = { path = "../runtime", default-features = false }
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+frame-support = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+frame-system  = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
+sp-std        = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4", default-features = false }
 
 [features]
 default = ["std"]
@@ -30,5 +30,5 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"serde",
-	"sp-std/std"
+	"sp-std/std",
 ]
