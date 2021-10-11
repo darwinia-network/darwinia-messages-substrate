@@ -28,7 +28,7 @@ pub use chain::{
 	AccountIdOf, AccountPublicOf, BalanceOf, BlockNumberOf, Chain, HashOf, HasherOf, HeaderOf,
 	IndexOf, SignatureOf, TransactionEraOf,
 };
-pub use frame_support::storage::storage_prefix as storage_value_final_key;
+// pub use frame_support::storage::storage_prefix as storage_value_final_key;
 pub use storage_proof::{Error as StorageProofError, StorageProofChecker};
 
 #[cfg(feature = "std")]
