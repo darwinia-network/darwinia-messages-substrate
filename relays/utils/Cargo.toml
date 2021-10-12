@@ -23,4 +23,4 @@ time         = "0.2"
 
 # Substrate dependencies
 
-substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.4" }
+substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.5" }
