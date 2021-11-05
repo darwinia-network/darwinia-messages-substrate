@@ -17,6 +17,7 @@
 use structopt::StructOpt;
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
+use messages_relay::relay_strategy::MixStrategy;
 use substrate_relay_helper::messages_lane::MessagesRelayParams;
 
 use crate::{
@@ -78,6 +79,8 @@ impl RelayMessages {
 			let source_sign = self.source_sign.to_keypair::<Source>()?;
 			let target_client = self.target.to_client::<Target>().await?;
 			let target_sign = self.target_sign.to_keypair::<Target>()?;
+			let relayer_mode = self.relayer_mode.into();
+			let relay_strategy = MixStrategy::new(relayer_mode);
 
 			relay_messages(MessagesRelayParams {
 				source_client,
@@ -87,8 +90,8 @@ impl RelayMessages {
 				source_to_target_headers_relay: None,
 				target_to_source_headers_relay: None,
 				lane_id: self.lane.into(),
-				relayer_mode: self.relayer_mode.into(),
 				metrics_params: self.prometheus_params.into(),
+				relay_strategy,
 			})
 			.await
 			.map_err(|e| anyhow::format_err!("{}", e))

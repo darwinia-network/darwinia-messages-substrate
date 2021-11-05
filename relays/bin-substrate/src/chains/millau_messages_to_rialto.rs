@@ -25,7 +25,7 @@ use sp_core::{Bytes, Pair};
 use bp_messages::MessageNonce;
 use bridge_runtime_common::messages::target::FromBridgedChainMessagesProof;
 use frame_support::weights::Weight;
-use messages_relay::message_lane::MessageLane;
+use messages_relay::{message_lane::MessageLane, relay_strategy::MixStrategy};
 use relay_millau_client::{
 	HeaderId as MillauHeaderId, Millau, SigningParams as MillauSigningParams,
 };
@@ -165,7 +165,13 @@ type RialtoTargetClient = SubstrateMessagesTarget<MillauMessagesToRialto>;
 
 /// Run Millau-to-Rialto messages sync.
 pub async fn run(
-	params: MessagesRelayParams<Millau, MillauSigningParams, Rialto, RialtoSigningParams>,
+	params: MessagesRelayParams<
+		Millau,
+		MillauSigningParams,
+		Rialto,
+		RialtoSigningParams,
+		MixStrategy,
+	>,
 ) -> anyhow::Result<()> {
 	let stall_timeout = Duration::from_secs(5 * 60);
 	let relayer_id_at_millau = (*params.source_sign.public().as_array_ref()).into();
@@ -199,13 +205,11 @@ pub async fn run(
 			Millau relayer account id: {:?}\n\t\
 			Max messages in single transaction: {}\n\t\
 			Max messages size in single transaction: {}\n\t\
-			Max messages weight in single transaction: {}\n\t\
-			Relayer mode: {:?}",
+			Max messages weight in single transaction: {}",
 		lane.message_lane.relayer_id_at_source,
 		max_messages_in_single_batch,
 		max_messages_size_in_single_batch,
 		max_messages_weight_in_single_batch,
-		params.relayer_mode,
 	);
 
 	let (metrics_params, metrics_values) = add_standalone_metrics(
@@ -230,7 +234,7 @@ pub async fn run(
 				max_messages_in_single_batch,
 				max_messages_weight_in_single_batch,
 				max_messages_size_in_single_batch,
-				relayer_mode: params.relayer_mode,
+				relay_strategy: params.relay_strategy,
 			},
 		},
 		MillauSourceClient::new(
