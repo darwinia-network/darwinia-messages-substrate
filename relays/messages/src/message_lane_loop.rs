@@ -456,7 +456,7 @@ async fn run_until_connection_lost<
 #[cfg(test)]
 pub(crate) mod tests {
 	use super::*;
-	use crate::relay_strategy::RationalStrategy;
+	use crate::relay_strategy::AltruisticStrategy;
 	use futures::stream::StreamExt;
 	use parking_lot::Mutex;
 	use relay_utils::{HeaderId, MaybeConnectionError};
@@ -507,7 +507,6 @@ pub(crate) mod tests {
 
 		type TargetHeaderNumber = TestTargetHeaderNumber;
 		type TargetHeaderHash = TestTargetHeaderHash;
-		type RelayStrategy = RationalStrategy;
 	}
 
 	#[derive(Debug, Default, Clone)]
