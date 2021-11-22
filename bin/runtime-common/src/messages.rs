@@ -237,9 +237,7 @@ pub mod source {
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash> {
 		fn size_hint(&self) -> u32 {
 			u32::try_from(
-				self.storage_proof
-					.iter()
-					.fold(0usize, |sum, node| sum.saturating_add(node.len())),
+				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
 			.unwrap_or(u32::MAX)
 		}
@@ -483,9 +481,7 @@ pub mod target {
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesProof<BridgedHeaderHash> {
 		fn size_hint(&self) -> u32 {
 			u32::try_from(
-				self.storage_proof
-					.iter()
-					.fold(0usize, |sum, node| sum.saturating_add(node.len())),
+				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
 			.unwrap_or(u32::MAX)
 		}

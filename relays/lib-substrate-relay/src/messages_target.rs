@@ -202,12 +202,8 @@ where
 			P::MESSAGE_PALLET_NAME_AT_TARGET,
 			&self.lane_id,
 		);
-		let proof = self
-			.client
-			.prove_storage(vec![inbound_data_key], id.1)
-			.await?
-			.iter_nodes()
-			.collect();
+		let proof =
+			self.client.prove_storage(vec![inbound_data_key], id.1).await?.iter_nodes().collect();
 		let proof = FromBridgedChainMessagesDeliveryProof {
 			bridged_header_hash: id.1,
 			storage_proof: proof,
@@ -434,6 +430,7 @@ fn compute_prepaid_messages_refund<P: SubstrateMessageLane>(
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use messages_relay::relay_strategy::AltruisticStrategy;
 	use relay_rococo_client::{Rococo, SigningParams as RococoSigningParams};
 	use relay_wococo_client::{SigningParams as WococoSigningParams, Wococo};
 
