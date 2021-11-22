@@ -155,16 +155,24 @@ pub trait BridgedChainWithMessages: ChainWithMessages {
 	fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self>;
 }
 
-pub(crate) type ThisChain<B> = <B as MessageBridge>::ThisChain;
-pub(crate) type BridgedChain<B> = <B as MessageBridge>::BridgedChain;
-pub(crate) type HashOf<C> = <C as ChainWithMessages>::Hash;
-pub(crate) type AccountIdOf<C> = <C as ChainWithMessages>::AccountId;
-pub(crate) type SignerOf<C> = <C as ChainWithMessages>::Signer;
-pub(crate) type SignatureOf<C> = <C as ChainWithMessages>::Signature;
-pub(crate) type WeightOf<C> = <C as ChainWithMessages>::Weight;
-pub(crate) type BalanceOf<C> = <C as ChainWithMessages>::Balance;
-
-pub(crate) type CallOf<C> = <C as ThisChainWithMessages>::Call;
+/// This chain in context of message bridge.
+pub type ThisChain<B> = <B as MessageBridge>::ThisChain;
+/// Bridged chain in context of message bridge.
+pub type BridgedChain<B> = <B as MessageBridge>::BridgedChain;
+/// Hash used on the chain.
+pub type HashOf<C> = <C as ChainWithMessages>::Hash;
+/// Account id used on the chain.
+pub type AccountIdOf<C> = <C as ChainWithMessages>::AccountId;
+/// Public key of the chain account that may be used to verify signature.
+pub type SignerOf<C> = <C as ChainWithMessages>::Signer;
+/// Signature type used on the chain.
+pub type SignatureOf<C> = <C as ChainWithMessages>::Signature;
+/// Type of weight that used on the chain.
+pub type WeightOf<C> = <C as ChainWithMessages>::Weight;
+/// Type of balances that is used on the chain.
+pub type BalanceOf<C> = <C as ChainWithMessages>::Balance;
+/// Type of call that is used on this chain.
+pub type CallOf<C> = <C as ThisChainWithMessages>::Call;
 
 /// Raw storage proof type (just raw trie nodes).
 type RawStorageProof = Vec<Vec<u8>>;
@@ -229,9 +237,7 @@ pub mod source {
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash> {
 		fn size_hint(&self) -> u32 {
 			u32::try_from(
-				self.storage_proof
-					.iter()
-					.fold(0usize, |sum, node| sum.saturating_add(node.len())),
+				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
 			.unwrap_or(u32::MAX)
 		}
@@ -259,12 +265,15 @@ pub mod source {
 	#[derive(RuntimeDebug)]
 	pub struct FromThisChainMessageVerifier<B>(PhantomData<B>);
 
-	pub(crate) const OUTBOUND_LANE_DISABLED: &str = "The outbound message lane is disabled.";
-	pub(crate) const TOO_MANY_PENDING_MESSAGES: &str = "Too many pending messages at the lane.";
-	pub(crate) const BAD_ORIGIN: &str =
-		"Unable to match the source origin to expected target origin.";
-	pub(crate) const TOO_LOW_FEE: &str =
-		"Provided fee is below minimal threshold required by the lane.";
+	/// The error message returned from LaneMessageVerifier when outbound lane is disabled.
+	pub const OUTBOUND_LANE_DISABLED: &str = "The outbound message lane is disabled.";
+	/// The error message returned from LaneMessageVerifier when too many pending messages at the
+	/// lane.
+	pub const TOO_MANY_PENDING_MESSAGES: &str = "Too many pending messages at the lane.";
+	/// The error message returned from LaneMessageVerifier when call origin is mismatch.
+	pub const BAD_ORIGIN: &str = "Unable to match the source origin to expected target origin.";
+	/// The error message returned from LaneMessageVerifier when the message fee is too low.
+	pub const TOO_LOW_FEE: &str = "Provided fee is below minimal threshold required by the lane.";
 
 	impl<B>
 		LaneMessageVerifier<
@@ -472,9 +481,7 @@ pub mod target {
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesProof<BridgedHeaderHash> {
 		fn size_hint(&self) -> u32 {
 			u32::try_from(
-				self.storage_proof
-					.iter()
-					.fold(0usize, |sum, node| sum.saturating_add(node.len())),
+				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
 			.unwrap_or(u32::MAX)
 		}
