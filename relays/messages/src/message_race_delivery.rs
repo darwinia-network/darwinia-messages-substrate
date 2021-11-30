@@ -448,7 +448,7 @@ where
 				);
 
 				return None
-			}
+			},
 			_ => (),
 		}
 
@@ -526,7 +526,7 @@ where
 			nonces_queue_range: 0..maximal_source_queue_index + 1,
 		};
 
-		let strategy = EnforcementStrategy::new(self.relay_strategy.clone());
+		let mut strategy = EnforcementStrategy::new(self.relay_strategy.clone());
 		let range_end = strategy.decide(reference).await?;
 
 		let range_begin = source_queue[0].1.begin();
@@ -655,8 +655,12 @@ mod tests {
 		);
 
 		let target_nonces = TargetClientNonces { latest_nonce: 19, nonces_data: () };
-		race_strategy.strategy.best_target_nonces_updated(target_nonces.clone(), &mut race_state);
-		race_strategy.strategy.finalized_target_nonces_updated(target_nonces, &mut race_state);
+		race_strategy
+			.strategy
+			.best_target_nonces_updated(target_nonces.clone(), &mut race_state);
+		race_strategy
+			.strategy
+			.finalized_target_nonces_updated(target_nonces, &mut race_state);
 
 		(race_state, race_strategy)
 	}

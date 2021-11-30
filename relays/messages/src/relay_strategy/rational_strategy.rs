@@ -41,7 +41,7 @@ impl RelayStrategy for RationalStrategy {
 		SourceClient: MessageLaneSourceClient<P>,
 		TargetClient: MessageLaneTargetClient<P>,
 	>(
-		&self,
+		&mut self,
 		reference: &mut RelayReference<P, SourceClient, TargetClient>,
 	) -> bool {
 		// technically, multiple confirmations will be delivered in a single transaction,
@@ -78,8 +78,9 @@ impl RelayStrategy for RationalStrategy {
 		let is_total_reward_less_than_cost = reference.total_reward < reference.total_cost;
 		let prev_total_cost = reference.total_cost;
 		let prev_total_reward = reference.total_reward;
-		reference.total_confirmations_cost =
-			reference.total_confirmations_cost.saturating_add(&confirmation_transaction_cost);
+		reference.total_confirmations_cost = reference
+			.total_confirmations_cost
+			.saturating_add(&confirmation_transaction_cost);
 		reference.total_reward = reference.total_reward.saturating_add(&reference.details.reward);
 		reference.total_cost =
 			reference.total_confirmations_cost.saturating_add(&delivery_transaction_cost);
