@@ -21,19 +21,19 @@ bp-runtime      = { path = "../../primitives/runtime", default-features = false 
 
 # Substrate Dependencies
 
-frame-support       = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-frame-system        = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-runtime          = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-std              = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-trie             = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
+frame-support       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+frame-system        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-runtime          = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-std              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-trie             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
 
 # Optional Benchmarking Dependencies
 bp-test-utils      = { path = "../../primitives/test-utils", default-features = false, optional = true }
-frame-benchmarking = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false, optional = true }
+frame-benchmarking = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false, optional = true }
 
 [dev-dependencies]
-sp-io = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+sp-io = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 
 [features]
 default = ["std"]

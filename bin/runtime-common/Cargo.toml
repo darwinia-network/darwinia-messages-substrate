@@ -23,13 +23,13 @@ pallet-bridge-messages = { path = "../../modules/messages", default-features = f
 
 # Substrate dependencies
 
-frame-support              = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-core                    = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-runtime                 = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-state-machine           = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false, optional = true }
-sp-std                     = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-trie                    = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
+frame-support              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-core                    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-runtime                 = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-state-machine           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false, optional = true }
+sp-std                     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-trie                    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
 
 [features]
 default = ["std"]

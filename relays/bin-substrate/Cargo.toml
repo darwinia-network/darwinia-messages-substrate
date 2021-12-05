@@ -57,12 +57,12 @@ substrate-relay-helper        = { path = "../lib-substrate-relay" }
 
 # Substrate Dependencies
 
-frame-support   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-pallet-balances = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-sp-core         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-sp-io           = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-sp-runtime      = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-sp-version      = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+frame-support   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+pallet-balances = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-core         = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-io           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-runtime      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-version      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 
 # Polkadot Dependencies
 
@@ -75,5 +75,5 @@ polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", 
 finality-grandpa      = { version = "0.14.0" }
 hex-literal           = "0.3"
 pallet-bridge-grandpa = { path = "../../modules/grandpa" }
-sp-keyring            = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+sp-keyring            = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 tempdir               = "0.3"

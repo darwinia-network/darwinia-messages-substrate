@@ -11,15 +11,15 @@ codec = { package = "parity-scale-codec", version = "2.2.0", default-features = 
 
 # Substrate Dependencies
 
-frame-support  = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-frame-system   = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-pallet-session = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-staking     = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-std         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
+frame-support  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+frame-system   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+pallet-session = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-staking     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-std         = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
 
 [dev-dependencies]
-sp-core    = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1" }
+sp-core    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
 
 [features]
 default = ["std"]

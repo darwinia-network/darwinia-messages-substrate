@@ -18,12 +18,12 @@ bp-eth-poa = { path = "../../primitives/ethereum-poa", default-features = false 
 
 # Substrate Dependencies
 
-frame-benchmarking = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false, optional = true }
-frame-support      = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-frame-system       = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-io              = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-runtime         = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-std             = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
+frame-benchmarking = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false, optional = true }
+frame-support      = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+frame-system       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-io              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-runtime         = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-std             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
 
 [dev-dependencies]
 hex-literal  = "0.3"

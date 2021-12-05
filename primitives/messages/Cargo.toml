@@ -18,9 +18,9 @@ bp-runtime = { path = "../runtime", default-features = false }
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-frame-system  = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
-sp-std        = { git = "https://github.com/darwinia-network/substrate", tag = "darwinia-v0.11.6-1", default-features = false }
+frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+frame-system  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-std        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
 
 [features]
 default = ["std"]
