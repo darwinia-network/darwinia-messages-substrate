@@ -265,6 +265,8 @@ pub const RIALTO_TO_MILLAU_CONVERSION_RATE_PARAMETER_NAME: &str = "RialtoToMilla
 
 /// Name of the With-Rialto token swap pallet instance in the Millau runtime.
 pub const WITH_RIALTO_TOKEN_SWAP_PALLET_NAME: &str = "BridgeRialtoTokenSwap";
+/// Name of the With-Rialto parachains bridge pallet name in the Millau runtime.
+pub const BRIDGE_PARAS_PALLET_NAME: &str = "BridgeRialtoParachains";
 
 /// Name of the `MillauFinalityApi::best_finalized` runtime method.
 pub const BEST_FINALIZED_MILLAU_HEADER_METHOD: &str = "MillauFinalityApi_best_finalized";

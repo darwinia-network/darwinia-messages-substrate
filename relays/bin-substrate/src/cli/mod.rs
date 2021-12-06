@@ -35,6 +35,7 @@ mod register_parachain;
 mod relay_headers;
 mod relay_headers_and_messages;
 mod relay_messages;
+mod relay_parachains;
 mod resubmit_transactions;
 mod swap_tokens;
 
@@ -95,6 +96,8 @@ pub enum Command {
 	SwapTokens(swap_tokens::SwapTokens),
 	/// Register parachain.
 	RegisterParachain(register_parachain::RegisterParachain),
+	///
+	RelayParachains(relay_parachains::RelayParachains),
 }
 
 impl Command {
@@ -131,6 +134,7 @@ impl Command {
 			Self::ResubmitTransactions(arg) => arg.run().await?,
 			Self::SwapTokens(arg) => arg.run().await?,
 			Self::RegisterParachain(arg) => arg.run().await?,
+			Self::RelayParachains(arg) => arg.run().await?,
 		}
 		Ok(())
 	}
