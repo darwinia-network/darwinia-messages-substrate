@@ -358,7 +358,7 @@ where
 		if let Some(confirmed_nonce) = nonces.confirmed_nonce {
 			let is_confirmed_nonce_updated = self
 				.latest_updated_confirm_nonce_at_source
-				.map(|nonce| *nonce != confirmed_nonce)
+				.map(|nonce| nonce != confirmed_nonce)
 				.unwrap_or(true);
 			if is_confirmed_nonce_updated {
 				self.latest_confirmed_nonces_at_source
