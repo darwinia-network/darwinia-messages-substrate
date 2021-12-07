@@ -93,7 +93,7 @@ impl<P: MessageLane> MessageRace for MessageDeliveryRace<P> {
 	type TargetHeaderId = TargetHeaderIdOf<P>;
 
 	type MessageNonce = MessageNonce;
-	type Proof = P::MessagesPr`oof;
+	type Proof = P::MessagesProof;
 
 	fn source_name() -> String {
 		format!("{}::MessagesDelivery", P::SOURCE_NAME)
