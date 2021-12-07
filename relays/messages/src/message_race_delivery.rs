@@ -287,7 +287,10 @@ impl<P: MessageLane, Strategy: RelayStrategy, SC, TC> std::fmt::Debug
 			.field("max_messages_weight_in_single_batch", &self.max_messages_weight_in_single_batch)
 			.field("max_messages_size_in_single_batch", &self.max_messages_size_in_single_batch)
 			.field("latest_confirmed_nonces_at_source", &self.latest_confirmed_nonces_at_source)
-			.field("latest_updated_confirm_nonce_at_source", &self.latest_updated_confirm_nonce_at_source)
+			.field(
+				"latest_updated_confirm_nonce_at_source",
+				&self.latest_updated_confirm_nonce_at_source,
+			)
 			.field("target_nonces", &self.target_nonces)
 			.field("strategy", &self.strategy)
 			.finish()
@@ -353,8 +356,9 @@ where
 		nonces: SourceClientNonces<Self::SourceNoncesRange>,
 	) {
 		if let Some(confirmed_nonce) = nonces.confirmed_nonce {
-			let is_confirmed_nonce_updated = self.latest_updated_confirm_nonce_at_source
-				.map(|nonce| *nonce !=confirmed_nonce)
+			let is_confirmed_nonce_updated = self
+				.latest_updated_confirm_nonce_at_source
+				.map(|nonce| *nonce != confirmed_nonce)
 				.unwrap_or(true);
 			if is_confirmed_nonce_updated {
 				self.latest_confirmed_nonces_at_source
@@ -399,6 +403,13 @@ where
 			{
 				self.latest_confirmed_nonces_at_source.pop_front();
 			}
+			let latest = self.latest_confirmed_nonces_at_source.back();
+			log::debug!(
+				target: "bridge",
+				"Pop front latest_confirmed_nonces_at_source. the oldest_header_number_to_keep is {:?}. after pop the latest value is {:?}",
+				oldest_header_number_to_keep,
+				latest
+			);
 		}
 
 		if let Some(ref mut target_nonces) = self.target_nonces {
