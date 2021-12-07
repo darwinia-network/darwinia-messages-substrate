@@ -77,6 +77,7 @@ pub async fn run<P: MessageLane, Strategy: RelayStrategy>(
 			max_messages_size_in_single_batch: params.max_messages_size_in_single_batch,
 			relay_strategy: params.relay_strategy,
 			latest_confirmed_nonces_at_source: VecDeque::new(),
+			latest_updated_confirm_nonce_at_source: None,
 			target_nonces: None,
 			strategy: BasicStrategy::new(),
 		},
@@ -92,7 +93,7 @@ impl<P: MessageLane> MessageRace for MessageDeliveryRace<P> {
 	type TargetHeaderId = TargetHeaderIdOf<P>;
 
 	type MessageNonce = MessageNonce;
-	type Proof = P::MessagesProof;
+	type Proof = P::MessagesPr`oof;
 
 	fn source_name() -> String {
 		format!("{}::MessagesDelivery", P::SOURCE_NAME)
@@ -256,6 +257,7 @@ struct MessageDeliveryStrategy<P: MessageLane, Strategy: RelayStrategy, SC, TC> 
 	/// Latest confirmed nonces at the source client + the header id where we have first met this
 	/// nonce.
 	latest_confirmed_nonces_at_source: VecDeque<(SourceHeaderIdOf<P>, MessageNonce)>,
+	latest_updated_confirm_nonce_at_source: Option<MessageNonce>,
 	/// Target nonces from the source client.
 	target_nonces: Option<TargetClientNonces<DeliveryRaceTargetNoncesData>>,
 	/// Basic delivery strategy.
@@ -285,6 +287,7 @@ impl<P: MessageLane, Strategy: RelayStrategy, SC, TC> std::fmt::Debug
 			.field("max_messages_weight_in_single_batch", &self.max_messages_weight_in_single_batch)
 			.field("max_messages_size_in_single_batch", &self.max_messages_size_in_single_batch)
 			.field("latest_confirmed_nonces_at_source", &self.latest_confirmed_nonces_at_source)
+			.field("latest_updated_confirm_nonce_at_source", &self.latest_updated_confirm_nonce_at_source)
 			.field("target_nonces", &self.target_nonces)
 			.field("strategy", &self.strategy)
 			.finish()
@@ -350,14 +353,13 @@ where
 		nonces: SourceClientNonces<Self::SourceNoncesRange>,
 	) {
 		if let Some(confirmed_nonce) = nonces.confirmed_nonce {
-			let is_confirmed_nonce_updated = self
-				.latest_confirmed_nonces_at_source
-				.back()
-				.map(|(_, prev_nonce)| *prev_nonce != confirmed_nonce)
+			let is_confirmed_nonce_updated = self.latest_updated_confirm_nonce_at_source
+				.map(|nonce| *nonce !=confirmed_nonce)
 				.unwrap_or(true);
 			if is_confirmed_nonce_updated {
 				self.latest_confirmed_nonces_at_source
 					.push_back((at_block.clone(), confirmed_nonce));
+				self.latest_updated_confirm_nonce_at_source = Some(confirmed_nonce);
 			}
 		}
 		self.strategy.source_nonces_updated(at_block, nonces)
