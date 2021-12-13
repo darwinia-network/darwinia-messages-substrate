@@ -202,8 +202,12 @@ where
 			P::MESSAGE_PALLET_NAME_AT_TARGET,
 			&self.lane_id,
 		);
-		let proof =
-			self.client.prove_storage(vec![inbound_data_key], id.1).await?.iter_nodes().collect();
+		let proof = self
+			.client
+			.prove_storage(vec![inbound_data_key], id.1)
+			.await?
+			.iter_nodes()
+			.collect();
 		let proof = FromBridgedChainMessagesDeliveryProof {
 			bridged_header_hash: id.1,
 			storage_proof: proof,
@@ -268,7 +272,7 @@ where
 				total_dispatch_weight,
 				total_size,
 			),
-		);
+		)?;
 		let delivery_tx_fee = self.client.estimate_extrinsic_fee(delivery_tx).await?;
 		let inclusion_fee_in_target_tokens = delivery_tx_fee.inclusion_fee();
 
@@ -303,7 +307,7 @@ where
 						larger_dispatch_weight,
 						total_size,
 					),
-				))
+				)?)
 				.await?;
 
 			compute_prepaid_messages_refund::<P>(

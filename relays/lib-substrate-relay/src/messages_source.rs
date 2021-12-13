@@ -266,12 +266,16 @@ where
 	async fn estimate_confirmation_transaction(
 		&self,
 	) -> <P::MessageLane as MessageLane>::SourceChainBalance {
+		let tx = match self.lane.make_messages_receiving_proof_transaction(
+			Zero::zero(),
+			HeaderId(Default::default(), Default::default()),
+			prepare_dummy_messages_delivery_proof::<P::SourceChain, P::TargetChain>(),
+		) {
+			Ok(v) => v,
+			Err(_) => return BalanceOf::<P::SourceChain>::max_value(),
+		};
 		self.client
-			.estimate_extrinsic_fee(self.lane.make_messages_receiving_proof_transaction(
-				Zero::zero(),
-				HeaderId(Default::default(), Default::default()),
-				prepare_dummy_messages_delivery_proof::<P::SourceChain, P::TargetChain>(),
-			))
+			.estimate_extrinsic_fee(tx)
 			.await
 			.map(|fee| fee.inclusion_fee())
 			.unwrap_or_else(|_| BalanceOf::<P::SourceChain>::max_value())
