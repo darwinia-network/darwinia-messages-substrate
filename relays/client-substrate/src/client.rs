@@ -344,19 +344,20 @@ impl<C: Chain> Client<C> {
 	pub async fn submit_signed_extrinsic(
 		&self,
 		extrinsic_signer: C::AccountId,
-		prepare_extrinsic: impl FnOnce(HeaderIdOf<C>, C::Index) -> Bytes + Send + 'static,
+		prepare_extrinsic: impl FnOnce(HeaderIdOf<C>, C::Index) -> Result<Bytes> + Send + 'static,
 	) -> Result<C::Hash> {
 		let _guard = self.submit_signed_extrinsic_lock.lock().await;
 		let transaction_nonce = self.next_account_index(extrinsic_signer).await?;
 		let best_header = self.best_header().await?;
 		let best_header_id = HeaderId(*best_header.number(), best_header.hash());
-		self.jsonrpsee_execute(move |client| async move {
-			let extrinsic = prepare_extrinsic(best_header_id, transaction_nonce);
-			let tx_hash = Substrate::<C>::author_submit_extrinsic(&*client, extrinsic).await?;
-			log::trace!(target: "bridge", "Sent transaction to {} node: {:?}", C::NAME, tx_hash);
-			Ok(tx_hash)
-		})
-		.await
+		let extrinsic = prepare_extrinsic(best_header_id, transaction_nonce)?;
+		Ok(self
+			.jsonrpsee_execute(move |client| async move {
+				let tx_hash = Substrate::<C>::author_submit_extrinsic(&*client, extrinsic).await?;
+				log::trace!(target: "bridge", "Sent transaction to {} node: {:?}", C::NAME, tx_hash);
+				Ok(tx_hash)
+			})
+			.await)
 	}
 
 	/// Does exactly the same as `submit_signed_extrinsic`, but keeps watching for extrinsic status

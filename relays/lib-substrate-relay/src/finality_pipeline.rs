@@ -75,7 +75,7 @@ pub trait SubstrateFinalitySyncPipeline: 'static + Clone + Debug + Send + Sync {
 		transaction_nonce: bp_runtime::IndexOf<Self::TargetChain>,
 		header: <Self::FinalitySyncPipeline as FinalitySyncPipeline>::Header,
 		proof: <Self::FinalitySyncPipeline as FinalitySyncPipeline>::FinalityProof,
-	) -> anyhow::Result<Bytes>;
+	) -> Result<Bytes, relay_substrate_client::Error>;
 }
 
 /// Substrate-to-Substrate finality proof pipeline.

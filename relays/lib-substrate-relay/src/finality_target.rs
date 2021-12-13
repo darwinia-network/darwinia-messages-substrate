@@ -92,7 +92,6 @@ where
 		let transactions_author = self.pipeline.transactions_author();
 		let pipeline = self.pipeline.clone();
 		let transactions_mortality = self.transactions_mortality;
-		let runtime_version = self.client.runtime_version().await?;
 		self.client
 			.submit_signed_extrinsic(
 				transactions_author,
