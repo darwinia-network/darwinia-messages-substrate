@@ -96,16 +96,18 @@ where
 			.submit_signed_extrinsic(
 				transactions_author,
 				move |best_block_id, transaction_nonce| {
-					pipeline.make_submit_finality_proof_transaction(
-						relay_substrate_client::TransactionEra::new(
-							best_block_id.0,
-							best_block_id.1,
-							transactions_mortality,
-						),
-						transaction_nonce,
-						header,
-						proof,
-					)
+					pipeline
+						.make_submit_finality_proof_transaction(
+							relay_substrate_client::TransactionEra::new(
+								best_block_id.0,
+								best_block_id.1,
+								transactions_mortality,
+							),
+							transaction_nonce,
+							header,
+							proof,
+						)
+						.await
 				},
 			)
 			.await

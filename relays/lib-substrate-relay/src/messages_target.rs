@@ -234,6 +234,7 @@ where
 						nonces_clone,
 						proof,
 					)
+					.await
 				},
 			)
 			.await?;
@@ -263,16 +264,19 @@ where
 			})?;
 
 		// Prepare 'dummy' delivery transaction - we only care about its length and dispatch weight.
-		let delivery_tx = self.lane.make_messages_delivery_transaction(
-			Zero::zero(),
-			HeaderId(Default::default(), Default::default()),
-			nonces.clone(),
-			prepare_dummy_messages_proof::<P::SourceChain>(
+		let delivery_tx = self
+			.lane
+			.make_messages_delivery_transaction(
+				Zero::zero(),
+				HeaderId(Default::default(), Default::default()),
 				nonces.clone(),
-				total_dispatch_weight,
-				total_size,
-			),
-		)?;
+				prepare_dummy_messages_proof::<P::SourceChain>(
+					nonces.clone(),
+					total_dispatch_weight,
+					total_size,
+				),
+			)
+			.await?;
 		let delivery_tx_fee = self.client.estimate_extrinsic_fee(delivery_tx).await?;
 		let inclusion_fee_in_target_tokens = delivery_tx_fee.inclusion_fee();
 
@@ -298,16 +302,20 @@ where
 			let larger_dispatch_weight = total_dispatch_weight.saturating_add(WEIGHT_DIFFERENCE);
 			let larger_delivery_tx_fee = self
 				.client
-				.estimate_extrinsic_fee(self.lane.make_messages_delivery_transaction(
-					Zero::zero(),
-					HeaderId(Default::default(), Default::default()),
-					nonces.clone(),
-					prepare_dummy_messages_proof::<P::SourceChain>(
-						nonces.clone(),
-						larger_dispatch_weight,
-						total_size,
-					),
-				)?)
+				.estimate_extrinsic_fee(
+					self.lane
+						.make_messages_delivery_transaction(
+							Zero::zero(),
+							HeaderId(Default::default(), Default::default()),
+							nonces.clone(),
+							prepare_dummy_messages_proof::<P::SourceChain>(
+								nonces.clone(),
+								larger_dispatch_weight,
+								total_size,
+							),
+						)
+						.await?,
+				)
 				.await?;
 
 			compute_prepaid_messages_refund::<P>(

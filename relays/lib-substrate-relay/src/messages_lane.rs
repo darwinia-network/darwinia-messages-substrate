@@ -114,7 +114,7 @@ pub trait SubstrateMessageLane: 'static + Clone + Send + Sync {
 	fn target_transactions_author(&self) -> AccountIdOf<Self::TargetChain>;
 
 	/// Make messages delivery transaction.
-	fn make_messages_delivery_transaction(
+	async fn make_messages_delivery_transaction(
 		&self,
 		transaction_nonce: IndexOf<Self::TargetChain>,
 		generated_at_header: SourceHeaderIdOf<Self::MessageLane>,
@@ -127,7 +127,7 @@ pub trait SubstrateMessageLane: 'static + Clone + Send + Sync {
 	fn source_transactions_author(&self) -> AccountIdOf<Self::SourceChain>;
 
 	/// Make messages receiving proof transaction.
-	fn make_messages_receiving_proof_transaction(
+	async fn make_messages_receiving_proof_transaction(
 		&self,
 		transaction_nonce: IndexOf<Self::SourceChain>,
 		generated_at_header: TargetHeaderIdOf<Self::MessageLane>,
