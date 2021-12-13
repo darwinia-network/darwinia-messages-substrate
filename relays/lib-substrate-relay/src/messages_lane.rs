@@ -120,7 +120,7 @@ pub trait SubstrateMessageLane: 'static + Clone + Send + Sync {
 		generated_at_header: SourceHeaderIdOf<Self::MessageLane>,
 		nonces: RangeInclusive<MessageNonce>,
 		proof: <Self::MessageLane as MessageLane>::MessagesProof,
-	) -> Bytes;
+	) -> relay_substrate_client::Result<Bytes>;
 
 	/// Returns id of account that we're using to sign transactions at source chain (delivery
 	/// proof).
@@ -132,7 +132,7 @@ pub trait SubstrateMessageLane: 'static + Clone + Send + Sync {
 		transaction_nonce: IndexOf<Self::SourceChain>,
 		generated_at_header: TargetHeaderIdOf<Self::MessageLane>,
 		proof: <Self::MessageLane as MessageLane>::MessagesReceivingProof,
-	) -> Bytes;
+	) -> relay_substrate_client::Result<Bytes>;
 }
 
 /// Substrate-to-Substrate message lane.
