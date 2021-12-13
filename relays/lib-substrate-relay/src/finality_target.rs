@@ -23,7 +23,7 @@ use crate::finality_pipeline::SubstrateFinalitySyncPipeline;
 use async_trait::async_trait;
 use codec::Decode;
 use finality_relay::{FinalitySyncPipeline, TargetClient};
-use relay_substrate_client::{Chain, Client, Error as SubstrateError};
+use relay_substrate_client::{Chain, Client, Error as SubstrateError, SignParam};
 use relay_utils::relay_loop::Client as RelayClient;
 
 /// Substrate client as Substrate finality target.
@@ -92,6 +92,7 @@ where
 		let transactions_author = self.pipeline.transactions_author();
 		let pipeline = self.pipeline.clone();
 		let transactions_mortality = self.transactions_mortality;
+		let runtime_version = self.client.runtime_version().await?;
 		self.client
 			.submit_signed_extrinsic(
 				transactions_author,
