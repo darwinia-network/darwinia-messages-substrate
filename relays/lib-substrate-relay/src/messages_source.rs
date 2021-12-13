@@ -246,11 +246,11 @@ where
 			.submit_signed_extrinsic(
 				self.lane.source_transactions_author(),
 				move |_, transaction_nonce| {
-					lane.make_messages_receiving_proof_transaction(
+					async_std::task::block_on(lane.make_messages_receiving_proof_transaction(
 						transaction_nonce,
 						generated_at_block,
 						proof,
-					)
+					))
 				},
 			)
 			.await?;
@@ -266,12 +266,20 @@ where
 	async fn estimate_confirmation_transaction(
 		&self,
 	) -> <P::MessageLane as MessageLane>::SourceChainBalance {
-		self.client
-			.estimate_extrinsic_fee(self.lane.make_messages_receiving_proof_transaction(
+		let tx = match self
+			.lane
+			.make_messages_receiving_proof_transaction(
 				Zero::zero(),
 				HeaderId(Default::default(), Default::default()),
 				prepare_dummy_messages_delivery_proof::<P::SourceChain, P::TargetChain>(),
-			))
+			)
+			.await
+		{
+			Ok(v) => v,
+			Err(_) => return BalanceOf::<P::SourceChain>::max_value(),
+		};
+		self.client
+			.estimate_extrinsic_fee(tx)
 			.await
 			.map(|fee| fee.inclusion_fee())
 			.unwrap_or_else(|_| BalanceOf::<P::SourceChain>::max_value())

@@ -43,6 +43,7 @@ pub(crate) const STALL_TIMEOUT: Duration = Duration::from_secs(60 * 60);
 pub(crate) const RECENT_FINALITY_PROOFS_LIMIT: usize = 4096;
 
 /// Headers sync pipeline for Substrate <-> Substrate relays.
+#[async_trait::async_trait]
 pub trait SubstrateFinalitySyncPipeline: 'static + Clone + Debug + Send + Sync {
 	/// Pipeline for syncing finalized Source chain headers to Target chain.
 	type FinalitySyncPipeline: FinalitySyncPipeline;
@@ -69,13 +70,13 @@ pub trait SubstrateFinalitySyncPipeline: 'static + Clone + Debug + Send + Sync {
 	fn transactions_author(&self) -> AccountIdOf<Self::TargetChain>;
 
 	/// Make submit header transaction.
-	fn make_submit_finality_proof_transaction(
+	async fn make_submit_finality_proof_transaction(
 		&self,
 		era: bp_runtime::TransactionEraOf<Self::TargetChain>,
 		transaction_nonce: bp_runtime::IndexOf<Self::TargetChain>,
 		header: <Self::FinalitySyncPipeline as FinalitySyncPipeline>::Header,
 		proof: <Self::FinalitySyncPipeline as FinalitySyncPipeline>::FinalityProof,
-	) -> Bytes;
+	) -> Result<Bytes, relay_substrate_client::Error>;
 }
 
 /// Substrate-to-Substrate finality proof pipeline.
