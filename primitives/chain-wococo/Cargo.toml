@@ -16,9 +16,9 @@ bp-rococo        = { path = "../chain-rococo", default-features = false }
 bp-runtime       = { path = "../runtime", default-features = false }
 
 # Substrate Based Dependencies
-sp-api     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
-sp-std     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+sp-api     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8", default-features = false }
+sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8", default-features = false }
+sp-std     = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8", default-features = false }
 
 [features]
 default = ["std"]

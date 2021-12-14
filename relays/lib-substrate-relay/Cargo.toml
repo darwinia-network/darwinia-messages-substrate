@@ -34,10 +34,10 @@ bp-runtime  = { path = "../../primitives/runtime" }
 
 # Substrate Dependencies
 
-frame-support       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
-sp-core             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
-sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
-sp-runtime          = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+frame-support       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sp-core             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
+sp-runtime          = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }
 
 [dev-dependencies]
 bp-millau           = { path = "../../primitives/chain-millau" }

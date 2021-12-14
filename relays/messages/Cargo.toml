@@ -21,4 +21,4 @@ bp-messages = { path = "../../primitives/messages" }
 bp-runtime  = { path = "../../primitives/runtime" }
 relay-utils = { path = "../utils" }
 
-sp-arithmetic = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7" }
+sp-arithmetic = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8" }

@@ -12,8 +12,8 @@ codec      = { package = "parity-scale-codec", version = "2.2.0", default-featur
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
-sp-std        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.7", default-features = false }
+frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8", default-features = false }
+sp-std        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.11.8", default-features = false }
 
 [features]
 default = ["std"]
