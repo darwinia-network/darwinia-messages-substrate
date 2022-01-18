@@ -16,6 +16,6 @@ rialto-parachain-runtime = { path = "../../bin/rialto-parachain/runtime" }
 
 # Substrate Dependencies
 
-frame-support              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
-frame-system               = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
-pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+frame-support              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+frame-system               = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }

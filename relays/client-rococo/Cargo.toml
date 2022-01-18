@@ -26,6 +26,6 @@ pallet-bridge-messages = { path = "../../modules/messages" }
 
 # Substrate Dependencies
 
-frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
-sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
-sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.0" }
+frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
