@@ -19,16 +19,20 @@ thiserror   = "1.0.26"
 # Bridge dependencies
 
 bp-header-chain       = { path = "../../primitives/header-chain" }
+bp-parachains         = { path = "../../primitives/parachains" }
+bp-polkadot-core      = { path = "../../primitives/polkadot-core" }
 bridge-runtime-common = { path = "../../bin/runtime-common" }
 
 finality-grandpa       = { version = "0.14.0" }
 finality-relay         = { path = "../finality" }
 messages-relay         = { path = "../messages" }
+parachains-relay       = { path = "../parachains" }
 relay-substrate-client = { path = "../client-substrate" }
 relay-utils            = { path = "../utils" }
 
-pallet-bridge-grandpa  = { path = "../../modules/grandpa" }
-pallet-bridge-messages = { path = "../../modules/messages" }
+pallet-bridge-grandpa    = { path = "../../modules/grandpa" }
+pallet-bridge-messages   = { path = "../../modules/messages" }
+pallet-bridge-parachains = { path = "../../modules/parachains" }
 
 bp-messages = { path = "../../primitives/messages" }
 bp-runtime  = { path = "../../primitives/runtime" }

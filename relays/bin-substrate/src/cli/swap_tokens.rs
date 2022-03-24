@@ -26,7 +26,7 @@ use rand::random;
 use structopt::StructOpt;
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
-use frame_support::dispatch::GetDispatchInfo;
+use frame_support::{dispatch::GetDispatchInfo, Identity};
 use relay_substrate_client::{
 	AccountIdOf, AccountPublicOf, BalanceOf, BlockNumberOf, CallOf, Chain, ChainWithBalances,
 	Client, Error as SubstrateError, HashOf, SignParam, SignatureOf, Subscription,
@@ -266,8 +266,8 @@ impl SwapTokens {
 			.await?;
 
 			// read state of swap after it has been created
-			let token_swap_hash = token_swap.hash();
-			let token_swap_storage_key = bp_token_swap::storage_keys::pending_swaps_key(
+			let token_swap_hash: H256 = token_swap.using_encoded(blake2_256).into();
+			let token_swap_storage_key = bp_runtime::storage_map_final_key::<Identity>(
 				TOKEN_SWAP_PALLET_NAME,
 				token_swap_hash,
 			);

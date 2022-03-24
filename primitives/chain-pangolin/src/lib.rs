@@ -54,6 +54,8 @@ pub type Pangolin = DarwiniaLike;
 pub const WITH_PANGOLIN_GRANDPA_PALLET_NAME: &str = "BridgePangolinGrandpa";
 /// Name of the With-Pangolin messages pallet instance that is deployed at bridged chains.
 pub const WITH_PANGOLIN_MESSAGES_PALLET_NAME: &str = "BridgePangolinMessages";
+/// Name of the With-Pangolin parachains bridge pallet name in the Pangolin runtime.
+pub const BRIDGE_PARAS_PALLET_NAME: &str = "BridgePangolinParachains";
 
 /// Name of the `PangolinFinalityApi::best_finalized` runtime method.
 pub const BEST_FINALIZED_PANGOLIN_HEADER_METHOD: &str = "PangolinFinalityApi_best_finalized";
@@ -70,7 +72,7 @@ pub const TO_PANGOLIN_LATEST_GENERATED_NONCE_METHOD: &str =
 /// Name of the `FromPangolinInboundLaneApi::latest_received_nonce` runtime method.
 pub const FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD: &str =
 	"FromPangolinInboundLaneApi_latest_received_nonce";
-/// Name of the `FromPangolinInboundLaneApi::latest_onfirmed_nonce` runtime method.
+/// Name of the `FromPangolinInboundLaneApi::latest_cnfirmed_nonce` runtime method.
 pub const FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD: &str =
 	"FromPangolinInboundLaneApi_latest_confirmed_nonce";
 /// Name of the `FromPangolinInboundLaneApi::unrewarded_relayers_state` runtime method.

@@ -801,6 +801,33 @@ pub mod pallet {
 	}
 }
 
+/// Getting storage keys for messages and lanes states. These keys are normally used when building
+/// messages and lanes states proofs.
+pub mod storage_keys {
+	use super::*;
+	use frame_support::Blake2_128Concat;
+	use sp_core::storage::StorageKey;
+
+	/// Storage key of the outbound message in the runtime storage.
+	pub fn message_key(pallet_prefix: &str, lane: &LaneId, nonce: MessageNonce) -> StorageKey {
+		bp_runtime::storage_map_final_key::<Blake2_128Concat>(
+			pallet_prefix,
+			"OutboundMessages",
+			&MessageKey { lane_id: *lane, nonce }.encode(),
+		)
+	}
+
+	/// Storage key of the outbound message lane state in the runtime storage.
+	pub fn outbound_lane_data_key(pallet_prefix: &str, lane: &LaneId) -> StorageKey {
+		bp_runtime::storage_map_final_key::<Blake2_128Concat>(pallet_prefix, "OutboundLanes", lane)
+	}
+
+	/// Storage key of the inbound message lane state in the runtime storage.
+	pub fn inbound_lane_data_key(pallet_prefix: &str, lane: &LaneId) -> StorageKey {
+		bp_runtime::storage_map_final_key::<Blake2_128Concat>(pallet_prefix, "InboundLanes", lane)
+	}
+}
+
 /// AccountId of the shared relayer fund account.
 ///
 /// This account is passed to `MessageDeliveryAndDispatchPayment` trait, and depending
