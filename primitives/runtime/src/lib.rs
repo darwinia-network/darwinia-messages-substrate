@@ -60,6 +60,12 @@ pub const ROCOCO_CHAIN_ID: ChainId = *b"roco";
 /// Bridge-with-Wococo instance id.
 pub const WOCOCO_CHAIN_ID: ChainId = *b"woco";
 
+/// Bridge-with-Pangoro instance id.
+pub const PANGORO_CHAIN_ID: ChainId = *b"pagr";
+
+/// Bridge-with-Pangolin instance id.
+pub const PANGOLIN_CHAIN_ID: ChainId = *b"pagl";
+
 /// Call-dispatch module prefix.
 pub const CALL_DISPATCH_MODULE_PREFIX: &[u8] = b"pallet-bridge/dispatch";
 

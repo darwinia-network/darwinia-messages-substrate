@@ -38,7 +38,7 @@ sp-version          = { git = "https://github.com/darwinia-network/substrate", b
 ## Substrate FRAME Dependencies
 frame-benchmarking           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false, optional = true }
 frame-executive              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false }
-frame-support                = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "master" }
+frame-support                = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false }
 frame-system                 = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false }
 frame-system-benchmarking    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false, optional = true }
 frame-system-rpc-runtime-api = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false }
