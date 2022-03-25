@@ -15,12 +15,14 @@ scale-info    = { version = "1.0", default-features = false, features = ["derive
 
 # Bridge dependencies
 
-bp-message-dispatch    = { path = "../../primitives/message-dispatch", default-features = false }
-bp-messages            = { path = "../../primitives/messages", default-features = false }
-bp-runtime             = { path = "../../primitives/runtime", default-features = false }
-pallet-bridge-dispatch = { path = "../../modules/dispatch", default-features = false }
-pallet-bridge-grandpa  = { path = "../../modules/grandpa", default-features = false }
-pallet-bridge-messages = { path = "../../modules/messages", default-features = false }
+bp-message-dispatch      = { path = "../../primitives/message-dispatch", default-features = false }
+bp-messages              = { path = "../../primitives/messages", default-features = false }
+bp-polkadot-core         = { path = "../../primitives/polkadot-core", default-features = false }
+bp-runtime               = { path = "../../primitives/runtime", default-features = false }
+pallet-bridge-dispatch   = { path = "../../modules/dispatch", default-features = false }
+pallet-bridge-grandpa    = { path = "../../modules/grandpa", default-features = false }
+pallet-bridge-messages   = { path = "../../modules/messages", default-features = false }
+pallet-bridge-parachains = { path = "../../modules/parachains", default-features = false }
 
 # Substrate dependencies
 

@@ -30,7 +30,7 @@ sp-trie       = { git = "https://github.com/darwinia-network/substrate", branch 
 [dev-dependencies]
 bp-header-chain = { path = "../../primitives/header-chain" }
 bp-test-utils   = { path = "../../primitives/test-utils" }
-sp-io           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+sp-io           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1", default-features = false }
 
 [features]
 default = ["std"]
