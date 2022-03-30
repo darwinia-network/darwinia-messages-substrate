@@ -1,0 +1,42 @@
+[package]
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2021"
+license = "GPL-3.0"
+name    = "relay-pangolin-client"
+version = "0.1.0"
+
+
+[dependencies]
+
+tracing = "0.1"
+color-eyre = "0.5"
+async-trait = "0.1"
+
+codec                  = { package = "parity-scale-codec", version = "2.3.1" }
+
+relay-substrate-client = { path = "../client-substrate" }
+relay-utils            = { path = "../utils" }
+bp-messages            = { path = "../../primitives/messages" }
+bp-runtime             = { path = "../../primitives/runtime" }
+messages-relay         = { path = "../messages" }
+
+## Bridge dependencies
+#pangolin-runtime         = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v2.8.6", features = ["no-wasm"] }
+#drml-common-primitives   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v2.8.6" }
+#drml-bridge-primitives   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v2.8.6" }
+#darwinia-bridge-ethereum = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v2.8.6" }
+#dp-fee                   = { git = "https://github.com/darwinia-network/darwinia-common.git", tag = "v2.8.6" }
+
+## Substrate Dependencies
+frame-system               = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-v0.12.1" }
+frame-support              = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-v0.12.1" }
+pallet-transaction-payment = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-v0.12.1" }
+sp-core                    = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-v0.12.1" }
+sp-runtime                 = { git = "https://github.com/darwinia-network/substrate.git", branch = "darwinia-v0.12.1" }
+
+
+[dev-dependencies]
+color-eyre   = "0.5"
+futures-test = "0.3"
+tokio        = { version = "1", features = ["time"] }
+codec        = { package = "parity-scale-codec", version = "2.3.1" }
