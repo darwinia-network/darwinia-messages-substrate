@@ -62,9 +62,6 @@ pub const BEST_FINALIZED_PANGOLIN_HEADER_METHOD: &str = "PangolinFinalityApi_bes
 /// Name of the `ToPangolinOutboundLaneApi::message_details` runtime method.
 pub const TO_PANGOLIN_MESSAGE_DETAILS_METHOD: &str = "ToPangolinOutboundLaneApi_message_details";
 
-/// Name of the With-PangolinParachain message pallet instance that is deployed at bridged chains.
-pub const WITH_PANGOLIN_PARACHAIN_MESSAGES_PALLET_NAME: &str = "BridgePangolinParachainMessages";
-
 sp_api::decl_runtime_apis! {
 	/// API for querying information about the finalized Pangolin headers.
 	///
