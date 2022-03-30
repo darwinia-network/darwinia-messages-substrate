@@ -64,7 +64,7 @@ pub const WOCOCO_CHAIN_ID: ChainId = *b"woco";
 pub const PANGOLIN_CHAIN_ID: ChainId = *b"pagl";
 
 /// Bridge-with-PangolinParachain instance id.
-pub const PANGOLIN_PARACHAIN_CHAIN_ID: ChainId = *b"ppal";
+pub const PANGOLIN_PARACHAIN_CHAIN_ID: ChainId = *b"pglp";
 
 /// Call-dispatch module prefix.
 pub const CALL_DISPATCH_MODULE_PREFIX: &[u8] = b"pallet-bridge/dispatch";
