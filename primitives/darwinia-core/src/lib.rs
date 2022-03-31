@@ -43,6 +43,7 @@ mod copy_paste_from_darwinia {
 	pub type Balance = u128;
 	pub type Header = generic::Header<BlockNumber, Hashing>;
 	pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
+	pub type SignedBlock = generic::SignedBlock<OpaqueBlock>;
 
 	pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 	pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);

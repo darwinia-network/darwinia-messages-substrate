@@ -2,7 +2,7 @@
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2021"
 license = "GPL-3.0"
-name    = "relay-pangolin-client"
+name    = "relay-pangoro-client"
 version = "0.1.0"
 
 

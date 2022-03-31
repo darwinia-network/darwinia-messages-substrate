@@ -7,6 +7,8 @@ name        = "bp-pangolin"
 version     = "0.1.0"
 
 [dependencies]
+smallvec = "1.7"
+
 # darwinia-network
 bp-darwinia-core = { default-features = false, path = "../darwinia-core" }
 # paritytech

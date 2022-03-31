@@ -12,90 +12,89 @@ use sp_runtime::{generic::SignedPayload, traits::IdentifyAccount};
 
 pub mod runtime;
 
-/// Pangolin header id.
-pub type HeaderId = relay_utils::HeaderId<bp_pangolin::Hash, bp_pangolin::BlockNumber>;
+/// Pangoro header id.
+pub type HeaderId = relay_utils::HeaderId<bp_pangoro::Hash, bp_pangoro::BlockNumber>;
 
 /// Rialto header type used in headers sync.
-pub type SyncHeader = relay_substrate_client::SyncHeader<bp_pangolin::Header>;
+pub type SyncHeader = relay_substrate_client::SyncHeader<bp_pangoro::Header>;
 
 /// Millau chain definition.
 #[derive(Debug, Clone, Copy)]
-pub struct PangolinChain;
+pub struct PangoroChain;
 
-impl ChainBase for PangolinChain {
-	type BlockNumber = bp_pangolin::BlockNumber;
-	type Hash = bp_pangolin::Hash;
-	type Hasher = bp_pangolin::Hashing;
-	type Header = bp_pangolin::Header;
+impl ChainBase for PangoroChain {
+	type BlockNumber = bp_pangoro::BlockNumber;
+	type Hash = bp_pangoro::Hash;
+	type Hasher = bp_pangoro::Hashing;
+	type Header = bp_pangoro::Header;
 
-	type AccountId = bp_pangolin::AccountId;
-	type Balance = bp_pangolin::Balance;
-	type Index = bp_pangolin::Nonce;
-	type Signature = bp_pangolin::Signature;
+	type AccountId = bp_pangoro::AccountId;
+	type Balance = bp_pangoro::Balance;
+	type Index = bp_pangoro::Nonce;
+	type Signature = bp_pangoro::Signature;
 
 	fn max_extrinsic_size() -> u32 {
-		bp_pangolin::Pangolin::max_extrinsic_size()
+		bp_pangoro::Pangoro::max_extrinsic_size()
 	}
 
 	fn max_extrinsic_weight() -> Weight {
-		bp_pangolin::Pangolin::max_extrinsic_weight()
+		bp_pangoro::Pangoro::max_extrinsic_weight()
 	}
 }
 
-impl Chain for PangolinChain {
-	const NAME: &'static str = "Pangolin";
+impl Chain for PangoroChain {
+	const NAME: &'static str = "Pangoro";
 	const TOKEN_ID: Option<&'static str> = Some("polkadot");
 	const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
-		bp_pangolin::BEST_FINALIZED_PANGOLIN_HEADER_METHOD;
-	const AVERAGE_BLOCK_INTERVAL: Duration =
-		Duration::from_millis(bp_pangolin::MILLISECS_PER_BLOCK);
-	const STORAGE_PROOF_OVERHEAD: u32 = bp_pangolin::EXTRA_STORAGE_PROOF_SIZE;
-	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = bp_pangolin::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
+		bp_pangoro::BEST_FINALIZED_PANGORO_HEADER_METHOD;
+	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_millis(bp_pangoro::MILLISECS_PER_BLOCK);
+	const STORAGE_PROOF_OVERHEAD: u32 = bp_pangoro::EXTRA_STORAGE_PROOF_SIZE;
+	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = bp_pangoro::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
 
-	type SignedBlock = bp_pangolin::SignedBlock;
+	type SignedBlock = bp_pangoro::SignedBlock;
 	type Call = crate::runtime::Call;
-	type WeightToFee = bp_pangolin::WeightToFee;
+	type WeightToFee = bp_pangoro::WeightToFee;
 }
 
-impl ChainWithMessages for PangolinChain {
+impl ChainWithMessages for PangoroChain {
 	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
-		bp_pangolin::WITH_PANGOLIN_MESSAGES_PALLET_NAME;
+		bp_pangoro::WITH_PANGORO_MESSAGES_PALLET_NAME;
 	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-		bp_pangolin::TO_PANGOLIN_MESSAGE_DETAILS_METHOD;
+		bp_pangoro::TO_PANGORO_MESSAGE_DETAILS_METHOD;
 	const TO_CHAIN_LATEST_GENERATED_NONCE_METHOD: &'static str =
-		bp_pangolin::TO_PANGOLIN_LATEST_GENERATED_NONCE_METHOD;
+		bp_pangoro::TO_PANGORO_LATEST_GENERATED_NONCE_METHOD;
 	const TO_CHAIN_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		bp_pangolin::TO_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		bp_pangoro::TO_PANGORO_LATEST_RECEIVED_NONCE_METHOD;
 	const FROM_CHAIN_LATEST_RECEIVED_NONCE_METHOD: &'static str =
-		bp_pangolin::FROM_PANGOLIN_LATEST_RECEIVED_NONCE_METHOD;
+		bp_pangoro::FROM_PANGORO_LATEST_RECEIVED_NONCE_METHOD;
 	const FROM_CHAIN_LATEST_CONFIRMED_NONCE_METHOD: &'static str =
-		bp_pangolin::FROM_PANGOLIN_LATEST_CONFIRMED_NONCE_METHOD;
+		bp_pangoro::FROM_PANGORO_LATEST_CONFIRMED_NONCE_METHOD;
 	const FROM_CHAIN_UNREWARDED_RELAYERS_STATE: &'static str =
-		bp_pangolin::FROM_PANGOLIN_UNREWARDED_RELAYERS_STATE;
+		bp_pangoro::FROM_PANGORO_UNREWARDED_RELAYERS_STATE;
 	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
-		bp_pangolin::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
+		bp_pangoro::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
 	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
-		bp_pangolin::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+		bp_pangoro::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
 	const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce =
-		bp_pangolin::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
+		bp_pangoro::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
 	type WeightInfo = ();
 }
 
-impl ChainWithBalances for PangolinChain {
+impl ChainWithBalances for PangoroChain {
 	fn account_info_storage_key(account_id: &Self::AccountId) -> StorageKey {
-		StorageKey(bp_pangolin::account_info_storage_key(account_id))
+		StorageKey(bp_pangoro::account_info_storage_key(account_id))
 	}
 }
 
-impl TransactionSignScheme for PangolinChain {
-	type Chain = PangolinChain;
+impl TransactionSignScheme for PangoroChain {
+	type Chain = PangoroChain;
 	type AccountKeyPair = sp_core::sr25519::Pair;
 	type SignedTransaction = crate::runtime::UncheckedExtrinsic;
 
 	fn sign_transaction(param: SignParam<Self>) -> Self::SignedTransaction {
 		let raw_payload = SignedPayload::new(
 			param.unsigned.call.clone(),
-			bp_pangolin::SignedExtensions::new(
+			bp_pangoro::SignedExtensions::new(
 				param.spec_version,
 				param.transaction_version,
 				param.era,
@@ -110,7 +109,7 @@ impl TransactionSignScheme for PangolinChain {
 		let signer: sp_runtime::MultiSigner = param.signer.public().into();
 		let (call, extra, _) = raw_payload.deconstruct();
 
-		bp_pangolin::UncheckedExtrinsic::new_signed(
+		bp_pangoro::UncheckedExtrinsic::new_signed(
 			call,
 			sp_runtime::MultiAddress::Id(signer.into_account()),
 			signature.into(),
@@ -126,8 +125,8 @@ impl TransactionSignScheme for PangolinChain {
 		tx.signature
 			.as_ref()
 			.map(|(address, _, _)| {
-				let account_id: bp_pangolin::AccountId = (*signer.public().as_array_ref()).into();
-				*address == bp_pangolin::Address::from(account_id)
+				let account_id: bp_pangoro::AccountId = (*signer.public().as_array_ref()).into();
+				*address == bp_pangoro::Address::from(account_id)
 			})
 			.unwrap_or(false)
 	}
