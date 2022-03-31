@@ -1,14 +1,15 @@
-use bp_messages::MessageNonce;
 use std::time::Duration;
 
 use codec::Encode;
-use frame_support::weights::Weight;
+use frame_support::weights::{IdentityFee, Weight};
+use sp_core::{storage::StorageKey, Pair};
+use sp_runtime::{generic::SignedPayload, traits::IdentifyAccount};
+
+use bp_messages::MessageNonce;
 use relay_substrate_client::{
 	Chain, ChainBase, ChainWithBalances, ChainWithMessages, SignParam, TransactionSignScheme,
 	UnsignedTransaction,
 };
-use sp_core::{storage::StorageKey, Pair};
-use sp_runtime::{generic::SignedPayload, traits::IdentifyAccount};
 
 pub mod runtime;
 
@@ -54,7 +55,7 @@ impl Chain for PangolinChain {
 
 	type SignedBlock = bp_pangolin::SignedBlock;
 	type Call = crate::runtime::Call;
-	type WeightToFee = bp_pangolin::WeightToFee;
+	type WeightToFee = IdentityFee<bp_pangolin::Balance>;
 }
 
 impl ChainWithMessages for PangolinChain {

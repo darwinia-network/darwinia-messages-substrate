@@ -2,7 +2,7 @@ use bp_messages::MessageNonce;
 use std::time::Duration;
 
 use codec::Encode;
-use frame_support::weights::Weight;
+use frame_support::weights::{IdentityFee, Weight};
 use relay_substrate_client::{
 	Chain, ChainBase, ChainWithBalances, ChainWithMessages, SignParam, TransactionSignScheme,
 	UnsignedTransaction,
@@ -53,7 +53,7 @@ impl Chain for PangoroChain {
 
 	type SignedBlock = bp_pangoro::SignedBlock;
 	type Call = crate::runtime::Call;
-	type WeightToFee = bp_pangoro::WeightToFee;
+	type WeightToFee = IdentityFee<bp_pangoro::Balance>;
 }
 
 impl ChainWithMessages for PangoroChain {
