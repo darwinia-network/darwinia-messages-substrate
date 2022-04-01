@@ -948,6 +948,7 @@ version = "0.1.0"
 dependencies = [
  "bp-message-dispatch",
  "bp-messages",
+ "bp-polkadot-core",
  "bp-runtime",
  "ed25519-dalek",
  "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.1)",
@@ -955,6 +956,7 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
+ "pallet-bridge-parachains",
  "pallet-transaction-payment 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.1)",
  "parity-scale-codec",
  "scale-info",

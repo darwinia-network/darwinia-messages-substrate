@@ -66,6 +66,9 @@ pub const PANGORO_CHAIN_ID: ChainId = *b"pagr";
 /// Bridge-with-Pangolin instance id.
 pub const PANGOLIN_CHAIN_ID: ChainId = *b"pagl";
 
+/// Bridge-with-PangolinParachain instance id.
+pub const PANGOLIN_PARACHAIN_CHAIN_ID: ChainId = *b"pglp";
+
 /// Call-dispatch module prefix.
 pub const CALL_DISPATCH_MODULE_PREFIX: &[u8] = b"pallet-bridge/dispatch";
 

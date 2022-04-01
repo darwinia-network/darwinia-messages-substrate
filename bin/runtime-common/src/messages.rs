@@ -26,6 +26,7 @@ use bp_messages::{
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
+use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{
 	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, Size, StorageProofChecker,
@@ -39,7 +40,7 @@ use frame_support::{
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Saturating, Zero},
+	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
 use sp_std::{
@@ -70,7 +71,6 @@ pub trait MessageBridge {
 	/// Convert Bridged chain balance into This chain balance.
 	fn bridged_balance_to_this_balance(
 		bridged_balance: BalanceOf<BridgedChain<Self>>,
-		bridged_to_this_conversion_rate_override: Option<FixedU128>,
 	) -> BalanceOf<ThisChain<Self>>;
 }
 
@@ -317,11 +317,8 @@ pub mod source {
 			pallet_bridge_dispatch::verify_message_origin(submitter, payload)
 				.map_err(|_| BAD_ORIGIN)?;
 
-			let minimal_fee_in_this_tokens = estimate_message_dispatch_and_delivery_fee::<B>(
-				payload,
-				B::RELAYER_FEE_PERCENT,
-				None,
-			)?;
+			let minimal_fee_in_this_tokens =
+				estimate_message_dispatch_and_delivery_fee::<B>(payload, B::RELAYER_FEE_PERCENT)?;
 
 			// compare with actual fee paid
 			if *delivery_and_dispatch_fee < minimal_fee_in_this_tokens {
@@ -375,7 +372,6 @@ pub mod source {
 	pub fn estimate_message_dispatch_and_delivery_fee<B: MessageBridge>(
 		payload: &FromThisChainMessagePayload<B>,
 		relayer_fee_percent: u32,
-		bridged_to_this_conversion_rate: Option<FixedU128>,
 	) -> Result<BalanceOf<ThisChain<B>>, &'static str> {
 		// the fee (in Bridged tokens) of all transactions that are made on the Bridged chain
 		//
@@ -396,11 +392,8 @@ pub mod source {
 			ThisChain::<B>::transaction_payment(confirmation_transaction);
 
 		// minimal fee (in This tokens) is a sum of all required fees
-		let minimal_fee = B::bridged_balance_to_this_balance(
-			delivery_transaction_fee,
-			bridged_to_this_conversion_rate,
-		)
-		.checked_add(&confirmation_transaction_fee);
+		let minimal_fee = B::bridged_balance_to_this_balance(delivery_transaction_fee)
+			.checked_add(&confirmation_transaction_fee);
 
 		// before returning, add extra fee that is paid to the relayer (relayer interest)
 		minimal_fee
@@ -416,6 +409,9 @@ pub mod source {
 	}
 
 	/// Verify proof of This -> Bridged chain messages delivery.
+	///
+	/// This function is used when Bridged chain is directly using GRANDPA finality. For Bridged
+	/// parachains, please use the `verify_messages_delivery_proof_from_parachain`.
 	pub fn verify_messages_delivery_proof<B: MessageBridge, ThisRuntime, GrandpaInstance: 'static>(
 		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
 	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
@@ -432,22 +428,62 @@ pub mod source {
 		pallet_bridge_grandpa::Pallet::<ThisRuntime, GrandpaInstance>::parse_finalized_storage_proof(
 			bridged_header_hash.into(),
 			StorageProof::new(storage_proof),
-			|storage| {
-				// Messages delivery proof is just proof of single storage key read => any error
-				// is fatal.
-				let storage_inbound_lane_data_key =
-					bp_messages::storage_keys::inbound_lane_data_key(B::BRIDGED_MESSAGES_PALLET_NAME, &lane);
-				let raw_inbound_lane_data = storage
-					.read_value(storage_inbound_lane_data_key.0.as_ref())
-					.map_err(|_| "Failed to read inbound lane state from storage proof")?
-					.ok_or("Inbound lane state is missing from the messages proof")?;
-				let inbound_lane_data = InboundLaneData::decode(&mut &raw_inbound_lane_data[..])
-					.map_err(|_| "Failed to decode inbound lane state from the proof")?;
-
-				Ok((lane, inbound_lane_data))
-			},
+			|storage| do_verify_messages_delivery_proof::<
+				B,
+				bp_runtime::HasherOf<
+					<ThisRuntime as pallet_bridge_grandpa::Config<GrandpaInstance>>::BridgedChain,
+				>,
+			>(lane, storage),
 		)
 		.map_err(<&'static str>::from)?
+	}
+
+	/// Verify proof of This -> Bridged chain messages delivery.
+	///
+	/// This function is used when Bridged chain is using parachain finality. For Bridged
+	/// chains with direct GRANDPA finality, please use the `verify_messages_delivery_proof`.
+	///
+	/// This function currently only supports parachains, which are using header type that implements
+	/// `sp_runtime::traits::Header` trait.
+	pub fn verify_messages_delivery_proof_from_parachain<B, BridgedHeader, ThisRuntime, ParachainsInstance: 'static>(
+		bridged_parachain: ParaId,
+		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
+	where
+		B: MessageBridge,
+		B::BridgedChain: ChainWithMessages<Hash = ParaHash>,
+		BridgedHeader: HeaderT<Hash = HashOf<BridgedChain<B>>>,
+		ThisRuntime: pallet_bridge_parachains::Config<ParachainsInstance>,
+	{
+		let FromBridgedChainMessagesDeliveryProof { bridged_header_hash, storage_proof, lane } =
+			proof;
+		pallet_bridge_parachains::Pallet::<ThisRuntime, ParachainsInstance>::parse_finalized_storage_proof(
+			bridged_parachain,
+			bridged_header_hash,
+			StorageProof::new(storage_proof),
+			|para_head| BridgedHeader::decode(&mut &para_head.0[..]).ok().map(|h| *h.state_root()),
+			|storage| do_verify_messages_delivery_proof::<B, ParaHasher>(lane, storage),
+		)
+		.map_err(<&'static str>::from)?
+	}
+
+	/// The essense of This -> Bridged chain messages delivery proof verification.
+	fn do_verify_messages_delivery_proof<B: MessageBridge, H: Hasher>(
+		lane: LaneId,
+		storage: bp_runtime::StorageProofChecker<H>,
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str> {
+		// Messages delivery proof is just proof of single storage key read => any error
+		// is fatal.
+		let storage_inbound_lane_data_key =
+			pallet_bridge_messages::storage_keys::inbound_lane_data_key(B::BRIDGED_MESSAGES_PALLET_NAME, &lane);
+		let raw_inbound_lane_data = storage
+			.read_value(storage_inbound_lane_data_key.0.as_ref())
+			.map_err(|_| "Failed to read inbound lane state from storage proof")?
+			.ok_or("Inbound lane state is missing from the messages proof")?;
+		let inbound_lane_data = InboundLaneData::decode(&mut &raw_inbound_lane_data[..])
+			.map_err(|_| "Failed to decode inbound lane state from the proof")?;
+
+		Ok((lane, inbound_lane_data))
 	}
 }
 
@@ -606,6 +642,9 @@ pub mod target {
 
 	/// Verify proof of Bridged -> This chain messages.
 	///
+	/// This function is used when Bridged chain is directly using GRANDPA finality. For Bridged
+	/// parachains, please use the `verify_messages_proof_from_parachain`.
+	///
 	/// The `messages_count` argument verification (sane limits) is supposed to be made
 	/// outside of this function. This function only verifies that the proof declares exactly
 	/// `messages_count` messages.
@@ -628,6 +667,49 @@ pub mod target {
 				pallet_bridge_grandpa::Pallet::<ThisRuntime, GrandpaInstance>::parse_finalized_storage_proof(
 					bridged_header_hash.into(),
 					StorageProof::new(bridged_storage_proof),
+					|storage_adapter| storage_adapter,
+				)
+				.map(|storage| StorageProofCheckerAdapter::<_, B> {
+					storage,
+					_dummy: Default::default(),
+				})
+				.map_err(|err| MessageProofError::Custom(err.into()))
+			},
+		)
+		.map_err(Into::into)
+	}
+
+	/// Verify proof of Bridged -> This chain messages.
+	///
+	/// This function is used when Bridged chain is using parachain finality. For Bridged
+	/// chains with direct GRANDPA finality, please use the `verify_messages_proof`.
+	///
+	/// The `messages_count` argument verification (sane limits) is supposed to be made
+	/// outside of this function. This function only verifies that the proof declares exactly
+	/// `messages_count` messages.
+	///
+	/// This function currently only supports parachains, which are using header type that implements
+	/// `sp_runtime::traits::Header` trait.
+	pub fn verify_messages_proof_from_parachain<B, BridgedHeader, ThisRuntime, ParachainsInstance: 'static>(
+		bridged_parachain: ParaId,
+		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
+		messages_count: u32,
+	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, &'static str>
+	where
+		B: MessageBridge,
+		B::BridgedChain: ChainWithMessages<Hash = ParaHash>,
+		BridgedHeader: HeaderT<Hash = HashOf<BridgedChain<B>>>,
+		ThisRuntime: pallet_bridge_parachains::Config<ParachainsInstance>,
+	{
+		verify_messages_proof_with_parser::<B, _, _>(
+			proof,
+			messages_count,
+			|bridged_header_hash, bridged_storage_proof| {
+				pallet_bridge_parachains::Pallet::<ThisRuntime, ParachainsInstance>::parse_finalized_storage_proof(
+					bridged_parachain,
+					bridged_header_hash,
+					StorageProof::new(bridged_storage_proof),
+					|para_head| BridgedHeader::decode(&mut &para_head.0[..]).ok().map(|h| *h.state_root()),
 					|storage_adapter| storage_adapter,
 				)
 				.map(|storage| StorageProofCheckerAdapter::<_, B> {
@@ -682,15 +764,16 @@ pub mod target {
 		B: MessageBridge,
 	{
 		fn read_raw_outbound_lane_data(&self, lane_id: &LaneId) -> Option<Vec<u8>> {
-			let storage_outbound_lane_data_key = bp_messages::storage_keys::outbound_lane_data_key(
-				B::BRIDGED_MESSAGES_PALLET_NAME,
-				lane_id,
-			);
+			let storage_outbound_lane_data_key =
+				pallet_bridge_messages::storage_keys::outbound_lane_data_key(
+					B::BRIDGED_MESSAGES_PALLET_NAME,
+					lane_id,
+				);
 			self.storage.read_value(storage_outbound_lane_data_key.0.as_ref()).ok()?
 		}
 
 		fn read_raw_message(&self, message_key: &MessageKey) -> Option<Vec<u8>> {
-			let storage_message_key = bp_messages::storage_keys::message_key(
+			let storage_message_key = pallet_bridge_messages::storage_keys::message_key(
 				B::BRIDGED_MESSAGES_PALLET_NAME,
 				&message_key.lane_id,
 				message_key.nonce,
@@ -806,12 +889,8 @@ mod tests {
 
 		fn bridged_balance_to_this_balance(
 			bridged_balance: BridgedChainBalance,
-			bridged_to_this_conversion_rate_override: Option<FixedU128>,
 		) -> ThisChainBalance {
-			let conversion_rate = bridged_to_this_conversion_rate_override
-				.map(|r| r.to_float() as u32)
-				.unwrap_or(BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE);
-			ThisChainBalance(bridged_balance.0 * conversion_rate)
+			ThisChainBalance(bridged_balance.0 * BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE as u32)
 		}
 	}
 
@@ -829,10 +908,7 @@ mod tests {
 		type ThisChain = BridgedChain;
 		type BridgedChain = ThisChain;
 
-		fn bridged_balance_to_this_balance(
-			_this_balance: ThisChainBalance,
-			_bridged_to_this_conversion_rate_override: Option<FixedU128>,
-		) -> BridgedChainBalance {
+		fn bridged_balance_to_this_balance(_this_balance: ThisChainBalance) -> BridgedChainBalance {
 			unreachable!()
 		}
 	}
@@ -1110,7 +1186,6 @@ mod tests {
 			source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
 				&payload,
 				OnThisChainBridge::RELAYER_FEE_PERCENT,
-				None,
 			),
 			Ok(ThisChainBalance(EXPECTED_MINIMAL_FEE)),
 		);
@@ -1122,7 +1197,6 @@ mod tests {
 			source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
 				&payload_with_pay_on_target,
 				OnThisChainBridge::RELAYER_FEE_PERCENT,
-				None,
 			)
 			.expect(
 				"estimate_message_dispatch_and_delivery_fee failed for pay-at-target-chain message",
@@ -1588,22 +1662,5 @@ mod tests {
 			),
 			100 + 50 * 10 + 777,
 		);
-	}
-
-	#[test]
-	fn conversion_rate_override_works() {
-		let payload = regular_outbound_message_payload();
-		let regular_fee = source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
-			&payload,
-			OnThisChainBridge::RELAYER_FEE_PERCENT,
-			None,
-		);
-		let overrided_fee = source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
-			&payload,
-			OnThisChainBridge::RELAYER_FEE_PERCENT,
-			Some(FixedU128::from_float((BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE * 2) as f64)),
-		);
-
-		assert!(regular_fee < overrided_fee);
 	}
 }
