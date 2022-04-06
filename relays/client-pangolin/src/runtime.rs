@@ -26,6 +26,9 @@ pub enum Call {
 	/// Bridge pangoro messages pallet
 	#[codec(index = 43)]
 	BridgePangoroMessages(BridgePangoroMessagesCall),
+	/// Bridge rococo grandpa pallet
+	#[codec(index = 60)]
+	BridgeRococoGrandpa(BridgeRococoGrandpaCall),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
@@ -84,6 +87,18 @@ pub enum BridgePangoroMessagesCall {
 		>,
 		UnrewardedRelayersState,
 	),
+}
+
+#[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
+#[allow(non_camel_case_types)]
+pub enum BridgeRococoGrandpaCall {
+	#[codec(index = 0)]
+	submit_finality_proof(
+		Box<<bp_rococo::Rococo as Chain>::Header>,
+		bp_header_chain::justification::GrandpaJustification<<bp_rococo::Rococo as Chain>::Header>,
+	),
+	#[codec(index = 1)]
+	initialize(bp_header_chain::InitializationData<<bp_rococo::Rococo as Chain>::Header>),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]

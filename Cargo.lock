@@ -7165,6 +7165,7 @@ dependencies = [
  "bp-messages",
  "bp-pangolin",
  "bp-pangoro",
+ "bp-rococo",
  "bp-runtime",
  "bridge-runtime-common",
  "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.1)",
