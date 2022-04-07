@@ -7,6 +7,7 @@ members = [
 	"fuzz/*",
 	"modules/*",
 	"modules/fee-market/rpc/runtime-api",
+	"modules/fee-market/rpc",
 	"primitives/*",
 	"relays/*",
 ]
