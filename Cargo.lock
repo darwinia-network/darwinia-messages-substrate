@@ -2056,6 +2056,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-fee-market-rpc"
+version = "0.1.0"
+dependencies = [
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "pallet-fee-market-rpc-runtime-api",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
 name = "data-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5781,6 +5795,39 @@ dependencies = [
  "sp-npos-elections",
  "sp-runtime 4.1.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.16)",
  "sp-std 4.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.16)",
+]
+
+[[package]]
+name = "pallet-fee-market"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "bp-messages",
+ "bp-runtime",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-bridge-messages",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-fee-market-rpc-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "bp-messages",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
