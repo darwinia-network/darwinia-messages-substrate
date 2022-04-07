@@ -178,7 +178,8 @@ pub mod pallet {
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_finalize(_: BlockNumberFor<T>) {
 			for ((lane_id, message_nonce), order) in <Orders<T>>::iter() {
-				// Once the order's confirm_time is not None, we consider this order has been rewarded. Hence, clean the storage.
+				// Once the order's confirm_time is not None, we consider this order has been
+				// rewarded. Hence, clean the storage.
 				if order.confirm_time.is_some() {
 					<Orders<T>>::remove((lane_id, message_nonce));
 				}
@@ -225,7 +226,8 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		/// Update locked collateral for enrolled relayer, only supporting lock more. (Update market needed)
+		/// Update locked collateral for enrolled relayer, only supporting lock more. (Update market
+		/// needed)
 		#[pallet::weight(<T as Config>::WeightInfo::update_locked_collateral())]
 		#[transactional]
 		pub fn update_locked_collateral(
@@ -284,10 +286,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T>>::NotEnrolled);
-			ensure!(
-				new_fee >= T::MinimumRelayFee::get(),
-				<Error<T>>::RelayFeeTooLow
-			);
+			ensure!(new_fee >= T::MinimumRelayFee::get(), <Error<T>>::RelayFeeTooLow);
 
 			<RelayersMap<T>>::mutate(who.clone(), |relayer| {
 				if let Some(ref mut r) = relayer {
@@ -343,7 +342,8 @@ pub mod pallet {
 pub use pallet::*;
 
 impl<T: Config> Pallet<T> {
-	/// An important update in this pallet, need to update market information in the following cases:
+	/// An important update in this pallet, need to update market information in the following
+	/// cases:
 	///
 	/// - New relayer enroll.
 	/// - The enrolled relayer wants to update fee or order capacity.
@@ -376,18 +376,14 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
-	/// Update relayer after slash occurred, this will changes RelayersMap storage. (Update market needed)
+	/// Update relayer after slash occurred, this will changes RelayersMap storage. (Update market
+	/// needed)
 	pub(crate) fn update_relayer_after_slash(
 		who: &T::AccountId,
 		new_collateral: RingBalance<T>,
 		report: SlashReport<T::AccountId, T::BlockNumber, RingBalance<T>>,
 	) {
-		T::RingCurrency::set_lock(
-			T::LockId::get(),
-			&who,
-			new_collateral,
-			WithdrawReasons::all(),
-		);
+		T::RingCurrency::set_lock(T::LockId::get(), &who, new_collateral, WithdrawReasons::all());
 		<RelayersMap<T>>::mutate(who.clone(), |relayer| {
 			if let Some(ref mut r) = relayer {
 				r.collateral = new_collateral;
@@ -421,7 +417,8 @@ impl<T: Config> Pallet<T> {
 		<Relayers<T>>::get().map_or(false, |rs| rs.iter().any(|r| *r == *who))
 	}
 
-	/// Get market fee, If there is not enough relayers have order capacity to accept new order, return None.
+	/// Get market fee, If there is not enough relayers have order capacity to accept new order,
+	/// return None.
 	pub fn market_fee() -> Option<RingBalance<T>> {
 		Self::assigned_relayers().and_then(|relayers| relayers.last().map(|r| r.fee))
 	}
@@ -437,7 +434,8 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Whether the enrolled relayer is occupied(Responsible for order relaying)
-	/// Whether the enrolled relayer is occupied, If occupied, return the number of orders and orders locked collateral, otherwise, return None.
+	/// Whether the enrolled relayer is occupied, If occupied, return the number of orders and
+	/// orders locked collateral, otherwise, return None.
 	pub(crate) fn occupied(who: &T::AccountId) -> Option<(u32, RingBalance<T>)> {
 		let mut count = 0u32;
 		let mut orders_locked_collateral = RingBalance::<T>::zero();
@@ -450,7 +448,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		if count == 0 {
-			return None;
+			return None
 		}
 		Some((count, orders_locked_collateral))
 	}
@@ -462,7 +460,7 @@ impl<T: Config> Pallet<T> {
 		if let Some((_, orders_locked_collateral)) = Self::occupied(&who) {
 			let free_collateral =
 				relayer_locked_collateral.saturating_sub(orders_locked_collateral);
-			return Self::collateral_to_order_capacity(free_collateral);
+			return Self::collateral_to_order_capacity(free_collateral)
 		}
 		Self::collateral_to_order_capacity(relayer_locked_collateral)
 	}

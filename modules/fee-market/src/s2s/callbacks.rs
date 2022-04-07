@@ -28,7 +28,8 @@ pub struct FeeMarketMessageAcceptedHandler<T>(PhantomData<T>);
 impl<T: Config> OnMessageAccepted for FeeMarketMessageAcceptedHandler<T> {
 	// Called when the message is accepted by message pallet
 	fn on_messages_accepted(lane: &LaneId, message: &MessageNonce) -> Weight {
-		// Create a new order based on the latest block, assign relayers which have priority to relaying
+		// Create a new order based on the latest block, assign relayers which have priority to
+		// relaying
 		let now = frame_system::Pallet::<T>::block_number();
 		if let Some(assigned_relayers) = <Pallet<T>>::assigned_relayers() {
 			let order = Order::new(
@@ -59,7 +60,7 @@ impl<T: Config> OnDeliveryConfirmed for FeeMarketMessageConfirmedHandler<T> {
 				if !order.is_confirmed() {
 					<Orders<T>>::mutate((lane, message_nonce), |order| match order {
 						Some(order) => order.set_confirm_time(Some(now)),
-						None => {}
+						None => {},
 					});
 				}
 			}

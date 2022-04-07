@@ -34,11 +34,7 @@ pub struct Relayer<AccountId, Balance> {
 }
 impl<AccountId, Balance> Relayer<AccountId, Balance> {
 	pub fn new(id: AccountId, collateral: Balance, fee: Balance) -> Relayer<AccountId, Balance> {
-		Relayer {
-			id,
-			collateral,
-			fee,
-		}
+		Relayer { id, collateral, fee }
 	}
 }
 impl<AccountId, Balance> PartialOrd for Relayer<AccountId, Balance>
@@ -110,14 +106,7 @@ where
 			}
 		}
 
-		Self {
-			lane,
-			message,
-			sent_time,
-			confirm_time: None,
-			locked_collateral,
-			relayers,
-		}
+		Self { lane, message, sent_time, confirm_time: None, locked_collateral, relayers }
 	}
 
 	pub fn set_confirm_time(&mut self, confirm_time: Option<BlockNumber>) {
@@ -129,11 +118,7 @@ where
 	}
 
 	pub fn fee(&self) -> Balance {
-		self.relayers
-			.iter()
-			.last()
-			.map(|r| r.fee)
-			.unwrap_or_default()
+		self.relayers.iter().last().map(|r| r.fee).unwrap_or_default()
 	}
 
 	pub fn is_confirmed(&self) -> bool {
@@ -147,7 +132,7 @@ where
 	pub fn delivery_delay(&self) -> Option<BlockNumber> {
 		if let (Some(confirm_time), Some(range_end)) = (self.confirm_time, self.range_end()) {
 			if confirm_time > range_end {
-				return Some(confirm_time - range_end);
+				return Some(confirm_time - range_end)
 			}
 		}
 		None
@@ -159,7 +144,7 @@ where
 	) -> Option<(AccountId, Balance)> {
 		for prior_relayer in self.relayers.iter() {
 			if prior_relayer.valid_range.contains(&message_confirm_time) {
-				return Some((prior_relayer.id.clone(), prior_relayer.fee));
+				return Some((prior_relayer.id.clone(), prior_relayer.fee))
 			}
 		}
 		None
@@ -172,15 +157,16 @@ where
 	{
 		for prior_relayer in self.relayers.iter() {
 			if prior_relayer.id == id {
-				return Some(prior_relayer.valid_range.clone());
+				return Some(prior_relayer.valid_range.clone())
 			}
 		}
 		None
 	}
 }
 
-/// Relayers selected by the fee market. Each prior relayer has a valid slot, if the order can finished in time,
-/// will be rewarded with more percentage. PriorRelayer are responsible for the messages relay in most time.
+/// Relayers selected by the fee market. Each prior relayer has a valid slot, if the order can
+/// finished in time, will be rewarded with more percentage. PriorRelayer are responsible for the
+/// messages relay in most time.
 #[derive(Clone, Debug, Default, Encode, Decode, TypeInfo)]
 pub struct PriorRelayer<AccountId, BlockNumber, Balance> {
 	pub id: AccountId,
@@ -197,14 +183,7 @@ where
 		start_time: BlockNumber,
 		slot_time: BlockNumber,
 	) -> Self {
-		Self {
-			id,
-			fee,
-			valid_range: Range {
-				start: start_time,
-				end: start_time + slot_time,
-			},
-		}
+		Self { id, fee, valid_range: Range { start: start_time, end: start_time + slot_time } }
 	}
 }
 
@@ -264,10 +243,7 @@ mod test {
 
 		relayers.sort();
 
-		assert_eq!(
-			relayers.into_iter().map(|r| r.id).collect::<Vec<_>>(),
-			vec![3, 1, 4, 2]
-		);
+		assert_eq!(relayers.into_iter().map(|r| r.id).collect::<Vec<_>>(), vec![3, 1, 4, 2]);
 	}
 
 	#[test]
