@@ -1,0 +1,30 @@
+[package]
+authors = ["Darwinia Network <hello@darwinia.network>"]
+edition = "2021"
+license = "GPL-3.0"
+name    = "relay-pangolin-parachain-client"
+version = "0.1.0"
+
+
+[dependencies]
+codec                  = { package = "parity-scale-codec", version = "2.2.0" }
+relay-substrate-client = { path = "../client-substrate" }
+relay-utils            = { path = "../utils" }
+scale-info             = { version = "1.0", features = ["derive"] }
+
+bp-header-chain        = { path = "../../primitives/header-chain" }
+bp-message-dispatch    = { path = "../../primitives/message-dispatch" }
+bp-messages            = { path = "../../primitives/messages" }
+bp-runtime             = { path = "../../primitives/runtime" }
+bridge-runtime-common  = { path = "../../bin/runtime-common" }
+pallet-bridge-dispatch = { path = "../../modules/dispatch" }
+
+bp-darwinia-core      = { path = "../../primitives/darwinia-core" }
+bp-pangolin           = { path = "../../primitives/chain-pangolin" }
+bp-pangolin-parachain = { path = "../../primitives/chain-pangolin-parachain" }
+bp-rococo             = { path = "../../primitives/chain-rococo" }
+
+## Substrate Dependencies
+frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }

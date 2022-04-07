@@ -7179,6 +7179,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "relay-pangolin-parachain-client"
+version = "0.1.0"
+dependencies = [
+ "bp-darwinia-core",
+ "bp-header-chain",
+ "bp-message-dispatch",
+ "bp-messages",
+ "bp-pangolin",
+ "bp-pangolin-parachain",
+ "bp-rococo",
+ "bp-runtime",
+ "bridge-runtime-common",
+ "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.1)",
+ "pallet-bridge-dispatch",
+ "parity-scale-codec",
+ "relay-substrate-client",
+ "relay-utils",
+ "scale-info",
+ "sp-core 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.1)",
+ "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.1)",
+]
+
+[[package]]
 name = "relay-pangoro-client"
 version = "0.1.0"
 dependencies = [
