@@ -24,7 +24,7 @@ use scale_info::TypeInfo;
 // --- paritytech ---
 use bp_messages::{
 	source_chain::{
-		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, Sender, TargetHeaderChain,
+		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, SenderOrigin, TargetHeaderChain,
 	},
 	target_chain::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
@@ -45,7 +45,7 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup, UniqueSaturatedInto},
-	FixedU128, Permill,
+	FixedU128, ModuleError, Permill,
 };
 // --- darwinia-network ---
 use crate::{
@@ -219,11 +219,13 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 /// Lane message verifier that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
-impl LaneMessageVerifier<AccountId, TestPayload, TestMessageFee> for TestLaneMessageVerifier {
+impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
+	for TestLaneMessageVerifier
+{
 	type Error = &'static str;
 
 	fn verify_message(
-		_submitter: &Sender<AccountId>,
+		_submitter: &Origin,
 		delivery_and_dispatch_fee: &TestMessageFee,
 		_lane: &LaneId,
 		_lane_outbound_data: &OutboundLaneData,
@@ -251,8 +253,8 @@ impl TestMessageDeliveryAndDispatchPayment {
 
 	/// Returns true if given fee has been paid by given submitter.
 	pub fn is_fee_paid(submitter: AccountId, fee: TestMessageFee) -> bool {
-		frame_support::storage::unhashed::get(b":message-fee:") ==
-			Some((Sender::Signed(submitter), fee))
+		let raw_origin: Result<frame_system::RawOrigin<_>, _> = Origin::signed(submitter).into();
+		frame_support::storage::unhashed::get(b":message-fee:") == Some((raw_origin.unwrap(), fee))
 	}
 
 	/// Returns true if given relayer has been rewarded with given balance. The reward-paid flag is
@@ -262,13 +264,13 @@ impl TestMessageDeliveryAndDispatchPayment {
 		frame_support::storage::unhashed::take::<bool>(&key).is_some()
 	}
 }
-impl MessageDeliveryAndDispatchPayment<AccountId, TestMessageFee>
+impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &Sender<AccountId>,
+		submitter: &Origin,
 		fee: &TestMessageFee,
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
@@ -276,7 +278,8 @@ impl MessageDeliveryAndDispatchPayment<AccountId, TestMessageFee>
 			return Err(TEST_ERROR)
 		}
 
-		frame_support::storage::unhashed::put(b":message-fee:", &(submitter, fee));
+		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();
+		frame_support::storage::unhashed::put(b":message-fee:", &(raw_origin.unwrap(), fee));
 		Ok(())
 	}
 
@@ -403,6 +406,16 @@ impl pallet_bridge_messages::Config for Test {
 	type BridgedChainId = TestBridgedChainId;
 }
 
+impl SenderOrigin<AccountId> for Origin {
+	fn linked_account(&self) -> Option<AccountId> {
+		match self.caller {
+			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
+				Some(submitter.clone()),
+			_ => None,
+		}
+	}
+}
+
 frame_support::parameter_types! {
 	pub const FeeMarketPalletId: PalletId = PalletId(*b"da/feemk");
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
@@ -505,7 +518,7 @@ pub fn unrewarded_relayer(
 			begin,
 			end,
 			dispatch_results: if end >= begin {
-				bitvec![Msb0, u8; 1; (end - begin + 1) as _]
+				bitvec![u8, Msb0; 1; (end - begin + 1) as _]
 			} else {
 				Default::default()
 			},
@@ -766,11 +779,11 @@ fn test_callback_no_order_created_when_fee_market_not_ready() {
 		assert!(FeeMarket::assigned_relayers().is_none());
 		assert_err!(
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
-			DispatchError::Module {
+			DispatchError::Module(ModuleError {
 				index: 4,
 				error: 2,
 				message: Some("MessageRejectedByLaneVerifier")
-			}
+			})
 		);
 	});
 }
@@ -1182,22 +1195,22 @@ fn test_fee_verification_when_send_message() {
 		// Case 1: When fee market are not ready, but somebody send messages
 		assert_err!(
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
-			DispatchError::Module {
+			DispatchError::Module(ModuleError {
 				index: 4,
 				error: 2,
 				message: Some("MessageRejectedByLaneVerifier")
-			}
+			})
 		);
 
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 100, Some(50));
 		// Case 2: The fee market is ready, but the order fee is too low
 		assert_err!(
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 49),
-			DispatchError::Module {
+			DispatchError::Module(ModuleError {
 				index: 4,
 				error: 2,
 				message: Some("MessageRejectedByLaneVerifier")
-			}
+			})
 		);
 
 		// Case 3: Normal workflow
