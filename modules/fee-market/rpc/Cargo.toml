@@ -11,13 +11,13 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-codec               = { package = "parity-scale-codec", version = "3.0.0" }
+codec               = { package = "parity-scale-codec", version = "2.2" }
 jsonrpc-core        = { version = "18.0" }
 jsonrpc-core-client = { version = "18.0" }
 jsonrpc-derive      = { version = "18.0" }
 # darwinia-network
 pallet-fee-market-rpc-runtime-api = { path = "./runtime-api" }
 # paritytech
-sp-api        = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime    = { git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-api        = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
+sp-runtime    = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }

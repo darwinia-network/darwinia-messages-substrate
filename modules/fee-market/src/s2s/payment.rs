@@ -18,7 +18,7 @@
 
 // --- paritytech ---
 use bp_messages::{
-	source_chain::{MessageDeliveryAndDispatchPayment, SenderOrigin},
+	source_chain::{MessageDeliveryAndDispatchPayment, Sender},
 	MessageNonce, UnrewardedRelayer,
 };
 use frame_support::{
@@ -33,47 +33,38 @@ use sp_std::{
 // --- darwinia-network ---
 use crate::{Config, Orders, Pallet, *};
 
-/// Error that occurs when message fee is non-zero, but payer is not defined.
-const NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE: &str =
-	"Non-zero message fee can't be paid by <None>";
-
-pub struct FeeMarketPayment<T, I, Currency> {
-	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
+pub struct FeeMarketPayment<T, I, Currency, GetConfirmationFee, RootAccount> {
+	_phantom: sp_std::marker::PhantomData<(T, I, Currency, GetConfirmationFee, RootAccount)>,
 }
 
-impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, RingBalance<T>>
-	for FeeMarketPayment<T, I, Currency>
+impl<T, I, Currency, GetConfirmationFee, RootAccount>
+	MessageDeliveryAndDispatchPayment<T::AccountId, RingBalance<T>>
+	for FeeMarketPayment<T, I, Currency, GetConfirmationFee, RootAccount>
 where
 	T: frame_system::Config + pallet_bridge_messages::Config<I> + Config,
 	I: 'static,
-	T::Origin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId, Balance = T::OutboundMessageFee>,
+	Currency::Balance: From<MessageNonce>,
+	GetConfirmationFee: Get<RingBalance<T>>,
+	RootAccount: Get<Option<T::AccountId>>,
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &T::Origin,
+		submitter: &Sender<T::AccountId>,
 		fee: &RingBalance<T>,
 		relayer_fund_account: &T::AccountId,
 	) -> Result<(), Self::Error> {
-		let submitter_account = match submitter.linked_account() {
-			Some(submitter_account) => submitter_account,
-			None if !fee.is_zero() => {
-				// if we'll accept some message that has declared that the `fee` has been paid but
-				// it isn't actually paid, then it'll lead to problems with delivery confirmation
-				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
-				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE)
-			},
-			None => {
-				// message lane verifier has accepted the message before, so this message
-				// is unpaid **by design**
-				// => let's just do nothing
-				return Ok(())
-			},
+		let root_account = RootAccount::get();
+		let account = match submitter {
+			Sender::Signed(submitter) => submitter,
+			Sender::Root | Sender::None => root_account
+				.as_ref()
+				.ok_or("Sending messages using Root or None origin is disallowed.")?,
 		};
 
 		<T as Config>::RingCurrency::transfer(
-			&submitter_account,
+			account,
 			relayer_fund_account,
 			*fee,
 			// it's fine for the submitter to go below Existential Deposit and die.
