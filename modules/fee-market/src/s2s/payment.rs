@@ -37,20 +37,17 @@ use crate::{Config, Orders, Pallet, *};
 const NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE: &str =
 	"Non-zero message fee can't be paid by <None>";
 
-pub struct FeeMarketPayment<T, I, Currency, GetConfirmationFee> {
-	_phantom: sp_std::marker::PhantomData<(T, I, Currency, GetConfirmationFee)>,
+pub struct FeeMarketPayment<T, I, Currency> {
+	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
 }
 
-impl<T, I, Currency, GetConfirmationFee>
-	MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, RingBalance<T>>
-	for FeeMarketPayment<T, I, Currency, GetConfirmationFee>
+impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, RingBalance<T>>
+	for FeeMarketPayment<T, I, Currency>
 where
 	T: frame_system::Config + pallet_bridge_messages::Config<I> + Config,
 	I: 'static,
 	T::Origin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId, Balance = T::OutboundMessageFee>,
-	Currency::Balance: From<MessageNonce>,
-	GetConfirmationFee: Get<RingBalance<T>>,
 {
 	type Error = &'static str;
 
