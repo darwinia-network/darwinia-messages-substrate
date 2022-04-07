@@ -18,8 +18,7 @@
 
 //! Node-specific RPC methods for interaction with fee-market.
 
-// --- darwinia-network ---
-pub use darwinia_fee_market_rpc_runtime_api::{
+pub use pallet_fee_market_rpc_runtime_api::{
 	Fee, FeeMarketApi as FeeMarketRuntimeApi, InProcessOrders,
 };
 

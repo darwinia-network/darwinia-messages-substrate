@@ -2103,50 +2103,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-fee-market"
-version = "2.8.6"
-dependencies = [
- "bitvec",
- "bp-messages",
- "bp-runtime",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-bridge-messages",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "darwinia-fee-market-rpc"
-version = "2.8.6"
+version = "0.1.0"
 dependencies = [
- "darwinia-fee-market-rpc-runtime-api",
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",
+ "pallet-fee-market-rpc-runtime-api",
  "parity-scale-codec",
  "sp-api",
  "sp-blockchain",
  "sp-runtime",
-]
-
-[[package]]
-name = "darwinia-fee-market-rpc-runtime-api"
-version = "2.8.6"
-dependencies = [
- "bp-messages",
- "parity-scale-codec",
- "serde",
- "sp-api",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -5968,6 +5935,39 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-npos-elections",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-fee-market"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "bp-messages",
+ "bp-runtime",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-bridge-messages",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-fee-market-rpc-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "bp-messages",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
  "sp-runtime",
  "sp-std",
 ]

@@ -4,10 +4,10 @@ description = "Runtime API definition required by fee-market RPC extensions."
 edition     = "2021"
 homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
-name        = "darwinia-fee-market-rpc-runtime-api"
+name        = "pallet-fee-market-rpc-runtime-api"
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia-common"
-version     = "2.8.6"
+repository  = "https://github.com/darwinia-network/darwinia-bridges-substrate"
+version     = "0.1.0"
 
 [dependencies]
 # crates.io

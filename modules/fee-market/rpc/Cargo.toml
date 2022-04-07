@@ -6,8 +6,8 @@ homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "darwinia-fee-market-rpc"
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia-common"
-version     = "2.8.6"
+repository  = "https://github.com/darwinia-network/darwinia-bridges-substrate"
+version     = "0.1.0"
 
 [dependencies]
 # crates.io
@@ -16,7 +16,7 @@ jsonrpc-core        = { version = "18.0" }
 jsonrpc-core-client = { version = "18.0" }
 jsonrpc-derive      = { version = "18.0" }
 # darwinia-network
-darwinia-fee-market-rpc-runtime-api = { path = "./runtime-api" }
+pallet-fee-market-rpc-runtime-api = { path = "./runtime-api" }
 # paritytech
 sp-api        = { git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "master" }
