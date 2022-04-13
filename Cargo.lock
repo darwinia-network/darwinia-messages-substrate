@@ -7164,6 +7164,7 @@ dependencies = [
  "bp-message-dispatch",
  "bp-messages",
  "bp-pangolin",
+ "bp-pangolin-parachain",
  "bp-pangoro",
  "bp-rococo",
  "bp-runtime",

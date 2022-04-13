@@ -29,6 +29,9 @@ pub enum Call {
 	/// Bridge rococo grandpa pallet
 	#[codec(index = 60)]
 	BridgeRococoGrandpa(BridgeRococoGrandpaCall),
+	/// Bridge pangolin parachain messages pallet
+	#[codec(index = 63)]
+	BridgePangolinParachainMessages(BridgePangolinParachainMessagesCall),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
@@ -89,6 +92,39 @@ pub enum BridgePangoroMessagesCall {
 	),
 }
 
+#[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
+#[allow(non_camel_case_types)]
+pub enum BridgePangolinParachainMessagesCall {
+	#[codec(index = 2)]
+	update_pallet_parameter(BridgePolkadotMessagesParameter),
+	#[codec(index = 3)]
+	send_message(
+		LaneId,
+		bp_message_dispatch::MessagePayload<
+			bp_pangolin::AccountId,
+			bp_pangoro::AccountId,
+			bp_pangoro::AccountPublic,
+			Vec<u8>,
+		>,
+		bp_pangolin::Balance,
+	),
+	#[codec(index = 5)]
+	receive_messages_proof(
+		bp_pangolin_parachain::AccountId,
+		bridge_runtime_common::messages::target::FromBridgedChainMessagesProof<
+			bp_pangolin_parachain::Hash,
+		>,
+		u32,
+		Weight,
+	),
+	#[codec(index = 6)]
+	receive_messages_delivery_proof(
+		bridge_runtime_common::messages::source::FromBridgedChainMessagesDeliveryProof<
+			bp_pangolin_parachain::Hash,
+		>,
+		UnrewardedRelayersState,
+	),
+}
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
 #[allow(non_camel_case_types)]
 pub enum BridgeRococoGrandpaCall {
