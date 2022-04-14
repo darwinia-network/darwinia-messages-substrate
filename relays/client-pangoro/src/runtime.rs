@@ -109,7 +109,7 @@ impl sp_runtime::traits::Dispatchable for Call {
 /// Feemarket call
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
 #[allow(non_camel_case_types)]
-enum FeemarketCall {
+pub enum FeemarketCall {
 	#[codec(index = 0)]
 	enroll_and_lock_collateral(bp_pangoro::Balance, Option<bp_pangoro::Balance>),
 	#[codec(index = 1)]
