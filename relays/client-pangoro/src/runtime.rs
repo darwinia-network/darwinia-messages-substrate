@@ -26,6 +26,9 @@ pub enum Call {
 	/// Bridge pangolin messages pallet
 	#[codec(index = 17)]
 	BridgePangolinMessages(BridgePangolinMessagesCall),
+	/// Feemarket pallet
+	#[codec(index = 22)]
+	Feemarket(FeemarketCall),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
@@ -101,4 +104,22 @@ impl sp_runtime::traits::Dispatchable for Call {
 	fn dispatch(self, _origin: Self::Origin) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
 		unimplemented!("The Call is not expected to be dispatched.")
 	}
+}
+
+/// Feemarket call
+#[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
+#[allow(non_camel_case_types)]
+enum FeemarketCall {
+	#[codec(index = 0)]
+	enroll_and_lock_collateral(bp_pangoro::Balance, Option<bp_pangoro::Balance>),
+	#[codec(index = 1)]
+	update_locked_collateral(bp_pangoro::Balance),
+	#[codec(index = 2)]
+	update_relay_fee(bp_pangoro::Balance),
+	#[codec(index = 3)]
+	cancel_enrollment(),
+	#[codec(index = 4)]
+	set_slash_protect(bp_pangoro::Balance),
+	#[codec(index = 5)]
+	set_assigned_relayers_number(u32),
 }
