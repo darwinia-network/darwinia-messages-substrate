@@ -7171,8 +7171,11 @@ dependencies = [
 name = "relay-darwinia-client"
 version = "0.1.0"
 dependencies = [
+ "bp-crab",
+ "bp-darwinia",
  "bp-darwinia-core",
  "bp-header-chain",
+ "bp-kusama",
  "bp-message-dispatch",
  "bp-messages",
  "bp-runtime",
