@@ -18,6 +18,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod lanes;
 pub mod messages;
 pub mod messages_api;
 pub mod messages_benchmarking;
