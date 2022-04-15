@@ -61,7 +61,7 @@ pub enum BridgePangolinGrandpaCall {
 #[allow(non_camel_case_types)]
 pub enum BridgePangolinMessagesCall {
 	#[codec(index = 2)]
-	update_pallet_parameter(BridgePolkadotMessagesParameter),
+	update_pallet_parameter(BridgePangolinMessagesParameter),
 	#[codec(index = 3)]
 	send_message(
 		LaneId,
@@ -90,9 +90,9 @@ pub enum BridgePangolinMessagesCall {
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
-pub enum BridgePolkadotMessagesParameter {
+pub enum BridgePangolinMessagesParameter {
 	#[codec(index = 0)]
-	PolkadotToKusamaConversionRate(FixedU128),
+	PangoroToPangolinConversionRate(FixedU128),
 }
 
 impl sp_runtime::traits::Dispatchable for Call {
