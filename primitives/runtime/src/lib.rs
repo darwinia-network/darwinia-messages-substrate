@@ -60,6 +60,12 @@ pub const ROCOCO_CHAIN_ID: ChainId = *b"roco";
 /// Bridge-with-Wococo instance id.
 pub const WOCOCO_CHAIN_ID: ChainId = *b"woco";
 
+/// Bridge-with-Darwinia instance id.
+pub const DARWINIA_CHAIN_ID: ChainId = *b"darw";
+
+/// Bridge-with-Crab instance id.
+pub const CRAB_CHAIN_ID: ChainId = *b"crab";
+
 /// Bridge-with-Pangoro instance id.
 pub const PANGORO_CHAIN_ID: ChainId = *b"pagr";
 
