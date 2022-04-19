@@ -3,13 +3,13 @@ use frame_support::weights::Weight;
 use scale_info::TypeInfo;
 use sp_runtime::FixedU128;
 
+use bp_darwinia::Balance;
 use bp_darwinia_core::DarwiniaLike;
 use bp_messages::{LaneId, UnrewardedRelayersState};
-use bp_pangoro::Balance;
 use bp_runtime::Chain;
 
-/// Unchecked pangoro extrinsic.
-pub type UncheckedExtrinsic = bp_pangoro::UncheckedExtrinsic<Call>;
+/// Unchecked darwinia extrinsic.
+pub type UncheckedExtrinsic = bp_darwinia::UncheckedExtrinsic<Call>;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
@@ -20,14 +20,14 @@ pub enum Call {
 	/// Balances pallet.
 	#[codec(index = 4)]
 	Balances(BalancesCall),
-	/// Bridge pangolin grandpa pallet.
-	#[codec(index = 19)]
-	BridgePangolinGrandpa(BridgePangolinGrandpaCall),
-	/// Bridge pangolin messages pallet
-	#[codec(index = 17)]
-	BridgePangolinMessages(BridgePangolinMessagesCall),
+	/// Bridge crab grandpa pallet.
+	#[codec(index = 43)]
+	BridgeCrabGrandpa(BridgeCrabGrandpaCall),
+	/// Bridge crab messages pallet
+	#[codec(index = 44)]
+	BridgeCrabMessages(BridgeCrabMessagesCall),
 	/// Feemarket pallet
-	#[codec(index = 22)]
+	#[codec(index = 45)]
 	Feemarket(FeemarketCall),
 }
 
@@ -42,12 +42,12 @@ pub enum SystemCall {
 #[allow(non_camel_case_types)]
 pub enum BalancesCall {
 	#[codec(index = 0)]
-	transfer(bp_pangoro::Address, Compact<Balance>),
+	transfer(bp_darwinia::Address, Compact<Balance>),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
 #[allow(non_camel_case_types)]
-pub enum BridgePangolinGrandpaCall {
+pub enum BridgeCrabGrandpaCall {
 	#[codec(index = 0)]
 	submit_finality_proof(
 		Box<<DarwiniaLike as Chain>::Header>,
@@ -59,40 +59,40 @@ pub enum BridgePangolinGrandpaCall {
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
 #[allow(non_camel_case_types)]
-pub enum BridgePangolinMessagesCall {
+pub enum BridgeCrabMessagesCall {
 	#[codec(index = 2)]
-	update_pallet_parameter(BridgePangolinMessagesParameter),
+	update_pallet_parameter(BridgeCrabMessagesParameter),
 	#[codec(index = 3)]
 	send_message(
 		LaneId,
 		bp_message_dispatch::MessagePayload<
-			bp_pangoro::AccountId,
-			bp_pangolin::AccountId,
-			bp_pangolin::AccountPublic,
+			bp_darwinia::AccountId,
+			bp_crab::AccountId,
+			bp_crab::AccountPublic,
 			Vec<u8>,
 		>,
-		bp_pangoro::Balance,
+		bp_darwinia::Balance,
 	),
 	#[codec(index = 5)]
 	receive_messages_proof(
-		bp_pangolin::AccountId,
-		bridge_runtime_common::messages::target::FromBridgedChainMessagesProof<bp_pangolin::Hash>,
+		bp_crab::AccountId,
+		bridge_runtime_common::messages::target::FromBridgedChainMessagesProof<bp_crab::Hash>,
 		u32,
 		Weight,
 	),
 	#[codec(index = 6)]
 	receive_messages_delivery_proof(
 		bridge_runtime_common::messages::source::FromBridgedChainMessagesDeliveryProof<
-			bp_pangolin::Hash,
+			bp_crab::Hash,
 		>,
 		UnrewardedRelayersState,
 	),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
-pub enum BridgePangolinMessagesParameter {
+pub enum BridgeCrabMessagesParameter {
 	#[codec(index = 0)]
-	PangoroToPangolinConversionRate(FixedU128),
+	DarwiniaToCrabConversionRate(FixedU128),
 }
 
 impl sp_runtime::traits::Dispatchable for Call {
@@ -111,15 +111,15 @@ impl sp_runtime::traits::Dispatchable for Call {
 #[allow(non_camel_case_types)]
 pub enum FeemarketCall {
 	#[codec(index = 0)]
-	enroll_and_lock_collateral(bp_pangoro::Balance, Option<bp_pangoro::Balance>),
+	enroll_and_lock_collateral(bp_darwinia::Balance, Option<bp_darwinia::Balance>),
 	#[codec(index = 1)]
-	update_locked_collateral(bp_pangoro::Balance),
+	update_locked_collateral(bp_darwinia::Balance),
 	#[codec(index = 2)]
-	update_relay_fee(bp_pangoro::Balance),
+	update_relay_fee(bp_darwinia::Balance),
 	#[codec(index = 3)]
 	cancel_enrollment(),
 	#[codec(index = 4)]
-	set_slash_protect(bp_pangoro::Balance),
+	set_slash_protect(bp_darwinia::Balance),
 	#[codec(index = 5)]
 	set_assigned_relayers_number(u32),
 }
