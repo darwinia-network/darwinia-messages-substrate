@@ -2,7 +2,7 @@
 authors = ["Darwinia Network <hello@darwinia.network>"]
 edition = "2021"
 license = "GPL-3.0"
-name    = "relay-pangolin-client"
+name    = "relay-pangolin-parachain-client"
 version = "0.1.0"
 
 
@@ -22,7 +22,6 @@ pallet-bridge-dispatch = { path = "../../modules/dispatch" }
 bp-darwinia-core      = { path = "../../primitives/darwinia-core" }
 bp-pangolin           = { path = "../../primitives/chain-pangolin" }
 bp-pangolin-parachain = { path = "../../primitives/chain-pangolin-parachain" }
-bp-pangoro            = { path = "../../primitives/chain-pangoro" }
 bp-rococo             = { path = "../../primitives/chain-rococo" }
 
 ## Substrate Dependencies
