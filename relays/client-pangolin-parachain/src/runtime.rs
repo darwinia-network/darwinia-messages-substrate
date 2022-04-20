@@ -28,7 +28,7 @@ pub enum Call {
 	BridgePangolinMessages(BridgePangolinMessagesCall),
 	/// Feemarket pallet
 	#[codec(index = 23)]
-	Feemarket(FeemarketCall),
+	PangolinFeemarket(FeemarketCall),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]

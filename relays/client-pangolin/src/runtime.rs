@@ -32,9 +32,12 @@ pub enum Call {
 	/// Bridge pangolin parachain messages pallet
 	#[codec(index = 63)]
 	BridgePangolinParachainMessages(BridgePangolinParachainMessagesCall),
-	/// Feemarket pallet
+	/// Pangoro feemarket pallet
 	#[codec(index = 53)]
-	Feemarket(FeemarketCall),
+	PangoroFeemarket(FeemarketCall),
+	/// Pangolin parachain feemarket pallet
+	#[codec(index = 64)]
+	PangolinParachainFeemarket(FeemarketCall),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
