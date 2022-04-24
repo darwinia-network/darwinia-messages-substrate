@@ -29,7 +29,7 @@ mod tests;
 pub mod weight;
 pub use weight::WeightInfo;
 
-pub mod s2s;
+// pub mod s2s;
 pub mod types;
 
 // --- paritytech ---
@@ -47,7 +47,6 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 // --- darwinia-network ---
-use darwinia_support::balance::LockFor;
 use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
@@ -136,12 +135,12 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId,
 		Relayer<T::AccountId, RingBalance<T, I>>,
-		ValueQuery,
+		OptionQuery,
 	>;
 	#[pallet::storage]
 	#[pallet::getter(fn relayers)]
 	pub type Relayers<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+		StorageValue<_, Vec<T::AccountId>, OptionQuery>;
 
 	// Priority relayers storage
 	#[pallet::storage]
@@ -175,6 +174,8 @@ pub mod pallet {
 	}
 
 	#[pallet::pallet]
+	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T, I = ()>(_);
 
 	#[pallet::hooks]
@@ -217,7 +218,7 @@ pub mod pallet {
 			T::RingCurrency::set_lock(
 				T::LockId::get(),
 				&who,
-				LockFor::Common { amount: lock_collateral },
+				lock_collateral,
 				WithdrawReasons::all(),
 			);
 			// Store enrollment detail information.
@@ -245,11 +246,11 @@ pub mod pallet {
 			);
 
 			// Increase the locked collateral
-			if new_collateral >= Self::relayer(&who).collateral {
+			if new_collateral >= Self::relayer_locked_collateral(&who) {
 				T::RingCurrency::set_lock(
 					T::LockId::get(),
 					&who,
-					LockFor::Common { amount: new_collateral },
+					new_collateral,
 					WithdrawReasons::all(),
 				);
 			} else {
@@ -264,14 +265,16 @@ pub mod pallet {
 					T::RingCurrency::set_lock(
 						T::LockId::get(),
 						&who,
-						LockFor::Common { amount: new_collateral },
+						new_collateral,
 						WithdrawReasons::all(),
 					);
 				}
 			}
 
 			<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
-				relayer.collateral = new_collateral;
+				if let Some(ref mut r) = relayer {
+					r.collateral = new_collateral;
+				}
 			});
 			Self::update_market();
 			Self::deposit_event(Event::<T, I>::UpdateLockedCollateral(who, new_collateral));
@@ -290,7 +293,9 @@ pub mod pallet {
 			ensure!(new_fee >= T::MinimumRelayFee::get(), <Error<T, I>>::RelayFeeTooLow);
 
 			<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
-				relayer.fee = new_fee;
+				if let Some(ref mut r) = relayer {
+					r.fee = new_fee;
+				}
 			});
 
 			Self::update_market();
@@ -350,11 +355,16 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// - The order didn't confirm in-time, slash occurred.
 	pub(crate) fn update_market() {
 		// Sort all enrolled relayers who are able to accept orders.
-		let mut relayers: Vec<Relayer<T::AccountId, RingBalance<T, I>>> = <Relayers<T, I>>::get()
-			.iter()
-			.map(RelayersMap::<T, I>::get)
-			.filter(|r| Self::usable_order_capacity(&r.id) >= 1)
-			.collect();
+		let mut relayers: Vec<Relayer<T::AccountId, RingBalance<T, I>>> = Vec::new();
+		if let Some(ids) = <Relayers<T, I>>::get() {
+			for id in ids.iter() {
+				if let Some(r) = RelayersMap::<T, I>::get(id) {
+					if Self::usable_order_capacity(&r.id) >= 1 {
+						relayers.push(r)
+					}
+				}
+			}
+		}
 
 		// Select the first `AssignedRelayersNumber` relayers as AssignedRelayer.
 		let assigned_relayers_len = <AssignedRelayersNumber<T, I>>::get() as usize;
@@ -377,16 +387,12 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		new_collateral: RingBalance<T, I>,
 		report: SlashReport<T::AccountId, T::BlockNumber, RingBalance<T, I>>,
 	) {
-		T::RingCurrency::set_lock(
-			T::LockId::get(),
-			&who,
-			LockFor::Common { amount: new_collateral },
-			WithdrawReasons::all(),
-		);
+		T::RingCurrency::set_lock(T::LockId::get(), &who, new_collateral, WithdrawReasons::all());
 		<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
-			relayer.collateral = new_collateral;
+			if let Some(ref mut r) = relayer {
+				r.collateral = new_collateral;
+			}
 		});
-
 		Self::update_market();
 		Self::deposit_event(<Event<T, I>>::FeeMarketSlash(report));
 	}
@@ -396,7 +402,11 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		T::RingCurrency::remove_lock(T::LockId::get(), who);
 
 		<RelayersMap<T, I>>::remove(who.clone());
-		<Relayers<T, I>>::mutate(|relayers| relayers.retain(|x| x != who));
+		<Relayers<T, I>>::mutate(|relayers| {
+			if let Some(ref mut r) = relayers {
+				r.retain(|x| x != who)
+			}
+		});
 		<AssignedRelayers<T, I>>::mutate(|assigned_relayers| {
 			if let Some(relayers) = assigned_relayers {
 				relayers.retain(|x| x.id != *who);
@@ -407,7 +417,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 	/// Whether the relayer has enrolled
 	pub(crate) fn is_enrolled(who: &T::AccountId) -> bool {
-		<Relayers<T, I>>::get().iter().any(|r| *r == *who)
+		<Relayers<T, I>>::get().map_or(false, |rs| rs.iter().any(|r| *r == *who))
 	}
 
 	/// Get market fee, If there is not enough relayers have order capacity to accept new order,
@@ -419,6 +429,11 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// Get order indexes in the storage
 	pub fn in_process_orders() -> Vec<(LaneId, MessageNonce)> {
 		Orders::<T, I>::iter().map(|(k, _v)| k).collect()
+	}
+
+	/// Get the relayer locked collateral value
+	pub fn relayer_locked_collateral(who: &T::AccountId) -> RingBalance<T, I> {
+		RelayersMap::<T, I>::get(who).map_or(RingBalance::<T, I>::zero(), |r| r.collateral)
 	}
 
 	/// Whether the enrolled relayer is occupied(Responsible for order relaying)
@@ -444,12 +459,13 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// The relayer collateral is composed of two part: fee_collateral and orders_locked_collateral.
 	/// Calculate the order capacity with fee_collateral
 	pub(crate) fn usable_order_capacity(who: &T::AccountId) -> u32 {
+		let relayer_locked_collateral = Self::relayer_locked_collateral(&who);
 		if let Some((_, orders_locked_collateral)) = Self::occupied(&who) {
 			let free_collateral =
-				Self::relayer(who).collateral.saturating_sub(orders_locked_collateral);
+				relayer_locked_collateral.saturating_sub(orders_locked_collateral);
 			return Self::collateral_to_order_capacity(free_collateral)
 		}
-		Self::collateral_to_order_capacity(Self::relayer(who).collateral)
+		Self::collateral_to_order_capacity(relayer_locked_collateral)
 	}
 
 	fn collateral_to_order_capacity(collateral: RingBalance<T, I>) -> u32 {
