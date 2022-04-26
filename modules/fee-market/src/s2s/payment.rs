@@ -64,13 +64,13 @@ where
 				// if we'll accept some message that has declared that the `fee` has been paid but
 				// it isn't actually paid, then it'll lead to problems with delivery confirmation
 				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
-				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE);
+				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE)
 			},
 			None => {
 				// message lane verifier has accepted the message before, so this message
 				// is unpaid **by design**
 				// => let's just do nothing
-				return Ok(());
+				return Ok(())
 			},
 		};
 
@@ -122,7 +122,8 @@ where
 	}
 }
 
-/// Slash and calculate rewards for messages_relayers, confirmation relayers, treasury, assigned_relayers
+/// Slash and calculate rewards for messages_relayers, confirmation relayers, treasury,
+/// assigned_relayers
 pub fn slash_and_calculate_rewards<T, I>(
 	lane_id: LaneId,
 	messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
@@ -143,10 +144,12 @@ where
 		let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
 
 		for message_nonce in nonce_begin..nonce_end + 1 {
-			// The order created when message was accepted, so we can always get the order info below.
+			// The order created when message was accepted, so we can always get the order info
+			// below.
 			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
-				// The confirm_time of the order is set in the `OnDeliveryConfirmed` callback. And the callback function
-				// was called as source chain received message delivery proof, before the reward payment.
+				// The confirm_time of the order is set in the `OnDeliveryConfirmed` callback. And
+				// the callback function was called as source chain received message delivery proof,
+				// before the reward payment.
 				let order_confirm_time =
 					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
 				let message_fee = order.fee();
@@ -254,7 +257,7 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 				report,
 			);
 			log::trace!("Slash {:?} amount: {:?}", who, amount);
-			return amount;
+			return amount
 		},
 		Err(e) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
@@ -272,7 +275,7 @@ pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 	reward: RingBalance<T, I>,
 ) {
 	if reward.is_zero() {
-		return;
+		return
 	}
 
 	let pay_result = <T as Config<I>>::RingCurrency::transfer(
