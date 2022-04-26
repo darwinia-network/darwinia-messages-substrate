@@ -132,7 +132,7 @@ where
 	pub fn delivery_delay(&self) -> Option<BlockNumber> {
 		if let (Some(confirm_time), Some(range_end)) = (self.confirm_time, self.range_end()) {
 			if confirm_time > range_end {
-				return Some(confirm_time - range_end)
+				return Some(confirm_time - range_end);
 			}
 		}
 		None
@@ -144,7 +144,7 @@ where
 	) -> Option<(AccountId, Balance)> {
 		for prior_relayer in self.relayers.iter() {
 			if prior_relayer.valid_range.contains(&message_confirm_time) {
-				return Some((prior_relayer.id.clone(), prior_relayer.fee))
+				return Some((prior_relayer.id.clone(), prior_relayer.fee));
 			}
 		}
 		None
@@ -157,7 +157,7 @@ where
 	{
 		for prior_relayer in self.relayers.iter() {
 			if prior_relayer.id == id {
-				return Some(prior_relayer.valid_range.clone())
+				return Some(prior_relayer.valid_range.clone());
 			}
 		}
 		None

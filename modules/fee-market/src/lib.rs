@@ -29,7 +29,7 @@ mod tests;
 pub mod weight;
 pub use weight::WeightInfo;
 
-// pub mod s2s;
+pub mod s2s;
 pub mod types;
 
 // --- paritytech ---
@@ -451,7 +451,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		}
 
 		if count == 0 {
-			return None
+			return None;
 		}
 		Some((count, orders_locked_collateral))
 	}
@@ -463,7 +463,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		if let Some((_, orders_locked_collateral)) = Self::occupied(&who) {
 			let free_collateral =
 				relayer_locked_collateral.saturating_sub(orders_locked_collateral);
-			return Self::collateral_to_order_capacity(free_collateral)
+			return Self::collateral_to_order_capacity(free_collateral);
 		}
 		Self::collateral_to_order_capacity(relayer_locked_collateral)
 	}

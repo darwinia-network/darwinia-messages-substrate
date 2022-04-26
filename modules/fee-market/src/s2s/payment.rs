@@ -18,7 +18,7 @@
 
 // --- paritytech ---
 use bp_messages::{
-	source_chain::{MessageDeliveryAndDispatchPayment, Sender},
+	source_chain::{MessageDeliveryAndDispatchPayment, SenderOrigin},
 	MessageNonce, UnrewardedRelayer,
 };
 use frame_support::{
@@ -33,35 +33,49 @@ use sp_std::{
 // --- darwinia-network ---
 use crate::{Config, Orders, Pallet, *};
 
+/// Error that occurs when message fee is non-zero, but payer is not defined.
+const NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE: &str =
+	"Non-zero message fee can't be paid by <None>";
+
 pub struct FeeMarketPayment<T, I, Currency, RootAccount> {
 	_phantom: sp_std::marker::PhantomData<(T, I, Currency, RootAccount)>,
 }
 
-impl<T, I, Currency, RootAccount> MessageDeliveryAndDispatchPayment<T::AccountId, RingBalance<T, I>>
+impl<T, I, Currency, RootAccount>
+	MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, RingBalance<T, I>>
 	for FeeMarketPayment<T, I, Currency, RootAccount>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
+	T::Origin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId>,
 	RootAccount: Get<Option<T::AccountId>>,
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &Sender<T::AccountId>,
+		submitter: &T::Origin,
 		fee: &RingBalance<T, I>,
 		relayer_fund_account: &T::AccountId,
 	) -> Result<(), Self::Error> {
-		let root_account = RootAccount::get();
-		let account = match submitter {
-			Sender::Signed(submitter) => submitter,
-			Sender::Root | Sender::None => root_account
-				.as_ref()
-				.ok_or("Sending messages using Root or None origin is disallowed.")?,
+		let submitter_account = match submitter.linked_account() {
+			Some(submitter_account) => submitter_account,
+			None if !fee.is_zero() => {
+				// if we'll accept some message that has declared that the `fee` has been paid but
+				// it isn't actually paid, then it'll lead to problems with delivery confirmation
+				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
+				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE);
+			},
+			None => {
+				// message lane verifier has accepted the message before, so this message
+				// is unpaid **by design**
+				// => let's just do nothing
+				return Ok(());
+			},
 		};
 
 		<T as Config<I>>::RingCurrency::transfer(
-			account,
+			&submitter_account,
 			relayer_fund_account,
 			*fee,
 			// it's fine for the submitter to go below Existential Deposit and die.
@@ -90,11 +104,7 @@ where
 		);
 
 		// Pay confirmation relayer rewards
-		do_reward::<T, I>(
-			relayer_fund_account,
-			confirmation_relayer,
-			confirmation_relayer_rewards,
-		);
+		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirmation_relayer_rewards);
 		// Pay messages relayers rewards
 		for (relayer, reward) in messages_relayers_rewards {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
@@ -137,9 +147,8 @@ where
 			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
 				// The confirm_time of the order is set in the `OnDeliveryConfirmed` callback. And the callback function
 				// was called as source chain received message delivery proof, before the reward payment.
-				let order_confirm_time = order
-					.confirm_time
-					.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
+				let order_confirm_time =
+					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
 				let message_fee = order.fee();
 
 				let message_reward;
@@ -224,7 +233,7 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 	amount: RingBalance<T, I>,
 	report: SlashReport<T::AccountId, T::BlockNumber, RingBalance<T, I>>,
 ) -> RingBalance<T, I> {
-	let locked_collateral = Pallet::<T, I>::relayer(&who).collateral;
+	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(&who);
 	T::RingCurrency::remove_lock(T::LockId::get(), &who);
 	debug_assert!(
 		locked_collateral >= amount,
@@ -246,11 +255,11 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 			);
 			log::trace!("Slash {:?} amount: {:?}", who, amount);
 			return amount;
-		}
+		},
 		Err(e) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
 			log::error!("Slash {:?} amount {:?}, err {:?}", who, amount, e)
-		}
+		},
 	}
 
 	RingBalance::<T, I>::zero()
@@ -276,13 +285,7 @@ pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 
 	match pay_result {
 		Ok(_) => log::trace!("Reward, from {:?} to {:?} reward: {:?}", from, to, reward),
-		Err(e) => log::error!(
-			"Reward, from {:?} to {:?} reward {:?}: {:?}",
-			from,
-			to,
-			reward,
-			e,
-		),
+		Err(e) => log::error!("Reward, from {:?} to {:?} reward {:?}: {:?}", from, to, reward, e,),
 	}
 }
 

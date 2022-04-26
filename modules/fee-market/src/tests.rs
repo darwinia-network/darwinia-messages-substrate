@@ -187,8 +187,9 @@ pub enum TestMessagesParameter {
 impl MessagesParameter for TestMessagesParameter {
 	fn save(&self) {
 		match *self {
-			TestMessagesParameter::TokenConversionRate(conversion_rate) =>
-				TokenConversionRate::set(&conversion_rate),
+			TestMessagesParameter::TokenConversionRate(conversion_rate) => {
+				TokenConversionRate::set(&conversion_rate)
+			},
 		}
 	}
 }
@@ -233,10 +234,10 @@ impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
 	) -> Result<(), Self::Error> {
 		if let Some(market_fee) = FeeMarket::market_fee() {
 			if *delivery_and_dispatch_fee < market_fee {
-				return Err(TEST_ERROR)
+				return Err(TEST_ERROR);
 			}
 		} else {
-			return Err(TEST_ERROR)
+			return Err(TEST_ERROR);
 		}
 		Ok(())
 	}
@@ -275,7 +276,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
 		if frame_support::storage::unhashed::get(b":reject-message-fee:") == Some(true) {
-			return Err(TEST_ERROR)
+			return Err(TEST_ERROR);
 		}
 
 		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();
@@ -409,8 +410,9 @@ impl pallet_bridge_messages::Config for Test {
 impl SenderOrigin<AccountId> for Origin {
 	fn linked_account(&self) -> Option<AccountId> {
 		match self.caller {
-			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
-				Some(submitter.clone()),
+			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) => {
+				Some(submitter.clone())
+			},
 			_ => None,
 		}
 	}
