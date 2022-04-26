@@ -54,7 +54,7 @@ pub type Pangolin = DarwiniaLike;
 pub const WITH_PANGOLIN_GRANDPA_PALLET_NAME: &str = "BridgePangolinGrandpa";
 /// Name of the With-Pangolin messages pallet instance that is deployed at bridged chains.
 pub const WITH_PANGOLIN_MESSAGES_PALLET_NAME: &str = "BridgePangolinMessages";
-/// Name of the With-Pangolin parachains bridge pallet name in the Pangolin runtime.
+/// Name of the parachain pallet name in the Rococo.
 pub const BRIDGE_PARAS_PALLET_NAME: &str = "Paras";
 
 /// Name of the `PangolinFinalityApi::best_finalized` runtime method.
