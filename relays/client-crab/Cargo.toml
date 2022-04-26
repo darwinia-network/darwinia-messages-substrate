@@ -19,12 +19,12 @@ bp-runtime             = { path = "../../primitives/runtime" }
 bridge-runtime-common  = { path = "../../bin/runtime-common" }
 pallet-bridge-dispatch = { path = "../../modules/dispatch" }
 
-bp-darwinia-core = { path = "../../primitives/darwinia-core" }
-bp-darwinia      = { path = "../../primitives/chain-darwinia" }
 bp-crab          = { path = "../../primitives/chain-crab" }
+bp-darwinia      = { path = "../../primitives/chain-darwinia" }
+bp-darwinia-core = { path = "../../primitives/darwinia-core" }
 bp-kusama        = { path = "../../primitives/chain-kusama" }
 
 ## Substrate Dependencies
-frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
-sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
-sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.1" }
+frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
