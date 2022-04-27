@@ -40,7 +40,10 @@ use frame_support::{
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
+	traits::{
+		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating,
+		Zero,
+	},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
 use sp_std::{
@@ -443,9 +446,14 @@ pub mod source {
 	/// This function is used when Bridged chain is using parachain finality. For Bridged
 	/// chains with direct GRANDPA finality, please use the `verify_messages_delivery_proof`.
 	///
-	/// This function currently only supports parachains, which are using header type that implements
-	/// `sp_runtime::traits::Header` trait.
-	pub fn verify_messages_delivery_proof_from_parachain<B, BridgedHeader, ThisRuntime, ParachainsInstance: 'static>(
+	/// This function currently only supports parachains, which are using header type that
+	/// implements `sp_runtime::traits::Header` trait.
+	pub fn verify_messages_delivery_proof_from_parachain<
+		B,
+		BridgedHeader,
+		ThisRuntime,
+		ParachainsInstance: 'static,
+	>(
 		bridged_parachain: ParaId,
 		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
 	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
@@ -475,7 +483,10 @@ pub mod source {
 		// Messages delivery proof is just proof of single storage key read => any error
 		// is fatal.
 		let storage_inbound_lane_data_key =
-			pallet_bridge_messages::storage_keys::inbound_lane_data_key(B::BRIDGED_MESSAGES_PALLET_NAME, &lane);
+			pallet_bridge_messages::storage_keys::inbound_lane_data_key(
+				B::BRIDGED_MESSAGES_PALLET_NAME,
+				&lane,
+			);
 		let raw_inbound_lane_data = storage
 			.read_value(storage_inbound_lane_data_key.0.as_ref())
 			.map_err(|_| "Failed to read inbound lane state from storage proof")?
@@ -688,9 +699,14 @@ pub mod target {
 	/// outside of this function. This function only verifies that the proof declares exactly
 	/// `messages_count` messages.
 	///
-	/// This function currently only supports parachains, which are using header type that implements
-	/// `sp_runtime::traits::Header` trait.
-	pub fn verify_messages_proof_from_parachain<B, BridgedHeader, ThisRuntime, ParachainsInstance: 'static>(
+	/// This function currently only supports parachains, which are using header type that
+	/// implements `sp_runtime::traits::Header` trait.
+	pub fn verify_messages_proof_from_parachain<
+		B,
+		BridgedHeader,
+		ThisRuntime,
+		ParachainsInstance: 'static,
+	>(
 		bridged_parachain: ParaId,
 		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
 		messages_count: u32,
