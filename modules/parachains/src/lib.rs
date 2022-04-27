@@ -212,8 +212,10 @@ pub mod pallet {
 			decode_state_root: impl FnOnce(ParaHead) -> Option<ParaHash>,
 			parse: impl FnOnce(bp_runtime::StorageProofChecker<ParaHasher>) -> R,
 		) -> Result<R, sp_runtime::DispatchError> {
-			let para_head = Self::parachain_head(parachain, hash).ok_or(Error::<T, I>::UnknownParaHead)?;
-			let state_root = decode_state_root(para_head).ok_or(Error::<T, I>::FailedToExtractStateRoot)?;
+			let para_head =
+				Self::parachain_head(parachain, hash).ok_or(Error::<T, I>::UnknownParaHead)?;
+			let state_root =
+				decode_state_root(para_head).ok_or(Error::<T, I>::FailedToExtractStateRoot)?;
 			let storage_proof_checker =
 				bp_runtime::StorageProofChecker::new(state_root, storage_proof)
 					.map_err(|_| Error::<T, I>::StorageRootMismatch)?;
@@ -414,10 +416,8 @@ mod tests {
 
 	#[test]
 	fn imports_initial_parachain_heads() {
-		let (state_root, proof) = prepare_parachain_heads_proof(vec![
-			(1, head_data(1, 0)),
-			(3, head_data(3, 10)),
-		]);
+		let (state_root, proof) =
+			prepare_parachain_heads_proof(vec![(1, head_data(1, 0)), (3, head_data(3, 10))]);
 		run_test(|| {
 			initialize(state_root);
 
@@ -458,10 +458,8 @@ mod tests {
 
 	#[test]
 	fn imports_parachain_heads_is_able_to_progress() {
-		let (state_root_5, proof_5) =
-			prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
-		let (state_root_10, proof_10) =
-			prepare_parachain_heads_proof(vec![(1, head_data(1, 10))]);
+		let (state_root_5, proof_5) = prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
+		let (state_root_10, proof_10) = prepare_parachain_heads_proof(vec![(1, head_data(1, 10))]);
 		run_test(|| {
 			// start with relay block #0 and import head#5 of parachain#1
 			initialize(state_root_5);
@@ -524,10 +522,8 @@ mod tests {
 
 	#[test]
 	fn does_nothing_when_already_imported_head_at_better_relay_header() {
-		let (state_root_5, proof_5) =
-			prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
-		let (state_root_10, proof_10) =
-			prepare_parachain_heads_proof(vec![(1, head_data(1, 10))]);
+		let (state_root_5, proof_5) = prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
+		let (state_root_10, proof_10) = prepare_parachain_heads_proof(vec![(1, head_data(1, 10))]);
 		run_test(|| {
 			// start with relay block #0
 			initialize(state_root_5);
@@ -565,8 +561,7 @@ mod tests {
 
 			// import exactly `HeadsToKeep` headers
 			for i in 0..heads_to_keep {
-				let (state_root, proof) =
-					prepare_parachain_heads_proof(vec![(1, head_data(1, i))]);
+				let (state_root, proof) = prepare_parachain_heads_proof(vec![(1, head_data(1, i))]);
 				if i == 0 {
 					initialize(state_root);
 				} else {
@@ -615,8 +610,7 @@ mod tests {
 
 	#[test]
 	fn fails_on_invalid_storage_proof() {
-		let (_state_root, proof) =
-			prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
+		let (_state_root, proof) = prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
 		run_test(|| {
 			// start with relay block #0
 			initialize(Default::default());
