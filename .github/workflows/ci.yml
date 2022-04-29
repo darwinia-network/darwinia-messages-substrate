@@ -2,9 +2,9 @@ name: Check pull request
 
 on:
   push:
-    branches: [main]
+    branches: [main, darwinia-v*, polkadot-v*]
   pull_request:
-    branches: [main]
+    branches: [main, darwinia-v*, polkadot-v*]
 
 jobs:
   check-code:
