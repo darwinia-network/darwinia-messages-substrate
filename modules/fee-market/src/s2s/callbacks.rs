@@ -41,7 +41,7 @@ impl<T: Config> OnMessageAccepted for FeeMarketMessageAcceptedHandler<T> {
 				T::Slot::get(),
 			);
 			// Store the create order
-			<Orders<T>>::insert((order.lane, order.message), order.clone());
+			<Orders<T>>::insert((order.lane, order.message), order);
 		}
 
 		// one read for assigned relayers

@@ -226,7 +226,7 @@ impl DeliveredMessages {
 	/// dispatch result.
 	pub fn new(nonce: MessageNonce, dispatch_result: bool) -> Self {
 		let mut dispatch_results = BitVec::with_capacity(1);
-		dispatch_results.push(if dispatch_result { true } else { false });
+		dispatch_results.push(dispatch_result);
 		DeliveredMessages { begin: nonce, end: nonce, dispatch_results }
 	}
 
