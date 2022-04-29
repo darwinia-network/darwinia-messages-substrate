@@ -2,9 +2,9 @@ name: Check pull request
 
 on:
   push:
-    branches: [main]
+    branches: [main, darwinia-v*]
   pull_request:
-    branches: [main]
+    branches: [main, darwinia-v*]
 
 jobs:
   check-code:
@@ -20,6 +20,7 @@ jobs:
           - pallet-fee-market
           - pallet-bridge-grandpa
           - pallet-bridge-messages
+          - pallet-bridge-parachains
           - bp-pangolin
           - bp-pangoro
           - bp-pangolin-parachain
