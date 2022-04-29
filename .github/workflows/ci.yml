@@ -28,6 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check ${{ matrix.package }}
-        run: cargo check -p
+        run: cargo check -p ${{ matrix.package }}
       - name: Test ${{ matrix.package }}
-        run: cargo test
+        run: cargo test -p ${{ matrix.package }}
