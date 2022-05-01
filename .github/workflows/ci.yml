@@ -1,0 +1,40 @@
+name: Check pull request
+
+on:
+  push:
+    branches: [main, darwinia-v*, polkadot-v*]
+  pull_request:
+    branches: [main, darwinia-v*, polkadot-v*]
+
+jobs:
+  check-code:
+    name: Check code
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        package:
+          - pallet-bridge-dispatch
+          - pallet-fee-market-rpc-runtime-api
+          - pallet-fee-market-rpc
+          - pallet-fee-market
+          - pallet-bridge-grandpa
+          - pallet-bridge-messages
+          - pallet-bridge-parachains
+          - bp-pangolin
+          - bp-pangoro
+          - bp-pangolin-parachain
+          - bp-rococo
+          - bp-darwinia-core
+          - relay-darwinia-client
+          - relay-crab-client
+          - relay-pangolin-client
+          - relay-pangolin-parachain-client
+          - relay-pangoro-client
+          - relay-rococo-client
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check ${{ matrix.package }}
+        run: cargo check -p ${{ matrix.package }}
+      - name: Test ${{ matrix.package }}
+        run: cargo test -p ${{ matrix.package }}
