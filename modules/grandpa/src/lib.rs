@@ -620,7 +620,7 @@ pub fn initialize_for_benchmarks<T: Config<I>, I: 'static>(header: BridgedHeader
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::mock::{run_test, test_header, Origin, TestHeader, TestNumber, TestRuntime};
+	use crate::mock::{run_test, test_header, Origin, TestHash, TestHeader, TestNumber, TestRuntime};
 	use bp_test_utils::{
 		authority_list, make_default_justification, make_justification_for_header,
 		JustificationGeneratorParams, ALICE, BOB,
@@ -670,17 +670,17 @@ mod tests {
 		let _ = Pallet::<TestRuntime>::on_initialize(current_number);
 	}
 
-	fn change_log(delay: u64) -> Digest {
+	fn change_log(delay: u64) -> Digest<TestHash> {
 		let consensus_log =
 			ConsensusLog::<TestNumber>::ScheduledChange(sp_finality_grandpa::ScheduledChange {
 				next_authorities: vec![(ALICE.into(), 1), (BOB.into(), 1)],
 				delay,
 			});
 
-		Digest { logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())] }
+		Digest::<TestHash> { logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())] }
 	}
 
-	fn forced_change_log(delay: u64) -> Digest {
+	fn forced_change_log(delay: u64) -> Digest<TestHash> {
 		let consensus_log = ConsensusLog::<TestNumber>::ForcedChange(
 			delay,
 			sp_finality_grandpa::ScheduledChange {
@@ -689,7 +689,7 @@ mod tests {
 			},
 		);
 
-		Digest { logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())] }
+		Digest::<TestHash> { logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())] }
 	}
 
 	#[test]
