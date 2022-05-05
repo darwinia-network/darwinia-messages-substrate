@@ -454,7 +454,7 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 
 	type Slasher = TestSlasher;
-	type RingCurrency = Ring;
+	type Currency = Ring;
 	type Event = Event;
 	type WeightInfo = ();
 }

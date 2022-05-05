@@ -72,7 +72,7 @@ where
 			},
 		};
 
-		<T as Config<I>>::RingCurrency::transfer(
+		<T as Config<I>>::Currency::transfer(
 			&submitter_account,
 			relayer_fund_account,
 			*fee,
@@ -235,13 +235,13 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 	report: SlashReport<T::AccountId, T::BlockNumber, RingBalance<T, I>>,
 ) -> RingBalance<T, I> {
 	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(&who);
-	T::RingCurrency::remove_lock(T::LockId::get(), &who);
+	T::Currency::remove_lock(T::LockId::get(), &who);
 	debug_assert!(
 		locked_collateral >= amount,
 		"The locked collateral must alway greater than slash max"
 	);
 
-	let pay_result = <T as Config<I>>::RingCurrency::transfer(
+	let pay_result = <T as Config<I>>::Currency::transfer(
 		who,
 		fund_account,
 		amount,
@@ -276,7 +276,7 @@ pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 		return
 	}
 
-	let pay_result = <T as Config<I>>::RingCurrency::transfer(
+	let pay_result = <T as Config<I>>::Currency::transfer(
 		from,
 		to,
 		reward,
