@@ -300,6 +300,7 @@ pub mod source {
 	{
 		type Error = &'static str;
 
+		#[allow(clippy::single_match)]
 		fn verify_message(
 			submitter: &OriginOf<ThisChain<B>>,
 			delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,

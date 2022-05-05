@@ -459,8 +459,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// The relayer collateral is composed of two part: fee_collateral and orders_locked_collateral.
 	/// Calculate the order capacity with fee_collateral
 	pub(crate) fn usable_order_capacity(who: &T::AccountId) -> u32 {
-		let relayer_locked_collateral = Self::relayer_locked_collateral(&who);
-		if let Some((_, orders_locked_collateral)) = Self::occupied(&who) {
+		let relayer_locked_collateral = Self::relayer_locked_collateral(who);
+		if let Some((_, orders_locked_collateral)) = Self::occupied(who) {
 			let free_collateral =
 				relayer_locked_collateral.saturating_sub(orders_locked_collateral);
 			return Self::collateral_to_order_capacity(free_collateral)
