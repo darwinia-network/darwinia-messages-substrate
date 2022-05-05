@@ -5435,32 +5435,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-fee-market-rpc"
-version = "0.1.0"
-dependencies = [
- "jsonrpc-core",
- "jsonrpc-core-client",
- "jsonrpc-derive",
- "pallet-fee-market-rpc-runtime-api",
- "parity-scale-codec",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
-]
-
-[[package]]
-name = "pallet-fee-market-rpc-runtime-api"
-version = "0.1.0"
-dependencies = [
- "bp-messages",
- "parity-scale-codec",
- "serde",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=master#89fcb3e4f62d221d4e161a437768e77d6265889e"
