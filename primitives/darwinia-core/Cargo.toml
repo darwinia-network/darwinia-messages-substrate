@@ -9,7 +9,7 @@ version     = "0.1.0"
 [dependencies]
 # crates.io
 parity-scale-codec = { version = "3.0.0", default-features = false, features = ["derive"] }
-scale-info         = { version = "2.0.1", default-features = false, features = ["derive"] }
+scale-info         = { version = "2.1.1", default-features = false, features = ["derive"] }
 # paritytech
 bp-messages   = { default-features = false, path = "../messages" }
 bp-runtime    = { default-features = false, path = "../runtime" }
