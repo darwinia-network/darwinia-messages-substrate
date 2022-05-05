@@ -41,7 +41,7 @@ pub struct FeeMarketPayment<T, I, Currency> {
 	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
 }
 
-impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, RingBalance<T, I>>
+impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, BalanceOf<T, I>>
 	for FeeMarketPayment<T, I, Currency>
 where
 	T: frame_system::Config + Config<I>,
@@ -53,7 +53,7 @@ where
 
 	fn pay_delivery_and_dispatch_fee(
 		submitter: &T::Origin,
-		fee: &RingBalance<T, I>,
+		fee: &BalanceOf<T, I>,
 		relayer_fund_account: &T::AccountId,
 	) -> Result<(), Self::Error> {
 		let submitter_account = match submitter.linked_account() {
@@ -72,7 +72,7 @@ where
 			},
 		};
 
-		<T as Config<I>>::RingCurrency::transfer(
+		<T as Config<I>>::Currency::transfer(
 			&submitter_account,
 			relayer_fund_account,
 			*fee,
@@ -127,15 +127,15 @@ pub fn slash_and_calculate_rewards<T, I>(
 	messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
 	received_range: &RangeInclusive<MessageNonce>,
 	relayer_fund_account: &T::AccountId,
-) -> RewardsBook<T::AccountId, RingBalance<T, I>>
+) -> RewardsBook<T::AccountId, BalanceOf<T, I>>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
 {
-	let mut confirmation_rewards = RingBalance::<T, I>::zero();
-	let mut messages_rewards = BTreeMap::<T::AccountId, RingBalance<T, I>>::new();
-	let mut assigned_relayers_rewards = BTreeMap::<T::AccountId, RingBalance<T, I>>::new();
-	let mut treasury_total_rewards = RingBalance::<T, I>::zero();
+	let mut confirmation_rewards = BalanceOf::<T, I>::zero();
+	let mut messages_rewards = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
+	let mut assigned_relayers_rewards = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
+	let mut treasury_total_rewards = BalanceOf::<T, I>::zero();
 
 	for entry in messages_relayers {
 		let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
@@ -180,7 +180,7 @@ where
 					let mut total_slash = message_fee;
 
 					// calculate slash amount
-					let mut amount: RingBalance<T, I> = T::Slasher::slash(
+					let mut amount: BalanceOf<T, I> = T::Slasher::slash(
 						order.locked_collateral,
 						order.delivery_delay().unwrap_or_default(),
 					);
@@ -189,7 +189,7 @@ where
 					}
 
 					// Slash order's assigned relayers
-					let mut assigned_relayers_slash = RingBalance::<T, I>::zero();
+					let mut assigned_relayers_slash = BalanceOf::<T, I>::zero();
 					for assigned_relayer in order.relayers_slice() {
 						let report = SlashReport::new(&order, assigned_relayer.id.clone(), amount);
 						let slashed = do_slash::<T, I>(
@@ -231,17 +231,17 @@ where
 pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 	who: &T::AccountId,
 	fund_account: &T::AccountId,
-	amount: RingBalance<T, I>,
-	report: SlashReport<T::AccountId, T::BlockNumber, RingBalance<T, I>>,
-) -> RingBalance<T, I> {
+	amount: BalanceOf<T, I>,
+	report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
+) -> BalanceOf<T, I> {
 	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(&who);
-	T::RingCurrency::remove_lock(T::LockId::get(), &who);
+	T::Currency::remove_lock(T::LockId::get(), &who);
 	debug_assert!(
 		locked_collateral >= amount,
 		"The locked collateral must alway greater than slash max"
 	);
 
-	let pay_result = <T as Config<I>>::RingCurrency::transfer(
+	let pay_result = <T as Config<I>>::Currency::transfer(
 		who,
 		fund_account,
 		amount,
@@ -263,20 +263,20 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 		},
 	}
 
-	RingBalance::<T, I>::zero()
+	BalanceOf::<T, I>::zero()
 }
 
 /// Do reward
 pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 	from: &T::AccountId,
 	to: &T::AccountId,
-	reward: RingBalance<T, I>,
+	reward: BalanceOf<T, I>,
 ) {
 	if reward.is_zero() {
 		return
 	}
 
-	let pay_result = <T as Config<I>>::RingCurrency::transfer(
+	let pay_result = <T as Config<I>>::Currency::transfer(
 		from,
 		to,
 		reward,

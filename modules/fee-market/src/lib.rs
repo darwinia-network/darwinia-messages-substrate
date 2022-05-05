@@ -50,7 +50,7 @@ use sp_std::vec::Vec;
 use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
-pub type RingBalance<T, I> = <<T as Config<I>>::RingCurrency as Currency<AccountId<T>>>::Balance;
+pub type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountId<T>>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -68,10 +68,10 @@ pub mod pallet {
 
 		/// The minimum fee for relaying.
 		#[pallet::constant]
-		type MinimumRelayFee: Get<RingBalance<Self, I>>;
+		type MinimumRelayFee: Get<BalanceOf<Self, I>>;
 		/// The collateral relayer need to lock for each order.
 		#[pallet::constant]
-		type CollateralPerOrder: Get<RingBalance<Self, I>>;
+		type CollateralPerOrder: Get<BalanceOf<Self, I>>;
 		/// The slot times set
 		#[pallet::constant]
 		type Slot: Get<Self::BlockNumber>;
@@ -86,7 +86,7 @@ pub mod pallet {
 
 		/// The slash rule
 		type Slasher: Slasher<Self, I>;
-		type RingCurrency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 
 		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
@@ -96,19 +96,19 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config<I>, I: 'static = ()> {
 		/// Relayer enrollment. \[account_id, locked_collateral, relay_fee\]
-		Enroll(T::AccountId, RingBalance<T, I>, RingBalance<T, I>),
+		Enroll(T::AccountId, BalanceOf<T, I>, BalanceOf<T, I>),
 		/// Update relayer locked collateral. \[account_id, new_collateral\]
-		UpdateLockedCollateral(T::AccountId, RingBalance<T, I>),
+		UpdateLockedCollateral(T::AccountId, BalanceOf<T, I>),
 		/// Update relayer fee. \[account_id, new_fee\]
-		UpdateRelayFee(T::AccountId, RingBalance<T, I>),
+		UpdateRelayFee(T::AccountId, BalanceOf<T, I>),
 		/// Relayer cancel enrollment. \[account_id\]
 		CancelEnrollment(T::AccountId),
 		/// Update collateral slash protect value. \[slash_protect_value\]
-		UpdateCollateralSlashProtect(RingBalance<T, I>),
+		UpdateCollateralSlashProtect(BalanceOf<T, I>),
 		/// Update market assigned relayers numbers. \[new_assigned_relayers_number\]
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
-		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, RingBalance<T, I>>),
+		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
 	}
 
 	#[pallet::error]
@@ -134,7 +134,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::AccountId,
-		Relayer<T::AccountId, RingBalance<T, I>>,
+		Relayer<T::AccountId, BalanceOf<T, I>>,
 		OptionQuery,
 	>;
 	#[pallet::storage]
@@ -146,7 +146,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn assigned_relayers)]
 	pub type AssignedRelayers<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, Vec<Relayer<T::AccountId, RingBalance<T, I>>>, OptionQuery>;
+		StorageValue<_, Vec<Relayer<T::AccountId, BalanceOf<T, I>>>, OptionQuery>;
 
 	// Order storage
 	#[pallet::storage]
@@ -155,14 +155,14 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		(LaneId, MessageNonce),
-		Order<T::AccountId, T::BlockNumber, RingBalance<T, I>>,
+		Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 		OptionQuery,
 	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collateral_slash_protect)]
 	pub type CollateralSlashProtect<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, RingBalance<T, I>, OptionQuery>;
+		StorageValue<_, BalanceOf<T, I>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn assigned_relayers_number)]
@@ -200,14 +200,14 @@ pub mod pallet {
 		#[transactional]
 		pub fn enroll_and_lock_collateral(
 			origin: OriginFor<T>,
-			lock_collateral: RingBalance<T, I>,
-			relay_fee: Option<RingBalance<T, I>>,
+			lock_collateral: BalanceOf<T, I>,
+			relay_fee: Option<BalanceOf<T, I>>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			ensure!(!Self::is_enrolled(&who), <Error<T, I>>::AlreadyEnrolled);
 
 			ensure!(
-				T::RingCurrency::free_balance(&who) >= lock_collateral,
+				T::Currency::free_balance(&who) >= lock_collateral,
 				<Error<T, I>>::InsufficientBalance
 			);
 			if let Some(fee) = relay_fee {
@@ -215,12 +215,7 @@ pub mod pallet {
 			}
 			let fee = relay_fee.unwrap_or_else(T::MinimumRelayFee::get);
 
-			T::RingCurrency::set_lock(
-				T::LockId::get(),
-				&who,
-				lock_collateral,
-				WithdrawReasons::all(),
-			);
+			T::Currency::set_lock(T::LockId::get(), &who, lock_collateral, WithdrawReasons::all());
 			// Store enrollment detail information.
 			<RelayersMap<T, I>>::insert(&who, Relayer::new(who.clone(), lock_collateral, fee));
 			<Relayers<T, I>>::append(&who);
@@ -236,18 +231,18 @@ pub mod pallet {
 		#[transactional]
 		pub fn update_locked_collateral(
 			origin: OriginFor<T>,
-			new_collateral: RingBalance<T, I>,
+			new_collateral: BalanceOf<T, I>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
 			ensure!(
-				T::RingCurrency::free_balance(&who) >= new_collateral,
+				T::Currency::free_balance(&who) >= new_collateral,
 				<Error<T, I>>::InsufficientBalance
 			);
 
 			// Increase the locked collateral
 			if new_collateral >= Self::relayer_locked_collateral(&who) {
-				T::RingCurrency::set_lock(
+				T::Currency::set_lock(
 					T::LockId::get(),
 					&who,
 					new_collateral,
@@ -261,8 +256,8 @@ pub mod pallet {
 						<Error<T, I>>::StillHasOrdersNotConfirmed
 					);
 
-					T::RingCurrency::remove_lock(T::LockId::get(), &who);
-					T::RingCurrency::set_lock(
+					T::Currency::remove_lock(T::LockId::get(), &who);
+					T::Currency::set_lock(
 						T::LockId::get(),
 						&who,
 						new_collateral,
@@ -286,7 +281,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn update_relay_fee(
 			origin: OriginFor<T>,
-			new_fee: RingBalance<T, I>,
+			new_fee: BalanceOf<T, I>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
@@ -320,7 +315,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn set_slash_protect(
 			origin: OriginFor<T>,
-			slash_protect: RingBalance<T, I>,
+			slash_protect: BalanceOf<T, I>,
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 			CollateralSlashProtect::<T, I>::put(slash_protect);
@@ -355,7 +350,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// - The order didn't confirm in-time, slash occurred.
 	pub(crate) fn update_market() {
 		// Sort all enrolled relayers who are able to accept orders.
-		let mut relayers: Vec<Relayer<T::AccountId, RingBalance<T, I>>> = Vec::new();
+		let mut relayers: Vec<Relayer<T::AccountId, BalanceOf<T, I>>> = Vec::new();
 		if let Some(ids) = <Relayers<T, I>>::get() {
 			for id in ids.iter() {
 				if let Some(r) = RelayersMap::<T, I>::get(id) {
@@ -384,10 +379,10 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// needed)
 	pub(crate) fn update_relayer_after_slash(
 		who: &T::AccountId,
-		new_collateral: RingBalance<T, I>,
-		report: SlashReport<T::AccountId, T::BlockNumber, RingBalance<T, I>>,
+		new_collateral: BalanceOf<T, I>,
+		report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 	) {
-		T::RingCurrency::set_lock(T::LockId::get(), &who, new_collateral, WithdrawReasons::all());
+		T::Currency::set_lock(T::LockId::get(), &who, new_collateral, WithdrawReasons::all());
 		<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
 			if let Some(ref mut r) = relayer {
 				r.collateral = new_collateral;
@@ -399,7 +394,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 	/// Remove enrolled relayer, then update market fee. (Update market needed)
 	pub(crate) fn remove_enrolled_relayer(who: &T::AccountId) {
-		T::RingCurrency::remove_lock(T::LockId::get(), who);
+		T::Currency::remove_lock(T::LockId::get(), who);
 
 		<RelayersMap<T, I>>::remove(who.clone());
 		<Relayers<T, I>>::mutate(|relayers| {
@@ -422,7 +417,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 	/// Get market fee, If there is not enough relayers have order capacity to accept new order,
 	/// return None.
-	pub fn market_fee() -> Option<RingBalance<T, I>> {
+	pub fn market_fee() -> Option<BalanceOf<T, I>> {
 		Self::assigned_relayers().and_then(|relayers| relayers.last().map(|r| r.fee))
 	}
 
@@ -432,16 +427,16 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 
 	/// Get the relayer locked collateral value
-	pub fn relayer_locked_collateral(who: &T::AccountId) -> RingBalance<T, I> {
-		RelayersMap::<T, I>::get(who).map_or(RingBalance::<T, I>::zero(), |r| r.collateral)
+	pub fn relayer_locked_collateral(who: &T::AccountId) -> BalanceOf<T, I> {
+		RelayersMap::<T, I>::get(who).map_or(BalanceOf::<T, I>::zero(), |r| r.collateral)
 	}
 
 	/// Whether the enrolled relayer is occupied(Responsible for order relaying)
 	/// Whether the enrolled relayer is occupied, If occupied, return the number of orders and
 	/// orders locked collateral, otherwise, return None.
-	pub(crate) fn occupied(who: &T::AccountId) -> Option<(u32, RingBalance<T, I>)> {
+	pub(crate) fn occupied(who: &T::AccountId) -> Option<(u32, BalanceOf<T, I>)> {
 		let mut count = 0u32;
-		let mut orders_locked_collateral = RingBalance::<T, I>::zero();
+		let mut orders_locked_collateral = BalanceOf::<T, I>::zero();
 		for (_, order) in <Orders<T, I>>::iter() {
 			if order.relayers_slice().iter().any(|r| r.id == *who) && !order.is_confirmed() {
 				count += 1;
@@ -468,11 +463,11 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		Self::collateral_to_order_capacity(relayer_locked_collateral)
 	}
 
-	fn collateral_to_order_capacity(collateral: RingBalance<T, I>) -> u32 {
+	fn collateral_to_order_capacity(collateral: BalanceOf<T, I>) -> u32 {
 		(collateral / T::CollateralPerOrder::get()).saturated_into::<u32>()
 	}
 }
 
 pub trait Slasher<T: Config<I>, I: 'static> {
-	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I>;
+	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I>;
 }
