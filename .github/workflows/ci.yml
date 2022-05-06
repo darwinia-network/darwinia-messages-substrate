@@ -15,8 +15,6 @@ jobs:
       matrix:
         package:
           - pallet-bridge-dispatch
-          - pallet-fee-market-rpc-runtime-api
-          - pallet-fee-market-rpc
           - pallet-fee-market
           - pallet-bridge-grandpa
           - pallet-bridge-messages
