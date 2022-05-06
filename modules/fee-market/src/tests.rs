@@ -56,10 +56,10 @@ use crate::{
 	*,
 };
 
-pub type Block = MockBlock<Test>;
-pub type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
-pub type Balance = u64;
-pub type AccountId = u64;
+type Block = MockBlock<Test>;
+type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
+type Balance = u64;
+type AccountId = u64;
 
 frame_support::parameter_types! {
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
@@ -417,7 +417,7 @@ frame_support::parameter_types! {
 
 pub struct TestSlasher;
 impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
-	fn slash(locked_collateral: RingBalance<T, I>, timeout: T::BlockNumber) -> RingBalance<T, I> {
+	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
 		let slash_each_block = 2;
 		let slash_value = UniqueSaturatedInto::<u128>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<u128>::unique_saturated_into(slash_each_block))
@@ -439,7 +439,7 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 
 	type Slasher = TestSlasher;
-	type RingCurrency = Ring;
+	type Currency = Balances;
 	type Event = Event;
 	type WeightInfo = ();
 }
@@ -452,7 +452,7 @@ frame_support::construct_runtime! {
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
-		Ring: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>},
 		Messages: pallet_bridge_messages::{Pallet, Call, Event<T>},
 	}
@@ -514,7 +514,7 @@ pub fn unrewarded_relayer(
 #[test]
 fn test_call_relayer_enroll_works() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Ring::free_balance(1), 150);
+		assert_eq!(Balances::free_balance(1), 150);
 		assert_err!(
 			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 200, None),
 			<Error<Test>>::InsufficientBalance
@@ -523,8 +523,8 @@ fn test_call_relayer_enroll_works() {
 		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None));
 		assert!(FeeMarket::is_enrolled(&1));
 		assert_eq!(FeeMarket::relayers().len(), 1);
-		assert_eq!(Ring::free_balance(1), 150);
-		assert_eq!(Ring::usable_balance(&1), 50);
+		assert_eq!(Balances::free_balance(1), 150);
+		assert_eq!(Balances::usable_balance(&1), 50);
 		assert_eq!(FeeMarket::relayer(&1).collateral, 100);
 		assert_eq!(FeeMarket::market_fee(), None);
 		assert_err!(

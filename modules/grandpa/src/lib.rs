@@ -620,7 +620,9 @@ pub fn initialize_for_benchmarks<T: Config<I>, I: 'static>(header: BridgedHeader
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::mock::{run_test, test_header, Origin, TestHash, TestHeader, TestNumber, TestRuntime};
+	use crate::mock::{
+		run_test, test_header, Origin, TestHash, TestHeader, TestNumber, TestRuntime,
+	};
 	use bp_test_utils::{
 		authority_list, make_default_justification, make_justification_for_header,
 		JustificationGeneratorParams, ALICE, BOB,
@@ -677,7 +679,9 @@ mod tests {
 				delay,
 			});
 
-		Digest::<TestHash> { logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())] }
+		Digest::<TestHash> {
+			logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())],
+		}
 	}
 
 	fn forced_change_log(delay: u64) -> Digest<TestHash> {
@@ -689,7 +693,9 @@ mod tests {
 			},
 		);
 
-		Digest::<TestHash> { logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())] }
+		Digest::<TestHash> {
+			logs: vec![DigestItem::Consensus(GRANDPA_ENGINE_ID, consensus_log.encode())],
+		}
 	}
 
 	#[test]
