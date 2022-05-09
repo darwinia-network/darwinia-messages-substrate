@@ -9,7 +9,7 @@ license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 async-std = { version = "1.6.5", features = ["attributes"] }
 async-trait = "0.1.40"
 codec = { package = "parity-scale-codec", version = "3.0.0" }
-jsonrpsee = { version = "0.8", features = ["macros", "ws-client"] }
+jsonrpsee = { version = "0.12", features = ["macros", "ws-client"] }
 log = "0.4.11"
 num-traits = "0.2"
 rand = "0.7"
