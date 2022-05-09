@@ -57,9 +57,9 @@ pub const WITH_PANGOLIN_PARACHAIN_MESSAGES_PALLET_NAME: &str = "BridgePangolinPa
 pub const BEST_FINALIZED_PANGOLIN_PARACHAIN_HEADER_METHOD: &str =
 	"PangolinParachainFinalityApi_best_finalized";
 
-/// Name of the `ToPangolinParachainParachainOutboundLaneApi::message_details` runtime method.
+/// Name of the `ToPangolinParachainOutboundLaneApi::message_details` runtime method.
 pub const TO_PANGOLIN_PARACHAIN_MESSAGE_DETAILS_METHOD: &str =
-	"ToPangolinParachainParachainOutboundLaneApi_message_details";
+	"ToPangolinParachainOutboundLaneApi_message_details";
 /// Name of the `ToPangolinParachainOutboundLaneApi::latest_received_nonce` runtime method.
 pub const TO_PANGOLIN_PARACHAIN_LATEST_RECEIVED_NONCE_METHOD: &str =
 	"ToPangolinParachainOutboundLaneApi_latest_received_nonce";
