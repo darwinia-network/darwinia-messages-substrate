@@ -58,23 +58,23 @@ substrate-relay-helper        = { path = "../lib-substrate-relay" }
 
 # Substrate Dependencies
 
-frame-support   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
-sp-core         = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
-sp-io           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
-sp-runtime      = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
-sp-version      = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
+frame-support   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
+sp-core         = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
+sp-io           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
+sp-runtime      = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
+sp-version      = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
 
 # Polkadot Dependencies
 
-polkadot-parachain          = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
-polkadot-primitives         = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
-polkadot-runtime-common     = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
-polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.16" }
+polkadot-parachain          = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.17" }
+polkadot-primitives         = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.17" }
+polkadot-runtime-common     = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.17" }
+polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.17" }
 
 [dev-dependencies]
 finality-grandpa      = { version = "0.14.0" }
 hex-literal           = "0.3"
 pallet-bridge-grandpa = { path = "../../modules/grandpa" }
-sp-keyring            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
+sp-keyring            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.17" }
 tempfile              = "3.2"
