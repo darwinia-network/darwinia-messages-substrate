@@ -45,10 +45,11 @@ use sp_finality_grandpa::{ConsensusLog, GRANDPA_ENGINE_ID};
 use sp_runtime::traits::{BadOrigin, Header as HeaderT, Zero};
 use sp_std::{boxed::Box, convert::TryInto};
 
+mod extension;
 #[cfg(test)]
 mod mock;
 
-/// Pallet containing weights for this pallet.
+/// Module, containing weights for this pallet.
 pub mod weights;
 
 #[cfg(feature = "runtime-benchmarks")]
