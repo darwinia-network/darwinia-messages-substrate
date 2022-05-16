@@ -633,6 +633,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-crab-parachain"
+version = "0.1.0"
+dependencies = [
+ "bp-darwinia-core",
+ "bp-messages 0.1.0",
+ "bp-runtime 0.1.0",
+ "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "sp-api 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "sp-std 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "sp-version 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+]
+
+[[package]]
 name = "bp-darwinia"
 version = "0.1.0"
 dependencies = [
