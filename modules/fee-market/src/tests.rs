@@ -56,10 +56,10 @@ use crate::{
 	*,
 };
 
-pub type Block = MockBlock<Test>;
-pub type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
-pub type Balance = u64;
-pub type AccountId = u64;
+type Block = MockBlock<Test>;
+type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
+type Balance = u64;
+type AccountId = u64;
 
 frame_support::parameter_types! {
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
