@@ -2,12 +2,19 @@
 resolver = "2"
 
 members = [
-	"bin/*/node",
-	"bin/*/runtime",
-	"fuzz/*",
+	# "bin/*/node",
+	# "bin/*/runtime",
+	# "fuzz/*",
 	"modules/*",
 	"modules/*/rpc",
 	"modules/*/rpc/runtime-api",
 	"primitives/*",
-	"relays/*",
+	"relays/client-kusama",
+	"relays/client-polkadot",
+	"relays/client-rococo",
+	"relays/client-substrate",
+	"relays/finality",
+	"relays/lib-substrate-relay",
+	"relays/messages",
+	"relays/utils",
 ]
