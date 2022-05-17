@@ -427,7 +427,6 @@ impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 }
 
 impl Config for Test {
-	type PalletId = FeeMarketPalletId;
 	type TreasuryPalletId = TreasuryPalletId;
 	type LockId = FeeMarketLockId;
 	type CollateralPerOrder = CollateralPerOrder;
