@@ -115,6 +115,8 @@ pub const FROM_KUSAMA_LATEST_CONFIRMED_NONCE_METHOD: &str =
 pub const FROM_KUSAMA_UNREWARDED_RELAYERS_STATE: &str =
 	"FromKusamaInboundLaneApi_unrewarded_relayers_state";
 
+pub const PARAS_PALLET_NAME: &str = "Paras";
+
 sp_api::decl_runtime_apis! {
 	/// API for querying information about the finalized Kusama headers.
 	///
