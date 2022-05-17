@@ -58,8 +58,6 @@ pub mod pallet {
 
 	#[pallet::config]
 	pub trait Config<I: 'static = ()>: frame_system::Config {
-		#[pallet::constant]
-		type PalletId: Get<PalletId>;
 		/// Some reward goes to Treasury.
 		#[pallet::constant]
 		type TreasuryPalletId: Get<PalletId>;
