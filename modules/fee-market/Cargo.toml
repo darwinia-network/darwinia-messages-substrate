@@ -12,7 +12,7 @@ version     = "0.1.0"
 [dependencies]
 # crates.io
 bitvec     = { version = "0.20", default-features = false, features = ["alloc"] }
-codec      = { package = "parity-scale-codec", version = "2.3", default-features = false }
+codec      = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 # paritytech
 frame-benchmarking = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
@@ -24,9 +24,9 @@ sp-io              = { default-features = false, git = "https://github.com/darwi
 sp-runtime         = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 sp-std             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
 # darwinia-bridges-substrate
-bp-messages            = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.3" }
-bp-runtime             = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.3" }
-pallet-bridge-messages = { default-features = false, git = "https://github.com/darwinia-network/darwinia-bridges-substrate", branch = "darwinia-v0.12.3" }
+bp-messages            = { default-features = false, path = "../../primitives/messages" }
+bp-runtime             = { default-features = false, path = "../../primitives/runtime"  }
+pallet-bridge-messages = { default-features = false, path = "../messages" }
 
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
