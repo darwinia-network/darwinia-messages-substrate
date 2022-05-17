@@ -110,12 +110,8 @@ use sp_runtime::{
 use sp_std::prelude::*;
 
 /// Unchecked Extrinsic type.
-pub type UncheckedExtrinsic<Call> = generic::UncheckedExtrinsic<
-	Address,
-	Call,
-	Signature,
-	SignedExtensions<Call>,
->;
+pub type UncheckedExtrinsic<Call> =
+	generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtensions<Call>>;
 
 /// Parameters which are part of the payload used to produce transaction signature,
 /// but don't end up in the transaction itself (i.e. inherent part of the runtime).

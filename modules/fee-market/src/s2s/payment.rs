@@ -33,22 +33,21 @@ use sp_std::{
 // --- darwinia-network ---
 use crate::{Config, Orders, Pallet, *};
 
-pub struct FeeMarketPayment<T, I, Currency, GetConfirmationFee, RootAccount> {
-	_phantom: sp_std::marker::PhantomData<(T, I, Currency, GetConfirmationFee, RootAccount)>,
+pub struct FeeMarketPayment<T, I, Currency, RootAccount> {
+	_phantom: sp_std::marker::PhantomData<(T, I, Currency, RootAccount)>,
 }
-
-impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, RingBalance<T, I>>
-	for FeeMarketPayment<T, I, Currency>
+impl<T, I, Currency, RootAccount> MessageDeliveryAndDispatchPayment<T::AccountId, RingBalance<T, I>>
+	for FeeMarketPayment<T, I, Currency, RootAccount>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
-	T::Origin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId>,
+	RootAccount: Get<Option<T::AccountId>>,
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &T::Origin,
+		submitter: &Sender<T::AccountId>,
 		fee: &RingBalance<T, I>,
 		relayer_fund_account: &T::AccountId,
 	) -> Result<(), Self::Error> {
@@ -61,7 +60,7 @@ where
 		};
 
 		<T as Config<I>>::RingCurrency::transfer(
-			&submitter_account,
+			&account,
 			relayer_fund_account,
 			*fee,
 			// it's fine for the submitter to go below Existential Deposit and die.
