@@ -714,6 +714,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-rococo"
+version = "0.1.0"
+dependencies = [
+ "bp-messages",
+ "bp-polkadot-core",
+ "bp-runtime",
+ "frame-support",
+ "parity-scale-codec",
+ "smallvec",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
+]
+
+[[package]]
 name = "bp-runtime"
 version = "0.1.0"
 dependencies = [
@@ -741,6 +757,20 @@ dependencies = [
  "parity-scale-codec",
  "sp-application-crypto",
  "sp-finality-grandpa",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "bp-wococo"
+version = "0.1.0"
+dependencies = [
+ "bp-messages",
+ "bp-polkadot-core",
+ "bp-rococo",
+ "bp-runtime",
+ "parity-scale-codec",
+ "sp-api",
  "sp-runtime",
  "sp-std",
 ]
@@ -4264,6 +4294,29 @@ dependencies = [
  "bridge-runtime-common",
  "frame-support",
  "pallet-bridge-dispatch",
+ "parity-scale-codec",
+ "relay-substrate-client",
+ "relay-utils",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "relay-rococo-client"
+version = "0.1.0"
+dependencies = [
+ "bp-header-chain",
+ "bp-message-dispatch",
+ "bp-messages",
+ "bp-polkadot-core",
+ "bp-rococo",
+ "bp-runtime",
+ "bp-wococo",
+ "bridge-runtime-common",
+ "frame-support",
+ "pallet-bridge-dispatch",
+ "pallet-bridge-messages",
  "parity-scale-codec",
  "relay-substrate-client",
  "relay-utils",
