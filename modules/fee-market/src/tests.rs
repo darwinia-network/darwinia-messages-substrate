@@ -24,7 +24,7 @@ use scale_info::TypeInfo;
 // --- paritytech ---
 use bp_messages::{
 	source_chain::{
-		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, SenderOrigin, TargetHeaderChain,
+		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, Sender, TargetHeaderChain,
 	},
 	target_chain::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
@@ -57,10 +57,10 @@ use crate::{
 	*,
 };
 
-pub type Block = MockBlock<Test>;
-pub type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
-pub type Balance = u64;
-pub type AccountId = u64;
+type Block = MockBlock<Test>;
+type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
+type Balance = u64;
+type AccountId = u64;
 
 frame_support::parameter_types! {
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
@@ -219,13 +219,11 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 /// Lane message verifier that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
-impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
-	for TestLaneMessageVerifier
-{
+impl LaneMessageVerifier<AccountId, TestPayload, TestMessageFee> for TestLaneMessageVerifier {
 	type Error = &'static str;
 
 	fn verify_message(
-		_submitter: &Origin,
+		_submitter: &Sender<AccountId>,
 		delivery_and_dispatch_fee: &TestMessageFee,
 		_lane: &LaneId,
 		_lane_outbound_data: &OutboundLaneData,
@@ -264,13 +262,13 @@ impl TestMessageDeliveryAndDispatchPayment {
 		frame_support::storage::unhashed::take::<bool>(&key).is_some()
 	}
 }
-impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
+impl MessageDeliveryAndDispatchPayment<AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &Origin,
+		submitter: &Sender<AccountId>,
 		fee: &TestMessageFee,
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
@@ -278,8 +276,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			return Err(TEST_ERROR)
 		}
 
-		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();
-		frame_support::storage::unhashed::put(b":message-fee:", &(raw_origin.unwrap(), fee));
+		frame_support::storage::unhashed::put(b":message-fee:", &(submitter, fee));
 		Ok(())
 	}
 
@@ -398,22 +395,12 @@ impl pallet_bridge_messages::Config for Test {
 	type TargetHeaderChain = TestTargetHeaderChain;
 	type LaneMessageVerifier = TestLaneMessageVerifier;
 	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self>;
-	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self>;
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, ()>;
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, ()>;
 
 	type SourceHeaderChain = TestSourceHeaderChain;
 	type MessageDispatch = TestMessageDispatch;
 	type BridgedChainId = TestBridgedChainId;
-}
-
-impl SenderOrigin<AccountId> for Origin {
-	fn linked_account(&self) -> Option<AccountId> {
-		match self.caller {
-			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
-				Some(submitter.clone()),
-			_ => None,
-		}
-	}
 }
 
 frame_support::parameter_types! {
@@ -431,8 +418,8 @@ frame_support::parameter_types! {
 }
 
 pub struct TestSlasher;
-impl<T: Config> Slasher<T> for TestSlasher {
-	fn slash(locked_collateral: RingBalance<T>, timeout: T::BlockNumber) -> RingBalance<T> {
+impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
+	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
 		let slash_each_block = 2;
 		let slash_value = UniqueSaturatedInto::<u128>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<u128>::unique_saturated_into(slash_each_block))
@@ -442,7 +429,6 @@ impl<T: Config> Slasher<T> for TestSlasher {
 }
 
 impl Config for Test {
-	type PalletId = FeeMarketPalletId;
 	type TreasuryPalletId = TreasuryPalletId;
 	type LockId = FeeMarketLockId;
 	type CollateralPerOrder = CollateralPerOrder;
@@ -454,7 +440,7 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 
 	type Slasher = TestSlasher;
-	type RingCurrency = Ring;
+	type Currency = Balances;
 	type Event = Event;
 	type WeightInfo = ();
 }
@@ -467,7 +453,7 @@ frame_support::construct_runtime! {
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
-		Ring: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>},
 		Messages: pallet_bridge_messages::{Pallet, Call, Event<T>},
 	}
@@ -518,7 +504,7 @@ pub fn unrewarded_relayer(
 			begin,
 			end,
 			dispatch_results: if end >= begin {
-				bitvec![u8, Msb0; 1; (end - begin + 1) as _]
+				bitvec![Msb0, u8; 1; (end - begin + 1) as _]
 			} else {
 				Default::default()
 			},
@@ -529,7 +515,7 @@ pub fn unrewarded_relayer(
 #[test]
 fn test_call_relayer_enroll_works() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Ring::free_balance(1), 150);
+		assert_eq!(Balances::free_balance(1), 150);
 		assert_err!(
 			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 200, None),
 			<Error<Test>>::InsufficientBalance
@@ -538,8 +524,8 @@ fn test_call_relayer_enroll_works() {
 		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None));
 		assert!(FeeMarket::is_enrolled(&1));
 		assert_eq!(FeeMarket::relayers().unwrap().len(), 1);
-		assert_eq!(Ring::free_balance(1), 150);
-		assert_eq!(Ring::usable_balance(&1), 50);
+		assert_eq!(Balances::free_balance(1), 150);
+		assert_eq!(Balances::usable_balance(&1), 50);
 		assert_eq!(FeeMarket::relayer_locked_collateral(&1), 100);
 		assert_eq!(FeeMarket::market_fee(), None);
 		assert_err!(

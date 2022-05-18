@@ -34,10 +34,10 @@ fn fee_market_ready<T: Config>() {
 	let caller2: T::AccountId = account("source", 2, SEED);
 	let caller3: T::AccountId = account("source", 3, SEED);
 	let collateral = T::CollateralPerOrder::get();
-	T::RingCurrency::make_free_balance_be(&caller0, collateral.saturating_mul(10u32.into()));
-	T::RingCurrency::make_free_balance_be(&caller1, collateral.saturating_mul(10u32.into()));
-	T::RingCurrency::make_free_balance_be(&caller2, collateral.saturating_mul(10u32.into()));
-	T::RingCurrency::make_free_balance_be(&caller3, collateral.saturating_mul(10u32.into()));
+	T::Currency::make_free_balance_be(&caller0, collateral.saturating_mul(10u32.into()));
+	T::Currency::make_free_balance_be(&caller1, collateral.saturating_mul(10u32.into()));
+	T::Currency::make_free_balance_be(&caller2, collateral.saturating_mul(10u32.into()));
+	T::Currency::make_free_balance_be(&caller3, collateral.saturating_mul(10u32.into()));
 	assert_ne!(caller0, caller1);
 	assert_ne!(caller1, caller2);
 
@@ -69,7 +69,7 @@ benchmarks! {
 	enroll_and_lock_collateral {
 		fee_market_ready::<T>();
 		let relayer: T::AccountId = account("source", 100, SEED);
-		T::RingCurrency::make_free_balance_be(&relayer, T::CollateralPerOrder::get().saturating_mul(10u32.into()));
+		T::Currency::make_free_balance_be(&relayer, T::CollateralPerOrder::get().saturating_mul(10u32.into()));
 		let lock_collateral = T::CollateralPerOrder::get().saturating_mul(5u32.into());
 	}: enroll_and_lock_collateral(RawOrigin::Signed(relayer.clone()), lock_collateral, None)
 	verify {
