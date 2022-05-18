@@ -26,13 +26,18 @@ pub enum Call {
 	/// Bridge darwinia messages pallet
 	#[codec(index = 48)]
 	BridgeDarwiniaMessages(BridgeDarwiniaMessagesCall),
-	// todo: Bridge kusama grandpa pallet
-	// Please don't forget update index
-	// #[codec(index = 60)]
-	// BridgeKusamaGrandpa(BridgeKusamaGrandpaCall),
-	/// Feemarket pallet
+	/// Kusama grandpa palelt
+	#[codec(index = 52)]
+	BridgeKusamaGrandpa(BridgeKusamaGrandpaCall),
+	/// Bridge Crab Parachain messages pallet
+	#[codec(index = 54)]
+	BridgeCrabParachainMessages(BridgeCrabParachainMessagesCall),
+	/// Darwinia Feemarket pallet
 	#[codec(index = 49)]
 	Feemarket(FeemarketCall),
+	/// Crab Parachain Feemarket pallet
+	#[codec(index = 55)]
+	CrabParachainFeemarket(FeemarketCall),
 }
 
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
@@ -109,6 +114,46 @@ pub enum BridgeKusamaGrandpaCall {
 pub enum BridgeDarwiniaMessagesParameter {
 	#[codec(index = 0)]
 	CrabToDarwiniaConversionRate(FixedU128),
+}
+
+#[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
+pub enum BridgeCrabMessagesParameter {
+	#[codec(index = 0)]
+	CrabToCrabParachainConversionRate(FixedU128),
+}
+
+#[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
+#[allow(non_camel_case_types)]
+pub enum BridgeCrabParachainMessagesCall {
+	#[codec(index = 2)]
+	update_pallet_parameter(BridgeCrabMessagesParameter),
+	#[codec(index = 3)]
+	send_message(
+		LaneId,
+		bp_message_dispatch::MessagePayload<
+			bp_crab::AccountId,
+			bp_crab_parachain::AccountId,
+			bp_crab_parachain::AccountPublic,
+			Vec<u8>,
+		>,
+		bp_crab::Balance,
+	),
+	#[codec(index = 5)]
+	receive_messages_proof(
+		bp_crab_parachain::AccountId,
+		bridge_runtime_common::messages::target::FromBridgedChainMessagesProof<
+			bp_crab_parachain::Hash,
+		>,
+		u32,
+		Weight,
+	),
+	#[codec(index = 6)]
+	receive_messages_delivery_proof(
+		bridge_runtime_common::messages::source::FromBridgedChainMessagesDeliveryProof<
+			bp_crab_parachain::Hash,
+		>,
+		UnrewardedRelayersState,
+	),
 }
 
 impl sp_runtime::traits::Dispatchable for Call {
