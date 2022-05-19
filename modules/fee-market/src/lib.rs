@@ -431,7 +431,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			|| {
 				T::Currency::set_lock(
 					T::LockId::get(),
-					&who,
+					who,
 					new_collateral,
 					WithdrawReasons::all(),
 				);
