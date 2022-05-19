@@ -48,7 +48,7 @@ use sp_runtime::{
 };
 // --- darwinia-network ---
 use crate::{
-	self as darwinia_fee_market,
+	self as pallet_fee_market,
 	s2s::{
 		payment::{slash_and_calculate_rewards, RewardsBook},
 		FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler,
@@ -402,7 +402,6 @@ impl pallet_bridge_messages::Config for Test {
 }
 
 frame_support::parameter_types! {
-	pub const FeeMarketPalletId: PalletId = PalletId(*b"da/feemk");
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
 	pub const MinimumRelayFee: Balance = 30;
@@ -427,7 +426,6 @@ impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 }
 
 impl Config for Test {
-	type PalletId = FeeMarketPalletId;
 	type TreasuryPalletId = TreasuryPalletId;
 	type LockId = FeeMarketLockId;
 	type CollateralPerOrder = CollateralPerOrder;
@@ -453,7 +451,7 @@ frame_support::construct_runtime! {
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>},
+		FeeMarket: pallet_fee_market::{Pallet, Call, Storage, Event<T>},
 		Messages: pallet_bridge_messages::{Pallet, Call, Event<T>},
 	}
 }
