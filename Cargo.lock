@@ -7118,6 +7118,7 @@ name = "relay-crab-client"
 version = "0.1.0"
 dependencies = [
  "bp-crab",
+ "bp-crab-parachain",
  "bp-darwinia",
  "bp-darwinia-core",
  "bp-header-chain",
