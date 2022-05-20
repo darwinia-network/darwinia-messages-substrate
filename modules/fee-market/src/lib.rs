@@ -47,6 +47,7 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 // --- darwinia-network ---
+use s2s::RewardItem;
 use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
@@ -107,6 +108,7 @@ pub mod pallet {
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
 		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
+		// OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
 	}
 
 	#[pallet::error]

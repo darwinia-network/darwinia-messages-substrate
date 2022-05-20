@@ -292,17 +292,19 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 	) {
 		let RewardsBook {
 			messages_relayers_rewards,
-			confirmation_relayer_rewards,
-			assigned_relayers_rewards,
+			confirm_relayer_rewards,
+			slot_relayers_rewards,
 			treasury_total_rewards,
 		} = slash_and_calculate_rewards::<Test, ()>(
 			lane_id,
 			message_relayers,
+			confirmation_relayer.clone(),
 			received_range,
 			relayer_fund_account,
 		);
+
 		let confimation_key =
-			(b":relayer-reward:", confirmation_relayer, confirmation_relayer_rewards).encode();
+			(b":relayer-reward:", confirmation_relayer, confirm_relayer_rewards).encode();
 		frame_support::storage::unhashed::put(&confimation_key, &true);
 
 		for (relayer, reward) in &messages_relayers_rewards {
@@ -310,7 +312,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
-		for (relayer, reward) in &assigned_relayers_rewards {
+		for (relayer, reward) in &slot_relayers_rewards {
 			let key = (b":relayer-reward:", relayer, reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
 		}
