@@ -89,34 +89,30 @@ where
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &T::AccountId,
 	) {
-		let RewardsBook {
-			messages_relayers_rewards,
-			confirm_relayer_rewards,
-			slot_relayers_rewards,
-			treasury_total_rewards,
-		} = slash_and_calculate_rewards::<T, I>(
-			lane_id,
-			messages_relayers,
-			confirmation_relayer.clone(),
-			received_range,
-			relayer_fund_account,
-		);
+		let RewardsBook { for_deliver, for_confirm, slot_relayer, treasury } =
+			slash_and_calculate_rewards::<T, I>(
+				lane_id,
+				messages_relayers,
+				confirmation_relayer.clone(),
+				received_range,
+				relayer_fund_account,
+			);
 
 		// Pay confirmation relayer rewards
-		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_relayer_rewards);
+		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, for_confirm);
 		// Pay messages relayers rewards
-		for (relayer, reward) in messages_relayers_rewards {
+		for (relayer, reward) in for_deliver {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 		// Pay assign relayer reward
-		for (relayer, reward) in slot_relayers_rewards {
+		for (relayer, reward) in slot_relayer {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 		// Pay treasury reward
 		do_reward::<T, I>(
 			relayer_fund_account,
 			&T::TreasuryPalletId::get().into_account(),
-			treasury_total_rewards,
+			treasury,
 		);
 	}
 }
@@ -158,7 +154,6 @@ where
 				if let Some((who, base_fee)) =
 					order.required_delivery_relayer_for_time(order_confirm_time)
 				{
-					println!("delivered in time");
 					// message fee - base fee => treasury
 					reward_item.to_treasury = Some(message_fee.saturating_sub(base_fee));
 
@@ -206,6 +201,12 @@ where
 
 				reward_item.to_message_relayer = Some((entry.clone().relayer, message_reward));
 				reward_item.to_confirm_relayer = Some((confirm_relayer.clone(), confirm_reward));
+
+				Pallet::<T, I>::deposit_event(Event::OrderReward(
+					lane_id,
+					message_nonce,
+					reward_item.clone(),
+				));
 
 				rewards_book.add_reward_item(reward_item);
 			}
@@ -278,7 +279,7 @@ pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 }
 
 /// Record the concrete reward distribution of certain order
-#[derive(Clone, Debug, Eq, PartialEq, TypeInfo)]
+#[derive(Clone, Debug, Encode, Decode, Eq, PartialEq, TypeInfo)]
 pub struct RewardItem<AccountId, Balance> {
 	pub to_slot_relayer: Option<(AccountId, Balance)>,
 	pub to_treasury: Option<Balance>,
@@ -300,43 +301,43 @@ impl<AccountId, Balance> RewardItem<AccountId, Balance> {
 /// Record the calculation rewards result
 #[derive(Clone, Debug, Eq, PartialEq, TypeInfo)]
 pub struct RewardsBook<T: Config<I>, I: 'static> {
-	pub messages_relayers_rewards: BTreeMap<T::AccountId, BalanceOf<T, I>>,
-	pub confirm_relayer_rewards: BalanceOf<T, I>,
-	pub slot_relayers_rewards: BTreeMap<T::AccountId, BalanceOf<T, I>>,
-	pub treasury_total_rewards: BalanceOf<T, I>,
+	pub for_deliver: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+	pub for_confirm: BalanceOf<T, I>,
+	pub slot_relayer: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+	pub treasury: BalanceOf<T, I>,
 }
 
 impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
 	fn new() -> Self {
 		Self {
-			messages_relayers_rewards: BTreeMap::new(),
-			confirm_relayer_rewards: BalanceOf::<T, I>::zero(),
-			slot_relayers_rewards: BTreeMap::new(),
-			treasury_total_rewards: BalanceOf::<T, I>::zero(),
+			for_deliver: BTreeMap::new(),
+			for_confirm: BalanceOf::<T, I>::zero(),
+			slot_relayer: BTreeMap::new(),
+			treasury: BalanceOf::<T, I>::zero(),
 		}
 	}
 
-	fn add_reward_item(&mut self, order_reward: RewardItem<T::AccountId, BalanceOf<T, I>>) {
-		if let Some((id, reward)) = order_reward.to_slot_relayer {
-			self.slot_relayers_rewards
+	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
+		if let Some((id, reward)) = item.to_slot_relayer {
+			self.slot_relayer
 				.entry(id)
 				.and_modify(|r| *r = r.saturating_add(reward))
 				.or_insert(reward);
 		}
 
-		if let Some(reward) = order_reward.to_treasury {
-			self.treasury_total_rewards = self.treasury_total_rewards.saturating_add(reward);
+		if let Some(reward) = item.to_treasury {
+			self.treasury = self.treasury.saturating_add(reward);
 		}
 
-		if let Some((id, reward)) = order_reward.to_message_relayer {
-			self.messages_relayers_rewards
+		if let Some((id, reward)) = item.to_message_relayer {
+			self.for_deliver
 				.entry(id)
 				.and_modify(|r| *r = r.saturating_add(reward))
 				.or_insert(reward);
 		}
 
-		if let Some((_id, reward)) = order_reward.to_confirm_relayer {
-			self.confirm_relayer_rewards = self.confirm_relayer_rewards.saturating_add(reward);
+		if let Some((_id, reward)) = item.to_confirm_relayer {
+			self.for_confirm = self.for_confirm.saturating_add(reward);
 		}
 	}
 }

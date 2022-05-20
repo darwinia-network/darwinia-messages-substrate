@@ -108,7 +108,8 @@ pub mod pallet {
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
 		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
-		// OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
+		/// Order reward \[lane_id, message_nonce, rewards\]
+		OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
 	}
 
 	#[pallet::error]
