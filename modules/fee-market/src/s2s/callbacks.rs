@@ -42,11 +42,19 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 			);
 			// Store the create order
 			<Orders<T, I>>::insert((order.lane, order.message), order.clone());
+
+			Pallet::<T, I>::deposit_event(Event::OrderCreated(
+				order.lane,
+				order.message,
+				order.fee(),
+				order.range_end(),
+			));
 		}
 
-		// one read for assigned relayers
-		// one write for store order
-		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
+		// Storage: FeeMarket AssignedRelayers (r:1 w:0)
+		// Storage: FeeMarket Orders (r:0 w:1)
+		// Storage: System Events (r:0 w:1)
+		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 2)
 	}
 }
 
