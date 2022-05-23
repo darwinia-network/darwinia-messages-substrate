@@ -54,7 +54,7 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 		// Storage: FeeMarket AssignedRelayers (r:1 w:0)
 		// Storage: FeeMarket Orders (r:0 w:1)
 		// Storage: System Events (r:0 w:1)
-		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 2)
+		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 	}
 }
 

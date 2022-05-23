@@ -89,7 +89,7 @@ where
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &T::AccountId,
 	) {
-		let RewardsBook { deliver_sum, confirm_sum, slot_relayer_sum, treasury_sum } =
+		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
 			slash_and_calculate_rewards::<T, I>(
 				lane_id,
 				messages_relayers,
@@ -105,7 +105,7 @@ where
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 		// Pay assign relayer reward
-		for (relayer, reward) in slot_relayer_sum {
+		for (relayer, reward) in assigned_relayers_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 		// Pay treasury_sum reward
@@ -303,7 +303,7 @@ impl<AccountId, Balance> RewardItem<AccountId, Balance> {
 pub struct RewardsBook<T: Config<I>, I: 'static> {
 	pub deliver_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
 	pub confirm_sum: BalanceOf<T, I>,
-	pub slot_relayer_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+	pub assigned_relayers_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
 	pub treasury_sum: BalanceOf<T, I>,
 }
 
@@ -312,14 +312,14 @@ impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
 		Self {
 			deliver_sum: BTreeMap::new(),
 			confirm_sum: BalanceOf::<T, I>::zero(),
-			slot_relayer_sum: BTreeMap::new(),
+			assigned_relayers_sum: BTreeMap::new(),
 			treasury_sum: BalanceOf::<T, I>::zero(),
 		}
 	}
 
 	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
 		if let Some((id, reward)) = item.to_slot_relayer {
-			self.slot_relayer_sum
+			self.assigned_relayers_sum
 				.entry(id)
 				.and_modify(|r| *r = r.saturating_add(reward))
 				.or_insert(reward);
