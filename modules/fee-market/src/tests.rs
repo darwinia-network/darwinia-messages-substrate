@@ -291,10 +291,10 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		relayer_fund_account: &AccountId,
 	) {
 		let RewardsBook {
-			messages_relayers_rewards,
-			confirm_relayer_rewards,
-			slot_relayers_rewards,
-			treasury_total_rewards,
+			for_deliver,
+			for_confirm,
+			slot_relayer,
+			treasury,
 		} = slash_and_calculate_rewards::<Test, ()>(
 			lane_id,
 			message_relayers,
@@ -304,22 +304,22 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		);
 
 		let confimation_key =
-			(b":relayer-reward:", confirmation_relayer, confirm_relayer_rewards).encode();
+			(b":relayer-reward:", confirmation_relayer, for_confirm).encode();
 		frame_support::storage::unhashed::put(&confimation_key, &true);
 
-		for (relayer, reward) in &messages_relayers_rewards {
+		for (relayer, reward) in &for_deliver {
 			let key = (b":relayer-reward:", relayer, reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
-		for (relayer, reward) in &slot_relayers_rewards {
+		for (relayer, reward) in &slot_relayer {
 			let key = (b":relayer-reward:", relayer, reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
 		let treasury_account: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		let treasury_key =
-			(b":relayer-reward:", &treasury_account, treasury_total_rewards).encode();
+			(b":relayer-reward:", &treasury_account, treasury).encode();
 		frame_support::storage::unhashed::put(&treasury_key, &true);
 	}
 }
