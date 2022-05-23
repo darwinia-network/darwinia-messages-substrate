@@ -74,8 +74,7 @@ impl<T: Config<I>, I: 'static> OnDeliveryConfirmed for FeeMarketMessageConfirmed
 			}
 		}
 
-		// one db read for get order
-		// one db write for update order confirm time
+		// Storage: FeeMarket Orders (r:1 w:1)
 		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 	}
 }
