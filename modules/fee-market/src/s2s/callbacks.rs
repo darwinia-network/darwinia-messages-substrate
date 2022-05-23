@@ -37,16 +37,18 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 				*message,
 				now,
 				T::CollateralPerOrder::get(),
-				assigned_relayers,
+				assigned_relayers.clone(),
 				T::Slot::get(),
 			);
 			// Store the create order
 			<Orders<T, I>>::insert((order.lane, order.message), order.clone());
 
+			let ids: Vec<T::AccountId> = assigned_relayers.iter().map(|r| r.id.clone()).collect();
 			Pallet::<T, I>::deposit_event(Event::OrderCreated(
 				order.lane,
 				order.message,
 				order.fee(),
+				ids,
 				order.range_end(),
 			));
 		}

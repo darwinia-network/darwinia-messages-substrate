@@ -108,8 +108,15 @@ pub mod pallet {
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
 		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
-		/// Create new order. \[lane_id, message_nonce, order_fee, out_of_slots_time\]        
-		OrderCreated(LaneId, MessageNonce, BalanceOf<T, I>, Option<T::BlockNumber>),
+		/// Create new order. \[lane_id, message_nonce, assigned_relayers, order_fee,
+		/// out_of_slots_time\]
+		OrderCreated(
+			LaneId,
+			MessageNonce,
+			BalanceOf<T, I>,
+			Vec<T::AccountId>,
+			Option<T::BlockNumber>,
+		),
 		/// Reward distribute of the order. \[lane_id, message_nonce, rewards\]
 		OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
 	}

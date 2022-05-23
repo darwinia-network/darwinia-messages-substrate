@@ -761,6 +761,14 @@ fn test_callback_order_creation() {
 		assert_eq!(relayers[1].id, assigned_relayers.get(1).unwrap().id);
 		assert_eq!(relayers[2].id, assigned_relayers.get(2).unwrap().id);
 		assert_eq!(order.sent_time, 2);
+
+		System::assert_has_event(Event::FeeMarket(crate::Event::OrderCreated(
+			lane,
+			message_nonce,
+			order.fee(),
+			vec![relayers[0].id, relayers[1].id, relayers[2].id],
+			order.range_end(),
+		)));
 	});
 }
 
@@ -813,7 +821,7 @@ fn test_payment_cal_reward_normally_single_message() {
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(2), 110, Some(50));
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 120, Some(100));
 		let market_fee = FeeMarket::market_fee().unwrap();
-		let (_, _) = send_regular_message(market_fee);
+		let (lane, message_nonce) = send_regular_message(market_fee);
 
 		// Receive delivery message proof
 		System::set_block_number(4);
@@ -843,6 +851,17 @@ fn test_payment_cal_reward_normally_single_message() {
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 18));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 2));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 10));
+
+		System::assert_has_event(Event::FeeMarket(crate::Event::OrderReward(
+			lane,
+			message_nonce,
+			RewardItem {
+				to_slot_relayer: Some((1, 18)),
+				to_treasury: Some(70),
+				to_message_relayer: Some((100, 10)),
+				to_confirm_relayer: Some((5, 2)),
+			},
+		)));
 	});
 }
 
