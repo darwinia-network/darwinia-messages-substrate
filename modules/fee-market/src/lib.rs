@@ -200,7 +200,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			lock_collateral: BalanceOf<T, I>,
 			relay_fee: Option<BalanceOf<T, I>>,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(!Self::is_enrolled(&who), <Error<T, I>>::AlreadyEnrolled);
 			ensure!(
@@ -226,7 +226,7 @@ pub mod pallet {
 						Relayer::new(who.clone(), lock_collateral, fee),
 					);
 					<Relayers<T, I>>::append(&who);
-					Ok(().into())
+					Ok(())
 				},
 				Some(Event::<T, I>::Enroll(who.clone(), lock_collateral, fee)),
 			)
@@ -239,7 +239,7 @@ pub mod pallet {
 		pub fn update_locked_collateral(
 			origin: OriginFor<T>,
 			new_collateral: BalanceOf<T, I>,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
 			ensure!(
@@ -280,7 +280,7 @@ pub mod pallet {
 							r.collateral = new_collateral;
 						}
 					});
-					Ok(().into())
+					Ok(())
 				},
 				Some(Event::<T, I>::UpdateLockedCollateral(who.clone(), new_collateral)),
 			)
@@ -289,10 +289,7 @@ pub mod pallet {
 		/// Update relay fee for enrolled relayer. (Update market needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_relay_fee())]
 		#[transactional]
-		pub fn update_relay_fee(
-			origin: OriginFor<T>,
-			new_fee: BalanceOf<T, I>,
-		) -> DispatchResultWithPostInfo {
+		pub fn update_relay_fee(origin: OriginFor<T>, new_fee: BalanceOf<T, I>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
 			ensure!(new_fee >= T::MinimumRelayFee::get(), <Error<T, I>>::RelayFeeTooLow);
@@ -304,7 +301,7 @@ pub mod pallet {
 							r.fee = new_fee;
 						}
 					});
-					Ok(().into())
+					Ok(())
 				},
 				Some(Event::<T, I>::UpdateRelayFee(who.clone(), new_fee)),
 			)
@@ -313,7 +310,7 @@ pub mod pallet {
 		/// Cancel enrolled relayer(Update market needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::cancel_enrollment())]
 		#[transactional]
-		pub fn cancel_enrollment(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn cancel_enrollment(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
 			ensure!(Self::occupied(&who).is_none(), <Error<T, I>>::OccupiedRelayer);
@@ -333,7 +330,7 @@ pub mod pallet {
 							relayers.retain(|x| x.id != who);
 						}
 					});
-					Ok(().into())
+					Ok(())
 				},
 				Some(Event::<T, I>::CancelEnrollment(who.clone())),
 			)
@@ -344,25 +341,22 @@ pub mod pallet {
 		pub fn set_slash_protect(
 			origin: OriginFor<T>,
 			slash_protect: BalanceOf<T, I>,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			ensure_root(origin)?;
 			CollateralSlashProtect::<T, I>::put(slash_protect);
 			Self::deposit_event(Event::<T, I>::UpdateCollateralSlashProtect(slash_protect));
-			Ok(().into())
+			Ok(())
 		}
 
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_assigned_relayers_number())]
 		#[transactional]
-		pub fn set_assigned_relayers_number(
-			origin: OriginFor<T>,
-			number: u32,
-		) -> DispatchResultWithPostInfo {
+		pub fn set_assigned_relayers_number(origin: OriginFor<T>, number: u32) -> DispatchResult {
 			ensure_root(origin)?;
 
 			Self::update_market(
 				|| {
 					AssignedRelayersNumber::<T, I>::put(number);
-					Ok(().into())
+					Ok(())
 				},
 				Some(Event::<T, I>::UpdateAssignedRelayersNumber(number)),
 			)
@@ -379,12 +373,9 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// - The enrolled relayer wants to update fee or order capacity.
 	/// - The enrolled relayer wants to cancel enrollment.
 	/// - The order didn't confirm in-time, slash occurred.
-	pub(crate) fn update_market<F>(
-		f: F,
-		has_event: Option<Event<T, I>>,
-	) -> DispatchResultWithPostInfo
+	pub(crate) fn update_market<F>(f: F, has_event: Option<Event<T, I>>) -> DispatchResult
 	where
-		F: FnOnce() -> DispatchResultWithPostInfo,
+		F: FnOnce() -> DispatchResult,
 	{
 		f()?;
 
@@ -417,7 +408,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			<AssignedRelayers<T, I>>::kill();
 		}
 
-		Ok(().into())
+		Ok(())
 	}
 
 	/// Update relayer after slash occurred, this will changes RelayersMap storage. (Update market
@@ -440,7 +431,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 						r.collateral = new_collateral;
 					}
 				});
-				Ok(().into())
+				Ok(())
 			},
 			Some(<Event<T, I>>::FeeMarketSlash(report)),
 		);
