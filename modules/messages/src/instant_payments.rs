@@ -76,13 +76,13 @@ where
 				// if we'll accept some message that has declared that the `fee` has been paid but
 				// it isn't actually paid, then it'll lead to problems with delivery confirmation
 				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
-				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE)
+				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE);
 			},
 			None => {
 				// message lane verifier has accepted the message before, so this message
 				// is unpaid **by design**
 				// => let's just do nothing
-				return Ok(())
+				return Ok(());
 			},
 		};
 
@@ -183,7 +183,7 @@ fn pay_relayers_rewards<Currency, AccountId>(
 			// If delivery confirmation is submitted by this relayer, let's add confirmation fee
 			// from other relayers to this relayer reward.
 			confirmation_relayer_reward = confirmation_relayer_reward.saturating_add(reward.reward);
-			continue
+			continue;
 		}
 
 		pay_relayer_reward::<Currency, _>(relayer_fund_account, &relayer, relayer_reward);
@@ -207,7 +207,7 @@ fn pay_relayer_reward<Currency, AccountId>(
 	Currency: CurrencyT<AccountId>,
 {
 	if reward.is_zero() {
-		return
+		return;
 	}
 
 	let pay_result = Currency::transfer(

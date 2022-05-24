@@ -306,9 +306,8 @@ where
 		target_client.best_finalized_source_block_id().await.map_err(Error::Target)?;
 	let best_number_at_target = best_id_at_target.0;
 
-	let different_hash_at_source = ensure_same_fork::<P, _>(&best_id_at_target, source_client)
-		.await
-		.map_err(Error::Source)?;
+	let different_hash_at_source =
+		ensure_same_fork::<P, _>(&best_id_at_target, source_client).await.map_err(Error::Source)?;
 	let using_same_fork = different_hash_at_source.is_none();
 	if let Some(ref different_hash_at_source) = different_hash_at_source {
 		log::error!(
@@ -344,9 +343,9 @@ where
 				P::TARGET_NAME,
 			);
 
-			return Err(Error::Stalled)
+			return Err(Error::Stalled);
 		} else {
-			return Ok(Some(last_transaction))
+			return Ok(Some(last_transaction));
 		}
 	}
 
@@ -421,7 +420,7 @@ where
 		_ if sync_params.only_mandatory_headers => {
 			// we are not reading finality proofs from the stream, so eventually it'll break
 			// but we don't care about transient proofs at all, so it is acceptable
-			return Ok(None)
+			return Ok(None);
 		},
 		SelectedFinalityProof::Regular(unjustified_headers, header, finality_proof) =>
 			(unjustified_headers, Some((header, finality_proof))),
@@ -499,16 +498,14 @@ pub(crate) async fn read_missing_headers<
 	let mut selected_finality_proof = None;
 	let mut header_number = best_number_at_target + One::one();
 	while header_number <= best_number_at_source {
-		let (header, finality_proof) = source_client
-			.header_and_finality_proof(header_number)
-			.await
-			.map_err(Error::Source)?;
+		let (header, finality_proof) =
+			source_client.header_and_finality_proof(header_number).await.map_err(Error::Source)?;
 		let is_mandatory = header.is_mandatory();
 
 		match (is_mandatory, finality_proof) {
 			(true, Some(finality_proof)) => {
 				log::trace!(target: "bridge", "Header {:?} is mandatory", header_number);
-				return Ok(SelectedFinalityProof::Mandatory(header, finality_proof))
+				return Ok(SelectedFinalityProof::Mandatory(header, finality_proof));
 			},
 			(true, None) => return Err(Error::MissingMandatoryFinalityProof(header.number())),
 			(false, Some(finality_proof)) => {
@@ -555,7 +552,7 @@ pub(crate) fn read_finality_proofs_from_stream<
 			Some(Some(finality_proof)) => finality_proof,
 			Some(None) => {
 				finality_proofs_stream.needs_restart = true;
-				break
+				break;
 			},
 			None => break,
 		};
@@ -596,7 +593,7 @@ pub(crate) fn select_better_recent_finality_proof<P: FinalitySyncPipeline>(
 			P::SOURCE_NAME,
 			selected_finality_proof.as_ref().map(|(h, _)| h.number()),
 		);
-		return selected_finality_proof
+		return selected_finality_proof;
 	}
 
 	const NOT_EMPTY_PROOF: &str = "we have checked that the vec is not empty; qed";
@@ -635,7 +632,7 @@ pub(crate) fn select_better_recent_finality_proof<P: FinalitySyncPipeline>(
 		if has_selected_finality_proof { "improved" } else { "not improved" },
 	);
 	if !has_selected_finality_proof {
-		return selected_finality_proof
+		return selected_finality_proof;
 	}
 
 	// now remove all obsolete headers and extract selected header
@@ -671,15 +668,15 @@ fn print_sync_progress<P: FinalitySyncPipeline>(
 	let (prev_time, prev_best_number_at_target) = progress_context;
 	let now = Instant::now();
 
-	let need_update = now - prev_time > Duration::from_secs(10) ||
-		prev_best_number_at_target
+	let need_update = now - prev_time > Duration::from_secs(10)
+		|| prev_best_number_at_target
 			.map(|prev_best_number_at_target| {
 				best_number_at_target.saturating_sub(prev_best_number_at_target) > 10.into()
 			})
 			.unwrap_or(true);
 
 	if !need_update {
-		return (prev_time, prev_best_number_at_target)
+		return (prev_time, prev_best_number_at_target);
 	}
 
 	log::info!(

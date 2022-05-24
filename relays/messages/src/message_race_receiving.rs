@@ -75,11 +75,10 @@ pub async fn run<P: MessageLane>(
 struct ReceivingConfirmationsRace<P>(std::marker::PhantomData<P>);
 
 impl<P: MessageLane> MessageRace for ReceivingConfirmationsRace<P> {
-	type SourceHeaderId = TargetHeaderIdOf<P>;
-	type TargetHeaderId = SourceHeaderIdOf<P>;
-
 	type MessageNonce = MessageNonce;
 	type Proof = P::MessagesReceivingProof;
+	type SourceHeaderId = TargetHeaderIdOf<P>;
+	type TargetHeaderId = SourceHeaderIdOf<P>;
 
 	fn source_name() -> String {
 		format!("{}::ReceivingConfirmationsDelivery", P::TARGET_NAME)

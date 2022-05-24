@@ -758,7 +758,7 @@ impl<T: DeserializeOwned> Subscription<T> {
 			match subscription.next().await {
 				Some(Ok(item)) =>
 					if sender.send(Some(item)).await.is_err() {
-						break
+						break;
 					},
 				Some(Err(e)) => {
 					log::trace!(
@@ -769,7 +769,7 @@ impl<T: DeserializeOwned> Subscription<T> {
 						e,
 					);
 					let _ = sender.send(None).await;
-					break
+					break;
 				},
 				None => {
 					log::trace!(
@@ -779,7 +779,7 @@ impl<T: DeserializeOwned> Subscription<T> {
 						item_type,
 					);
 					let _ = sender.send(None).await;
-					break
+					break;
 				},
 			}
 		}

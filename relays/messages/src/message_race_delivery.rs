@@ -83,11 +83,10 @@ pub async fn run<P: MessageLane, Strategy: RelayStrategy>(
 struct MessageDeliveryRace<P>(std::marker::PhantomData<P>);
 
 impl<P: MessageLane> MessageRace for MessageDeliveryRace<P> {
-	type SourceHeaderId = SourceHeaderIdOf<P>;
-	type TargetHeaderId = TargetHeaderIdOf<P>;
-
 	type MessageNonce = MessageNonce;
 	type Proof = P::MessagesProof;
+	type SourceHeaderId = SourceHeaderIdOf<P>;
+	type TargetHeaderId = TargetHeaderIdOf<P>;
 
 	fn source_name() -> String {
 		format!("{}::MessagesDelivery", P::SOURCE_NAME)
@@ -306,8 +305,8 @@ where
 	SC: MessageLaneSourceClient<P>,
 	TC: MessageLaneTargetClient<P>,
 {
-	type SourceNoncesRange = MessageDetailsMap<P::SourceChainBalance>;
 	type ProofParameters = MessageProofParameters;
+	type SourceNoncesRange = MessageDetailsMap<P::SourceChainBalance>;
 	type TargetNoncesData = DeliveryRaceTargetNoncesData;
 
 	fn is_empty(&self) -> bool {
@@ -442,7 +441,7 @@ where
 					self.max_unconfirmed_nonces_at_target,
 				);
 
-				return None
+				return None;
 			},
 			_ => (),
 		}
@@ -462,8 +461,8 @@ where
 		// "unrewarded relayers" set. If we are unable to prove new rewards to the target node, then
 		// we should wait for confirmations race.
 		let unrewarded_relayer_entries_limit_reached =
-			target_nonces.nonces_data.unrewarded_relayers.unrewarded_relayer_entries >=
-				self.max_unrewarded_relayer_entries_at_target;
+			target_nonces.nonces_data.unrewarded_relayers.unrewarded_relayer_entries
+				>= self.max_unrewarded_relayer_entries_at_target;
 		if unrewarded_relayer_entries_limit_reached {
 			// so there are already too many unrewarded relayer entries in the set
 			//
@@ -471,10 +470,10 @@ where
 			// be paid
 			let number_of_rewards_being_proved =
 				latest_confirmed_nonce_at_source.saturating_sub(latest_confirmed_nonce_at_target);
-			let enough_rewards_being_proved = number_of_rewards_being_proved >=
-				target_nonces.nonces_data.unrewarded_relayers.messages_in_oldest_entry;
+			let enough_rewards_being_proved = number_of_rewards_being_proved
+				>= target_nonces.nonces_data.unrewarded_relayers.messages_in_oldest_entry;
 			if !enough_rewards_being_proved {
-				return None
+				return None;
 			}
 		}
 
@@ -577,10 +576,10 @@ mod tests {
 
 	const DEFAULT_DISPATCH_WEIGHT: Weight = 1;
 	const DEFAULT_SIZE: u32 = 1;
-	const DEFAULT_REWARD: TestSourceChainBalance = CONFIRMATION_TRANSACTION_COST +
-		BASE_MESSAGE_DELIVERY_TRANSACTION_COST +
-		DEFAULT_DISPATCH_WEIGHT +
-		(DEFAULT_SIZE as TestSourceChainBalance);
+	const DEFAULT_REWARD: TestSourceChainBalance = CONFIRMATION_TRANSACTION_COST
+		+ BASE_MESSAGE_DELIVERY_TRANSACTION_COST
+		+ DEFAULT_DISPATCH_WEIGHT
+		+ (DEFAULT_SIZE as TestSourceChainBalance);
 
 	type TestRaceState = RaceState<TestSourceHeaderId, TestTargetHeaderId, TestMessagesProof>;
 	type TestStrategy =
@@ -652,12 +651,8 @@ mod tests {
 		);
 
 		let target_nonces = TargetClientNonces { latest_nonce: 19, nonces_data: () };
-		race_strategy
-			.strategy
-			.best_target_nonces_updated(target_nonces.clone(), &mut race_state);
-		race_strategy
-			.strategy
-			.finalized_target_nonces_updated(target_nonces, &mut race_state);
+		race_strategy.strategy.best_target_nonces_updated(target_nonces.clone(), &mut race_state);
+		race_strategy.strategy.finalized_target_nonces_updated(target_nonces, &mut race_state);
 
 		(race_state, race_strategy)
 	}
@@ -720,8 +715,8 @@ mod tests {
 		// we need to wait until confirmations will be delivered by receiving race
 		strategy.latest_confirmed_nonces_at_source = vec![(
 			header_id(1),
-			strategy.target_nonces.as_ref().unwrap().latest_nonce -
-				strategy.max_unconfirmed_nonces_at_target,
+			strategy.target_nonces.as_ref().unwrap().latest_nonce
+				- strategy.max_unconfirmed_nonces_at_target,
 		)]
 		.into_iter()
 		.collect();

@@ -277,12 +277,12 @@ impl<Call> SignedExtensionT for SignedExtensions<Call>
 where
 	Call: Clone + Debug + Eq + PartialEq + Sync + Send + Codec + StaticTypeInfo + Dispatchable,
 {
-	const IDENTIFIER: &'static str = "Not needed.";
-
 	type AccountId = AccountId;
-	type Call = Call;
 	type AdditionalSigned = AdditionalSigned;
+	type Call = Call;
 	type Pre = ();
+
+	const IDENTIFIER: &'static str = "Not needed.";
 
 	fn additional_signed(&self) -> Result<Self::AdditionalSigned, TransactionValidityError> {
 		// we shall not ever see this error in relay, because we are never signing decoded
@@ -307,13 +307,12 @@ where
 #[derive(RuntimeDebug)]
 pub struct DarwiniaLike;
 impl Chain for DarwiniaLike {
+	type AccountId = AccountId;
+	type Balance = Balance;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
 	type Hasher = Hashing;
 	type Header = Header;
-
-	type AccountId = AccountId;
-	type Balance = Balance;
 	type Index = Nonce;
 	type Signature = Signature;
 
@@ -322,10 +321,7 @@ impl Chain for DarwiniaLike {
 	}
 
 	fn max_extrinsic_weight() -> Weight {
-		RuntimeBlockWeights::get()
-			.get(DispatchClass::Normal)
-			.max_extrinsic
-			.unwrap_or(Weight::MAX)
+		RuntimeBlockWeights::get().get(DispatchClass::Normal).max_extrinsic.unwrap_or(Weight::MAX)
 	}
 }
 

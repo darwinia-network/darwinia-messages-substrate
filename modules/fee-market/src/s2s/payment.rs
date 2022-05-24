@@ -62,13 +62,13 @@ where
 				// if we'll accept some message that has declared that the `fee` has been paid but
 				// it isn't actually paid, then it'll lead to problems with delivery confirmation
 				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
-				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE)
+				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE);
 			},
 			None => {
 				// message lane verifier has accepted the message before, so this message
 				// is unpaid **by design**
 				// => let's just do nothing
-				return Ok(())
+				return Ok(());
 			},
 		};
 
@@ -255,7 +255,7 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 				report,
 			);
 			log::trace!("Slash {:?} amount: {:?}", who, amount);
-			return amount
+			return amount;
 		},
 		Err(e) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
@@ -273,7 +273,7 @@ pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 	reward: BalanceOf<T, I>,
 ) {
 	if reward.is_zero() {
-		return
+		return;
 	}
 
 	let pay_result = <T as Config<I>>::Currency::transfer(
