@@ -417,7 +417,6 @@ impl SenderOrigin<AccountId> for Origin {
 }
 
 frame_support::parameter_types! {
-	pub const FeeMarketPalletId: PalletId = PalletId(*b"da/feemk");
 	pub const TreasuryPalletId: PalletId = PalletId(*b"da/trsry");
 	pub const FeeMarketLockId: LockIdentifier = *b"da/feelf";
 	pub const MinimumRelayFee: Balance = 30;
@@ -533,6 +532,10 @@ fn test_call_relayer_enroll_works() {
 			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 200, None),
 			<Error<Test>>::InsufficientBalance
 		);
+		assert_err!(
+			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 99, None),
+			<Error<Test>>::CollateralTooLow
+		);
 
 		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None));
 		assert!(FeeMarket::is_enrolled(&1));
@@ -545,10 +548,6 @@ fn test_call_relayer_enroll_works() {
 			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None),
 			<Error<Test>>::AlreadyEnrolled
 		);
-
-		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 250, None));
-
-		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(4), 0, None),);
 	});
 }
 
@@ -563,14 +562,11 @@ fn test_call_relayer_increase_lock_collateral_works() {
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(12), 200, None);
 		assert_eq!(FeeMarket::relayer_locked_collateral(&12), 200);
 
-		// Increase locked balance from 200 to 500
+		// Increase locked collateral from 200 to 500
 		assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 500));
 		assert_eq!(FeeMarket::relayer_locked_collateral(&12), 500);
 
-		// Increase locked balance from 20 to 200
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(13), 20, None);
-		assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(13), 200));
-
+		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(13), 200, None);
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(14), 300, None);
 		let market_fee = FeeMarket::market_fee().unwrap();
 		let _ = send_regular_message(market_fee);
