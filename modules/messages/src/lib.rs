@@ -170,14 +170,12 @@ pub mod pallet {
 		type TargetHeaderChain: TargetHeaderChain<Self::OutboundPayload, Self::AccountId>;
 		/// Message payload verifier.
 		type LaneMessageVerifier: LaneMessageVerifier<
-			Self::Origin,
 			Self::AccountId,
 			Self::OutboundPayload,
 			Self::OutboundMessageFee,
 		>;
 		/// Message delivery payment.
 		type MessageDeliveryAndDispatchPayment: MessageDeliveryAndDispatchPayment<
-			Self::Origin,
 			Self::AccountId,
 			Self::OutboundMessageFee,
 		>;
@@ -278,12 +276,16 @@ pub mod pallet {
 			payload: T::OutboundPayload,
 			delivery_and_dispatch_fee: T::OutboundMessageFee,
 		) -> DispatchResultWithPostInfo {
-			crate::send_message::<T, I>(origin, lane_id, payload, delivery_and_dispatch_fee).map(
-				|sent_message| PostDispatchInfo {
-					actual_weight: Some(sent_message.weight),
-					pays_fee: Pays::Yes,
-				},
+			crate::send_message::<T, I>(
+				origin.into().map_err(|_| BadOrigin)?,
+				lane_id,
+				payload,
+				delivery_and_dispatch_fee,
 			)
+			.map(|sent_message| PostDispatchInfo {
+				actual_weight: Some(sent_message.weight),
+				pays_fee: Pays::Yes,
+			})
 		}
 
 		/// Pay additional fee for the message.
@@ -311,15 +313,17 @@ pub mod pallet {
 			);
 
 			// withdraw additional fee from submitter
+			let submitter = origin.into().map_err(|_| BadOrigin)?;
 			T::MessageDeliveryAndDispatchPayment::pay_delivery_and_dispatch_fee(
-				&origin,
+				&submitter,
 				&additional_fee,
 				&relayer_fund_account_id::<T::AccountId, T::AccountIdConverter>(),
 			)
 			.map_err(|err| {
 				log::trace!(
 					target: "runtime::bridge-messages",
-					"Submitter can't pay additional fee {:?} for the message {:?}/{:?} to {:?}: {:?}",
+					"Submitter {:?} can't pay additional fee {:?} for the message {:?}/{:?} to {:?}: {:?}",
+					submitter,
 					additional_fee,
 					lane_id,
 					nonce,
@@ -760,6 +764,40 @@ pub mod pallet {
 		) -> Option<MessageData<T::OutboundMessageFee>> {
 			OutboundMessages::<T, I>::get(MessageKey { lane_id: lane, nonce })
 		}
+
+		/// Get nonce of the latest generated message at given outbound lane.
+		pub fn outbound_latest_generated_nonce(lane: LaneId) -> MessageNonce {
+			OutboundLanes::<T, I>::get(&lane).latest_generated_nonce
+		}
+
+		/// Get nonce of the latest confirmed message at given outbound lane.
+		pub fn outbound_latest_received_nonce(lane: LaneId) -> MessageNonce {
+			OutboundLanes::<T, I>::get(&lane).latest_received_nonce
+		}
+
+		/// Get nonce of the latest received message at given inbound lane.
+		pub fn inbound_latest_received_nonce(lane: LaneId) -> MessageNonce {
+			InboundLanes::<T, I>::get(&lane).last_delivered_nonce()
+		}
+		/// Get nonce of the latest confirmed message at given inbound lane.
+		pub fn inbound_latest_confirmed_nonce(lane: LaneId) -> MessageNonce {
+			InboundLanes::<T, I>::get(&lane).last_confirmed_nonce
+		}
+
+		/// Get state of unrewarded relayers set.
+		pub fn inbound_unrewarded_relayers_state(
+			lane: bp_messages::LaneId,
+		) -> bp_messages::UnrewardedRelayersState {
+			let relayers = InboundLanes::<T, I>::get(&lane).relayers;
+			bp_messages::UnrewardedRelayersState {
+				unrewarded_relayer_entries: relayers.len() as _,
+				messages_in_oldest_entry: relayers
+					.front()
+					.map(|entry| 1 + entry.messages.end - entry.messages.begin)
+					.unwrap_or(0),
+				total_messages: total_unrewarded_messages(&relayers).unwrap_or(MessageNonce::MAX),
+			}
+		}
 	}
 }
 
@@ -776,7 +814,6 @@ pub fn relayer_fund_account_id<AccountId, AccountIdConverter: Convert<H256, Acco
 
 impl<T, I>
 	bp_messages::source_chain::MessagesBridge<
-		T::Origin,
 		T::AccountId,
 		T::OutboundMessageFee,
 		T::OutboundPayload,
@@ -788,7 +825,7 @@ where
 	type Error = sp_runtime::DispatchErrorWithPostInfo<PostDispatchInfo>;
 
 	fn send_message(
-		sender: T::Origin,
+		sender: bp_messages::source_chain::Sender<T::AccountId>,
 		lane: LaneId,
 		message: T::OutboundPayload,
 		delivery_and_dispatch_fee: T::OutboundMessageFee,
@@ -799,7 +836,7 @@ where
 
 /// Function that actually sends message.
 fn send_message<T: Config<I>, I: 'static>(
-	submitter: T::Origin,
+	submitter: bp_messages::source_chain::Sender<T::AccountId>,
 	lane_id: LaneId,
 	payload: T::OutboundPayload,
 	delivery_and_dispatch_fee: T::OutboundMessageFee,
@@ -853,8 +890,9 @@ fn send_message<T: Config<I>, I: 'static>(
 	.map_err(|err| {
 		log::trace!(
 			target: "runtime::bridge-messages",
-			"Message to lane {:?} is rejected because submitter is unable to pay fee {:?}: {:?}",
+			"Message to lane {:?} is rejected because submitter {:?} is unable to pay fee {:?}: {:?}",
 			lane_id,
+			submitter,
 			delivery_and_dispatch_fee,
 			err,
 		);
@@ -958,7 +996,7 @@ pub fn inbound_lane<T: Config<I>, I: 'static>(
 }
 
 /// Creates new runtime inbound lane storage.
-fn inbound_lane_storage<T: Config<I>, I: 'static>(
+pub fn inbound_lane_storage<T: Config<I>, I: 'static>(
 	lane_id: LaneId,
 ) -> RuntimeInboundLaneStorage<T, I> {
 	RuntimeInboundLaneStorage {

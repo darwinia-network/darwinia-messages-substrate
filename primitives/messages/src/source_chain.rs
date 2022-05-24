@@ -28,21 +28,7 @@ use sp_std::{
 };
 
 /// The sender of the message on the source chain.
-pub trait SenderOrigin<AccountId> {
-	/// Return id of the account that is sending this message.
-	///
-	/// In regular messages configuration, when regular message is sent you'll always get `Some(_)`
-	/// from this call. This is the account that is paying send costs. However, there are some
-	/// examples when `None` may be returned from the call:
-	///
-	/// - if the send-message call origin is either `frame_system::RawOrigin::Root` or
-	///   `frame_system::RawOrigin::None` and your configuration forbids such messages;
-	/// - if your configuration allows 'unpaid' messages sent by pallets. Then the pallet may just
-	///   use its own defined origin (not linked to any account) and the message will be accepted.
-	///   This may be useful for pallets that are sending important system-wide information (like
-	///   update of runtime version).
-	fn linked_account(&self) -> Option<AccountId>;
-}
+pub type Sender<AccountId> = frame_system::RawOrigin<AccountId>;
 
 /// Relayers rewards, grouped by relayer account id.
 pub type RelayersRewards<AccountId, Balance> = BTreeMap<AccountId, RelayerRewards<Balance>>;
@@ -96,14 +82,14 @@ pub trait TargetHeaderChain<Payload, AccountId> {
 /// Lane3 until some block, ...), then it may be built using this verifier.
 ///
 /// Any fee requirements should also be enforced here.
-pub trait LaneMessageVerifier<SenderOrigin, Submitter, Payload, Fee> {
+pub trait LaneMessageVerifier<Submitter, Payload, Fee> {
 	/// Error type.
 	type Error: Debug + Into<&'static str>;
 
 	/// Verify message payload and return Ok(()) if message is valid and allowed to be sent over the
 	/// lane.
 	fn verify_message(
-		submitter: &SenderOrigin,
+		submitter: &Sender<Submitter>,
 		delivery_and_dispatch_fee: &Fee,
 		lane: &LaneId,
 		outbound_data: &OutboundLaneData,
@@ -124,14 +110,14 @@ pub trait LaneMessageVerifier<SenderOrigin, Submitter, Payload, Fee> {
 /// So to be sure that any non-altruist relayer would agree to deliver message, submitter
 /// should set `delivery_and_dispatch_fee` to at least (equivalent of): sum of fees from (2)
 /// to (4) above, plus some interest for the relayer.
-pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
+pub trait MessageDeliveryAndDispatchPayment<AccountId, Balance> {
 	/// Error type.
 	type Error: Debug + Into<&'static str>;
 
 	/// Withhold/write-off delivery_and_dispatch_fee from submitter account to
 	/// some relayers-fund account.
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &SenderOrigin,
+		submitter: &Sender<AccountId>,
 		fee: &Balance,
 		relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error>;
@@ -159,7 +145,7 @@ pub struct SendMessageArtifacts {
 }
 
 /// Messages bridge API to be used from other pallets.
-pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
+pub trait MessagesBridge<AccountId, Balance, Payload> {
 	/// Error type.
 	type Error: Debug;
 
@@ -167,7 +153,7 @@ pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
 	///
 	/// Returns unique message nonce or error if send has failed.
 	fn send_message(
-		sender: SenderOrigin,
+		sender: Sender<AccountId>,
 		lane: LaneId,
 		message: Payload,
 		delivery_and_dispatch_fee: Balance,
@@ -178,13 +164,13 @@ pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
 #[derive(RuntimeDebug, PartialEq)]
 pub struct NoopMessagesBridge;
 
-impl<SenderOrigin, AccountId, Balance, Payload>
-	MessagesBridge<SenderOrigin, AccountId, Balance, Payload> for NoopMessagesBridge
+impl<AccountId, Balance, Payload> MessagesBridge<AccountId, Balance, Payload>
+	for NoopMessagesBridge
 {
 	type Error = &'static str;
 
 	fn send_message(
-		_sender: SenderOrigin,
+		_sender: Sender<AccountId>,
 		_lane: LaneId,
 		_message: Payload,
 		_delivery_and_dispatch_fee: Balance,
@@ -259,13 +245,13 @@ impl<Payload, AccountId> TargetHeaderChain<Payload, AccountId> for ForbidOutboun
 	}
 }
 
-impl<SenderOrigin, Submitter, Payload, Fee>
-	LaneMessageVerifier<SenderOrigin, Submitter, Payload, Fee> for ForbidOutboundMessages
+impl<Submitter, Payload, Fee> LaneMessageVerifier<Submitter, Payload, Fee>
+	for ForbidOutboundMessages
 {
 	type Error = &'static str;
 
 	fn verify_message(
-		_submitter: &SenderOrigin,
+		_submitter: &Sender<Submitter>,
 		_delivery_and_dispatch_fee: &Fee,
 		_lane: &LaneId,
 		_outbound_data: &OutboundLaneData,
@@ -275,13 +261,13 @@ impl<SenderOrigin, Submitter, Payload, Fee>
 	}
 }
 
-impl<SenderOrigin, AccountId, Balance>
-	MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> for ForbidOutboundMessages
+impl<AccountId, Balance> MessageDeliveryAndDispatchPayment<AccountId, Balance>
+	for ForbidOutboundMessages
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		_submitter: &SenderOrigin,
+		_submitter: &Sender<AccountId>,
 		_fee: &Balance,
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
