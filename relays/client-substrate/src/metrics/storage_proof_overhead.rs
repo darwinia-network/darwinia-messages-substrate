@@ -58,10 +58,8 @@ impl<C: Chain> StorageProofOverheadMetric<C> {
 		let best_header_hash = self.client.best_finalized_header_hash().await?;
 		let best_header = self.client.header_by_hash(best_header_hash).await?;
 
-		let storage_proof = self
-			.client
-			.prove_storage(vec![StorageKey(CODE.to_vec())], best_header_hash)
-			.await?;
+		let storage_proof =
+			self.client.prove_storage(vec![StorageKey(CODE.to_vec())], best_header_hash).await?;
 		let storage_proof_size: usize = storage_proof.clone().iter_nodes().map(|n| n.len()).sum();
 
 		let storage_value_reader = bp_runtime::StorageProofChecker::<C::Hasher>::new(
@@ -93,9 +91,7 @@ impl<C: Chain> StandaloneMetric for StorageProofOverheadMetric<C> {
 	async fn update(&self) {
 		relay_utils::metrics::set_gauge_value(
 			&self.metric,
-			self.compute_storage_proof_overhead()
-				.await
-				.map(|overhead| Some(overhead as u64)),
+			self.compute_storage_proof_overhead().await.map(|overhead| Some(overhead as u64)),
 		);
 	}
 }

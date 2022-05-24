@@ -42,7 +42,7 @@ where
 	pub fn new(root: H::Out, proof: StorageProof) -> Result<Self, Error> {
 		let db = proof.into_memory_db();
 		if !db.contains(&root, EMPTY_PREFIX) {
-			return Err(Error::StorageRootMismatch)
+			return Err(Error::StorageRootMismatch);
 		}
 
 		let checker = StorageProofChecker { root, db };
@@ -86,9 +86,7 @@ pub fn craft_valid_storage_proof() -> (sp_core::H256, StorageProof) {
 	));
 	let root = backend.storage_root(std::iter::empty(), state_version).0;
 	let proof = StorageProof::new(
-		prove_read(backend, &[&b"key1"[..], &b"key2"[..], &b"key22"[..]])
-			.unwrap()
-			.iter_nodes(),
+		prove_read(backend, &[&b"key1"[..], &b"key2"[..], &b"key22"[..]]).unwrap().iter_nodes(),
 	);
 
 	(root, proof)

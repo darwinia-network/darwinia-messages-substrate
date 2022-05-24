@@ -47,6 +47,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 pub struct WeightToFee;
 impl WeightToFeePolynomial for WeightToFee {
 	type Balance = Balance;
+
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 		const CENTS: Balance = 10_000_000_000 / 100;
 		// in Polkadot, extrinsic base weight (smallest non-zero weight) is mapped to 1/10 CENT:

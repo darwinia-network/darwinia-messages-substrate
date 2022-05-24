@@ -212,8 +212,6 @@ impl<Block: BlockT> BlockWithJustification<Block::Header> for SignedBlock<Block>
 	}
 
 	fn justification(&self) -> Option<&EncodedJustification> {
-		self.justifications
-			.as_ref()
-			.and_then(|j| j.get(sp_finality_grandpa::GRANDPA_ENGINE_ID))
+		self.justifications.as_ref().and_then(|j| j.get(sp_finality_grandpa::GRANDPA_ENGINE_ID))
 	}
 }

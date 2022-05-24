@@ -102,30 +102,30 @@ parameter_types! {
 }
 
 impl frame_system::Config for TestRuntime {
-	type Origin = Origin;
-	type Index = u64;
-	type Call = Call;
+	type AccountData = pallet_balances::AccountData<Balance>;
+	type AccountId = AccountId;
+	type BaseCallFilter = frame_support::traits::Everything;
+	type BlockHashCount = BlockHashCount;
+	type BlockLength = ();
 	type BlockNumber = u64;
+	type BlockWeights = ();
+	type Call = Call;
+	type DbWeight = DbWeight;
+	type Event = Event;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = SubstrateHeader;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type BaseCallFilter = frame_support::traits::Everything;
-	type SystemWeightInfo = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = DbWeight;
-	type SS58Prefix = ();
-	type OnSetCode = ();
+	type Index = u64;
+	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type OnKilledAccount = ();
+	type OnNewAccount = ();
+	type OnSetCode = ();
+	type Origin = Origin;
+	type PalletInfo = PalletInfo;
+	type SS58Prefix = ();
+	type SystemWeightInfo = ();
+	type Version = ();
 }
 
 parameter_types! {
@@ -133,15 +133,15 @@ parameter_types! {
 }
 
 impl pallet_balances::Config for TestRuntime {
-	type MaxLocks = ();
+	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<TestRuntime>;
-	type WeightInfo = ();
+	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -167,31 +167,26 @@ impl MessagesParameter for TestMessagesParameter {
 }
 
 impl Config for TestRuntime {
-	type Event = Event;
-	type WeightInfo = ();
-	type Parameter = TestMessagesParameter;
-	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
-
-	type OutboundPayload = TestPayload;
-	type OutboundMessageFee = TestMessageFee;
-
-	type InboundPayload = TestPayload;
-	type InboundMessageFee = TestMessageFee;
-	type InboundRelayer = TestRelayer;
-
 	type AccountIdConverter = AccountIdConverter;
-
-	type TargetHeaderChain = TestTargetHeaderChain;
-	type LaneMessageVerifier = TestLaneMessageVerifier;
-	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
-	type OnMessageAccepted = TestOnMessageAccepted;
-	type OnDeliveryConfirmed = (TestOnDeliveryConfirmed1, TestOnDeliveryConfirmed2);
-
-	type SourceHeaderChain = TestSourceHeaderChain;
-	type MessageDispatch = TestMessageDispatch;
 	type BridgedChainId = TestBridgedChainId;
+	type Event = Event;
+	type InboundMessageFee = TestMessageFee;
+	type InboundPayload = TestPayload;
+	type InboundRelayer = TestRelayer;
+	type LaneMessageVerifier = TestLaneMessageVerifier;
+	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
+	type MessageDispatch = TestMessageDispatch;
+	type OnDeliveryConfirmed = (TestOnDeliveryConfirmed1, TestOnDeliveryConfirmed2);
+	type OnMessageAccepted = TestOnMessageAccepted;
+	type OutboundMessageFee = TestMessageFee;
+	type OutboundPayload = TestPayload;
+	type Parameter = TestMessagesParameter;
+	type SourceHeaderChain = TestSourceHeaderChain;
+	type TargetHeaderChain = TestTargetHeaderChain;
+	type WeightInfo = ();
 }
 
 impl SenderOrigin<AccountId> for Origin {
@@ -282,7 +277,6 @@ pub struct TestTargetHeaderChain;
 
 impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 	type Error = &'static str;
-
 	type MessagesDeliveryProof = TestMessagesDeliveryProof;
 
 	fn verify_message(payload: &TestPayload) -> Result<(), Self::Error> {
@@ -359,7 +353,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
 		if frame_support::storage::unhashed::get(b":reject-message-fee:") == Some(true) {
-			return Err(TEST_ERROR)
+			return Err(TEST_ERROR);
 		}
 
 		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();
@@ -471,7 +465,6 @@ pub struct TestSourceHeaderChain;
 
 impl SourceHeaderChain<TestMessageFee> for TestSourceHeaderChain {
 	type Error = &'static str;
-
 	type MessagesProof = TestMessagesProof;
 
 	fn verify_messages_proof(

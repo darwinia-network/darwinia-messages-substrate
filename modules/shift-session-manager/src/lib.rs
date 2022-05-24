@@ -51,11 +51,13 @@ pub mod pallet {
 
 impl<T: Config> pallet_session::SessionManager<T::ValidatorId> for Pallet<T> {
 	fn end_session(_: sp_staking::SessionIndex) {}
+
 	fn start_session(_: sp_staking::SessionIndex) {}
+
 	fn new_session(session_index: sp_staking::SessionIndex) -> Option<Vec<T::ValidatorId>> {
 		// we don't want to add even more fields to genesis config => just return None
 		if session_index == 0 || session_index == 1 {
-			return None
+			return None;
 		}
 
 		// the idea that on first call (i.e. when session 1 ends) we're reading current
@@ -140,30 +142,30 @@ mod tests {
 	}
 
 	impl frame_system::Config for TestRuntime {
-		type Origin = Origin;
-		type Index = u64;
-		type Call = Call;
+		type AccountData = ();
+		type AccountId = AccountId;
+		type BaseCallFilter = frame_support::traits::Everything;
+		type BlockHashCount = BlockHashCount;
+		type BlockLength = ();
 		type BlockNumber = u64;
+		type BlockWeights = ();
+		type Call = Call;
+		type DbWeight = ();
+		type Event = ();
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
-		type AccountId = AccountId;
-		type Lookup = IdentityLookup<Self::AccountId>;
 		type Header = Header;
-		type Event = ();
-		type BlockHashCount = BlockHashCount;
-		type Version = ();
-		type PalletInfo = PalletInfo;
-		type AccountData = ();
-		type OnNewAccount = ();
-		type OnKilledAccount = ();
-		type BaseCallFilter = frame_support::traits::Everything;
-		type SystemWeightInfo = ();
-		type BlockWeights = ();
-		type BlockLength = ();
-		type DbWeight = ();
-		type SS58Prefix = ();
-		type OnSetCode = ();
+		type Index = u64;
+		type Lookup = IdentityLookup<Self::AccountId>;
 		type MaxConsumers = frame_support::traits::ConstU32<16>;
+		type OnKilledAccount = ();
+		type OnNewAccount = ();
+		type OnSetCode = ();
+		type Origin = Origin;
+		type PalletInfo = PalletInfo;
+		type SS58Prefix = ();
+		type SystemWeightInfo = ();
+		type Version = ();
 	}
 
 	parameter_types! {
@@ -173,13 +175,13 @@ mod tests {
 
 	impl pallet_session::Config for TestRuntime {
 		type Event = ();
+		type Keys = UintAuthorityId;
+		type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+		type SessionHandler = TestSessionHandler;
+		type SessionManager = ();
+		type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
 		type ValidatorId = <Self as frame_system::Config>::AccountId;
 		type ValidatorIdOf = ConvertInto;
-		type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-		type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-		type SessionManager = ();
-		type SessionHandler = TestSessionHandler;
-		type Keys = UintAuthorityId;
 		type WeightInfo = ();
 	}
 
@@ -219,9 +221,7 @@ mod tests {
 			}
 		});
 
-		pallet_session::GenesisConfig::<TestRuntime> { keys }
-			.assimilate_storage(&mut t)
-			.unwrap();
+		pallet_session::GenesisConfig::<TestRuntime> { keys }.assimilate_storage(&mut t).unwrap();
 		TestExternalities::new(t)
 	}
 

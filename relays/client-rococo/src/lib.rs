@@ -40,13 +40,12 @@ pub type SyncHeader = relay_substrate_client::SyncHeader<bp_rococo::Header>;
 pub struct Rococo;
 
 impl ChainBase for Rococo {
+	type AccountId = bp_rococo::AccountId;
+	type Balance = bp_rococo::Balance;
 	type BlockNumber = bp_rococo::BlockNumber;
 	type Hash = bp_rococo::Hash;
 	type Hasher = bp_rococo::Hashing;
 	type Header = bp_rococo::Header;
-
-	type AccountId = bp_rococo::AccountId;
-	type Balance = bp_rococo::Balance;
 	type Index = bp_rococo::Nonce;
 	type Signature = bp_rococo::Signature;
 
@@ -60,17 +59,17 @@ impl ChainBase for Rococo {
 }
 
 impl Chain for Rococo {
-	const NAME: &'static str = "Rococo";
-	const TOKEN_ID: Option<&'static str> = None;
+	type Call = crate::runtime::Call;
+	type SignedBlock = bp_rococo::SignedBlock;
+	type WeightToFee = bp_rococo::WeightToFee;
+
+	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
 	const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
 		bp_rococo::BEST_FINALIZED_ROCOCO_HEADER_METHOD;
-	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
-	const STORAGE_PROOF_OVERHEAD: u32 = bp_rococo::EXTRA_STORAGE_PROOF_SIZE;
 	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = bp_rococo::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
-
-	type SignedBlock = bp_rococo::SignedBlock;
-	type Call = crate::runtime::Call;
-	type WeightToFee = bp_rococo::WeightToFee;
+	const NAME: &'static str = "Rococo";
+	const STORAGE_PROOF_OVERHEAD: u32 = bp_rococo::EXTRA_STORAGE_PROOF_SIZE;
+	const TOKEN_ID: Option<&'static str> = None;
 }
 
 impl ChainWithGrandpa for Rococo {
@@ -78,17 +77,18 @@ impl ChainWithGrandpa for Rococo {
 }
 
 impl ChainWithMessages for Rococo {
-	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
-		bp_rococo::WITH_ROCOCO_MESSAGES_PALLET_NAME;
-	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-		bp_rococo::TO_ROCOCO_MESSAGE_DETAILS_METHOD;
-	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
-		bp_rococo::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
-	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
-		bp_rococo::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	type WeightInfo = ();
+
 	const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce =
 		bp_rococo::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	type WeightInfo = ();
+	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
+		bp_rococo::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
+		bp_rococo::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
+	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
+		bp_rococo::TO_ROCOCO_MESSAGE_DETAILS_METHOD;
+	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
+		bp_rococo::WITH_ROCOCO_MESSAGES_PALLET_NAME;
 }
 
 impl ChainWithBalances for Rococo {
@@ -98,8 +98,8 @@ impl ChainWithBalances for Rococo {
 }
 
 impl TransactionSignScheme for Rococo {
-	type Chain = Rococo;
 	type AccountKeyPair = sp_core::sr25519::Pair;
+	type Chain = Rococo;
 	type SignedTransaction = crate::runtime::UncheckedExtrinsic;
 
 	fn sign_transaction(param: SignParam<Self>) -> Result<Self::SignedTransaction, SubstrateError> {

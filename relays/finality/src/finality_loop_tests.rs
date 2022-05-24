@@ -61,13 +61,13 @@ impl MaybeConnectionError for TestError {
 struct TestFinalitySyncPipeline;
 
 impl FinalitySyncPipeline for TestFinalitySyncPipeline {
+	type FinalityProof = TestFinalityProof;
+	type Hash = TestHash;
+	type Header = TestSourceHeader;
+	type Number = TestNumber;
+
 	const SOURCE_NAME: &'static str = "TestSource";
 	const TARGET_NAME: &'static str = "TestTarget";
-
-	type Hash = TestHash;
-	type Number = TestNumber;
-	type Header = TestSourceHeader;
-	type FinalityProof = TestFinalityProof;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -448,9 +448,8 @@ fn read_finality_proofs_from_stream_works() {
 	assert!(!stream.needs_restart);
 
 	// when stream has entry with target, it is added to the recent proofs container
-	let mut stream = futures::stream::iter(vec![TestFinalityProof(4)])
-		.chain(futures::stream::pending())
-		.into();
+	let mut stream =
+		futures::stream::iter(vec![TestFinalityProof(4)]).chain(futures::stream::pending()).into();
 	read_finality_proofs_from_stream::<TestFinalitySyncPipeline, _>(
 		&mut stream,
 		&mut recent_finality_proofs,

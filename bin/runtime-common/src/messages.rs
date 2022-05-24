@@ -243,9 +243,7 @@ pub mod source {
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash> {
 		fn size_hint(&self) -> u32 {
 			u32::try_from(
-				self.storage_proof
-					.iter()
-					.fold(0usize, |sum, node| sum.saturating_add(node.len())),
+				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
 			.unwrap_or(u32::MAX)
 		}
@@ -310,7 +308,7 @@ pub mod source {
 		) -> Result<(), Self::Error> {
 			// reject message if lane is blocked
 			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
-				return Err(MESSAGE_REJECTED_BY_OUTBOUND_LANE)
+				return Err(MESSAGE_REJECTED_BY_OUTBOUND_LANE);
 			}
 
 			// reject message if there are too many pending messages at this lane
@@ -319,7 +317,7 @@ pub mod source {
 				.latest_generated_nonce
 				.saturating_sub(lane_outbound_data.latest_received_nonce);
 			if pending_messages > max_pending_messages {
-				return Err(TOO_MANY_PENDING_MESSAGES)
+				return Err(TOO_MANY_PENDING_MESSAGES);
 			}
 
 			// Do the dispatch-specific check. We assume that the target chain uses
@@ -348,7 +346,7 @@ pub mod source {
 
 			// compare with actual fee paid
 			if *delivery_and_dispatch_fee < minimal_fee_in_this_tokens {
-				return Err(TOO_LOW_FEE)
+				return Err(TOO_LOW_FEE);
 			}
 
 			Ok(())
@@ -370,7 +368,7 @@ pub mod source {
 	) -> Result<(), &'static str> {
 		let weight_limits = BridgedChain::<B>::message_weight_limits(&payload.call);
 		if !weight_limits.contains(&payload.weight.into()) {
-			return Err("Incorrect message weight declared")
+			return Err("Incorrect message weight declared");
 		}
 
 		// The maximal size of extrinsic at Substrate-based chain depends on the
@@ -384,7 +382,7 @@ pub mod source {
 		// transaction also contains signatures and signed extensions. Because of this, we reserve
 		// 1/3 of the the maximal extrinsic weight for this data.
 		if payload.call.len() > maximal_message_size::<B>() as usize {
-			return Err("The message is too large to be sent over the lane")
+			return Err("The message is too large to be sent over the lane");
 		}
 
 		Ok(())
@@ -515,9 +513,7 @@ pub mod target {
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesProof<BridgedHeaderHash> {
 		fn size_hint(&self) -> u32 {
 			u32::try_from(
-				self.storage_proof
-					.iter()
-					.fold(0usize, |sum, node| sum.saturating_add(node.len())),
+				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
 			.unwrap_or(u32::MAX)
 		}
@@ -752,7 +748,7 @@ pub mod target {
 				// (this bounds maximal capacity of messages vec below)
 				let messages_in_the_proof = nonces_difference.saturating_add(1);
 				if messages_in_the_proof != MessageNonce::from(messages_count) {
-					return Err(MessageProofError::MessagesCountMismatch)
+					return Err(MessageProofError::MessagesCountMismatch);
 				}
 
 				messages_in_the_proof
@@ -791,7 +787,7 @@ pub mod target {
 
 		// Now we may actually check if the proof is empty or not.
 		if proved_lane_messages.lane_state.is_none() && proved_lane_messages.messages.is_empty() {
-			return Err(MessageProofError::Empty)
+			return Err(MessageProofError::Empty);
 		}
 
 		// We only support single lane messages in this schema
@@ -823,13 +819,13 @@ mod tests {
 	struct OnThisChainBridge;
 
 	impl MessageBridge for OnThisChainBridge {
-		const RELAYER_FEE_PERCENT: u32 = 10;
-		const THIS_CHAIN_ID: ChainId = *b"this";
+		type BridgedChain = BridgedChain;
+		type ThisChain = ThisChain;
+
 		const BRIDGED_CHAIN_ID: ChainId = *b"brdg";
 		const BRIDGED_MESSAGES_PALLET_NAME: &'static str = "";
-
-		type ThisChain = ThisChain;
-		type BridgedChain = BridgedChain;
+		const RELAYER_FEE_PERCENT: u32 = 10;
+		const THIS_CHAIN_ID: ChainId = *b"this";
 
 		fn bridged_balance_to_this_balance(
 			bridged_balance: BridgedChainBalance,
@@ -848,13 +844,13 @@ mod tests {
 	struct OnBridgedChainBridge;
 
 	impl MessageBridge for OnBridgedChainBridge {
-		const RELAYER_FEE_PERCENT: u32 = 20;
-		const THIS_CHAIN_ID: ChainId = *b"brdg";
+		type BridgedChain = ThisChain;
+		type ThisChain = BridgedChain;
+
 		const BRIDGED_CHAIN_ID: ChainId = *b"this";
 		const BRIDGED_MESSAGES_PALLET_NAME: &'static str = "";
-
-		type ThisChain = BridgedChain;
-		type BridgedChain = ThisChain;
+		const RELAYER_FEE_PERCENT: u32 = 20;
+		const THIS_CHAIN_ID: ChainId = *b"brdg";
 
 		fn bridged_balance_to_this_balance(
 			_this_balance: ThisChainBalance,
@@ -978,17 +974,17 @@ mod tests {
 	struct ThisChain;
 
 	impl ChainWithMessages for ThisChain {
-		type Hash = ();
 		type AccountId = ThisChainAccountId;
-		type Signer = ThisChainSigner;
-		type Signature = ThisChainSignature;
-		type Weight = frame_support::weights::Weight;
 		type Balance = ThisChainBalance;
+		type Hash = ();
+		type Signature = ThisChainSignature;
+		type Signer = ThisChainSigner;
+		type Weight = frame_support::weights::Weight;
 	}
 
 	impl ThisChainWithMessages for ThisChain {
-		type Origin = ThisChainOrigin;
 		type Call = ThisChainCall;
+		type Origin = ThisChainOrigin;
 
 		fn is_message_accepted(_send_origin: &Self::Origin, lane: &LaneId) -> bool {
 			lane == TEST_LANE_ID
@@ -1039,17 +1035,17 @@ mod tests {
 	struct BridgedChain;
 
 	impl ChainWithMessages for BridgedChain {
-		type Hash = ();
 		type AccountId = BridgedChainAccountId;
-		type Signer = BridgedChainSigner;
-		type Signature = BridgedChainSignature;
-		type Weight = frame_support::weights::Weight;
 		type Balance = BridgedChainBalance;
+		type Hash = ();
+		type Signature = BridgedChainSignature;
+		type Signer = BridgedChainSigner;
+		type Weight = frame_support::weights::Weight;
 	}
 
 	impl ThisChainWithMessages for BridgedChain {
-		type Origin = BridgedChainOrigin;
 		type Call = BridgedChainCall;
+		type Origin = BridgedChainOrigin;
 
 		fn is_message_accepted(_send_origin: &Self::Origin, _lane: &LaneId) -> bool {
 			unreachable!()

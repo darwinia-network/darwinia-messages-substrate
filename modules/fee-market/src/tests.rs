@@ -66,41 +66,41 @@ frame_support::parameter_types! {
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
 }
 impl frame_system::Config for Test {
-	type BaseCallFilter = Everything;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = DbWeight;
-	type Origin = Origin;
-	type Index = u64;
-	type BlockNumber = u64;
-	type Hash = H256;
-	type Call = Call;
-	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = ();
-	type Version = ();
-	type PalletInfo = PalletInfo;
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
+	type AccountId = AccountId;
+	type BaseCallFilter = Everything;
+	type BlockHashCount = ();
+	type BlockLength = ();
+	type BlockNumber = u64;
+	type BlockWeights = ();
+	type Call = Call;
+	type DbWeight = DbWeight;
+	type Event = Event;
+	type Hash = H256;
+	type Hashing = BlakeTwo256;
+	type Header = Header;
+	type Index = u64;
+	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = ConstU32<16>;
+	type OnKilledAccount = ();
+	type OnNewAccount = ();
+	type OnSetCode = ();
+	type Origin = Origin;
+	type PalletInfo = PalletInfo;
+	type SS58Prefix = ();
+	type SystemWeightInfo = ();
+	type Version = ();
 }
 
 frame_support::parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
 }
 impl pallet_balances::Config for Test {
+	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
@@ -111,9 +111,9 @@ frame_support::parameter_types! {
 	pub const MinimumPeriod: u64 = 1000;
 }
 impl pallet_timestamp::Config for Test {
+	type MinimumPeriod = MinimumPeriod;
 	type Moment = u64;
 	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = ();
 }
 
@@ -198,7 +198,6 @@ impl MessagesParameter for TestMessagesParameter {
 pub struct TestTargetHeaderChain;
 impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 	type Error = &'static str;
-
 	type MessagesDeliveryProof = TestMessagesDeliveryProof;
 
 	fn verify_message(payload: &TestPayload) -> Result<(), Self::Error> {
@@ -233,10 +232,10 @@ impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
 	) -> Result<(), Self::Error> {
 		if let Some(market_fee) = FeeMarket::market_fee() {
 			if *delivery_and_dispatch_fee < market_fee {
-				return Err(TEST_ERROR)
+				return Err(TEST_ERROR);
 			}
 		} else {
-			return Err(TEST_ERROR)
+			return Err(TEST_ERROR);
 		}
 		Ok(())
 	}
@@ -275,7 +274,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
 		if frame_support::storage::unhashed::get(b":reject-message-fee:") == Some(true) {
-			return Err(TEST_ERROR)
+			return Err(TEST_ERROR);
 		}
 
 		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();
@@ -326,7 +325,6 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 pub struct TestSourceHeaderChain;
 impl SourceHeaderChain<TestMessageFee> for TestSourceHeaderChain {
 	type Error = &'static str;
-
 	type MessagesProof = TestMessagesProof;
 
 	fn verify_messages_proof(
@@ -379,31 +377,26 @@ frame_support::parameter_types! {
 }
 
 impl pallet_bridge_messages::Config for Test {
-	type Event = Event;
-	type WeightInfo = ();
-	type Parameter = TestMessagesParameter;
-	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
-
-	type OutboundPayload = TestPayload;
-	type OutboundMessageFee = TestMessageFee;
-
-	type InboundPayload = TestPayload;
-	type InboundMessageFee = TestMessageFee;
-	type InboundRelayer = TestRelayer;
-
 	type AccountIdConverter = AccountIdConverter;
-
-	type TargetHeaderChain = TestTargetHeaderChain;
-	type LaneMessageVerifier = TestLaneMessageVerifier;
-	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
-	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, ()>;
-	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, ()>;
-
-	type SourceHeaderChain = TestSourceHeaderChain;
-	type MessageDispatch = TestMessageDispatch;
 	type BridgedChainId = TestBridgedChainId;
+	type Event = Event;
+	type InboundMessageFee = TestMessageFee;
+	type InboundPayload = TestPayload;
+	type InboundRelayer = TestRelayer;
+	type LaneMessageVerifier = TestLaneMessageVerifier;
+	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
+	type MessageDispatch = TestMessageDispatch;
+	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, ()>;
+	type OnMessageAccepted = FeeMarketMessageAcceptedHandler<Self, ()>;
+	type OutboundMessageFee = TestMessageFee;
+	type OutboundPayload = TestPayload;
+	type Parameter = TestMessagesParameter;
+	type SourceHeaderChain = TestSourceHeaderChain;
+	type TargetHeaderChain = TestTargetHeaderChain;
+	type WeightInfo = ();
 }
 
 impl SenderOrigin<AccountId> for Origin {
@@ -442,19 +435,17 @@ impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 }
 
 impl Config for Test {
-	type TreasuryPalletId = TreasuryPalletId;
-	type LockId = FeeMarketLockId;
-	type CollateralPerOrder = CollateralPerOrder;
-	type MinimumRelayFee = MinimumRelayFee;
-	type Slot = Slot;
-
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
-	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
+	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
-
-	type Slasher = TestSlasher;
 	type Currency = Balances;
 	type Event = Event;
+	type LockId = FeeMarketLockId;
+	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
+	type MinimumRelayFee = MinimumRelayFee;
+	type Slasher = TestSlasher;
+	type Slot = Slot;
+	type TreasuryPalletId = TreasuryPalletId;
 	type WeightInfo = ();
 }
 

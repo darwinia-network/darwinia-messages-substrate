@@ -37,13 +37,12 @@ pub type HeaderId = relay_utils::HeaderId<bp_polkadot::Hash, bp_polkadot::BlockN
 pub struct Polkadot;
 
 impl ChainBase for Polkadot {
+	type AccountId = bp_polkadot::AccountId;
+	type Balance = bp_polkadot::Balance;
 	type BlockNumber = bp_polkadot::BlockNumber;
 	type Hash = bp_polkadot::Hash;
 	type Hasher = bp_polkadot::Hasher;
 	type Header = bp_polkadot::Header;
-
-	type AccountId = bp_polkadot::AccountId;
-	type Balance = bp_polkadot::Balance;
 	type Index = bp_polkadot::Nonce;
 	type Signature = bp_polkadot::Signature;
 
@@ -57,17 +56,17 @@ impl ChainBase for Polkadot {
 }
 
 impl Chain for Polkadot {
-	const NAME: &'static str = "Polkadot";
-	const TOKEN_ID: Option<&'static str> = Some("polkadot");
+	type Call = crate::runtime::Call;
+	type SignedBlock = bp_polkadot::SignedBlock;
+	type WeightToFee = bp_polkadot::WeightToFee;
+
+	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
 	const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
 		bp_polkadot::BEST_FINALIZED_POLKADOT_HEADER_METHOD;
-	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
-	const STORAGE_PROOF_OVERHEAD: u32 = bp_polkadot::EXTRA_STORAGE_PROOF_SIZE;
 	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = bp_polkadot::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
-
-	type SignedBlock = bp_polkadot::SignedBlock;
-	type Call = crate::runtime::Call;
-	type WeightToFee = bp_polkadot::WeightToFee;
+	const NAME: &'static str = "Polkadot";
+	const STORAGE_PROOF_OVERHEAD: u32 = bp_polkadot::EXTRA_STORAGE_PROOF_SIZE;
+	const TOKEN_ID: Option<&'static str> = Some("polkadot");
 }
 
 impl ChainWithGrandpa for Polkadot {
@@ -76,17 +75,18 @@ impl ChainWithGrandpa for Polkadot {
 }
 
 impl ChainWithMessages for Polkadot {
-	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
-		bp_polkadot::WITH_POLKADOT_MESSAGES_PALLET_NAME;
-	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-		bp_polkadot::TO_POLKADOT_MESSAGE_DETAILS_METHOD;
-	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
-		bp_polkadot::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
-	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
-		bp_polkadot::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	type WeightInfo = ();
+
 	const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce =
 		bp_polkadot::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	type WeightInfo = ();
+	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
+		bp_polkadot::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
+		bp_polkadot::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
+	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
+		bp_polkadot::TO_POLKADOT_MESSAGE_DETAILS_METHOD;
+	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
+		bp_polkadot::WITH_POLKADOT_MESSAGES_PALLET_NAME;
 }
 
 impl ChainWithBalances for Polkadot {
@@ -96,8 +96,8 @@ impl ChainWithBalances for Polkadot {
 }
 
 impl TransactionSignScheme for Polkadot {
-	type Chain = Polkadot;
 	type AccountKeyPair = sp_core::sr25519::Pair;
+	type Chain = Polkadot;
 	type SignedTransaction = crate::runtime::UncheckedExtrinsic;
 
 	fn sign_transaction(param: SignParam<Self>) -> Result<Self::SignedTransaction, SubstrateError> {

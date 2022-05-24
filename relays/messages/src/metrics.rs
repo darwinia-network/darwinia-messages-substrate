@@ -70,8 +70,8 @@ impl MessageLaneLoopMetrics {
 			source_client_state.best_finalized_peer_at_best_self.0.into(),
 		);
 		self.target_to_source_finality_metrics.update_using_same_fork(
-			source_client_state.best_finalized_peer_at_best_self.1 ==
-				source_client_state.actual_best_finalized_peer_at_best_self.1,
+			source_client_state.best_finalized_peer_at_best_self.1
+				== source_client_state.actual_best_finalized_peer_at_best_self.1,
 		);
 	}
 
@@ -83,8 +83,8 @@ impl MessageLaneLoopMetrics {
 			target_client_state.best_finalized_peer_at_best_self.0.into(),
 		);
 		self.source_to_target_finality_metrics.update_using_same_fork(
-			target_client_state.best_finalized_peer_at_best_self.1 ==
-				target_client_state.actual_best_finalized_peer_at_best_self.1,
+			target_client_state.best_finalized_peer_at_best_self.1
+				== target_client_state.actual_best_finalized_peer_at_best_self.1,
 		);
 	}
 
