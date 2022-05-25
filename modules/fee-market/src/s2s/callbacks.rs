@@ -66,8 +66,9 @@ impl<T: Config<I>, I: 'static> OnDeliveryConfirmed for FeeMarketMessageConfirmed
 						None => {},
 					});
 
-					// Once order is created, the assigned relayers's order capacity should increase by one.
-					// Thus, the whole market needs to re-sort to generate new assigned relayers set.
+					// Once order is created, the assigned relayers's order capacity should increase
+					// by one. Thus, the whole market needs to re-sort to generate new assigned
+					// relayers set.
 					Pallet::<T, I>::update_market();
 				}
 			}
