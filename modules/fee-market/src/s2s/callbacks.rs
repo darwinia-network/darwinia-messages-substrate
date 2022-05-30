@@ -41,7 +41,7 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 				T::Slot::get(),
 			);
 			// Store the create order
-			<Orders<T, I>>::insert((order.lane, order.message), order.clone());
+			<Orders<T, I>>::insert((order.lane, order.message), order);
 		}
 
 		// one read for assigned relayers

@@ -234,8 +234,8 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 	amount: BalanceOf<T, I>,
 	report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 ) -> BalanceOf<T, I> {
-	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(&who);
-	T::Currency::remove_lock(T::LockId::get(), &who);
+	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(who);
+	T::Currency::remove_lock(T::LockId::get(), who);
 	debug_assert!(
 		locked_collateral >= amount,
 		"The locked collateral must alway greater than slash max"
