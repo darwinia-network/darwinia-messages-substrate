@@ -172,7 +172,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 					dispatch_result: false,
 					unspent_weight: 0,
 					dispatch_fee_paid_during_dispatch: false,
-				}
+				};
 			},
 		};
 
@@ -198,7 +198,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				expected_version,
 				message.spec_version,
 			));
-			return dispatch_result
+			return dispatch_result;
 		}
 
 		// now that we have spec version checked, let's decode the call
@@ -212,7 +212,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 					id,
 				);
 				Self::deposit_event(Event::MessageCallDecodeFailed(source_chain, id));
-				return dispatch_result
+				return dispatch_result;
 			},
 		};
 
@@ -245,7 +245,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 						target_signature,
 					);
 					Self::deposit_event(Event::MessageSignatureMismatch(source_chain, id));
-					return dispatch_result
+					return dispatch_result;
 				}
 
 				log::trace!(target: "runtime::bridge-dispatch", "Target Account: {:?}", &target_account);
@@ -270,7 +270,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				call,
 			);
 			Self::deposit_event(Event::MessageCallRejected(source_chain, id));
-			return dispatch_result
+			return dispatch_result;
 		}
 
 		// verify weight
@@ -293,14 +293,14 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				expected_weight,
 				message.weight,
 			));
-			return dispatch_result
+			return dispatch_result;
 		}
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
 			message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		if pay_dispatch_fee_at_target_chain &&
-			pay_dispatch_fee(&origin_account, message.weight).is_err()
+		if pay_dispatch_fee_at_target_chain
+			&& pay_dispatch_fee(&origin_account, message.weight).is_err()
 		{
 			log::trace!(
 				target: "runtime::bridge-dispatch",
@@ -315,7 +315,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				origin_account,
 				message.weight,
 			));
-			return dispatch_result
+			return dispatch_result;
 		}
 		dispatch_result.dispatch_fee_paid_during_dispatch = pay_dispatch_fee_at_target_chain;
 
@@ -383,8 +383,8 @@ where
 		},
 		CallOrigin::SourceAccount(ref source_account_id) => {
 			ensure!(
-				sender_origin == &RawOrigin::Signed(source_account_id.clone()) ||
-					sender_origin == &RawOrigin::Root,
+				sender_origin == &RawOrigin::Signed(source_account_id.clone())
+					|| sender_origin == &RawOrigin::Root,
 				BadOrigin
 			);
 			Ok(Some(source_account_id.clone()))
@@ -496,42 +496,42 @@ mod tests {
 	}
 
 	impl frame_system::Config for TestRuntime {
-		type Origin = Origin;
-		type Index = u64;
-		type Call = Call;
+		type AccountData = ();
+		type AccountId = AccountId;
+		type BaseCallFilter = frame_support::traits::Everything;
+		type BlockHashCount = BlockHashCount;
+		type BlockLength = ();
 		type BlockNumber = u64;
+		type BlockWeights = ();
+		type Call = Call;
+		type DbWeight = ();
+		type Event = Event;
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
-		type AccountId = AccountId;
-		type Lookup = IdentityLookup<Self::AccountId>;
 		type Header = Header;
-		type Event = Event;
-		type BlockHashCount = BlockHashCount;
-		type Version = ();
-		type PalletInfo = PalletInfo;
-		type AccountData = ();
-		type OnNewAccount = ();
-		type OnKilledAccount = ();
-		type BaseCallFilter = frame_support::traits::Everything;
-		type SystemWeightInfo = ();
-		type BlockWeights = ();
-		type BlockLength = ();
-		type DbWeight = ();
-		type SS58Prefix = ();
-		type OnSetCode = ();
+		type Index = u64;
+		type Lookup = IdentityLookup<Self::AccountId>;
 		type MaxConsumers = frame_support::traits::ConstU32<16>;
+		type OnKilledAccount = ();
+		type OnNewAccount = ();
+		type OnSetCode = ();
+		type Origin = Origin;
+		type PalletInfo = PalletInfo;
+		type SS58Prefix = ();
+		type SystemWeightInfo = ();
+		type Version = ();
 	}
 
 	impl Config for TestRuntime {
-		type Event = Event;
+		type AccountIdConverter = AccountIdConverter;
 		type BridgeMessageId = BridgeMessageId;
-		type SourceChainAccountId = AccountId;
-		type TargetChainAccountPublic = TestAccountPublic;
-		type TargetChainSignature = TestSignature;
 		type Call = Call;
 		type CallFilter = TestCallFilter;
 		type EncodedCall = EncodedCall;
-		type AccountIdConverter = AccountIdConverter;
+		type Event = Event;
+		type SourceChainAccountId = AccountId;
+		type TargetChainAccountPublic = TestAccountPublic;
+		type TargetChainSignature = TestSignature;
 	}
 
 	#[derive(Decode, Encode)]

@@ -37,13 +37,12 @@ pub type HeaderId = relay_utils::HeaderId<bp_kusama::Hash, bp_kusama::BlockNumbe
 pub struct Kusama;
 
 impl ChainBase for Kusama {
+	type AccountId = bp_kusama::AccountId;
+	type Balance = bp_kusama::Balance;
 	type BlockNumber = bp_kusama::BlockNumber;
 	type Hash = bp_kusama::Hash;
 	type Hasher = bp_kusama::Hasher;
 	type Header = bp_kusama::Header;
-
-	type AccountId = bp_kusama::AccountId;
-	type Balance = bp_kusama::Balance;
 	type Index = bp_kusama::Nonce;
 	type Signature = bp_kusama::Signature;
 
@@ -57,17 +56,17 @@ impl ChainBase for Kusama {
 }
 
 impl Chain for Kusama {
-	const NAME: &'static str = "Kusama";
-	const TOKEN_ID: Option<&'static str> = Some("kusama");
+	type Call = crate::runtime::Call;
+	type SignedBlock = bp_kusama::SignedBlock;
+	type WeightToFee = bp_kusama::WeightToFee;
+
+	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
 	const BEST_FINALIZED_HEADER_ID_METHOD: &'static str =
 		bp_kusama::BEST_FINALIZED_KUSAMA_HEADER_METHOD;
-	const AVERAGE_BLOCK_INTERVAL: Duration = Duration::from_secs(6);
-	const STORAGE_PROOF_OVERHEAD: u32 = bp_kusama::EXTRA_STORAGE_PROOF_SIZE;
 	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = bp_kusama::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
-
-	type SignedBlock = bp_kusama::SignedBlock;
-	type Call = crate::runtime::Call;
-	type WeightToFee = bp_kusama::WeightToFee;
+	const NAME: &'static str = "Kusama";
+	const STORAGE_PROOF_OVERHEAD: u32 = bp_kusama::EXTRA_STORAGE_PROOF_SIZE;
+	const TOKEN_ID: Option<&'static str> = Some("kusama");
 }
 
 impl ChainWithGrandpa for Kusama {
@@ -75,17 +74,18 @@ impl ChainWithGrandpa for Kusama {
 }
 
 impl ChainWithMessages for Kusama {
-	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
-		bp_kusama::WITH_KUSAMA_MESSAGES_PALLET_NAME;
-	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
-		bp_kusama::TO_KUSAMA_MESSAGE_DETAILS_METHOD;
-	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
-		bp_kusama::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
-	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
-		bp_kusama::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	type WeightInfo = ();
+
 	const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce =
 		bp_kusama::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
-	type WeightInfo = ();
+	const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce =
+		bp_kusama::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	const PAY_INBOUND_DISPATCH_FEE_WEIGHT_AT_CHAIN: Weight =
+		bp_kusama::PAY_INBOUND_DISPATCH_FEE_WEIGHT;
+	const TO_CHAIN_MESSAGE_DETAILS_METHOD: &'static str =
+		bp_kusama::TO_KUSAMA_MESSAGE_DETAILS_METHOD;
+	const WITH_CHAIN_MESSAGES_PALLET_NAME: &'static str =
+		bp_kusama::WITH_KUSAMA_MESSAGES_PALLET_NAME;
 }
 
 impl ChainWithBalances for Kusama {
@@ -95,8 +95,8 @@ impl ChainWithBalances for Kusama {
 }
 
 impl TransactionSignScheme for Kusama {
-	type Chain = Kusama;
 	type AccountKeyPair = sp_core::sr25519::Pair;
+	type Chain = Kusama;
 	type SignedTransaction = crate::runtime::UncheckedExtrinsic;
 
 	fn sign_transaction(param: SignParam<Self>) -> Result<Self::SignedTransaction, SubstrateError> {

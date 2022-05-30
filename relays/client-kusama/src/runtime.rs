@@ -155,9 +155,9 @@ pub enum BridgePolkadotMessagesParameter {
 }
 
 impl sp_runtime::traits::Dispatchable for Call {
-	type Origin = ();
 	type Config = ();
 	type Info = ();
+	type Origin = ();
 	type PostInfo = ();
 
 	fn dispatch(self, _origin: Self::Origin) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {

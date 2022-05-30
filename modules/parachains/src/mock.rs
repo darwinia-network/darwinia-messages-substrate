@@ -54,30 +54,30 @@ parameter_types! {
 }
 
 impl frame_system::Config for TestRuntime {
-	type Origin = Origin;
-	type Index = u64;
-	type Call = Call;
+	type AccountData = ();
+	type AccountId = AccountId;
+	type BaseCallFilter = frame_support::traits::Everything;
+	type BlockHashCount = BlockHashCount;
+	type BlockLength = ();
 	type BlockNumber = TestNumber;
+	type BlockWeights = ();
+	type Call = Call;
+	type DbWeight = ();
+	type Event = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = ();
-	type BlockHashCount = BlockHashCount;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = ();
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type BaseCallFilter = frame_support::traits::Everything;
-	type SystemWeightInfo = ();
-	type DbWeight = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
+	type Index = u64;
+	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type OnKilledAccount = ();
+	type OnNewAccount = ();
+	type OnSetCode = ();
+	type Origin = Origin;
+	type PalletInfo = PalletInfo;
+	type SS58Prefix = ();
+	type SystemWeightInfo = ();
+	type Version = ();
 }
 
 parameter_types! {
@@ -89,15 +89,15 @@ parameter_types! {
 
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
-	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
 
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance2> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
-	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
 
@@ -114,13 +114,12 @@ impl pallet_bridge_parachains::Config for TestRuntime {
 pub struct TestBridgedChain;
 
 impl Chain for TestBridgedChain {
+	type AccountId = AccountId;
+	type Balance = u32;
 	type BlockNumber = crate::RelayBlockNumber;
 	type Hash = crate::RelayBlockHash;
 	type Hasher = crate::RelayBlockHasher;
 	type Header = RelayBlockHeader;
-
-	type AccountId = AccountId;
-	type Balance = u32;
 	type Index = u32;
 	type Signature = sp_runtime::testing::TestSignature;
 
@@ -137,13 +136,12 @@ impl Chain for TestBridgedChain {
 pub struct OtherBridgedChain;
 
 impl Chain for OtherBridgedChain {
+	type AccountId = AccountId;
+	type Balance = u32;
 	type BlockNumber = u64;
 	type Hash = crate::RelayBlockHash;
 	type Hasher = crate::RelayBlockHasher;
 	type Header = sp_runtime::generic::Header<u64, crate::RelayBlockHasher>;
-
-	type AccountId = AccountId;
-	type Balance = u32;
 	type Index = u32;
 	type Signature = sp_runtime::testing::TestSignature;
 

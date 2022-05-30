@@ -363,7 +363,7 @@ fn grow_trie<H: Hasher>(mut root: H::Out, mdb: &mut MemoryDB<H>, trie_size: Proo
 			.expect("record_all_keys should not fail in benchmarks");
 		let size: usize = proof_recorder.drain().into_iter().map(|n| n.data.len()).sum();
 		if size > minimal_trie_size as _ {
-			return root
+			return root;
 		}
 
 		let mut trie = TrieDBMutV1::<H>::from_existing(mdb, &mut root)

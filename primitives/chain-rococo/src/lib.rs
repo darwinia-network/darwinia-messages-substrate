@@ -54,6 +54,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 pub struct WeightToFee;
 impl WeightToFeePolynomial for WeightToFee {
 	type Balance = Balance;
+
 	fn polynomial() -> WeightToFeeCoefficients<Balance> {
 		const CENTS: Balance = 1_000_000_000_000 / 100;
 		let p = CENTS;

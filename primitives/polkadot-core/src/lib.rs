@@ -338,12 +338,12 @@ where
 		+ StaticTypeInfo,
 	Call: Dispatchable,
 {
-	const IDENTIFIER: &'static str = "Not needed.";
-
 	type AccountId = AccountId;
-	type Call = Call;
 	type AdditionalSigned = AdditionalSigned;
+	type Call = Call;
 	type Pre = ();
+
+	const IDENTIFIER: &'static str = "Not needed.";
 
 	fn additional_signed(
 		&self,
@@ -351,10 +351,9 @@ where
 		// we shall not ever see this error in relay, because we are never signing decoded
 		// transactions. Instead we're constructing and signing new transactions. So the error code
 		// is kinda random here
-		self.additional_signed
-			.ok_or(frame_support::unsigned::TransactionValidityError::Unknown(
-				frame_support::unsigned::UnknownTransaction::Custom(0xFF),
-			))
+		self.additional_signed.ok_or(frame_support::unsigned::TransactionValidityError::Unknown(
+			frame_support::unsigned::UnknownTransaction::Custom(0xFF),
+		))
 	}
 
 	fn pre_dispatch(
@@ -373,13 +372,12 @@ where
 pub struct PolkadotLike;
 
 impl Chain for PolkadotLike {
+	type AccountId = AccountId;
+	type Balance = Balance;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
 	type Hasher = Hasher;
 	type Header = Header;
-
-	type AccountId = AccountId;
-	type Balance = Balance;
 	type Index = Index;
 	type Signature = Signature;
 
@@ -388,10 +386,7 @@ impl Chain for PolkadotLike {
 	}
 
 	fn max_extrinsic_weight() -> Weight {
-		BlockWeights::get()
-			.get(DispatchClass::Normal)
-			.max_extrinsic
-			.unwrap_or(Weight::MAX)
+		BlockWeights::get().get(DispatchClass::Normal).max_extrinsic.unwrap_or(Weight::MAX)
 	}
 }
 

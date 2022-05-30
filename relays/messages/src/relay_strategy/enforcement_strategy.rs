@@ -142,7 +142,7 @@ impl<Strategy: RelayStrategy> EnforcementStrategy<Strategy> {
 			// limit number of messages in the batch
 			let new_selected_count = selected_count + 1;
 			if new_selected_count > reference.max_messages_in_this_batch {
-				break
+				break;
 			}
 			relay_reference.selected_size = new_selected_size;
 
@@ -197,8 +197,8 @@ impl<Strategy: RelayStrategy> EnforcementStrategy<Strategy> {
 		}
 
 		if hard_selected_count != 0 {
-			if relay_reference.selected_reward != P::SourceChainBalance::zero() &&
-				relay_reference.selected_cost != P::SourceChainBalance::zero()
+			if relay_reference.selected_reward != P::SourceChainBalance::zero()
+				&& relay_reference.selected_cost != P::SourceChainBalance::zero()
 			{
 				log::trace!(
 					target: "bridge",
