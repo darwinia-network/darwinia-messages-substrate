@@ -108,7 +108,7 @@ pub mod pallet {
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
 		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
-		/// Create new order. \[lane_id, message_nonce, assigned_relayers, order_fee,
+		/// Create new order. \[lane_id, message_nonce, order_fee, assigned_relayers,
 		/// out_of_slots_time\]
 		OrderCreated(
 			LaneId,
