@@ -117,6 +117,8 @@ pub mod pallet {
 		AlreadyEnrolled,
 		/// This relayer doesn't enroll ever.
 		NotEnrolled,
+		/// Locked collateral is too low to cover one order.
+		CollateralTooLow,
 		/// Update locked collateral is not allow since some orders are not confirm.
 		StillHasOrdersNotConfirmed,
 		/// The fee is lower than MinimumRelayFee.
@@ -207,6 +209,12 @@ pub mod pallet {
 				T::Currency::free_balance(&who) >= lock_collateral,
 				<Error<T, I>>::InsufficientBalance
 			);
+
+			ensure!(
+				Self::collateral_to_order_capacity(lock_collateral) > 0,
+				<Error<T, I>>::CollateralTooLow
+			);
+
 			if let Some(fee) = relay_fee {
 				ensure!(fee >= T::MinimumRelayFee::get(), <Error<T, I>>::RelayFeeTooLow);
 			}
