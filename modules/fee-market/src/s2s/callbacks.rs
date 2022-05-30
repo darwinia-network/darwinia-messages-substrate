@@ -40,11 +40,12 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 				assigned_relayers,
 				T::Slot::get(),
 			);
-			// Store new created order
-			<Orders<T, I>>::insert((order.lane, order.message), order.clone());
+
+			// Store the create order
+			<Orders<T, I>>::insert((order.lane, order.message), order);
 			// Once order is created, the assigned relayers's order capacity should reduce by one.
 			// Thus, the whole market needs to re-sort to generate new assigned relayers set.
-			Pallet::<T, I>::update_market();
+			let _ = Pallet::<T, I>::update_market(|| Ok(()), None);
 		}
 
 		// one read for assigned relayers
@@ -69,7 +70,7 @@ impl<T: Config<I>, I: 'static> OnDeliveryConfirmed for FeeMarketMessageConfirmed
 					// Once order is created, the assigned relayers's order capacity should increase
 					// by one. Thus, the whole market needs to re-sort to generate new assigned
 					// relayers set.
-					Pallet::<T, I>::update_market();
+					let _ = Pallet::<T, I>::update_market(|| Ok(()), None);
 				}
 			}
 		}
