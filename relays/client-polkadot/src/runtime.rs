@@ -60,7 +60,7 @@ where
 /// All entries here (like pretty much in the entire file) must be kept in sync with Polkadot
 /// `construct_runtime`, so that we maintain SCALE-compatibility.
 ///
-/// See: [link](https://github.com/paritytech/kusama/blob/master/runtime/kusam/src/lib.rs)
+/// See: [link](https://github.com/paritytech/kusama/blob/polkadot-v0.9.19/runtime/kusam/src/lib.rs)
 #[allow(clippy::large_enum_variant)]
 #[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
 pub enum Call {
