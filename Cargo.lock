@@ -631,13 +631,13 @@ name = "bp-crab-parachain"
 version = "0.1.0"
 dependencies = [
  "bp-darwinia-core",
- "bp-messages 0.1.0",
- "bp-runtime 0.1.0",
- "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
- "sp-api 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
- "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
- "sp-std 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
- "sp-version 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "bp-messages",
+ "bp-runtime",
+ "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
+ "sp-api 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
+ "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
+ "sp-std 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
+ "sp-version 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
 ]
 
 [[package]]
@@ -7145,18 +7145,18 @@ dependencies = [
  "bp-crab-parachain",
  "bp-darwinia-core",
  "bp-header-chain",
- "bp-message-dispatch 0.1.0",
- "bp-messages 0.1.0",
- "bp-runtime 0.1.0",
+ "bp-message-dispatch",
+ "bp-messages",
+ "bp-runtime",
  "bridge-runtime-common",
- "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "frame-support 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
  "pallet-bridge-dispatch",
  "parity-scale-codec",
  "relay-substrate-client",
  "relay-utils",
  "scale-info",
- "sp-core 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
- "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.2)",
+ "sp-core 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
+ "sp-runtime 4.0.0-dev (git+https://github.com/darwinia-network/substrate?branch=darwinia-v0.12.3)",
 ]
 
 [[package]]
