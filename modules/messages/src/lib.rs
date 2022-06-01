@@ -56,8 +56,9 @@ use bp_messages::{
 	target_chain::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
 	},
-	total_unrewarded_messages, DeliveredMessages, InboundLaneData, LaneId, MessageData, MessageKey,
-	MessageNonce, OperatingMode, OutboundLaneData, Parameter as MessagesParameter,
+	total_unrewarded_messages, DeliveredMessages, InboundLaneData, InboundMessageDetails, LaneId,
+	MessageData, MessageKey, MessageNonce, MessagePayload, OperatingMode, OutboundLaneData,
+	OutboundMessageDetails, Parameter as MessagesParameter,
 	UnrewardedRelayersState,
 };
 use bp_runtime::{ChainId, Size};
@@ -154,7 +155,7 @@ pub mod pallet {
 		/// Payload type of inbound messages. This payload is dispatched on this chain.
 		type InboundPayload: Decode;
 		/// Message fee type of inbound messages. This fee is paid on the bridged chain.
-		type InboundMessageFee: Decode;
+		type InboundMessageFee: Decode + Zero;
 		/// Identifier of relayer that deliver messages to this chain. Relayer reward is paid on the
 		/// bridged chain.
 		type InboundRelayer: Parameter;
@@ -426,13 +427,13 @@ pub mod pallet {
 					}
 				}
 
-				for message in lane_data.messages {
+				for mut message in lane_data.messages {
 					debug_assert_eq!(message.key.lane_id, lane_id);
 
 					// ensure that relayer has declared enough weight for dispatching next message
 					// on this lane. We can't dispatch lane messages out-of-order, so if declared
 					// weight is not enough, let's move to next lane
-					let dispatch_weight = T::MessageDispatch::dispatch_weight(&message);
+					let dispatch_weight = T::MessageDispatch::dispatch_weight(&mut message);
 					if dispatch_weight > dispatch_weight_left {
 						log::trace!(
 							target: "runtime::bridge-messages",
@@ -760,6 +761,22 @@ pub mod pallet {
 			nonce: MessageNonce,
 		) -> Option<MessageData<T::OutboundMessageFee>> {
 			OutboundMessages::<T, I>::get(MessageKey { lane_id: lane, nonce })
+		}
+
+		/// Prepare data, related to given inbound message.
+		pub fn inbound_message_data(
+			lane: LaneId,
+			payload: MessagePayload,
+			outbound_details: OutboundMessageDetails<T::InboundMessageFee>,
+		) -> InboundMessageDetails {
+			let mut dispatch_message = DispatchMessage {
+				key: MessageKey { lane_id: lane, nonce: outbound_details.nonce },
+				data: MessageData { payload, fee: outbound_details.delivery_and_dispatch_fee }
+					.into(),
+			};
+			InboundMessageDetails {
+				dispatch_weight: T::MessageDispatch::dispatch_weight(&mut dispatch_message),
+			}
 		}
 	}
 }
@@ -2301,5 +2318,26 @@ mod tests {
 			InboundLanes::<TestRuntime>::storage_map_final_key(TEST_LANE_ID),
 			bp_messages::storage_keys::inbound_lane_data_key("Messages", &TEST_LANE_ID).0,
 		);
+	}
+
+	#[test]
+	fn inbound_message_details_works() {
+		run_test(|| {
+			assert_eq!(
+				Pallet::<TestRuntime>::inbound_message_data(
+					TEST_LANE_ID,
+					REGULAR_PAYLOAD.encode(),
+					OutboundMessageDetails {
+						nonce: 0,
+						dispatch_weight: 0,
+						size: 0,
+						delivery_and_dispatch_fee: 0,
+						dispatch_fee_payment:
+							bp_runtime::messages::DispatchFeePayment::AtTargetChain,
+					},
+				),
+				InboundMessageDetails { dispatch_weight: REGULAR_PAYLOAD.declared_weight },
+			);
+		});
 	}
 }
