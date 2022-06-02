@@ -47,7 +47,7 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::config]
@@ -94,6 +94,10 @@ pub mod pallet {
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
 		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
+		// TODO: add docs
+		// type EthereumCallOrigin: EnsureOrigin<Self::Origin>;
+		// TODO: update the trait
+		type EthereumTransactValidator: EthereumTransactCall<<Self as Config<I>>::Call>;
 	}
 
 	type BridgeMessageIdOf<T, I> = <T as Config<I>>::BridgeMessageId;
@@ -274,6 +278,13 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			return dispatch_result
 		}
 
+		// If the call is Ethereum Transact dispatch call
+		if let Some(dispatch_info) = T::EthereumTransactValidator::dispatch(&call) {
+			// TODO: add event
+
+			return dispatch_result;
+		}
+
 		// verify weight
 		// (we want passed weight to be at least equal to pre-dispatch weight of the call
 		// because otherwise Calls may be dispatched at lower price)
@@ -418,6 +429,13 @@ where
 	target_chain_id.encode_to(&mut proof);
 
 	proof
+}
+
+use frame_support::weights::PostDispatchInfo;
+pub trait EthereumTransactCall<T> {
+	fn is_ethereum_call(t: &T) -> bool;
+	fn validate(t: &T) -> bool;
+	fn dispatch(t: &T) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>;
 }
 
 #[cfg(test)]
