@@ -102,8 +102,8 @@ pub mod pallet {
 		/// The Ethereum call's origin is defined standalone in the `pallet-ethereum` and the call
 		/// validation rules is different from normal substrate pallet call.
 		type EthereumCallDispatcher: EthereumCallDispatch<
-			<Self as Config<I>>::Call,
-			Self::AccountId,
+			Call = <Self as Config<I>>::Call,
+			AccountId = Self::AccountId,
 		>;
 	}
 
@@ -470,14 +470,32 @@ where
 /// The trait is designed for validating and dispatching Ethereum class calls. Return None
 /// if the call isn't an Ethereum class call. Return Ok(dispatch_result) or validation error if
 /// dispatched.
-pub trait EthereumCallDispatch<Call, AccountId> {
+pub trait EthereumCallDispatch {
+	type Call;
+	type AccountId;
+
 	fn dispatch(
-		c: &Call,
-		origin: &AccountId,
+		c: &Self::Call,
+		origin: &Self::AccountId,
 	) -> Result<
 		Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
 		TransactionValidityError,
 	>;
+}
+
+impl EthereumCallDispatch for () {
+	type Call = ();
+	type AccountId = ();
+
+	fn dispatch(
+		_c: &Self::Call,
+		_origin: &Self::AccountId,
+	) -> Result<
+		Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
+		TransactionValidityError,
+	> {
+		Ok(None)
+	}
 }
 
 #[cfg(test)]
