@@ -36,10 +36,13 @@ use frame_support::{
 	dispatch::Dispatchable,
 	ensure,
 	traits::{Contains, Get},
-	weights::{extract_actual_weight, GetDispatchInfo},
+	weights::{extract_actual_weight, GetDispatchInfo, PostDispatchInfo},
 };
 use frame_system::RawOrigin;
-use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify};
+use sp_runtime::{
+	traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify},
+	transaction_validity::TransactionValidityError,
+};
 use sp_std::{fmt::Debug, prelude::*};
 
 pub use pallet::*;
@@ -47,7 +50,7 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
+	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::config]
@@ -94,10 +97,14 @@ pub mod pallet {
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
 		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
-		// TODO: add docs
-		// type EthereumCallOrigin: EnsureOrigin<Self::Origin>;
-		// TODO: update the trait
-		type EthereumTransactValidator: EthereumTransactCall<<Self as Config<I>>::Call>;
+		/// A dispatcher used to handle Ethereum class call.
+		///
+		/// The Ethereum call's origin is defined standalone in the `pallet-ethereum` and the call
+		/// validation rules is different from normal substrate pallet call.
+		type EthereumCallDispatcher: EthereumCallDispatch<
+			<Self as Config<I>>::Call,
+			Self::AccountId,
+		>;
 	}
 
 	type BridgeMessageIdOf<T, I> = <T as Config<I>>::BridgeMessageId;
@@ -138,6 +145,9 @@ pub mod pallet {
 		),
 		/// Message has been dispatched with given result.
 		MessageDispatched(ChainId, BridgeMessageIdOf<T, I>, DispatchResult),
+		EthereumCallDispatched(ChainId, BridgeMessageIdOf<T, I>, DispatchResult),
+		// TODO: Give TransactionValidityError TypeInfo derive
+		// EthereumCallValidateError(ChainId, BridgeMessageIdOf<T, I>, TransactionValidityError),
 		/// Phantom member, never used. Needed to handle multiple pallet instances.
 		_Dummy(PhantomData<I>),
 	}
@@ -278,13 +288,6 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			return dispatch_result
 		}
 
-		// If the call is Ethereum Transact dispatch call
-		if let Some(dispatch_info) = T::EthereumTransactValidator::dispatch(&call) {
-			// TODO: add event
-
-			return dispatch_result;
-		}
-
 		// verify weight
 		// (we want passed weight to be at least equal to pre-dispatch weight of the call
 		// because otherwise Calls may be dispatched at lower price)
@@ -306,6 +309,39 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				message.weight,
 			));
 			return dispatch_result
+		}
+
+		// Dispatch Ethereum call earlier before pay
+		match T::EthereumCallDispatcher::dispatch(&call, &origin_account) {
+			Ok(Some(result)) => {
+				Self::deposit_event(Event::MessageDispatched(
+					source_chain,
+					id,
+					result.map(drop).map_err(|e| e.error),
+				));
+				return dispatch_result
+			},
+			Ok(None) => {
+				log::trace!(
+					target: "runtime::bridge-dispatch",
+					"It's a non-Ethereum call",
+				);
+			},
+			Err(err) => {
+				log::trace!(
+					target: "runtime::bridge-dispatch",
+					"Message {:?}/{:?} ethereum call validation failed before dispatch validation failed {:?}",
+					source_chain,
+					id,
+					err,
+				);
+				// Self::deposit_event(Event::EthereumCallValidateError(
+				// 	source_chain,
+				// 	id,
+				// 	result.map(drop).map_err(|e| e.error),
+				// ));
+				return dispatch_result
+			},
 		}
 
 		// pay dispatch fee right before dispatch
@@ -431,11 +467,17 @@ where
 	proof
 }
 
-use frame_support::weights::PostDispatchInfo;
-pub trait EthereumTransactCall<T> {
-	fn is_ethereum_call(t: &T) -> bool;
-	fn validate(t: &T) -> bool;
-	fn dispatch(t: &T) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>;
+/// The trait is designed for validating and dispatching Ethereum class calls. Return None
+/// if the call isn't an Ethereum class call. Return Ok(dispatch_result) or validation error if
+/// dispatched.
+pub trait EthereumCallDispatch<Call, AccountId> {
+	fn dispatch(
+		c: &Call,
+		origin: &AccountId,
+	) -> Result<
+		Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
+		TransactionValidityError,
+	>;
 }
 
 #[cfg(test)]
