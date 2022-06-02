@@ -483,21 +483,6 @@ pub trait EthereumCallDispatch {
 	>;
 }
 
-impl EthereumCallDispatch for () {
-	type Call = ();
-	type AccountId = ();
-
-	fn dispatch(
-		_c: &Self::Call,
-		_origin: &Self::AccountId,
-	) -> Result<
-		Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
-		TransactionValidityError,
-	> {
-		Ok(None)
-	}
-}
-
 #[cfg(test)]
 mod tests {
 	// From construct_runtime macro
