@@ -513,6 +513,7 @@ mod tests {
 	#![allow(clippy::from_over_into)]
 
 	use super::*;
+	use crate as call_dispatch;
 	use codec::Decode;
 	use frame_support::{parameter_types, weights::Weight};
 	use frame_system::{EventRecord, Phase};
@@ -560,10 +561,25 @@ mod tests {
 		}
 	}
 
+	pub struct EthereumCallDispatcher;
+
+	impl EthereumCallDispatch for EthereumCallDispatcher {
+		type AccountId = AccountId;
+		type Call = Call;
+
+		fn dispatch(
+			_c: &Self::Call,
+			_origin: &Self::AccountId,
+		) -> Result<
+			Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
+			TransactionValidityError,
+		> {
+			Ok(None)
+		}
+	}
+
 	type Block = frame_system::mocking::MockBlock<TestRuntime>;
 	type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
-
-	use crate as call_dispatch;
 
 	frame_support::construct_runtime! {
 		pub enum TestRuntime where
@@ -619,6 +635,7 @@ mod tests {
 		type CallFilter = TestCallFilter;
 		type EncodedCall = EncodedCall;
 		type AccountIdConverter = AccountIdConverter;
+		type EthereumCallDispatcher = EthereumCallDispatcher;
 	}
 
 	#[derive(Decode, Encode)]
