@@ -31,7 +31,7 @@ use bp_runtime::{
 	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, SourceAccount,
 };
-use codec::Encode;
+use codec::{Decode, Encode};
 use frame_support::{
 	dispatch::Dispatchable,
 	ensure,
@@ -39,9 +39,10 @@ use frame_support::{
 	weights::{extract_actual_weight, GetDispatchInfo, PostDispatchInfo},
 };
 use frame_system::RawOrigin;
+use scale_info::TypeInfo;
 use sp_runtime::{
 	traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify},
-	transaction_validity::TransactionValidityError,
+	transaction_validity::{InvalidTransaction, TransactionValidityError},
 };
 use sp_std::{fmt::Debug, prelude::*};
 
@@ -146,8 +147,9 @@ pub mod pallet {
 		/// Message has been dispatched with given result.
 		MessageDispatched(ChainId, BridgeMessageIdOf<T, I>, DispatchResult),
 		EthereumCallDispatched(ChainId, BridgeMessageIdOf<T, I>, DispatchResult),
-		// TODO: Give TransactionValidityError TypeInfo derive
-		// EthereumCallValidateError(ChainId, BridgeMessageIdOf<T, I>, TransactionValidityError),
+		EthereumCallValidityError(ChainId, BridgeMessageIdOf<T, I>, EthereumCallValidityError),
+		// TODO: https://github.com/paritytech/substrate/pull/11599
+		// EthereumCallValidityError(ChainId, BridgeMessageIdOf<T, I>, TransactionValidityError),
 		/// Phantom member, never used. Needed to handle multiple pallet instances.
 		_Dummy(PhantomData<I>),
 	}
@@ -335,11 +337,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 					id,
 					err,
 				);
-				// Self::deposit_event(Event::EthereumCallValidateError(
-				// 	source_chain,
-				// 	id,
-				// 	result.map(drop).map_err(|e| e.error),
-				// ));
+				Self::deposit_event(Event::EthereumCallValidityError(source_chain, id, err.into()));
 				return dispatch_result
 			},
 		}
@@ -481,6 +479,32 @@ pub trait EthereumCallDispatch {
 		Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
 		TransactionValidityError,
 	>;
+}
+
+#[derive(Clone, Debug, Encode, Decode, PartialEq, Eq, TypeInfo)]
+pub enum EthereumCallValidityError {
+	InvalidChainId,
+	InvalidGasLimit,
+	InvalidNonce,
+	InvalidPayment,
+	UnknownError,
+}
+
+impl From<TransactionValidityError> for EthereumCallValidityError {
+	fn from(validate_err: TransactionValidityError) -> Self {
+		match validate_err {
+			TransactionValidityError::Invalid(InvalidTransaction::Future) |
+			TransactionValidityError::Invalid(InvalidTransaction::Stale) =>
+				EthereumCallValidityError::InvalidNonce,
+			TransactionValidityError::Invalid(InvalidTransaction::Custom(3)) =>
+				EthereumCallValidityError::InvalidGasLimit,
+			TransactionValidityError::Invalid(InvalidTransaction::Custom(1)) =>
+				EthereumCallValidityError::InvalidChainId,
+			TransactionValidityError::Invalid(InvalidTransaction::Payment) =>
+				EthereumCallValidityError::InvalidPayment,
+			_ => EthereumCallValidityError::UnknownError,
+		}
+	}
 }
 
 #[cfg(test)]
