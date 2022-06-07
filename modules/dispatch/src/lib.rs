@@ -321,6 +321,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 					id,
 					result.map(drop).map_err(|e| e.error),
 				));
+				dispatch_result.dispatch_result = result.is_ok();
 				return dispatch_result
 			},
 			Ok(None) => {
