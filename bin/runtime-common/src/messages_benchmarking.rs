@@ -27,7 +27,7 @@ use crate::messages::{
 };
 
 use bp_messages::{storage_keys, MessageData, MessageKey, MessagePayload};
-use bp_runtime::{messages::DispatchFeePayment, ChainId};
+use bp_runtime::StorageProofSize;
 use codec::Encode;
 use ed25519_dalek::{PublicKey, SecretKey, Signer, KEYPAIR_LENGTH, SECRET_KEY_LENGTH};
 use frame_support::{
@@ -35,7 +35,7 @@ use frame_support::{
 	weights::{GetDispatchInfo, Weight},
 };
 use pallet_bridge_messages::benchmarking::{
-	MessageDeliveryProofParams, MessageParams, MessageProofParams, ProofSize,
+	MessageDeliveryProofParams, MessageParams, MessageProofParams,
 };
 use sp_core::Hasher;
 use sp_runtime::traits::{Header, IdentifyAccount, MaybeSerializeDeserialize, Zero};
@@ -99,7 +99,7 @@ where
 	R: frame_system::Config<AccountId = AccountIdOf<ThisChain<B>>>
 		+ pallet_balances::Config<BI, Balance = BalanceOf<ThisChain<B>>>
 		+ pallet_bridge_grandpa::Config<FI>,
-	R::BridgedChain: bp_runtime::Chain<Header = BH>,
+	R::BridgedChain: bp_runtime::Chain<Hash = HashOf<BridgedChain<B>>, Header = BH>,
 	B: MessageBridge,
 	BI: 'static,
 	FI: 'static,
@@ -115,9 +115,8 @@ where
 		+ From<sp_core::ed25519::Public>
 		+ IdentifyAccount<AccountId = AccountIdOf<ThisChain<B>>>,
 {
-	// we'll be dispatching the same call at This chain
-	let remark = match params.size {
-		ProofSize::Minimal(ref size) => vec![0u8; *size as _],
+	let message_payload = match params.size {
+		StorageProofSize::Minimal(ref size) => vec![0u8; *size as _],
 		_ => vec![],
 	};
 	let call: CallOf<ThisChain<B>> = frame_system::Call::remark { remark }.into();
@@ -164,7 +163,7 @@ where
 	// finally - prepare storage proof and update environment
 	let (state_root, storage_proof) =
 		prepare_messages_storage_proof::<B, BHH>(&params, message_payload);
-	let bridged_header_hash = insert_bridged_chain_header::<R, FI, B, BH>(state_root);
+	let bridged_header_hash = insert_header_to_grandpa_pallet::<R, FI>(state_root);
 
 	(
 		FromBridgedChainMessagesProof {
@@ -188,7 +187,7 @@ pub fn prepare_message_delivery_proof<R, FI, B, BH, BHH>(
 ) -> FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>
 where
 	R: pallet_bridge_grandpa::Config<FI>,
-	R::BridgedChain: bp_runtime::Chain<Header = BH>,
+	R::BridgedChain: bp_runtime::Chain<Hash = HashOf<BridgedChain<B>>, Header = BH>,
 	FI: 'static,
 	B: MessageBridge,
 	BH: Header<Hash = HashOf<BridgedChain<B>>>,
@@ -216,7 +215,7 @@ where
 	let storage_proof = proof_recorder.drain().into_iter().map(|n| n.data.to_vec()).collect();
 
 	// finally insert header with given state root to our storage
-	let bridged_header_hash = insert_bridged_chain_header::<R, FI, B, BH>(root);
+	let bridged_header_hash = insert_header_to_grandpa_pallet::<R, FI>(root);
 
 	FromBridgedChainMessagesDeliveryProof {
 		bridged_header_hash: bridged_header_hash.into(),
@@ -288,19 +287,16 @@ where
 	(root, storage_proof)
 }
 
-/// Insert Bridged chain header with given state root into storage of GRANDPA pallet at This chain.
-fn insert_bridged_chain_header<R, FI, B, BH>(
-	state_root: HashOf<BridgedChain<B>>,
-) -> HashOf<BridgedChain<B>>
+/// Insert header to the bridge GRANDPA pallet.
+pub(crate) fn insert_header_to_grandpa_pallet<R, GI>(
+	state_root: bp_runtime::HashOf<R::BridgedChain>,
+) -> bp_runtime::HashOf<R::BridgedChain>
 where
-	R: pallet_bridge_grandpa::Config<FI>,
-	R::BridgedChain: bp_runtime::Chain<Header = BH>,
-	FI: 'static,
-	B: MessageBridge,
-	BH: Header<Hash = HashOf<BridgedChain<B>>>,
-	HashOf<BridgedChain<B>>: Default,
+	R: pallet_bridge_grandpa::Config<GI>,
+	GI: 'static,
+	R::BridgedChain: bp_runtime::Chain,
 {
-	let bridged_header = BH::new(
+	let bridged_header = bp_runtime::HeaderOf::<R::BridgedChain>::new(
 		Zero::zero(),
 		Default::default(),
 		state_root,
@@ -308,7 +304,7 @@ where
 		Default::default(),
 	);
 	let bridged_header_hash = bridged_header.hash();
-	pallet_bridge_grandpa::initialize_for_benchmarks::<R, FI>(bridged_header);
+	pallet_bridge_grandpa::initialize_for_benchmarks::<R, GI>(bridged_header);
 	bridged_header_hash
 }
 
@@ -347,11 +343,15 @@ fn ed25519_sign(
 }
 
 /// Populate trie with dummy keys+values until trie has at least given size.
-fn grow_trie<H: Hasher>(mut root: H::Out, mdb: &mut MemoryDB<H>, trie_size: ProofSize) -> H::Out {
+pub fn grow_trie<H: Hasher>(
+	mut root: H::Out,
+	mdb: &mut MemoryDB<H>,
+	trie_size: StorageProofSize,
+) -> H::Out {
 	let (iterations, leaf_size, minimal_trie_size) = match trie_size {
-		ProofSize::Minimal(_) => return root,
-		ProofSize::HasLargeLeaf(size) => (1, size, size),
-		ProofSize::HasExtraNodes(size) => (8, 1, size),
+		StorageProofSize::Minimal(_) => return root,
+		StorageProofSize::HasLargeLeaf(size) => (1, size, size),
+		StorageProofSize::HasExtraNodes(size) => (8, 1, size),
 	};
 
 	let mut key_index = 0;

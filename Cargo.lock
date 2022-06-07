@@ -496,6 +496,7 @@ version = "0.1.0"
 dependencies = [
  "bp-message-dispatch",
  "bp-messages",
+ "bp-parachains",
  "bp-polkadot-core",
  "bp-runtime",
  "ed25519-dalek",
@@ -1733,6 +1734,7 @@ dependencies = [
  "bp-polkadot-core",
  "bp-runtime",
  "bp-test-utils",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",

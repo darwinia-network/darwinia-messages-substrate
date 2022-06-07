@@ -17,6 +17,7 @@ scale-info = { version = "2.0.1", default-features = false, features = ["derive"
 
 bp-message-dispatch = { path = "../../primitives/message-dispatch", default-features = false }
 bp-messages = { path = "../../primitives/messages", default-features = false }
+bp-parachains = { path = "../../primitives/parachains", default-features = false }
 bp-polkadot-core = { path = "../../primitives/polkadot-core", default-features = false }
 bp-runtime = { path = "../../primitives/runtime", default-features = false }
 pallet-bridge-dispatch = { path = "../../modules/dispatch", default-features = false }
@@ -43,6 +44,7 @@ default = ["std"]
 std = [
 	"bp-message-dispatch/std",
 	"bp-messages/std",
+	"bp-parachains/std",
 	"bp-polkadot-core/std",
 	"bp-runtime/std",
 	"codec/std",
