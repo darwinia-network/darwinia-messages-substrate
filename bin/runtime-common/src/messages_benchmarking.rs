@@ -163,7 +163,7 @@ where
 	// finally - prepare storage proof and update environment
 	let (state_root, storage_proof) =
 		prepare_messages_storage_proof::<B, BHH>(&params, message_payload);
-	let bridged_header_hash = insert_header_to_grandpa_pallet::<R, FI>(state_root);
+	let (_, bridged_header_hash) = insert_header_to_grandpa_pallet::<R, FI>(state_root);
 
 	(
 		FromBridgedChainMessagesProof {
@@ -215,7 +215,7 @@ where
 	let storage_proof = proof_recorder.drain().into_iter().map(|n| n.data.to_vec()).collect();
 
 	// finally insert header with given state root to our storage
-	let bridged_header_hash = insert_header_to_grandpa_pallet::<R, FI>(root);
+	let (_, bridged_header_hash) = insert_header_to_grandpa_pallet::<R, FI>(root);
 
 	FromBridgedChainMessagesDeliveryProof {
 		bridged_header_hash: bridged_header_hash.into(),
@@ -290,14 +290,15 @@ where
 /// Insert header to the bridge GRANDPA pallet.
 pub(crate) fn insert_header_to_grandpa_pallet<R, GI>(
 	state_root: bp_runtime::HashOf<R::BridgedChain>,
-) -> bp_runtime::HashOf<R::BridgedChain>
+) -> (bp_runtime::BlockNumberOf<R::BridgedChain>, bp_runtime::HashOf<R::BridgedChain>)
 where
 	R: pallet_bridge_grandpa::Config<GI>,
 	GI: 'static,
 	R::BridgedChain: bp_runtime::Chain,
 {
+	let bridged_block_number = Zero::zero();
 	let bridged_header = bp_runtime::HeaderOf::<R::BridgedChain>::new(
-		Zero::zero(),
+		bridged_block_number,
 		Default::default(),
 		state_root,
 		Default::default(),
@@ -305,7 +306,7 @@ where
 	);
 	let bridged_header_hash = bridged_header.hash();
 	pallet_bridge_grandpa::initialize_for_benchmarks::<R, GI>(bridged_header);
-	bridged_header_hash
+	(bridged_block_number, bridged_header_hash)
 }
 
 /// Generate ed25519 signature to be used in
