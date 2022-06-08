@@ -98,14 +98,6 @@ pub mod pallet {
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
 		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
-		/// A dispatcher used to handle Ethereum class call.
-		///
-		/// The Ethereum call's origin is defined standalone in the `pallet-ethereum` and the call
-		/// validation rules is different from normal substrate pallet call.
-		type EthereumCallDispatcher: EthereumCallDispatch<
-			Call = <Self as Config<I>>::Call,
-			AccountId = Self::AccountId,
-		>;
 	}
 
 	type BridgeMessageIdOf<T, I> = <T as Config<I>>::BridgeMessageId;
@@ -146,10 +138,6 @@ pub mod pallet {
 		),
 		/// Message has been dispatched with given result.
 		MessageDispatched(ChainId, BridgeMessageIdOf<T, I>, DispatchResult),
-		EthereumCallDispatched(ChainId, BridgeMessageIdOf<T, I>, DispatchResult),
-		EthereumCallValidityError(ChainId, BridgeMessageIdOf<T, I>, EthereumCallValidityError),
-		// TODO: https://github.com/paritytech/substrate/pull/11599
-		// EthereumCallValidityError(ChainId, BridgeMessageIdOf<T, I>, TransactionValidityError),
 		/// Phantom member, never used. Needed to handle multiple pallet instances.
 		_Dummy(PhantomData<I>),
 	}
@@ -313,36 +301,6 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			return dispatch_result
 		}
 
-		// Dispatch Ethereum call earlier before pay
-		match T::EthereumCallDispatcher::dispatch(&call, &origin_account) {
-			Ok(Some(result)) => {
-				Self::deposit_event(Event::MessageDispatched(
-					source_chain,
-					id,
-					result.map(drop).map_err(|e| e.error),
-				));
-				dispatch_result.dispatch_result = result.is_ok();
-				return dispatch_result
-			},
-			Ok(None) => {
-				log::trace!(
-					target: "runtime::bridge-dispatch",
-					"It's a non-Ethereum call",
-				);
-			},
-			Err(err) => {
-				log::trace!(
-					target: "runtime::bridge-dispatch",
-					"Message {:?}/{:?} ethereum call validation failed before dispatch validation failed {:?}",
-					source_chain,
-					id,
-					err,
-				);
-				Self::deposit_event(Event::EthereumCallValidityError(source_chain, id, err.into()));
-				return dispatch_result
-			},
-		}
-
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
 			message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
@@ -466,48 +424,6 @@ where
 	proof
 }
 
-/// The trait is designed for validating and dispatching Ethereum class calls. Return None
-/// if the call isn't an Ethereum class call. Return Ok(dispatch_result) or validation error if
-/// dispatched.
-pub trait EthereumCallDispatch {
-	type Call;
-	type AccountId;
-
-	fn dispatch(
-		c: &Self::Call,
-		origin: &Self::AccountId,
-	) -> Result<
-		Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
-		TransactionValidityError,
-	>;
-}
-
-#[derive(Clone, Debug, Encode, Decode, PartialEq, Eq, TypeInfo)]
-pub enum EthereumCallValidityError {
-	InvalidChainId,
-	InvalidGasLimit,
-	InvalidNonce,
-	InvalidPayment,
-	UnknownError,
-}
-
-impl From<TransactionValidityError> for EthereumCallValidityError {
-	fn from(validate_err: TransactionValidityError) -> Self {
-		match validate_err {
-			TransactionValidityError::Invalid(InvalidTransaction::Future) |
-			TransactionValidityError::Invalid(InvalidTransaction::Stale) =>
-				EthereumCallValidityError::InvalidNonce,
-			TransactionValidityError::Invalid(InvalidTransaction::Custom(3)) =>
-				EthereumCallValidityError::InvalidGasLimit,
-			TransactionValidityError::Invalid(InvalidTransaction::Custom(1)) =>
-				EthereumCallValidityError::InvalidChainId,
-			TransactionValidityError::Invalid(InvalidTransaction::Payment) =>
-				EthereumCallValidityError::InvalidPayment,
-			_ => EthereumCallValidityError::UnknownError,
-		}
-	}
-}
-
 #[cfg(test)]
 mod tests {
 	// From construct_runtime macro
@@ -559,23 +475,6 @@ mod tests {
 	impl sp_runtime::traits::Convert<H256, AccountId> for AccountIdConverter {
 		fn convert(hash: H256) -> AccountId {
 			hash.to_low_u64_ne()
-		}
-	}
-
-	pub struct EthereumCallDispatcher;
-
-	impl EthereumCallDispatch for EthereumCallDispatcher {
-		type AccountId = AccountId;
-		type Call = Call;
-
-		fn dispatch(
-			_c: &Self::Call,
-			_origin: &Self::AccountId,
-		) -> Result<
-			Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfo>>,
-			TransactionValidityError,
-		> {
-			Ok(None)
 		}
 	}
 
@@ -636,7 +535,6 @@ mod tests {
 		type CallFilter = TestCallFilter;
 		type EncodedCall = EncodedCall;
 		type AccountIdConverter = AccountIdConverter;
-		type EthereumCallDispatcher = EthereumCallDispatcher;
 	}
 
 	#[derive(Decode, Encode)]
