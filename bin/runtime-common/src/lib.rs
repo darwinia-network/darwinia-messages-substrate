@@ -20,6 +20,7 @@
 
 pub mod messages;
 pub mod messages_benchmarking;
+pub mod messages_extension;
 pub mod parachains_benchmarking;
 
 #[cfg(feature = "integrity-test")]

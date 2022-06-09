@@ -686,6 +686,7 @@ fn test_call_relayer_cancel_registration_works() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -766,6 +767,7 @@ fn receive_messages_delivery_proof() {
 		UnrewardedRelayersState {
 			unrewarded_relayer_entries: 1,
 			total_messages: 1,
+			last_delivered_nonce: 1,
 			..Default::default()
 		},
 	));
@@ -867,6 +869,7 @@ fn test_payment_cal_rewards_normally_single_message() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -932,6 +935,7 @@ fn test_payment_cal_rewards_normally_multi_message() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 2,
 				total_messages: 2,
+				last_delivered_nonce: 2,
 				..Default::default()
 			},
 		));
@@ -983,6 +987,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1037,6 +1042,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1087,6 +1093,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1103,6 +1110,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1150,6 +1158,7 @@ fn test_payment_with_slash_and_reduce_order_capacity() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1191,6 +1200,7 @@ fn test_payment_slash_with_protect() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1232,6 +1242,7 @@ fn test_payment_slash_event() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1299,6 +1310,7 @@ fn test_payment_with_multiple_message_out_of_deadline() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 2,
 				total_messages: 2,
+				last_delivered_nonce: 2,
 				..Default::default()
 			},
 		));
@@ -1341,6 +1353,7 @@ fn test_clean_order_state_at_the_end_of_block() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 2,
 				total_messages: 4,
+				last_delivered_nonce: 4,
 				..Default::default()
 			},
 		));
@@ -1453,6 +1466,7 @@ fn test_relayer_update_order_capacity() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 3,
+				last_delivered_nonce: 3,
 				..Default::default()
 			},
 		));
