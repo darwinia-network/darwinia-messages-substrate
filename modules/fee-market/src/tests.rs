@@ -289,34 +289,30 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &AccountId,
 	) {
-		let RewardsBook {
-			messages_relayers_rewards,
-			confirmation_relayer_rewards,
-			assigned_relayers_rewards,
-			treasury_total_rewards,
-		} = slash_and_calculate_rewards::<Test, ()>(
-			lane_id,
-			message_relayers,
-			received_range,
-			relayer_fund_account,
-		);
-		let confimation_key =
-			(b":relayer-reward:", confirmation_relayer, confirmation_relayer_rewards).encode();
+		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
+			slash_and_calculate_rewards::<Test, ()>(
+				lane_id,
+				message_relayers,
+				confirmation_relayer.clone(),
+				received_range,
+				relayer_fund_account,
+			);
+
+		let confimation_key = (b":relayer-reward:", confirmation_relayer, confirm_sum).encode();
 		frame_support::storage::unhashed::put(&confimation_key, &true);
 
-		for (relayer, reward) in &messages_relayers_rewards {
+		for (relayer, reward) in &deliver_sum {
 			let key = (b":relayer-reward:", relayer, reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
-		for (relayer, reward) in &assigned_relayers_rewards {
+		for (relayer, reward) in &assigned_relayers_sum {
 			let key = (b":relayer-reward:", relayer, reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
 		let treasury_account: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
-		let treasury_key =
-			(b":relayer-reward:", &treasury_account, treasury_total_rewards).encode();
+		let treasury_key = (b":relayer-reward:", &treasury_account, treasury_sum).encode();
 		frame_support::storage::unhashed::put(&treasury_key, &true);
 	}
 }
@@ -752,6 +748,14 @@ fn test_callback_order_creation() {
 		assert_eq!(relayers[1].id, assigned_relayers.get(1).unwrap().id);
 		assert_eq!(relayers[2].id, assigned_relayers.get(2).unwrap().id);
 		assert_eq!(order.sent_time, 2);
+
+		System::assert_has_event(Event::FeeMarket(crate::Event::OrderCreated(
+			lane,
+			message_nonce,
+			order.fee(),
+			vec![relayers[0].id, relayers[1].id, relayers[2].id],
+			order.range_end(),
+		)));
 	});
 }
 
@@ -804,7 +808,7 @@ fn test_payment_cal_reward_normally_single_message() {
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(2), 110, Some(50));
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 120, Some(100));
 		let market_fee = FeeMarket::market_fee().unwrap();
-		let (_, _) = send_regular_message(market_fee);
+		let (lane, message_nonce) = send_regular_message(market_fee);
 
 		// Receive delivery message proof
 		System::set_block_number(4);
@@ -824,16 +828,27 @@ fn test_payment_cal_reward_normally_single_message() {
 			},
 		));
 
-		// Analysis:
-		// 1. assigned_relayers [(1, 30, 2-52),(2, 50, 52-102),(3, 100, 102-152)] -> id: 1, reward =
-		// 60% * 30 = 18 2. message relayer -> id: 100, reward = 40% * 30 * 80% = 9.6 ~ 10
-		// 3. confirmation relayer -> id: 5, reward = 40% * 30 * 20% = 2.4 ~ 2
-		// 4. treasury reward -> reward: 100 - 30 = 70
+		// Reward Analysis: assigned_relayers [(1, 30, 2-52),(2, 50, 52-102),(3, 100, 102-152)]
+		// 1. slot relayer    -> id: 1, reward = 60% * 30 = 18
+		// 2. message relayer -> id: 100, reward = 40% * 30 * 80% = 9.6 ~ 10
+		// 3. confirm relayer -> id: 5, reward = 40% * 30 * 20% = 2.4 ~ 2
+		// 4. treasury reward -> reward = 100 - 30 = 70
 		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 70));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 18));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 2));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 10));
+
+		System::assert_has_event(Event::FeeMarket(crate::Event::OrderReward(
+			lane,
+			message_nonce,
+			RewardItem {
+				to_slot_relayer: Some((1, 18)),
+				to_treasury: Some(70),
+				to_message_relayer: Some((100, 10)),
+				to_confirm_relayer: Some((5, 2)),
+			},
+		)));
 	});
 }
 
