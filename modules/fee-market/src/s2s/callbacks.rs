@@ -37,15 +37,25 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 				*message,
 				now,
 				T::CollateralPerOrder::get(),
-				assigned_relayers,
+				assigned_relayers.clone(),
 				T::Slot::get(),
 			);
 			// Store the create order
 			<Orders<T, I>>::insert((order.lane, order.message), order.clone());
+
+			let ids: Vec<T::AccountId> = assigned_relayers.iter().map(|r| r.id.clone()).collect();
+			Pallet::<T, I>::deposit_event(Event::OrderCreated(
+				order.lane,
+				order.message,
+				order.fee(),
+				ids,
+				order.range_end(),
+			));
 		}
 
-		// one read for assigned relayers
-		// one write for store order
+		// Storage: FeeMarket AssignedRelayers (r:1 w:0)
+		// Storage: FeeMarket Orders (r:0 w:1)
+		// Storage: System Events (r:0 w:1)
 		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 	}
 }
@@ -66,8 +76,7 @@ impl<T: Config<I>, I: 'static> OnDeliveryConfirmed for FeeMarketMessageConfirmed
 			}
 		}
 
-		// one db read for get order
-		// one db write for update order confirm time
+		// Storage: FeeMarket Orders (r:1 w:1)
 		<T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 	}
 }
