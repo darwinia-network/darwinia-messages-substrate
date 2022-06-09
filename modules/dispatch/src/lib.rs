@@ -139,7 +139,9 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId> for Pallet<T, I> {
+impl<T: Config<I>, I: 'static>
+	MessageDispatch<T::Origin, T::BridgeMessageId, <T as pallet::Config<I>>::Call> for Pallet<T, I>
+{
 	type Message = MessagePayload<
 		T::SourceChainAccountId,
 		T::TargetChainAccountPublic,
@@ -151,7 +153,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		message.weight
 	}
 
-	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
+	fn dispatch<P: FnOnce(&T::Origin, &<T as pallet::Config<I>>::Call) -> Result<(), ()>>(
 		source_chain: ChainId,
 		target_chain: ChainId,
 		id: T::BridgeMessageId,
@@ -296,13 +298,13 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			));
 			return dispatch_result
 		}
+		// finally dispatch message
+		let origin = RawOrigin::Signed(origin_account.clone()).into();
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
 			message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		if pay_dispatch_fee_at_target_chain &&
-			pay_dispatch_fee(&origin_account, message.weight).is_err()
-		{
+		if pay_dispatch_fee_at_target_chain && pay_dispatch_fee(&origin, &call).is_err() {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Failed to pay dispatch fee for dispatching message {:?}/{:?} with weight {}",
@@ -319,9 +321,6 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			return dispatch_result
 		}
 		dispatch_result.dispatch_fee_paid_during_dispatch = pay_dispatch_fee_at_target_chain;
-
-		// finally dispatch message
-		let origin = RawOrigin::Signed(origin_account).into();
 
 		log::trace!(target: "runtime::bridge-dispatch", "Message being dispatched is: {:.4096?}", &call);
 		let result = call.dispatch(origin);
