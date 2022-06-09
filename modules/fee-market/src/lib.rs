@@ -47,6 +47,7 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 // --- darwinia-network ---
+use s2s::RewardItem;
 use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
@@ -107,6 +108,17 @@ pub mod pallet {
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
 		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
+		/// Create new order. \[lane_id, message_nonce, order_fee, assigned_relayers,
+		/// out_of_slots_time\]
+		OrderCreated(
+			LaneId,
+			MessageNonce,
+			BalanceOf<T, I>,
+			Vec<T::AccountId>,
+			Option<T::BlockNumber>,
+		),
+		/// Reward distribute of the order. \[lane_id, message_nonce, rewards\]
+		OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
 	}
 
 	#[pallet::error]
@@ -117,6 +129,8 @@ pub mod pallet {
 		AlreadyEnrolled,
 		/// This relayer doesn't enroll ever.
 		NotEnrolled,
+		/// Locked collateral is too low to cover one order.
+		CollateralTooLow,
 		/// Update locked collateral is not allow since some orders are not confirm.
 		StillHasOrdersNotConfirmed,
 		/// The fee is lower than MinimumRelayFee.
@@ -206,6 +220,12 @@ pub mod pallet {
 				T::Currency::free_balance(&who) >= lock_collateral,
 				<Error<T, I>>::InsufficientBalance
 			);
+
+			ensure!(
+				Self::collateral_to_order_capacity(lock_collateral) > 0,
+				<Error<T, I>>::CollateralTooLow
+			);
+
 			if let Some(fee) = relay_fee {
 				ensure!(fee >= T::MinimumRelayFee::get(), <Error<T, I>>::RelayFeeTooLow);
 			}
