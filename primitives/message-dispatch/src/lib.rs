@@ -140,3 +140,18 @@ impl<SourceChainAccountId, TargetChainAccountPublic, TargetChainSignature> Size
 		self.call.len() as _
 	}
 }
+
+/// Customize the dispatch origin before call dispatch.
+pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
+	/// Generate the dispatch origin for the given call.
+	///
+	/// Normally, the dispatch origin is one kind of frame_system::RawOrigin, however, sometimes
+	/// it is useful for a dispatch call with a custom origin.
+	fn into_dispatch_origin(id: &AccountId, call: &Call) -> Origin;
+}
+
+/// A generic trait to filter calls that are allowed to be dispatched.
+pub trait CallFilter<Origin, Call> {
+	/// Filter the call, you might need origin to in the filter. return false, if not allowed.
+	fn contains(origin: &Origin, call: &Call) -> bool;
+}
