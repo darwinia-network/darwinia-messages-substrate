@@ -82,7 +82,6 @@ pub mod pallet {
 		///
 		/// The pallet will filter all incoming calls right before they're dispatched. If this
 		/// filter rejects the call, special event (`Event::MessageCallRejected`) is emitted.
-		// type CallFilter: Contains<<Self as Config<I>>::Call>;
 		type CallFilter: CallFilter<Self::Origin, <Self as Config<I>>::Call>;
 		/// The type that is used to wrap the `Self::Call` when it is moved over bridge.
 		///
@@ -95,7 +94,7 @@ pub mod pallet {
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
 		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
-
+		/// The type is used to customize the dispatch call origin.
 		type IntoDispatchOrigin: IntoDispatchOrigin<
 			Self::AccountId,
 			<Self as Config<I>>::Call,
@@ -270,8 +269,8 @@ impl<T: Config<I>, I: 'static>
 			},
 		};
 
-		let origin =
-			T::IntoDispatchOrigin::into_dispatch_origin(origin_account.clone(), call.clone());
+		// generate dispatch origin from origin account
+		let origin = T::IntoDispatchOrigin::into_dispatch_origin(&origin_account, &call);
 
 		// filter the call
 		if !T::CallFilter::contains(&origin, &call) {
@@ -308,7 +307,6 @@ impl<T: Config<I>, I: 'static>
 			));
 			return dispatch_result
 		}
-		// finally dispatch message
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
@@ -428,10 +426,15 @@ where
 	proof
 }
 
+/// Customize the dispatch origin before call dispatch.
+///
+/// Normally, the dispatch origin is one kind of frame_system::RawOrigin, however, sometimes
+/// it is useful for a dispatch call with a custom origin.
 pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
-	fn into_dispatch_origin(id: AccountId, call: Call) -> Origin;
+	fn into_dispatch_origin(id: &AccountId, call: &Call) -> Origin;
 }
 
+/// Filter the Call, return false if the call is not allowed to be dispatched.
 pub trait CallFilter<Origin, Call> {
 	fn contains(origin: &Origin, call: &Call) -> bool;
 }
