@@ -25,7 +25,7 @@ sp-runtime         = { default-features = false, git = "https://github.com/darwi
 sp-std             = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
 # darwinia-bridges-substrate
 bp-messages            = { default-features = false, path = "../../primitives/messages" }
-bp-runtime             = { default-features = false, path = "../../primitives/runtime"  }
+bp-runtime             = { default-features = false, path = "../../primitives/runtime" }
 pallet-bridge-messages = { default-features = false, path = "../messages" }
 
 [dev-dependencies]
