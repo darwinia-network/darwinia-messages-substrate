@@ -35,7 +35,7 @@ use codec::Encode;
 use frame_support::{
 	dispatch::Dispatchable,
 	ensure,
-	traits::{Contains, Get},
+	traits::Get,
 	weights::{extract_actual_weight, GetDispatchInfo},
 };
 use frame_system::RawOrigin;
@@ -82,7 +82,8 @@ pub mod pallet {
 		///
 		/// The pallet will filter all incoming calls right before they're dispatched. If this
 		/// filter rejects the call, special event (`Event::MessageCallRejected`) is emitted.
-		type CallFilter: Contains<<Self as Config<I>>::Call>;
+		// type CallFilter: Contains<<Self as Config<I>>::Call>;
+		type CallFilter: CallFilter<Self::Origin, <Self as Config<I>>::Call>;
 		/// The type that is used to wrap the `Self::Call` when it is moved over bridge.
 		///
 		/// The idea behind this is to avoid `Call` conversion/decoding until we'll be sure
@@ -269,8 +270,11 @@ impl<T: Config<I>, I: 'static>
 			},
 		};
 
+		let origin =
+			T::IntoDispatchOrigin::into_dispatch_origin(origin_account.clone(), call.clone());
+
 		// filter the call
-		if !T::CallFilter::contains(&call) {
+		if !T::CallFilter::contains(&origin, &call) {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Message {:?}/{:?}: the call ({:?}) is rejected by filter",
@@ -305,8 +309,6 @@ impl<T: Config<I>, I: 'static>
 			return dispatch_result
 		}
 		// finally dispatch message
-		let origin =
-			T::IntoDispatchOrigin::into_dispatch_origin(origin_account.clone(), call.clone());
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
@@ -428,6 +430,10 @@ where
 
 pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
 	fn into_dispatch_origin(id: AccountId, call: Call) -> Origin;
+}
+
+pub trait CallFilter<Origin, Call> {
+	fn contains(origin: &Origin, call: &Call) -> bool;
 }
 
 #[cfg(test)]
