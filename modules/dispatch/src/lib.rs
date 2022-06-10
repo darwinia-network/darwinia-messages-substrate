@@ -94,6 +94,12 @@ pub mod pallet {
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
 		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
+
+		type IntoDispatchOrigin: IntoDispatchOrigin<
+			Self::AccountId,
+			<Self as Config<I>>::Call,
+			Self::Origin,
+		>;
 	}
 
 	type BridgeMessageIdOf<T, I> = <T as Config<I>>::BridgeMessageId;
@@ -299,7 +305,8 @@ impl<T: Config<I>, I: 'static>
 			return dispatch_result
 		}
 		// finally dispatch message
-		let origin = RawOrigin::Signed(origin_account.clone()).into();
+		let origin =
+			T::IntoDispatchOrigin::into_dispatch_origin(origin_account.clone(), call.clone());
 
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
@@ -417,6 +424,10 @@ where
 	target_chain_id.encode_to(&mut proof);
 
 	proof
+}
+
+pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
+	fn into_dispatch_origin(id: AccountId, call: Call) -> Origin;
 }
 
 #[cfg(test)]
