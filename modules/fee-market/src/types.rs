@@ -139,12 +139,18 @@ where
 		None
 	}
 
-	pub fn required_delivery_relayer_for_time(
+	/// One of P1, P2, P3 do the job in time
+	pub fn confirmed_by_prior_relayer_on_time(
 		&self,
-		message_confirm_time: BlockNumber,
+		latest_block_number: BlockNumber,
 	) -> Option<(AccountId, Balance)> {
+		// The confirm_time of the order is set in the `OnDeliveryConfirmed` callback. And
+		// the callback function was called as source chain received message delivery proof,
+		// before the reward payment.
+		let order_confirmed_time = self.confirm_time.unwrap_or_else(|| latest_block_number);
+
 		for prior_relayer in self.relayers.iter() {
-			if prior_relayer.valid_range.contains(&message_confirm_time) {
+			if prior_relayer.valid_range.contains(&order_confirmed_time) {
 				return Some((prior_relayer.id.clone(), prior_relayer.fee));
 			}
 		}

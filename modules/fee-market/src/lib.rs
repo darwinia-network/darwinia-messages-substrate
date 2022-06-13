@@ -47,7 +47,6 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 // --- darwinia-network ---
-use s2s::RewardItem;
 use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
@@ -117,8 +116,16 @@ pub mod pallet {
 			Vec<T::AccountId>,
 			Option<T::BlockNumber>,
 		),
-		/// Reward distribute of the order. \[lane_id, message_nonce, rewards\]
-		OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
+		/// Reward distribute of the order. \[lane_id, message_nonce, to_treasury, to_slot_relayer,
+		/// to_message_relayer, to_confirm_relayer\]
+		OrderReward(
+			LaneId,
+			MessageNonce,
+			Option<BalanceOf<T, I>>,
+			Option<(T::AccountId, BalanceOf<T, I>)>,
+			(T::AccountId, BalanceOf<T, I>),
+			BalanceOf<T, I>,
+		),
 	}
 
 	#[pallet::error]

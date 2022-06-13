@@ -51,8 +51,8 @@ use sp_runtime::{
 use crate::{
 	self as darwinia_fee_market,
 	s2s::{
-		payment::{slash_and_calculate_rewards, RewardsBook},
-		FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler,
+		payment::slash_and_calculate_rewards, FeeMarketMessageAcceptedHandler,
+		FeeMarketMessageConfirmedHandler,
 	},
 	*,
 };
@@ -289,11 +289,10 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &AccountId,
 	) {
-		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
+		let (treasury_sum, assigned_relayers_sum, deliver_sum, confirm_sum) =
 			slash_and_calculate_rewards::<Test, ()>(
 				lane_id,
 				message_relayers,
-				confirmation_relayer.clone(),
 				received_range,
 				relayer_fund_account,
 			);
@@ -842,12 +841,10 @@ fn test_payment_cal_reward_normally_single_message() {
 		System::assert_has_event(Event::FeeMarket(crate::Event::OrderReward(
 			lane,
 			message_nonce,
-			RewardItem {
-				to_slot_relayer: Some((1, 18)),
-				to_treasury: Some(70),
-				to_message_relayer: Some((100, 10)),
-				to_confirm_relayer: Some((5, 2)),
-			},
+			Some(70),
+			Some((1, 18)),
+			(100, 10),
+			2,
 		)));
 	});
 }

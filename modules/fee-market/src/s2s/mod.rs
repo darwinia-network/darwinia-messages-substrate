@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 pub mod payment;
-pub use payment::{FeeMarketPayment, RewardItem};
+pub use payment::FeeMarketPayment;
 
 pub mod callbacks;
 pub use callbacks::{FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler};
