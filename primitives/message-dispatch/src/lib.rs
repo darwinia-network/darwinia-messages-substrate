@@ -26,7 +26,6 @@ use bp_runtime::{
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
 use scale_info::TypeInfo;
-use sp_runtime::transaction_validity::TransactionValidityError;
 use sp_std::prelude::*;
 
 /// Message dispatch weight.
@@ -36,7 +35,7 @@ pub type Weight = u64;
 pub type SpecVersion = u32;
 
 /// A generic trait to dispatch arbitrary messages delivered over the bridge.
-pub trait MessageDispatch<AccountId, BridgeMessageId> {
+pub trait MessageDispatch<Origin, BridgeMessageId, Call> {
 	/// A type of the message to be dispatched.
 	type Message: codec::Decode;
 
@@ -45,15 +44,6 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// This function must: (1) be instant and (2) return correct upper bound
 	/// of dispatch weight.
 	fn dispatch_weight(message: &Self::Message) -> Weight;
-
-	/// Checking in message receiving step before dispatch
-	///
-	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
-	/// be not be processed by this relayer, latter relayers can still continue process it.
-	fn pre_dispatch(
-		relayer_account: &AccountId,
-		message: Result<&Self::Message, ()>,
-	) -> Result<(), &'static str>;
 
 	/// Dispatches the message internally.
 	///
@@ -68,10 +58,9 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// the whole message).
 	///
 	/// Returns unspent dispatch weight.
-	fn dispatch<P: FnOnce(&AccountId, Weight) -> Result<(), ()>>(
+	fn dispatch<P: FnOnce(&Origin, &Call) -> Result<(), ()>>(
 		source_chain: ChainId,
 		target_chain: ChainId,
-		relayer_account: &AccountId,
 		id: BridgeMessageId,
 		message: Result<Self::Message, ()>,
 		pay_dispatch_fee: P,
@@ -161,35 +150,8 @@ pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
 	fn into_dispatch_origin(id: &AccountId, call: &Call) -> Origin;
 }
 
-/// A generic trait to validate message before dispatch.
-pub trait CallValidate<AccountId, Origin, Call> {
-	/// Checking in message receiving step before dispatch
-	///
-	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
-	/// be not be processed by this relayer, latter relayers can still continue process it.
-	fn check_receiving_before_dispatch(
-		relayer_account: &AccountId,
-		call: &Call,
-	) -> Result<(), &'static str>;
-	/// In-dispatch call validation
-	///
-	/// This will be called in the dispatch process, If failed, return message dispatch errors.
-	fn call_validate(
-		relayer_account: &AccountId,
-		origin: &Origin,
-		call: &Call,
-	) -> Result<(), TransactionValidityError>;
-}
-
-/// CallValidate's default implementation, no additional validation
-pub enum Everything {}
-
-impl<AccountId, Origin, Call> CallValidate<AccountId, Origin, Call> for Everything {
-	fn check_receiving_before_dispatch(_: &AccountId, _: &Call) -> Result<(), &'static str> {
-		Ok(())
-	}
-
-	fn call_validate(_: &AccountId, _: &Origin, _: &Call) -> Result<(), TransactionValidityError> {
-		Ok(())
-	}
+/// A generic trait to filter calls that are allowed to be dispatched.
+pub trait CallFilter<Origin, Call> {
+	/// Filter the call, you might need origin to in the filter. return false, if not allowed.
+	fn contains(origin: &Origin, call: &Call) -> bool;
 }
