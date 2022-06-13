@@ -227,7 +227,7 @@ impl<T: Config<I>, I: 'static>
 		};
 
 		// prepare dispatch origin
-		let origin_account = match message.origin {
+		let origin_derived_account = match message.origin {
 			CallOrigin::SourceRoot => {
 				let hex_id =
 					derive_account_id::<T::SourceChainAccountId>(source_chain, SourceAccount::Root);
@@ -271,10 +271,11 @@ impl<T: Config<I>, I: 'static>
 		};
 
 		// generate dispatch origin from origin account
-		let origin = T::IntoDispatchOrigin::into_dispatch_origin(&origin_account, &call);
+		let dispatch_origin =
+			T::IntoDispatchOrigin::into_dispatch_origin(&origin_derived_account, &call);
 
 		// filter the call
-		if !T::CallFilter::contains(&origin, &call) {
+		if !T::CallFilter::contains(&dispatch_origin, &call) {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Message {:?}/{:?}: the call ({:?}) is rejected by filter",
@@ -312,7 +313,7 @@ impl<T: Config<I>, I: 'static>
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
 			message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		if pay_dispatch_fee_at_target_chain && pay_dispatch_fee(&origin, &call).is_err() {
+		if pay_dispatch_fee_at_target_chain && pay_dispatch_fee(&dispatch_origin, &call).is_err() {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Failed to pay dispatch fee for dispatching message {:?}/{:?} with weight {}",
@@ -323,7 +324,7 @@ impl<T: Config<I>, I: 'static>
 			Self::deposit_event(Event::MessageDispatchPaymentFailed(
 				source_chain,
 				id,
-				origin_account,
+				origin_derived_account,
 				message.weight,
 			));
 			return dispatch_result;
@@ -331,7 +332,7 @@ impl<T: Config<I>, I: 'static>
 		dispatch_result.dispatch_fee_paid_during_dispatch = pay_dispatch_fee_at_target_chain;
 
 		log::trace!(target: "runtime::bridge-dispatch", "Message being dispatched is: {:.4096?}", &call);
-		let result = call.dispatch(origin);
+		let result = call.dispatch(dispatch_origin);
 		let actual_call_weight = extract_actual_weight(&result, &dispatch_info);
 		dispatch_result.dispatch_result = result.is_ok();
 		dispatch_result.unspent_weight = message.weight.saturating_sub(actual_call_weight);
