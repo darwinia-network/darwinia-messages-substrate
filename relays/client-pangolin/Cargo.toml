@@ -26,6 +26,6 @@ bp-pangoro            = { path = "../../primitives/chain-pangoro" }
 bp-rococo             = { path = "../../primitives/chain-rococo" }
 
 ## Substrate Dependencies
-frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
-sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }

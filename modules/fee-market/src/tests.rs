@@ -48,7 +48,7 @@ use sp_runtime::{
 };
 // --- darwinia-network ---
 use crate::{
-	self as darwinia_fee_market,
+	self as pallet_fee_market,
 	s2s::{
 		payment::{slash_and_calculate_rewards, RewardsBook},
 		FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler,
@@ -447,7 +447,7 @@ frame_support::construct_runtime! {
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>},
+		FeeMarket: pallet_fee_market::{Pallet, Call, Storage, Event<T>},
 		Messages: pallet_bridge_messages::{Pallet, Call, Event<T>},
 	}
 }

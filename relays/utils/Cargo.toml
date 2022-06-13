@@ -28,4 +28,4 @@ bp-runtime = { path = "../../primitives/runtime" }
 
 # Substrate dependencies
 
-substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.2" }
+substrate-prometheus-endpoint = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }

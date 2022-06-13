@@ -30,7 +30,7 @@ pub enum Call {
 	#[codec(index = 52)]
 	BridgeKusamaGrandpa(BridgeKusamaGrandpaCall),
 	/// Bridge Crab Parachain messages pallet
-	#[codec(index = 54)]
+	#[codec(index = 56)]
 	BridgeCrabParachainMessages(BridgeCrabParachainMessagesCall),
 	/// Darwinia Feemarket pallet
 	#[codec(index = 49)]

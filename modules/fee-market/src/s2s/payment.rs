@@ -31,6 +31,7 @@ use sp_std::{
 	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
 	ops::RangeInclusive,
 };
+use scale_info::TypeInfo;
 // --- darwinia-network ---
 use crate::{Config, Orders, Pallet, *};
 

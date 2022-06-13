@@ -3,9 +3,9 @@ use frame_support::weights::Weight;
 use scale_info::TypeInfo;
 use sp_runtime::FixedU128;
 
-use bp_crab_parachain::Balance;
 use bp_darwinia_core::DarwiniaLike;
 use bp_messages::{LaneId, UnrewardedRelayersState};
+use bp_crab_parachain::Balance;
 use bp_runtime::Chain;
 
 /// Unchecked crab extrinsic.
@@ -111,7 +111,10 @@ impl sp_runtime::traits::Dispatchable for Call {
 #[allow(non_camel_case_types)]
 pub enum FeemarketCall {
 	#[codec(index = 0)]
-	enroll_and_lock_collateral(bp_crab_parachain::Balance, Option<bp_crab_parachain::Balance>),
+	enroll_and_lock_collateral(
+		bp_crab_parachain::Balance,
+		Option<bp_crab_parachain::Balance>,
+	),
 	#[codec(index = 1)]
 	update_locked_collateral(bp_crab_parachain::Balance),
 	#[codec(index = 2)]

@@ -14,7 +14,8 @@ use relay_substrate_client::{
 pub mod runtime;
 
 /// CrabParachain header id.
-pub type HeaderId = relay_utils::HeaderId<bp_crab_parachain::Hash, bp_crab_parachain::BlockNumber>;
+pub type HeaderId =
+	relay_utils::HeaderId<bp_crab_parachain::Hash, bp_crab_parachain::BlockNumber>;
 
 /// CrabParachain chain definition.
 #[derive(Debug, Clone, Copy)]
@@ -48,7 +49,8 @@ impl Chain for CrabParachainChain {
 	const AVERAGE_BLOCK_INTERVAL: Duration =
 		Duration::from_millis(bp_crab_parachain::MILLISECS_PER_BLOCK);
 	const STORAGE_PROOF_OVERHEAD: u32 = bp_crab_parachain::EXTRA_STORAGE_PROOF_SIZE;
-	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = bp_crab_parachain::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
+	const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 =
+		bp_crab_parachain::MAXIMAL_ENCODED_ACCOUNT_ID_SIZE;
 
 	type SignedBlock = bp_crab_parachain::SignedBlock;
 	type Call = crate::runtime::Call;
