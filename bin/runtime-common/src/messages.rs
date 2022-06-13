@@ -20,29 +20,26 @@
 //! pallet is used to dispatch incoming messages. Message identified by a tuple
 //! of to elements - message lane id and message nonce.
 
-use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
 	source_chain::{LaneMessageVerifier, Sender},
-	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
+	target_chain::{ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{
-	messages::{DispatchFeePayment, MessageDispatchResult},
+	messages::DispatchFeePayment,
 	ChainId, Size, StorageProofChecker,
 };
 use codec::{Decode, Encode};
 use frame_support::{
-	traits::{Currency, ExistenceRequirement},
-	weights::{Weight, WeightToFeePolynomial},
+	weights::Weight,
 	RuntimeDebug,
 };
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
 	traits::{
-		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating,
-		Zero,
+		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT
 	},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
