@@ -89,7 +89,7 @@ where
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &T::AccountId,
 	) {
-		let (treasury_sum, assigned_relayers_sum, deliver_sum, confirm_sum) =
+		let (treasury_sum, slot_relayers_sum, messages_relayers_sum, confirmation_sum) =
 			slash_and_calculate_rewards::<T, I>(
 				lane_id,
 				messages_relayers,
@@ -105,17 +105,17 @@ where
 		);
 
 		// Pay assign relayer reward
-		for (relayer, reward) in assigned_relayers_sum {
+		for (relayer, reward) in slot_relayers_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 
 		// Pay messages relayers rewards
-		for (relayer, reward) in deliver_sum {
+		for (relayer, reward) in messages_relayers_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 
 		// Pay confirmation relayer rewards
-		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_sum);
+		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirmation_sum);
 	}
 }
 
@@ -137,9 +137,9 @@ where
 	I: 'static,
 {
 	let mut treasury_sum = BalanceOf::<T, I>::zero();
-	let mut assigned_relayers_sum = BTreeMap::new();
-	let mut deliver_sum = BTreeMap::new();
-	let mut confirm_sum = BalanceOf::<T, I>::zero();
+	let mut slot_relayers_sum = BTreeMap::new();
+	let mut messages_relayers_sum = BTreeMap::new();
+	let mut confirmation_sum = BalanceOf::<T, I>::zero();
 
 	for messages_relayer in messages_relayers {
 		let nonce_begin =
@@ -149,46 +149,21 @@ where
 		for message_nonce in nonce_begin..nonce_end + 1 {
 			// The order created when message was accepted, so we can always get the order info.
 			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
-				let message_fee = order.fee();
+				// 1. Calc rewards of this order
+				let (
+					to_treasury,
+					to_slot_relayer,
+					to_messages_relayer,
+					to_confirmation_relayer
+				) = slash_and_calc_rewards_for_order::<T, I>(relayer_fund_account, &order);
 
-				let mut to_treasury = None;
-				let mut to_slot_relayer = None;
-				let message_reward;
-				let confirm_reward;
-
-				if let Some((who, base_fee)) = order
-					.confirmed_by_prior_relayer_on_time(frame_system::Pallet::<T>::block_number())
-				{
-					// message fee - base fee => treasury_sum
-					to_treasury = Some(message_fee.saturating_sub(base_fee));
-
-					// AssignedRelayersRewardRatio * base fee => slot relayer
-					let slot_relayer_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
-					to_slot_relayer = Some((who.clone(), slot_relayer_reward));
-
-					let bridger_relayers_reward = base_fee.saturating_sub(slot_relayer_reward);
-					// MessageRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
-					// message relayer
-					message_reward = T::MessageRelayersRewardRatio::get() * bridger_relayers_reward;
-
-					// ConfirmRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
-					// confirm relayer
-					confirm_reward = T::ConfirmRelayersRewardRatio::get() * bridger_relayers_reward;
-				} else {
-					let total_slash = slash::<T, I>(relayer_fund_account, &order);
-
-					// MessageRelayersRewardRatio total slash => message relayer
-					message_reward = T::MessageRelayersRewardRatio::get() * total_slash;
-					// ConfirmRelayersRewardRatio total slash => confirm relayer
-					confirm_reward = T::ConfirmRelayersRewardRatio::get() * total_slash;
-				}
-
+				// 2. Aggregate by category
 				if let Some(to_treasury) = to_treasury {
 					treasury_sum = treasury_sum.saturating_add(to_treasury);
 				}
 
 				if let Some((who, slot_relayer_reward)) = to_slot_relayer.clone() {
-					assigned_relayers_sum
+					slot_relayers_sum
 						.entry(who)
 						.and_modify(|r: &mut BalanceOf<T, I>| {
 							*r = r.saturating_add(slot_relayer_reward)
@@ -196,26 +171,69 @@ where
 						.or_insert(slot_relayer_reward);
 				}
 
-				deliver_sum
+				messages_relayers_sum
 					.entry(messages_relayer.clone().relayer)
-					.and_modify(|r: &mut BalanceOf<T, I>| *r = r.saturating_add(message_reward))
-					.or_insert(message_reward);
+					.and_modify(|r: &mut BalanceOf<T, I>| *r = r.saturating_add(to_messages_relayer))
+					.or_insert(to_messages_relayer);
 
-				confirm_sum = confirm_sum.saturating_add(confirm_reward);
+				confirmation_sum = confirmation_sum.saturating_add(to_confirmation_relayer);
 
+				// 3. Emit a OrderReward event
 				Pallet::<T, I>::deposit_event(Event::OrderReward(
 					lane_id,
 					message_nonce,
 					to_treasury,
 					to_slot_relayer,
-					(messages_relayer.clone().relayer, message_reward),
-					confirm_reward,
+					(messages_relayer.clone().relayer, to_messages_relayer),
+					to_confirmation_relayer,
 				));
 			}
 		}
 	}
 
-	(treasury_sum, assigned_relayers_sum, deliver_sum, confirm_sum)
+	(treasury_sum, slot_relayers_sum, messages_relayers_sum, confirmation_sum)
+}
+
+fn slash_and_calc_rewards_for_order<T, I>(
+	relayer_fund_account: &T::AccountId,
+	order: &Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
+) -> (Option<BalanceOf<T, I>>, Option<(T::AccountId, BalanceOf<T, I>)>, BalanceOf<T, I>, BalanceOf<T, I>)
+where
+	T: frame_system::Config + Config<I>,
+	I: 'static,
+{
+	let mut to_treasury = None;
+	let mut to_slot_relayer = None;
+	let to_messages_relayer;
+	let to_confirmation_relayer;
+
+	if let Some((who, base_fee)) =
+		order.confirmed_by_prior_relayer_on_time(frame_system::Pallet::<T>::block_number())
+	{
+		// message fee - base fee => treasury_sum
+		to_treasury = Some(order.fee().saturating_sub(base_fee));
+
+		// AssignedRelayersRewardRatio * base fee => slot relayer
+		let slot_relayer_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
+		to_slot_relayer = Some((who.clone(), slot_relayer_reward));
+
+		let bridger_relayers_reward = base_fee.saturating_sub(slot_relayer_reward);
+		// MessageRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
+		// message relayer
+		to_messages_relayer = T::MessageRelayersRewardRatio::get() * bridger_relayers_reward;
+
+		// ConfirmRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
+		// confirm relayer
+		to_confirmation_relayer = T::ConfirmRelayersRewardRatio::get() * bridger_relayers_reward;
+	} else {
+		let total_slash = slash::<T, I>(relayer_fund_account, &order);
+
+		// MessageRelayersRewardRatio total slash => message relayer
+		to_messages_relayer = T::MessageRelayersRewardRatio::get() * total_slash;
+		// ConfirmRelayersRewardRatio total slash => confirm relayer
+		to_confirmation_relayer = T::ConfirmRelayersRewardRatio::get() * total_slash;
+	}
+	(to_treasury, to_slot_relayer, to_messages_relayer, to_confirmation_relayer)
 }
 
 fn slash<T, I>(
@@ -226,10 +244,8 @@ where
 	T: Config<I>,
 	I: 'static,
 {
-	let message_fee = order.fee();
-
 	// The order delivery is delay, slash occurs.
-	let mut total_slash = message_fee;
+	let mut total_slash = order.fee();
 
 	// calculate slash amount
 	let mut amount: BalanceOf<T, I> =
@@ -247,7 +263,6 @@ where
 	}
 	total_slash += assigned_relayers_slash;
 	total_slash
-	// message_fee
 }
 
 /// Do slash for absent assigned relayers
