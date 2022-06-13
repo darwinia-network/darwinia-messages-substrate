@@ -18,18 +18,11 @@ jobs:
           - pallet-fee-market
           - pallet-bridge-grandpa
           - pallet-bridge-messages
-          - pallet-bridge-parachains
           - bp-pangolin
           - bp-pangoro
           - bp-pangolin-parachain
           - bp-rococo
           - bp-darwinia-core
-          - relay-darwinia-client
-          - relay-crab-client
-          - relay-pangolin-client
-          - relay-pangolin-parachain-client
-          - relay-pangoro-client
-          - relay-rococo-client
     steps:
       - uses: actions/checkout@v2
       - name: Check ${{ matrix.package }}

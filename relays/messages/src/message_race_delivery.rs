@@ -643,6 +643,8 @@ mod tests {
 			max_messages_weight_in_single_batch: 4,
 			max_messages_size_in_single_batch: 4,
 			latest_confirmed_nonces_at_source: vec![(header_id(1), 19)].into_iter().collect(),
+			// TODO: remove this hack for test
+			latest_updated_confirm_nonce_at_source: None,
 			lane_source_client: TestSourceClient::default(),
 			lane_target_client: TestTargetClient::default(),
 			target_nonces: Some(TargetClientNonces {
