@@ -20,24 +20,29 @@
 //! pallet is used to dispatch incoming messages. Message identified by a tuple
 //! of to elements - message lane id and message nonce.
 
+use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
-	source_chain::LaneMessageVerifier,
-	target_chain::{ProvedLaneMessages, ProvedMessages},
+	source_chain::{LaneMessageVerifier, Sender},
+	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
 use bp_runtime::{
-	messages::{DispatchFeePayment},
+	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, Size, StorageProofChecker,
 };
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
-	weights::Weight,
+	traits::{Currency, ExistenceRequirement},
+	weights::{Weight, WeightToFeePolynomial},
 	RuntimeDebug,
 };
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul},
+	traits::{
+		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating,
+		Zero,
+	},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
 use sp_std::{
@@ -531,6 +536,76 @@ pub mod target {
 		/// Create encoded call.
 		pub fn new(encoded_call: Vec<u8>) -> Self {
 			FromBridgedChainEncodedMessageCall { encoded_call, _marker: PhantomData::default() }
+		}
+	}
+
+	/// Dispatching Bridged -> This chain messages.
+	#[derive(RuntimeDebug, Clone, Copy)]
+	pub struct FromBridgedChainMessageDispatch<B, ThisRuntime, ThisCurrency, ThisDispatchInstance> {
+		_marker: PhantomData<(B, ThisRuntime, ThisCurrency, ThisDispatchInstance)>,
+	}
+
+	impl<B: MessageBridge, ThisRuntime, ThisCurrency, ThisDispatchInstance>
+		MessageDispatch<AccountIdOf<ThisChain<B>>, BalanceOf<BridgedChain<B>>>
+		for FromBridgedChainMessageDispatch<B, ThisRuntime, ThisCurrency, ThisDispatchInstance>
+	where
+		BalanceOf<ThisChain<B>>: Saturating + FixedPointOperand,
+		ThisDispatchInstance: 'static,
+		ThisRuntime: pallet_bridge_dispatch::Config<
+				ThisDispatchInstance,
+				BridgeMessageId = (LaneId, MessageNonce),
+			> + pallet_transaction_payment::Config,
+		<ThisRuntime as pallet_transaction_payment::Config>::OnChargeTransaction:
+			pallet_transaction_payment::OnChargeTransaction<
+				ThisRuntime,
+				Balance = BalanceOf<ThisChain<B>>,
+			>,
+		ThisCurrency: Currency<AccountIdOf<ThisChain<B>>, Balance = BalanceOf<ThisChain<B>>>,
+		pallet_bridge_dispatch::Pallet<ThisRuntime, ThisDispatchInstance>:
+			bp_message_dispatch::MessageDispatch<
+				AccountIdOf<ThisChain<B>>,
+				(LaneId, MessageNonce),
+				Message = FromBridgedChainMessagePayload<B>,
+			>,
+	{
+		type DispatchPayload = FromBridgedChainMessagePayload<B>;
+
+		fn dispatch_weight(
+			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+		) -> frame_support::weights::Weight {
+			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
+		}
+
+		fn dispatch(
+			relayer_account: &AccountIdOf<ThisChain<B>>,
+			message: DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+		) -> MessageDispatchResult {
+			let message_id = (message.key.lane_id, message.key.nonce);
+			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::dispatch(
+				B::BRIDGED_CHAIN_ID,
+				B::THIS_CHAIN_ID,
+				relayer_account,
+				message_id,
+				message.data.payload.map_err(drop),
+				|dispatch_origin, dispatch_weight| {
+					let unadjusted_weight_fee = ThisRuntime::WeightToFee::calc(&dispatch_weight);
+					let fee_multiplier =
+						pallet_transaction_payment::Pallet::<ThisRuntime>::next_fee_multiplier();
+					let adjusted_weight_fee =
+						fee_multiplier.saturating_mul_int(unadjusted_weight_fee);
+					if !adjusted_weight_fee.is_zero() {
+						ThisCurrency::transfer(
+							dispatch_origin,
+							relayer_account,
+							adjusted_weight_fee,
+							ExistenceRequirement::AllowDeath,
+						)
+						.map_err(drop)
+					} else {
+						Ok(())
+					}
+				},
+			)
 		}
 	}
 

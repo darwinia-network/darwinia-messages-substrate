@@ -26,6 +26,7 @@ use bp_runtime::{
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
 use scale_info::TypeInfo;
+use sp_runtime::transaction_validity::TransactionValidityError;
 use sp_std::prelude::*;
 
 /// Message dispatch weight.
@@ -35,7 +36,7 @@ pub type Weight = u64;
 pub type SpecVersion = u32;
 
 /// A generic trait to dispatch arbitrary messages delivered over the bridge.
-pub trait MessageDispatch<Origin, BridgeMessageId, Call> {
+pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// A type of the message to be dispatched.
 	type Message: codec::Decode;
 
@@ -58,9 +59,10 @@ pub trait MessageDispatch<Origin, BridgeMessageId, Call> {
 	/// the whole message).
 	///
 	/// Returns unspent dispatch weight.
-	fn dispatch<P: FnOnce(&Origin, &Call) -> Result<(), ()>>(
+	fn dispatch<P: FnOnce(&AccountId, Weight) -> Result<(), ()>>(
 		source_chain: ChainId,
 		target_chain: ChainId,
+		relayer_account: &AccountId,
 		id: BridgeMessageId,
 		message: Result<Self::Message, ()>,
 		pay_dispatch_fee: P,
@@ -150,8 +152,12 @@ pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
 	fn into_dispatch_origin(id: &AccountId, call: &Call) -> Origin;
 }
 
-/// A generic trait to filter calls that are allowed to be dispatched.
-pub trait CallFilter<Origin, Call> {
-	/// Filter the call, you might need origin to in the filter. return false, if not allowed.
-	fn contains(origin: &Origin, call: &Call) -> bool;
+/// A generic trait to validate message before dispatch.
+pub trait CallValidate<AccountId, Origin, Call> {
+	/// call validation
+	fn pre_dispatch(
+		relayer_account: &AccountId,
+		origin: &Origin,
+		call: &Call,
+	) -> Result<(), TransactionValidityError>;
 }
