@@ -313,8 +313,8 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
 			message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		if pay_dispatch_fee_at_target_chain &&
-			pay_dispatch_fee(&origin_derived_account, message.weight).is_err()
+		if pay_dispatch_fee_at_target_chain
+			&& pay_dispatch_fee(&origin_derived_account, message.weight).is_err()
 		{
 			log::trace!(
 				target: "runtime::bridge-dispatch",
@@ -537,14 +537,14 @@ mod tests {
 	impl Config for TestRuntime {
 		type AccountIdConverter = AccountIdConverter;
 		type BridgeMessageId = BridgeMessageId;
+		type Call = Call;
+		type CallValidator = CallValidator;
 		type EncodedCall = EncodedCall;
 		type Event = Event;
 		type IntoDispatchOrigin = TestIntoDispatchOrigin;
 		type SourceChainAccountId = AccountId;
 		type TargetChainAccountPublic = TestAccountPublic;
 		type TargetChainSignature = TestSignature;
-		type Call = Call;
-		type CallValidator = CallValidator;
 	}
 
 	#[derive(Decode, Encode)]
@@ -679,12 +679,8 @@ mod tests {
 	fn should_fail_on_weight_mismatch() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
-<<<<<<< HEAD
-			let call = Call::System(frame_system::Call::set_heap_pages { pages: 42 });
-=======
 			let relayer_account = 1;
-			let call = Call::System(frame_system::Call::remark { remark: vec![1, 2, 3] });
->>>>>>> 9dbde940 (Adjust the traits)
+			let call = Call::System(frame_system::Call::set_heap_pages { pages: 42 });
 			let call_weight = call.get_dispatch_info().weight;
 			let mut message = prepare_root_message(call);
 			message.weight = 7;
