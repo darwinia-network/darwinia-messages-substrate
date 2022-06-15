@@ -131,8 +131,8 @@ pub mod pallet {
 		MessageSignatureMismatch(ChainId, BridgeMessageIdOf<T, I>),
 		/// We have failed to decode Call from the message.
 		MessageCallDecodeFailed(ChainId, BridgeMessageIdOf<T, I>),
-		/// The call from the message has been rejected by the call filter.
-		MessageCallRejected(ChainId, BridgeMessageIdOf<T, I>),
+		/// The call from the message has been rejected by the call validator.
+		MessageCallValidateFailed(ChainId, BridgeMessageIdOf<T, I>, TransactionValidityError),
 		/// The origin account has failed to pay fee for dispatching the message.
 		MessageDispatchPaymentFailed(
 			ChainId,
@@ -274,17 +274,16 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		let dispatch_origin =
 			T::IntoDispatchOrigin::into_dispatch_origin(&origin_derived_account, &call);
 
-		// filter the call
-		if let Err(_) = T::CallValidator::pre_dispatch(relayer_account, &dispatch_origin, &call) {
+		// validate the call
+		if let Err(e) = T::CallValidator::pre_dispatch(relayer_account, &dispatch_origin, &call) {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
-				"Message {:?}/{:?}: the call ({:?}) is rejected by filter",
+				"Message {:?}/{:?}: the call ({:?}) is rejected by the validator",
 				source_chain,
 				id,
 				call,
 			);
-			// TODO: https://github.com/paritytech/substrate/pull/11599
-			Self::deposit_event(Event::MessageCallRejected(source_chain, id));
+			Self::deposit_event(Event::MessageCallValidateFailed(source_chain, id, e));
 			return dispatch_result
 		}
 
@@ -856,9 +855,10 @@ mod tests {
 				vec![EventRecord {
 					phase: Phase::Initialization,
 					event: Event::Dispatch(
-						call_dispatch::Event::<TestRuntime>::MessageCallRejected(
+						call_dispatch::Event::<TestRuntime>::MessageCallValidateFailed(
 							SOURCE_CHAIN_ID,
-							id
+							id,
+							TransactionValidityError::Invalid(InvalidTransaction::Call),
 						)
 					),
 					topics: vec![],
