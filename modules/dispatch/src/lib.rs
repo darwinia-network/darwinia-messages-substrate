@@ -26,7 +26,7 @@
 #![allow(clippy::unused_unit)]
 
 use bp_message_dispatch::{
-	CallFilter, CallOrigin, IntoDispatchOrigin, MessageDispatch, MessagePayload, SpecVersion,
+	CallOrigin, CallValidate, IntoDispatchOrigin, MessageDispatch, MessagePayload, SpecVersion,
 };
 use bp_runtime::{
 	derive_account_id,
@@ -80,11 +80,11 @@ pub mod pallet {
 				Origin = <Self as frame_system::Config>::Origin,
 				PostInfo = frame_support::dispatch::PostDispatchInfo,
 			>;
-		/// Pre-dispatch filter for incoming calls.
+		/// Pre-dispatch validation for incoming calls.
 		///
-		/// The pallet will filter all incoming calls right before they're dispatched. If this
-		/// filter rejects the call, special event (`Event::MessageCallRejected`) is emitted.
-		type CallFilter: CallFilter<Self::Origin, <Self as Config<I>>::Call>;
+		/// The pallet will validate all incoming calls right before they're dispatched. If this
+		/// validator rejects the call, special event (`Event::MessageCallRejected`) is emitted.
+		type CallValidator: CallValidate<Self::AccountId, Self::Origin, <Self as Config<I>>::Call>;
 		/// The type that is used to wrap the `Self::Call` when it is moved over bridge.
 		///
 		/// The idea behind this is to avoid `Call` conversion/decoding until we'll be sure
@@ -131,8 +131,8 @@ pub mod pallet {
 		MessageSignatureMismatch(ChainId, BridgeMessageIdOf<T, I>),
 		/// We have failed to decode Call from the message.
 		MessageCallDecodeFailed(ChainId, BridgeMessageIdOf<T, I>),
-		/// The call from the message has been rejected by the call filter.
-		MessageCallRejected(ChainId, BridgeMessageIdOf<T, I>),
+		/// The call from the message has been rejected by the call validator.
+		MessageCallValidateFailed(ChainId, BridgeMessageIdOf<T, I>, TransactionValidityError),
 		/// The origin account has failed to pay fee for dispatching the message.
 		MessageDispatchPaymentFailed(
 			ChainId,
@@ -147,9 +147,7 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config<I>, I: 'static>
-	MessageDispatch<T::Origin, T::BridgeMessageId, <T as pallet::Config<I>>::Call> for Pallet<T, I>
-{
+impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId> for Pallet<T, I> {
 	type Message = MessagePayload<
 		T::SourceChainAccountId,
 		T::TargetChainAccountPublic,
@@ -161,9 +159,10 @@ impl<T: Config<I>, I: 'static>
 		message.weight
 	}
 
-	fn dispatch<P: FnOnce(&T::Origin, &<T as pallet::Config<I>>::Call) -> Result<(), ()>>(
+	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
 		source_chain: ChainId,
 		target_chain: ChainId,
+		relayer_account: &T::AccountId,
 		id: T::BridgeMessageId,
 		message: Result<Self::Message, ()>,
 		pay_dispatch_fee: P,
@@ -275,16 +274,16 @@ impl<T: Config<I>, I: 'static>
 		let dispatch_origin =
 			T::IntoDispatchOrigin::into_dispatch_origin(&origin_derived_account, &call);
 
-		// filter the call
-		if !T::CallFilter::contains(&dispatch_origin, &call) {
+		// validate the call
+		if let Err(e) = T::CallValidator::pre_dispatch(relayer_account, &dispatch_origin, &call) {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
-				"Message {:?}/{:?}: the call ({:?}) is rejected by filter",
+				"Message {:?}/{:?}: the call ({:?}) is rejected by the validator",
 				source_chain,
 				id,
 				call,
 			);
-			Self::deposit_event(Event::MessageCallRejected(source_chain, id));
+			Self::deposit_event(Event::MessageCallValidateFailed(source_chain, id, e));
 			return dispatch_result
 		}
 
@@ -314,7 +313,9 @@ impl<T: Config<I>, I: 'static>
 		// pay dispatch fee right before dispatch
 		let pay_dispatch_fee_at_target_chain =
 			message.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		if pay_dispatch_fee_at_target_chain && pay_dispatch_fee(&dispatch_origin, &call).is_err() {
+		if pay_dispatch_fee_at_target_chain &&
+			pay_dispatch_fee(&origin_derived_account, message.weight).is_err()
+		{
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Failed to pay dispatch fee for dispatching message {:?}/{:?} with weight {}",
@@ -443,6 +444,7 @@ mod tests {
 	use sp_runtime::{
 		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
+		transaction_validity::{InvalidTransaction, TransactionValidityError},
 		Perbill,
 	};
 
@@ -539,7 +541,7 @@ mod tests {
 		type TargetChainAccountPublic = TestAccountPublic;
 		type TargetChainSignature = TestSignature;
 		type Call = Call;
-		type CallFilter = TestCallFilter;
+		type CallValidator = CallValidator;
 		type EncodedCall = EncodedCall;
 		type AccountIdConverter = AccountIdConverter;
 	}
@@ -553,11 +555,18 @@ mod tests {
 		}
 	}
 
-	pub struct TestCallFilter;
-
-	impl CallFilter<Origin, Call> for TestCallFilter {
-		fn contains(_origin: &Origin, call: &Call) -> bool {
-			!matches!(*call, Call::System(frame_system::Call::fill_block { .. }))
+	pub struct CallValidator;
+	impl CallValidate<AccountId, Origin, Call> for CallValidator {
+		fn pre_dispatch(
+			_relayer_account: &AccountId,
+			_origin: &Origin,
+			call: &Call,
+		) -> Result<(), TransactionValidityError> {
+			match call {
+				Call::System(frame_system::Call::fill_block { .. }) =>
+					Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
+				_ => Ok(()),
+			}
 		}
 	}
 
@@ -581,9 +590,8 @@ mod tests {
 		origin: CallOrigin<AccountId, TestAccountPublic, TestSignature>,
 		call: Call,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
-		<TestRuntime as frame_system::Config>::Origin,
+		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
-		<TestRuntime as Config>::Call,
 	>>::Message {
 		MessagePayload {
 			spec_version: TEST_SPEC_VERSION,
@@ -597,9 +605,8 @@ mod tests {
 	fn prepare_root_message(
 		call: Call,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
-		<TestRuntime as frame_system::Config>::Origin,
+		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
-		<TestRuntime as Config>::Call,
 	>>::Message {
 		prepare_message(CallOrigin::SourceRoot, call)
 	}
@@ -607,9 +614,8 @@ mod tests {
 	fn prepare_target_message(
 		call: Call,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
-		<TestRuntime as frame_system::Config>::Origin,
+		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
-		<TestRuntime as Config>::Call,
 	>>::Message {
 		let origin = CallOrigin::TargetAccount(1, TestAccountPublic(1), TestSignature(1));
 		prepare_message(origin, call)
@@ -618,9 +624,8 @@ mod tests {
 	fn prepare_source_message(
 		call: Call,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
-		<TestRuntime as frame_system::Config>::Origin,
+		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
-		<TestRuntime as Config>::Call,
 	>>::Message {
 		let origin = CallOrigin::SourceAccount(1);
 		prepare_message(origin, call)
@@ -630,6 +635,7 @@ mod tests {
 	fn should_fail_on_spec_version_mismatch() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			const BAD_SPEC_VERSION: SpecVersion = 99;
 			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
@@ -642,6 +648,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -671,6 +678,7 @@ mod tests {
 	fn should_fail_on_weight_mismatch() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 			let call = Call::System(frame_system::Call::remark { remark: vec![1, 2, 3] });
 			let call_weight = call.get_dispatch_info().weight;
 			let mut message = prepare_root_message(call);
@@ -681,6 +689,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -710,6 +719,7 @@ mod tests {
 	fn should_fail_on_signature_mismatch() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let call_origin = CallOrigin::TargetAccount(1, TestAccountPublic(1), TestSignature(99));
 			let message = prepare_message(
@@ -722,6 +732,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -749,11 +760,13 @@ mod tests {
 	fn should_emit_event_for_rejected_messages() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			System::set_block_number(1);
 			Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Err(()),
 				|_, _| unreachable!(),
@@ -777,6 +790,7 @@ mod tests {
 	fn should_fail_on_call_decode() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
 				remark: vec![1, 2, 3],
@@ -788,6 +802,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -815,6 +830,7 @@ mod tests {
 	fn should_emit_event_for_rejected_calls() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let call =
 				Call::System(frame_system::Call::fill_block { ratio: Perbill::from_percent(75) });
@@ -826,6 +842,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -838,9 +855,10 @@ mod tests {
 				vec![EventRecord {
 					phase: Phase::Initialization,
 					event: Event::Dispatch(
-						call_dispatch::Event::<TestRuntime>::MessageCallRejected(
+						call_dispatch::Event::<TestRuntime>::MessageCallValidateFailed(
 							SOURCE_CHAIN_ID,
-							id
+							id,
+							TransactionValidityError::Invalid(InvalidTransaction::Call),
 						)
 					),
 					topics: vec![],
@@ -853,6 +871,7 @@ mod tests {
 	fn should_emit_event_for_unpaid_calls() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
 				remark: vec![1, 2, 3],
@@ -861,10 +880,14 @@ mod tests {
 			message.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
 
 			System::set_block_number(1);
-			let result =
-				Dispatch::dispatch(SOURCE_CHAIN_ID, TARGET_CHAIN_ID, id, Ok(message), |_, _| {
-					Err(())
-				});
+			let result = Dispatch::dispatch(
+				SOURCE_CHAIN_ID,
+				TARGET_CHAIN_ID,
+				&relayer_account,
+				id,
+				Ok(message),
+				|_, _| Err(()),
+			);
 			assert_eq!(result.unspent_weight, weight);
 			assert!(!result.dispatch_result);
 
@@ -893,6 +916,7 @@ mod tests {
 	fn should_dispatch_calls_paid_at_target_chain() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
 				remark: vec![1, 2, 3],
@@ -903,6 +927,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| Ok(()),
@@ -929,6 +954,7 @@ mod tests {
 	fn should_return_dispatch_failed_flag_if_dispatch_happened_but_failed() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let call = Call::System(frame_system::Call::set_heap_pages { pages: 1 });
 			let message = prepare_target_message(call);
@@ -937,6 +963,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -963,6 +990,7 @@ mod tests {
 	fn should_dispatch_bridge_message_from_root_origin() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 			let message = prepare_root_message(Call::System(frame_system::Call::remark {
 				remark: vec![1, 2, 3],
 			}));
@@ -971,6 +999,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -997,6 +1026,7 @@ mod tests {
 	fn should_dispatch_bridge_message_from_target_origin() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let call = Call::System(frame_system::Call::remark { remark: vec![] });
 			let message = prepare_target_message(call);
@@ -1005,6 +1035,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
@@ -1031,6 +1062,7 @@ mod tests {
 	fn should_dispatch_bridge_message_from_source_origin() {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
+			let relayer_account = 1;
 
 			let call = Call::System(frame_system::Call::remark { remark: vec![] });
 			let message = prepare_source_message(call);
@@ -1039,6 +1071,7 @@ mod tests {
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
+				&relayer_account,
 				id,
 				Ok(message),
 				|_, _| unreachable!(),
