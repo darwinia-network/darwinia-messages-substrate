@@ -20,25 +20,26 @@
 //! pallet is used to dispatch incoming messages. Message identified by a tuple
 //! of to elements - message lane id and message nonce.
 
+use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
 	source_chain::LaneMessageVerifier,
-	target_chain::{ProvedLaneMessages, ProvedMessages},
+	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
 use bp_runtime::{
-	messages::{DispatchFeePayment},
+	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, Size, StorageProofChecker,
 };
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
-	weights::{Weight, WeightToFee},
 	traits::{Currency, ExistenceRequirement},
+	weights::{Weight, WeightToFeePolynomial},
 	RuntimeDebug,
 };
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul},
+	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Saturating, Zero},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
 use sp_std::{
@@ -535,18 +536,6 @@ pub mod target {
 		}
 	}
 
-	impl<DecodedCall: Decode> From<FromBridgedChainEncodedMessageCall<DecodedCall>>
-		for Result<DecodedCall, ()>
-	{
-		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
-			DecodedCall::decode_with_depth_limit(
-				sp_api::MAX_EXTRINSIC_DEPTH,
-				&mut &encoded_call.encoded_call[..],
-			)
-			.map_err(drop)
-		}
-	}
-
 	/// Dispatching Bridged -> This chain messages.
 	#[derive(RuntimeDebug, Clone, Copy)]
 	pub struct FromBridgedChainMessageDispatch<B, ThisRuntime, ThisCurrency, ThisDispatchInstance> {
@@ -592,10 +581,11 @@ pub mod target {
 			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::dispatch(
 				B::BRIDGED_CHAIN_ID,
 				B::THIS_CHAIN_ID,
+				relayer_account,
 				message_id,
 				message.data.payload.map_err(drop),
 				|dispatch_origin, dispatch_weight| {
-					let unadjusted_weight_fee = ThisRuntime::WeightToFee::weight_to_fee(&dispatch_weight);
+					let unadjusted_weight_fee = ThisRuntime::WeightToFee::calc(&dispatch_weight);
 					let fee_multiplier =
 						pallet_transaction_payment::Pallet::<ThisRuntime>::next_fee_multiplier();
 					let adjusted_weight_fee =
@@ -613,6 +603,18 @@ pub mod target {
 					}
 				},
 			)
+		}
+	}
+
+	impl<DecodedCall: Decode> From<FromBridgedChainEncodedMessageCall<DecodedCall>>
+		for Result<DecodedCall, ()>
+	{
+		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
+			DecodedCall::decode_with_depth_limit(
+				sp_api::MAX_EXTRINSIC_DEPTH,
+				&mut &encoded_call.encoded_call[..],
+			)
+			.map_err(drop)
 		}
 	}
 
