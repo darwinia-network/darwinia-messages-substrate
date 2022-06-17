@@ -91,7 +91,7 @@ pub mod pallet {
 		/// that all other stuff (like `spec_version`) is ok. If we would try to decode
 		/// `Call` which has been encoded using previous `spec_version`, then we might end
 		/// up with decoding error, instead of `MessageVersionSpecMismatch`.
-		type EncodedCall: Decode + Encode + Into<Result<<Self as Config<I>>::Call, ()>>;
+		type EncodedCall: Decode + Encode + Into<Result<<Self as Config<I>>::Call, ()>> + Clone;
 		/// A type which can be turned into an AccountId from a 256-bit hash.
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
@@ -157,6 +157,16 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 
 	fn dispatch_weight(message: &Self::Message) -> bp_message_dispatch::Weight {
 		message.weight
+	}
+
+	fn pre_dispatch(
+		relayer_account: &T::AccountId,
+		message: Result<&Self::Message, ()>,
+	) -> Result<(), &'static str> {
+		let raw_message = message.map_err(|_| "Invalid Message")?;
+		let call = raw_message.clone().call.into().map_err(|_| "Invalid Call")?;
+
+		T::CallValidator::check_receiving_before_dispatch(relayer_account, &call)
 	}
 
 	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
@@ -275,7 +285,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			T::IntoDispatchOrigin::into_dispatch_origin(&origin_derived_account, &call);
 
 		// validate the call
-		if let Err(e) = T::CallValidator::pre_dispatch(relayer_account, &dispatch_origin, &call) {
+		if let Err(e) = T::CallValidator::call_validate(relayer_account, &dispatch_origin, &call) {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Message {:?}/{:?}: the call ({:?}) is rejected by the validator",
@@ -546,7 +556,7 @@ mod tests {
 		type AccountIdConverter = AccountIdConverter;
 	}
 
-	#[derive(Decode, Encode)]
+	#[derive(Decode, Encode, Clone)]
 	pub struct EncodedCall(Vec<u8>);
 
 	impl From<EncodedCall> for Result<Call, ()> {
@@ -557,7 +567,14 @@ mod tests {
 
 	pub struct CallValidator;
 	impl CallValidate<AccountId, Origin, Call> for CallValidator {
-		fn pre_dispatch(
+		fn check_receiving_before_dispatch(
+			_relayer_account: &AccountId,
+			_call: &Call,
+		) -> Result<(), &'static str> {
+			Ok(())
+		}
+
+		fn call_validate(
 			_relayer_account: &AccountId,
 			_origin: &Origin,
 			call: &Call,

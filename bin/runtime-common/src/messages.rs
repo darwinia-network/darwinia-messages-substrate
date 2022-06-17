@@ -601,6 +601,16 @@ pub mod target {
 			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
 		}
 
+		fn pre_dispatch(
+			relayer_account: &AccountIdOf<ThisChain<B>>,
+			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+		) -> Result<(), &'static str> {
+			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
+				relayer_account,
+				message.data.payload.as_ref().map_err(drop),
+			)
+		}
+
 		fn dispatch(
 			relayer_account: &AccountIdOf<ThisChain<B>>,
 			message: DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
