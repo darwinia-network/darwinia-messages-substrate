@@ -58,7 +58,7 @@ pub enum ReceivalResult {
 	TooManyUnrewardedRelayers,
 	/// There are too many unconfirmed messages at the lane.
 	TooManyUnconfirmedMessages,
-	RelayerInsufficientBalance,
+	PreDispatchValidateFailed,
 }
 
 /// Inbound messages lane.
@@ -149,7 +149,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 		// if there are some extra message validation errors, reject this message
 		if P::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
 			// TODO: Update the type
-			return ReceivalResult::RelayerInsufficientBalance
+			return ReceivalResult::PreDispatchValidateFailed
 		}
 
 		// then, dispatch message

@@ -471,7 +471,7 @@ pub mod pallet {
 						},
 						ReceivalResult::InvalidNonce |
 						ReceivalResult::TooManyUnrewardedRelayers |
-						ReceivalResult::RelayerInsufficientBalance |
+						ReceivalResult::PreDispatchValidateFailed |
 						ReceivalResult::TooManyUnconfirmedMessages => (dispatch_weight, true),
 					};
 
