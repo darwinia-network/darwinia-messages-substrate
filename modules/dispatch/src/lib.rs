@@ -556,7 +556,7 @@ mod tests {
 		type AccountIdConverter = AccountIdConverter;
 	}
 
-	#[derive(Decode, Encode)]
+	#[derive(Decode, Encode, Clone)]
 	pub struct EncodedCall(Vec<u8>);
 
 	impl From<EncodedCall> for Result<Call, ()> {
@@ -568,6 +568,13 @@ mod tests {
 	pub struct CallValidator;
 	impl CallValidate<AccountId, Origin, Call> for CallValidator {
 		fn pre_dispatch(
+			_relayer_account: &AccountId,
+			_call: &Call,
+		) -> Result<(), &'static str> {
+			Ok(())
+		}
+
+		fn call_validate(
 			_relayer_account: &AccountId,
 			_origin: &Origin,
 			call: &Call,
