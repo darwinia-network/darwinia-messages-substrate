@@ -154,6 +154,7 @@ pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
 
 /// A generic trait to validate message before dispatch.
 pub trait CallValidate<AccountId, Origin, Call> {
+	fn check_relayer_balance(relayer_account: &AccountId) -> bool;
 	/// call validation
 	fn pre_dispatch(
 		relayer_account: &AccountId,

@@ -58,6 +58,7 @@ pub enum ReceivalResult {
 	TooManyUnrewardedRelayers,
 	/// There are too many unconfirmed messages at the lane.
 	TooManyUnconfirmedMessages,
+	RelayerInsufficientBalance,
 }
 
 /// Inbound messages lane.
@@ -117,7 +118,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 	}
 
 	/// Receive new message.
-	pub fn receive_message<P: MessageDispatch<AccountId, S::MessageFee>, AccountId>(
+	pub fn receive_message<P: MessageDispatch<AccountId, S::MessageFee>, V: CallValidate<AccountId>, AccountId>(
 		&mut self,
 		relayer_at_bridged_chain: &S::Relayer,
 		relayer_at_this_chain: &AccountId,
@@ -140,6 +141,8 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 		if unconfirmed_messages_count > self.storage.max_unconfirmed_messages() {
 			return ReceivalResult::TooManyUnconfirmedMessages
 		}
+
+		// Ensure relayer has enough balance to pay for the derived account.
 
 		// then, dispatch message
 		let dispatch_result = P::dispatch(
