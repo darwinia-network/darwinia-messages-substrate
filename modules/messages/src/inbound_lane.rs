@@ -58,6 +58,7 @@ pub enum ReceivalResult {
 	TooManyUnrewardedRelayers,
 	/// There are too many unconfirmed messages at the lane.
 	TooManyUnconfirmedMessages,
+	/// Pre-dispatch validation failed before message dispatch.
 	PreDispatchValidateFailed,
 }
 
@@ -146,9 +147,8 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			key: MessageKey { lane_id: self.storage.id(), nonce },
 			data: message_data,
 		};
-		// if there are some extra message validation errors, reject this message
+		// if there are some extra pre-dispatch validation errors, reject this message.
 		if P::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
-			// TODO: Update the type
 			return ReceivalResult::PreDispatchValidateFailed
 		}
 
