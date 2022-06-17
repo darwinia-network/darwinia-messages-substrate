@@ -38,10 +38,12 @@ use frame_support::{
 	dispatch::Dispatchable,
 	ensure,
 	traits::Get,
-	weights::{extract_actual_weight, GetDispatchInfo},
+	weights::GetDispatchInfo,
 };
+use frame_support::dispatch::{DispatchInfo, DispatchResultWithPostInfo, Weight};
+use frame_support::pallet_prelude::Pays;
 use frame_system::RawOrigin;
-use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify};
+use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify, Zero};
 use sp_std::{fmt::Debug, prelude::*};
 
 pub use pallet::*;
@@ -357,6 +359,17 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		));
 
 		dispatch_result
+	}
+}
+
+fn extract_actual_weight(result: &DispatchResultWithPostInfo, info: &DispatchInfo) -> Weight {
+	let post_info = match result {
+		Ok(post_info) => &post_info,
+		Err(err) => &err.post_info,
+	};
+	match post_info.pays_fee {
+		Pays::Yes => post_info.calc_actual_weight(info),
+		Pays::No => Weight::zero()
 	}
 }
 
