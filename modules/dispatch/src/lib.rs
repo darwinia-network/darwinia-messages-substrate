@@ -159,12 +159,15 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		message.weight
 	}
 
-	fn pre_dispatch(relayer_account: &T::AccountId, message: &Self::Message) -> bool {
+	fn pre_dispatch(
+		relayer_account: &T::AccountId,
+		message: &Self::Message,
+	) -> Result<(), &'static str> {
 		// TODO: Might be written better
 		// let message_clone = message.clone();
 		let call = match message.clone().call.into() {
 			Ok(call) => call,
-			Err(_) => return false,
+			Err(_) => return Err("Invalid Call"),
 		};
 
 		T::CallValidator::check_relayer_balance(relayer_account, &call)

@@ -97,10 +97,15 @@ pub trait MessageDispatch<AccountId, Fee> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &DispatchMessage<Self::DispatchPayload, Fee>) -> Weight;
 
+	/// pre-validate message.
+	///
+	/// This function accepts the same params with the dispatch function, and called before
+	/// message is dispatched for necessary validation.
 	fn pre_dispatch(
 		relayer_account: &AccountId,
 		message: &DispatchMessage<Self::DispatchPayload, Fee>,
-	) -> bool;
+	) -> Result<(), &'static str>;
+
 	/// Called when inbound message is received.
 	///
 	/// It is up to the implementers of this trait to determine whether the message
@@ -164,8 +169,11 @@ impl<AccountId, Fee> MessageDispatch<AccountId, Fee> for ForbidInboundMessages {
 		Weight::MAX
 	}
 
-	fn pre_dispatch(_: &AccountId, _message: &DispatchMessage<Self::DispatchPayload, Fee>) -> bool {
-		false
+	fn pre_dispatch(
+		_: &AccountId,
+		_message: &DispatchMessage<Self::DispatchPayload, Fee>,
+	) -> Result<(), &'static str> {
+		Ok(())
 	}
 
 	fn dispatch(
