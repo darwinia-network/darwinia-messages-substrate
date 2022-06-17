@@ -91,7 +91,7 @@ pub mod pallet {
 		/// that all other stuff (like `spec_version`) is ok. If we would try to decode
 		/// `Call` which has been encoded using previous `spec_version`, then we might end
 		/// up with decoding error, instead of `MessageVersionSpecMismatch`.
-		type EncodedCall: Decode + Encode + Into<Result<<Self as Config<I>>::Call, ()>>;
+		type EncodedCall: Decode + Encode + Into<Result<<Self as Config<I>>::Call, ()>> + Clone;
 		/// A type which can be turned into an AccountId from a 256-bit hash.
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
@@ -161,15 +161,13 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 
 	fn pre_dispatch(relayer_account: &T::AccountId, message: &Self::Message) -> bool {
 		// TODO: Might be written better
-		// let call = match message.call.clone().into() {
-		// 	Ok(call) => call,
-		// 	Err(_) => {
-		// 		return false
-		// 	},
-		// };
+		// let message_clone = message.clone();
+		let call = match message.clone().call.into() {
+			Ok(call) => call,
+			Err(_) => return false,
+		};
 
-		// T::CallValidator::check_relayer_balance(relayer_account, &call)
-		true
+		T::CallValidator::check_relayer_balance(relayer_account, &call)
 	}
 
 	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
