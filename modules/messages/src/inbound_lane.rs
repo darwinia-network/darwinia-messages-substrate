@@ -118,7 +118,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 	}
 
 	/// Receive new message.
-	pub fn receive_message<P: MessageDispatch<AccountId, S::MessageFee>, V: CallValidate<AccountId>, AccountId>(
+	pub fn receive_message<P: MessageDispatch<AccountId, S::MessageFee>, AccountId>(
 		&mut self,
 		relayer_at_bridged_chain: &S::Relayer,
 		relayer_at_this_chain: &AccountId,
@@ -142,16 +142,17 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			return ReceivalResult::TooManyUnconfirmedMessages
 		}
 
+		let dispatch_message = DispatchMessage {
+			key: MessageKey { lane_id: self.storage.id(), nonce },
+			data: message_data,
+		};
 		// Ensure relayer has enough balance to pay for the derived account.
+		if P::pre_dispatch(&dispatch_message) {
+			return ReceivalResult::RelayerInsufficientBalance
+		}
 
 		// then, dispatch message
-		let dispatch_result = P::dispatch(
-			relayer_at_this_chain,
-			DispatchMessage {
-				key: MessageKey { lane_id: self.storage.id(), nonce },
-				data: message_data,
-			},
-		);
+		let dispatch_result = P::dispatch(relayer_at_this_chain, dispatch_message);
 
 		// now let's update inbound lane storage
 		let push_new = match data.relayers.back_mut() {

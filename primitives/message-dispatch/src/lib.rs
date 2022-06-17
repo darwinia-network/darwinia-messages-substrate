@@ -46,6 +46,8 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &Self::Message) -> Weight;
 
+	fn pre_dispatch(message: &Self::Message) -> bool;
+
 	/// Dispatches the message internally.
 	///
 	/// `source_chain` indicates the chain where the message came from.

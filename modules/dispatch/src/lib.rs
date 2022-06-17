@@ -159,6 +159,11 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		message.weight
 	}
 
+	fn pre_dispatch(message: &Self::Message) -> bool {
+		// T::CallValidator::check_relayer_balance(relayer_account, &dispatch_origin, &call) 
+		true
+	}
+
 	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
 		source_chain: ChainId,
 		target_chain: ChainId,
