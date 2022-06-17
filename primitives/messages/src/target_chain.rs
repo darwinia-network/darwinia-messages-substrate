@@ -97,10 +97,10 @@ pub trait MessageDispatch<AccountId, Fee> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &DispatchMessage<Self::DispatchPayload, Fee>) -> Weight;
 
-	/// pre-validate message.
+	/// Checking in message receiving step before dispatch
 	///
-	/// This function accepts the same params with the dispatch function, and called before
-	/// message is dispatched for necessary validation.
+	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
+	/// be not be processed by this relayer, latter relayers can still continue process it.
 	fn pre_dispatch(
 		relayer_account: &AccountId,
 		message: &DispatchMessage<Self::DispatchPayload, Fee>,

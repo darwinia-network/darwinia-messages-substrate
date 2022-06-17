@@ -166,7 +166,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		let raw_message = message.map_err(|_| "Invalid Message")?;
 		let call = raw_message.clone().call.into().map_err(|_| "Invalid Call")?;
 
-		T::CallValidator::pre_dispatch(relayer_account, &call)
+		T::CallValidator::check_receiving_before_dispatch(relayer_account, &call)
 	}
 
 	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
@@ -567,7 +567,7 @@ mod tests {
 
 	pub struct CallValidator;
 	impl CallValidate<AccountId, Origin, Call> for CallValidator {
-		fn pre_dispatch(
+		fn check_receiving_before_dispatch(
 			_relayer_account: &AccountId,
 			_call: &Call,
 		) -> Result<(), &'static str> {

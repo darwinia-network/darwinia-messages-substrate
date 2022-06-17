@@ -46,10 +46,10 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &Self::Message) -> Weight;
 
-	/// Pre-dispatch validation.
+	/// Checking in message receiving step before dispatch
 	///
-	/// This function is called before message is dispatched for necessary validation. if failed,
-	/// the message will not be dispatch.
+	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
+	/// be not be processed by this relayer, latter relayers can still continue process it.
 	fn pre_dispatch(
 		relayer_account: &AccountId,
 		message: Result<&Self::Message, ()>,
@@ -163,11 +163,11 @@ pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
 
 /// A generic trait to validate message before dispatch.
 pub trait CallValidate<AccountId, Origin, Call> {
-	/// Pre-dispatch call validation.
+	/// Checking in message receiving step before dispatch
 	///
 	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
-	/// be rejected.
-	fn pre_dispatch(relayer_account: &AccountId, call: &Call) -> Result<(), &'static str>;
+	/// be not be processed by this relayer, latter relayers can still continue process it.
+	fn check_receiving_before_dispatch(relayer_account: &AccountId, call: &Call) -> Result<(), &'static str>;
 	/// In-dispatch call validation
 	///
 	/// This will be called in the dispatch process, If failed, return message dispatch errors.
