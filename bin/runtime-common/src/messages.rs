@@ -607,7 +607,7 @@ pub mod target {
 		) -> Result<(), &'static str> {
 			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
 				relayer_account,
-				message.data.payload.map_err(drop),
+				message.data.payload.as_ref().map_err(drop),
 			)
 		}
 
