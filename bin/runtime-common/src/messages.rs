@@ -607,8 +607,7 @@ pub mod target {
 		) -> Result<(), &'static str> {
 			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
 				relayer_account,
-				// TODO: update this type
-				&message.data.payload.as_ref().unwrap(),
+				message.data.payload.map_err(drop),
 			)
 		}
 

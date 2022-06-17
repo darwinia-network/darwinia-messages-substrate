@@ -52,7 +52,7 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// the message will not be dispatch.
 	fn pre_dispatch(
 		relayer_account: &AccountId,
-		message: &Self::Message,
+		message: Result<Self::Message, ()>,
 	) -> Result<(), &'static str>;
 
 	/// Dispatches the message internally.
