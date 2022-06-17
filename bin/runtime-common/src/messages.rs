@@ -602,9 +602,11 @@ pub mod target {
 		}
 
 		fn pre_dispatch(
+			relayer_account: &AccountIdOf<ThisChain<B>>,
 			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> bool {
 			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
+				relayer_account,
 				// TODO: update this type
 				&message.data.payload.as_ref().unwrap(),
 			)

@@ -97,7 +97,10 @@ pub trait MessageDispatch<AccountId, Fee> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &DispatchMessage<Self::DispatchPayload, Fee>) -> Weight;
 
-	fn pre_dispatch(message: &DispatchMessage<Self::DispatchPayload, Fee>) -> bool;
+	fn pre_dispatch(
+		relayer_account: &AccountId,
+		message: &DispatchMessage<Self::DispatchPayload, Fee>,
+	) -> bool;
 	/// Called when inbound message is received.
 	///
 	/// It is up to the implementers of this trait to determine whether the message
@@ -161,7 +164,7 @@ impl<AccountId, Fee> MessageDispatch<AccountId, Fee> for ForbidInboundMessages {
 		Weight::MAX
 	}
 
-	fn pre_dispatch(_message: &DispatchMessage<Self::DispatchPayload, Fee>) -> bool {
+	fn pre_dispatch(_: &AccountId, _message: &DispatchMessage<Self::DispatchPayload, Fee>) -> bool {
 		false
 	}
 

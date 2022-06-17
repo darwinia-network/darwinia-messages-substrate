@@ -146,8 +146,9 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			key: MessageKey { lane_id: self.storage.id(), nonce },
 			data: message_data,
 		};
+		// TODO: update the commment
 		// Ensure relayer has enough balance to pay for the derived account.
-		if P::pre_dispatch(&dispatch_message) {
+		if P::pre_dispatch(relayer_at_this_chain, &dispatch_message) {
 			return ReceivalResult::RelayerInsufficientBalance
 		}
 

@@ -46,7 +46,7 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &Self::Message) -> Weight;
 
-	fn pre_dispatch(message: &Self::Message) -> bool;
+	fn pre_dispatch(relayer_account: &AccountId, message: &Self::Message) -> bool;
 
 	/// Dispatches the message internally.
 	///
@@ -156,7 +156,8 @@ pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
 
 /// A generic trait to validate message before dispatch.
 pub trait CallValidate<AccountId, Origin, Call> {
-	fn check_relayer_balance(relayer_account: &AccountId) -> bool;
+	// TODO: A better name
+	fn check_relayer_balance(relayer_account: &AccountId, call: &Call) -> bool;
 	/// call validation
 	fn pre_dispatch(
 		relayer_account: &AccountId,
