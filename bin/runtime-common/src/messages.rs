@@ -523,7 +523,7 @@ pub mod target {
 	///
 	/// Our Call is opaque (`Vec<u8>`) for Bridged chain. So it is encoded, prefixed with
 	/// vector length. Custom decode implementation here is exactly to deal with this.
-	#[derive(Decode, Encode, RuntimeDebug, PartialEq)]
+	#[derive(Decode, Encode, Clone, RuntimeDebug, PartialEq)]
 	pub struct FromBridgedChainEncodedMessageCall<DecodedCall> {
 		encoded_call: Vec<u8>,
 		_marker: PhantomData<DecodedCall>,
@@ -571,6 +571,16 @@ pub mod target {
 			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> frame_support::weights::Weight {
 			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
+		}
+
+		fn pre_dispatch(
+			relayer_account: &AccountIdOf<ThisChain<B>>,
+			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+		) -> Result<(), &'static str> {
+			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
+				relayer_account,
+				message.data.payload.as_ref().map_err(drop),
+			)
 		}
 
 		fn dispatch(
