@@ -482,6 +482,13 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 		}
 	}
 
+	fn pre_dispatch(
+		_relayer_account: &AccountId,
+		_message: &DispatchMessage<TestPayload, TestMessageFee>,
+	) -> Result<(), &'static str> {
+		Ok(())
+	}
+
 	fn dispatch(
 		_relayer_account: &AccountId,
 		message: DispatchMessage<TestPayload, TestMessageFee>,
