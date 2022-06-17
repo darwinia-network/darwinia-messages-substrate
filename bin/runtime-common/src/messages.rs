@@ -551,7 +551,7 @@ pub mod target {
 	///
 	/// Our Call is opaque (`Vec<u8>`) for Bridged chain. So it is encoded, prefixed with
 	/// vector length. Custom decode implementation here is exactly to deal with this.
-	#[derive(Decode, Encode, RuntimeDebug, PartialEq)]
+	#[derive(Decode, Encode, Clone, RuntimeDebug, PartialEq)]
 	pub struct FromBridgedChainEncodedMessageCall<DecodedCall> {
 		encoded_call: Vec<u8>,
 		_marker: PhantomData<DecodedCall>,
