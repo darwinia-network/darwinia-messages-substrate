@@ -269,7 +269,7 @@ pub mod pallet {
 
 	/// Hash of the best finalized header.
 	#[pallet::storage]
-	pub(super) type BestFinalized<T: Config<I>, I: 'static = ()> =
+	pub type BestFinalized<T: Config<I>, I: 'static = ()> =
 		StorageValue<_, BridgedBlockHash<T, I>, ValueQuery>;
 
 	/// A ring buffer of imported hashes. Ordered by the insertion time.
