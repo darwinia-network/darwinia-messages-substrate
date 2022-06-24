@@ -463,6 +463,7 @@ name = "bp-runtime"
 version = "0.1.0"
 dependencies = [
  "frame-support",
+ "frame-system",
  "hash-db",
  "hex-literal",
  "num-traits",
