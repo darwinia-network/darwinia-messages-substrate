@@ -3847,6 +3847,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-session"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.22#616d33ea23bab86cafffaf116fc607b6790fb4eb"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
+ "sp-std",
+ "sp-trie",
+]
+
+[[package]]
+name = "pallet-shift-session-manager"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-session",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.22#616d33ea23bab86cafffaf116fc607b6790fb4eb"
@@ -5874,6 +5910,20 @@ source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.22#61
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "sp-session"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.22#616d33ea23bab86cafffaf116fc607b6790fb4eb"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]
