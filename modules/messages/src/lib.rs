@@ -57,11 +57,11 @@ use bp_messages::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
 	},
 	total_unrewarded_messages, DeliveredMessages, InboundLaneData, InboundMessageDetails, LaneId,
-	MessageData, MessageKey, MessageNonce, MessagePayload, OperatingMode, OutboundLaneData,
+	MessageData, MessageKey, MessageNonce, MessagePayload, MessagesOperatingMode, OutboundLaneData,
 	OutboundMessageDetails, Parameter as MessagesParameter,
 	UnrewardedRelayersState,
 };
-use bp_runtime::{ChainId, OwnedBridgeModule, Size};
+use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 use codec::{Decode, Encode};
 use frame_support::{
 	fail,
@@ -219,14 +219,9 @@ pub mod pallet {
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
 		const LOG_TARGET: &'static str = "runtime::bridge-messages";
-		const OPERATING_MODE_KEY: &'static str = "PalletOperatingMode";
 		type OwnerStorage = PalletOwner<T, I>;
-		type OperatingMode = OperatingMode;
+		type OperatingMode = MessagesOperatingMode;
 		type OperatingModeStorage = PalletOperatingMode<T, I>;
-
-		fn is_halted() -> bool {
-			Self::OperatingModeStorage::get() == OperatingMode::Halted
-		}
 	}
 
 	#[pallet::call]
@@ -245,7 +240,7 @@ pub mod pallet {
 		#[pallet::weight((T::DbWeight::get().reads_writes(1, 1), DispatchClass::Operational))]
 		pub fn set_operating_mode(
 			origin: OriginFor<T>,
-			operating_mode: OperatingMode,
+			operating_mode: MessagesOperatingMode,
 		) -> DispatchResult {
 			<Self as OwnedBridgeModule<_>>::set_operating_mode(origin, operating_mode)
 		}
@@ -710,7 +705,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn operating_mode)]
 	pub type PalletOperatingMode<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, OperatingMode, ValueQuery>;
+		StorageValue<_, MessagesOperatingMode, ValueQuery>;
 
 	/// Map of lane id => inbound lane data.
 	#[pallet::storage]
@@ -730,7 +725,7 @@ pub mod pallet {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		/// Initial pallet operating mode.
-		pub operating_mode: OperatingMode,
+		pub operating_mode: MessagesOperatingMode,
 		/// Initial pallet owner.
 		pub owner: Option<T::AccountId>,
 		/// Dummy marker.
@@ -945,11 +940,13 @@ fn send_message<T: Config<I>, I: 'static>(
 
 /// Ensure that the pallet is in normal operational mode.
 fn ensure_normal_operating_mode<T: Config<I>, I: 'static>() -> Result<(), Error<T, I>> {
-	if PalletOperatingMode::<T, I>::get() != OperatingMode::Normal {
-		Err(Error::<T, I>::NotOperatingNormally)
-	} else {
-		Ok(())
+	if PalletOperatingMode::<T, I>::get() ==
+		MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+	{
+		return Ok(())
 	}
+
+	Err(Error::<T, I>::NotOperatingNormally)
 }
 
 /// Creates new inbound lane object, backed by runtime storage.
@@ -1207,26 +1204,35 @@ mod tests {
 
 			assert_ok!(Pallet::<TestRuntime>::set_owner(Origin::root(), Some(1)));
 			assert_noop!(
-				Pallet::<TestRuntime>::set_operating_mode(Origin::signed(2), OperatingMode::Halted),
+				Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(2),
+					MessagesOperatingMode::Basic(BasicOperatingMode::Halted)
+				),
 				DispatchError::BadOrigin,
 			);
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::root(),
-				OperatingMode::Halted
+				MessagesOperatingMode::Basic(BasicOperatingMode::Halted)
 			));
 
 			assert_ok!(Pallet::<TestRuntime>::set_owner(Origin::signed(1), None));
 			assert_noop!(
-				Pallet::<TestRuntime>::set_operating_mode(Origin::signed(1), OperatingMode::Normal),
+				Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(1),
+					MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+				),
 				DispatchError::BadOrigin,
 			);
 			assert_noop!(
-				Pallet::<TestRuntime>::set_operating_mode(Origin::signed(2), OperatingMode::Normal),
+				Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(2),
+					MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+				),
 				DispatchError::BadOrigin,
 			);
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::root(),
-				OperatingMode::Normal
+				MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
 			));
 		});
 	}
@@ -1236,11 +1242,11 @@ mod tests {
 		run_test(|| {
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::root(),
-				OperatingMode::Halted
+				MessagesOperatingMode::Basic(BasicOperatingMode::Halted)
 			));
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::root(),
-				OperatingMode::Normal
+				MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
 			));
 		});
 	}
@@ -1252,28 +1258,37 @@ mod tests {
 
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::signed(2),
-				OperatingMode::Halted
+				MessagesOperatingMode::Basic(BasicOperatingMode::Halted)
 			));
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::signed(2),
-				OperatingMode::Normal
+				MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
 			));
 
 			assert_noop!(
-				Pallet::<TestRuntime>::set_operating_mode(Origin::signed(1), OperatingMode::Halted),
+				Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(1),
+					MessagesOperatingMode::Basic(BasicOperatingMode::Halted)
+				),
 				DispatchError::BadOrigin,
 			);
 			assert_noop!(
-				Pallet::<TestRuntime>::set_operating_mode(Origin::signed(1), OperatingMode::Normal),
+				Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(1),
+					MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+				),
 				DispatchError::BadOrigin,
 			);
 
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
 				Origin::signed(2),
-				OperatingMode::Halted
+				MessagesOperatingMode::Basic(BasicOperatingMode::Halted)
 			));
 			assert_noop!(
-				Pallet::<TestRuntime>::set_operating_mode(Origin::signed(1), OperatingMode::Normal),
+				Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(1),
+					MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+				),
 				DispatchError::BadOrigin,
 			);
 		});
@@ -1381,7 +1396,9 @@ mod tests {
 			// send message first to be able to check that delivery_proof fails later
 			send_regular_message();
 
-			PalletOperatingMode::<TestRuntime, ()>::put(OperatingMode::Halted);
+			PalletOperatingMode::<TestRuntime, ()>::put(MessagesOperatingMode::Basic(
+				BasicOperatingMode::Halted,
+			));
 
 			assert_noop!(
 				Pallet::<TestRuntime>::send_message(
@@ -1439,7 +1456,9 @@ mod tests {
 			// send message first to be able to check that delivery_proof fails later
 			send_regular_message();
 
-			PalletOperatingMode::<TestRuntime, ()>::put(OperatingMode::RejectingOutboundMessages);
+			PalletOperatingMode::<TestRuntime, ()>::put(
+				MessagesOperatingMode::RejectingOutboundMessages,
+			);
 
 			assert_noop!(
 				Pallet::<TestRuntime>::send_message(
