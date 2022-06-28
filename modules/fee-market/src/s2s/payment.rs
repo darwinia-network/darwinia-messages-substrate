@@ -26,7 +26,7 @@ use frame_support::{
 	traits::{Currency as CurrencyT, ExistenceRequirement, Get},
 };
 use scale_info::TypeInfo;
-use sp_runtime::traits::{AccountIdConversion, Saturating, Zero};
+use sp_runtime::traits::{Saturating, Zero};
 use sp_std::{
 	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
 	ops::RangeInclusive,
