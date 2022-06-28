@@ -1,22 +1,17 @@
 [package]
-name = "bp-kusama"
-description = "Primitives of Kusama runtime."
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2021"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+authors     = ["Darwinia Network <hello@darwinia.network>"]
+description = "Primitives of Darwinia runtime."
+edition     = "2021"
+license     = "GPL-3.0"
+name        = "bp-darwinia"
+version     = "0.1.0"
 
 [dependencies]
-smallvec = "1.7"
-
-# Bridge Dependencies
-
-bp-messages      = { default-features = false, path = "../messages" }
-bp-polkadot-core = { default-features = false, path = "../polkadot-core" }
-bp-runtime       = { default-features = false, path = "../runtime" }
-
-# Substrate Based Dependencies
-
+# darwinia-network
+bp-darwinia-core = { default-features = false, path = "../darwinia-core" }
+# paritytech
+bp-messages   = { default-features = false, path = "../messages" }
+bp-runtime    = { default-features = false, path = "../runtime" }
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-api        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
@@ -26,8 +21,10 @@ sp-version    = { default-features = false, git = "https://github.com/paritytech
 [features]
 default = ["std"]
 std = [
+	# darwinia-network
+	"bp-darwinia-core/std",
+	# paritytech
 	"bp-messages/std",
-	"bp-polkadot-core/std",
 	"bp-runtime/std",
 	"frame-support/std",
 	"sp-api/std",
