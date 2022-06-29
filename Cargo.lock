@@ -1712,6 +1712,7 @@ dependencies = [
  "bp-message-dispatch",
  "bp-messages",
  "bp-runtime",
+ "bp-test-utils",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
