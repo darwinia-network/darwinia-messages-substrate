@@ -779,7 +779,7 @@ fn test_callback_no_order_created_when_fee_market_not_ready() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: 2,
+				error: [2, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -1206,7 +1206,7 @@ fn test_fee_verification_when_send_message() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: 2,
+				error: [2, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -1217,7 +1217,7 @@ fn test_fee_verification_when_send_message() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 49),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: 2,
+				error: [2, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
