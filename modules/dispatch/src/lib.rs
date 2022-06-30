@@ -172,7 +172,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 			Err(_) => {
 				log::trace!(
 					target: "runtime::bridge-dispatch",
-					"Message has been rejected in pre_dispatch",
+					"Message will be rejected in dispatch, still Ok here",
 				);
 			},
 		}
