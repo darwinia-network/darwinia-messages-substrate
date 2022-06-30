@@ -314,7 +314,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
-		let treasury_account: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
+		let treasury_account: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
 		let treasury_key =
 			(b":relayer-reward:", &treasury_account, treasury_total_rewards).encode();
 		frame_support::storage::unhashed::put(&treasury_key, &true);
@@ -829,7 +829,7 @@ fn test_payment_cal_reward_normally_single_message() {
 		// 60% * 30 = 18 2. message relayer -> id: 100, reward = 40% * 30 * 80% = 9.6 ~ 10
 		// 3. confirmation relayer -> id: 5, reward = 40% * 30 * 20% = 2.4 ~ 2
 		// 4. treasury reward -> reward: 100 - 30 = 70
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 70));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 18));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 2));
@@ -874,7 +874,7 @@ fn test_payment_cal_reward_normally_multi_message() {
 			},
 		));
 
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 140));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 4));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 36));
@@ -929,7 +929,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 			},
 		));
 
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 70));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 18));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 2));
