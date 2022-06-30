@@ -114,7 +114,7 @@ where
 		// Pay treasury reward
 		do_reward::<T, I>(
 			relayer_fund_account,
-			&T::TreasuryPalletId::get().into_account(),
+			&T::TreasuryPalletId::get().into_account_truncating(),
 			treasury_total_rewards,
 		);
 	}
