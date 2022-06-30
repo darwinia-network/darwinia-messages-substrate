@@ -35,13 +35,12 @@ use bp_runtime::{
 };
 use codec::Encode;
 use frame_support::{
-	dispatch::Dispatchable,
+	dispatch::{DispatchInfo, DispatchResultWithPostInfo, Dispatchable, Weight},
 	ensure,
+	pallet_prelude::Pays,
 	traits::Get,
 	weights::GetDispatchInfo,
 };
-use frame_support::dispatch::{DispatchInfo, DispatchResultWithPostInfo, Weight};
-use frame_support::pallet_prelude::Pays;
 use frame_system::RawOrigin;
 use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify, Zero};
 use sp_std::{fmt::Debug, prelude::*};
@@ -164,10 +163,20 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		relayer_account: &T::AccountId,
 		message: Result<&Self::Message, ()>,
 	) -> Result<(), &'static str> {
-		let raw_message = message.map_err(|_| "Invalid Message")?;
-		let call = raw_message.clone().call.into().map_err(|_| "Invalid Call")?;
+		match message {
+			Ok(raw_message) =>
+				if let Ok(call) = raw_message.clone().call.into() {
+					return T::CallValidator::check_receiving_before_dispatch(relayer_account, &call)
+				},
+			Err(_) => {
+				log::trace!(
+					target: "runtime::bridge-dispatch",
+					"Message will be rejected in dispatch, still Ok here",
+				);
+			},
+		}
 
-		T::CallValidator::check_receiving_before_dispatch(relayer_account, &call)
+		Ok(())
 	}
 
 	fn dispatch<P: FnOnce(&T::AccountId, bp_message_dispatch::Weight) -> Result<(), ()>>(
@@ -379,7 +388,7 @@ fn extract_actual_weight(result: &DispatchResultWithPostInfo, info: &DispatchInf
 	};
 	match post_info.pays_fee {
 		Pays::Yes => post_info.calc_actual_weight(info),
-		Pays::No => Weight::zero()
+		Pays::No => Weight::zero(),
 	}
 }
 
