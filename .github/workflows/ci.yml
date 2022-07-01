@@ -18,9 +18,14 @@ jobs:
           - pallet-fee-market
           - pallet-bridge-grandpa
           - pallet-bridge-messages
+          - pallet-bridge-parachains
+          - bp-crab
+          - bp-crab-parachain
+          - bp-darwinia
+          - bp-kusama
           - bp-pangolin
-          - bp-pangoro
           - bp-pangolin-parachain
+          - bp-pangoro
           - bp-rococo
           - bp-darwinia-core
           - bridge-runtime-common

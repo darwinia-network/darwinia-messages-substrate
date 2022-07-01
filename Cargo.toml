@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
+	"bin/runtime-common",
 	"modules/*",
 	"primitives/*",
-	"relays/*",
 ]
