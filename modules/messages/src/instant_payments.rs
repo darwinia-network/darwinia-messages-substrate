@@ -76,7 +76,7 @@ where
 			Sender::Root => root_account
 				.as_ref()
 				.ok_or("Sending messages using Root origin is disallowed.")?,
-			Sender::None => Err("Sending messages using None origin is disallowed.")?
+			Sender::None => Err("Sending messages using None origin is disallowed.")?,
 		};
 
 		Currency::transfer(
