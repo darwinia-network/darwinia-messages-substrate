@@ -502,7 +502,6 @@ dependencies = [
  "sp-std",
  "sp-trie",
  "sp-version",
- "static_assertions",
 ]
 
 [[package]]

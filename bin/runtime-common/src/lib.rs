@@ -20,6 +20,3 @@
 
 pub mod messages;
 pub mod messages_benchmarking;
-
-#[cfg(feature = "integrity-test")]
-pub mod integrity;
