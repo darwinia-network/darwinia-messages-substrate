@@ -23,12 +23,10 @@ mod copy_paste_from_darwinia {
 	use bp_darwinia_core::*;
 
 	pub const EXISTENTIAL_DEPOSIT: Balance = 0;
-
-	pub const SESSION_LENGTH: BlockNumber = 30 * MINUTES;
 }
 pub use copy_paste_from_darwinia::*;
 
 pub use bp_darwinia_core::*;
 
-/// Pangolin Chain.
-pub type Pangolin = DarwiniaLike;
+/// CrabParachain Chain.
+pub type CrabParachain = DarwiniaLike;

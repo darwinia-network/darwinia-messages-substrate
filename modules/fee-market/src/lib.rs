@@ -38,7 +38,7 @@ use frame_support::{
 	ensure,
 	pallet_prelude::*,
 	traits::{Currency, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
-	transactional, PalletId,
+	PalletId,
 };
 use frame_system::{ensure_signed, pallet_prelude::*};
 use sp_runtime::{
@@ -209,7 +209,6 @@ pub mod pallet {
 		/// the default value is MinimumRelayFee in runtime. (Update market needed)
 		/// Note: One account can enroll only once.
 		#[pallet::weight(<T as Config<I>>::WeightInfo::enroll_and_lock_collateral())]
-		#[transactional]
 		pub fn enroll_and_lock_collateral(
 			origin: OriginFor<T>,
 			lock_collateral: BalanceOf<T, I>,
@@ -255,7 +254,6 @@ pub mod pallet {
 		/// Update locked collateral for enrolled relayer, only supporting lock more. (Update market
 		/// needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_locked_collateral())]
-		#[transactional]
 		pub fn update_locked_collateral(
 			origin: OriginFor<T>,
 			new_collateral: BalanceOf<T, I>,
@@ -308,7 +306,6 @@ pub mod pallet {
 
 		/// Update relay fee for enrolled relayer. (Update market needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_relay_fee())]
-		#[transactional]
 		pub fn update_relay_fee(origin: OriginFor<T>, new_fee: BalanceOf<T, I>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
@@ -329,7 +326,6 @@ pub mod pallet {
 
 		/// Cancel enrolled relayer(Update market needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::cancel_enrollment())]
-		#[transactional]
 		pub fn cancel_enrollment(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
@@ -357,7 +353,6 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_slash_protect())]
-		#[transactional]
 		pub fn set_slash_protect(
 			origin: OriginFor<T>,
 			slash_protect: BalanceOf<T, I>,
@@ -369,7 +364,6 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_assigned_relayers_number())]
-		#[transactional]
 		pub fn set_assigned_relayers_number(origin: OriginFor<T>, number: u32) -> DispatchResult {
 			ensure_root(origin)?;
 
