@@ -56,10 +56,10 @@ where
 		let root_account = RootAccount::get();
 		let account = match submitter {
 			Sender::Signed(submitter) => submitter,
-			Sender::Root  => root_account
+			Sender::Root => root_account
 				.as_ref()
 				.ok_or("Sending messages using Root origin is disallowed.")?,
-			Sender::None => Err("Sending messages using None origin is disallowed.")?
+			Sender::None => Err("Sending messages using None origin is disallowed.")?,
 		};
 
 		<T as Config<I>>::Currency::transfer(
