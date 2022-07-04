@@ -32,7 +32,7 @@ use bp_runtime::{
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use codec::{Decode, DecodeLimit, Encode};
-use frame_support::{
+use frame_support::{traits::Get,
 	traits::{Currency, ExistenceRequirement},
 	weights::{Weight, WeightToFee},
 	RuntimeDebug,
@@ -226,6 +226,15 @@ pub mod source {
 		BridgedChainOpaqueCall,
 	>;
 
+	/// Maximal size of outbound message payload.
+	pub struct FromThisChainMaximalOutboundPayloadSize<B>(PhantomData<B>);
+
+	impl<B: MessageBridge> Get<u32> for FromThisChainMaximalOutboundPayloadSize<B> {
+		fn get() -> u32 {
+			maximal_message_size::<B>()
+		}
+	}
+
 	/// Messages delivery proof from bridged chain:
 	///
 	/// - hash of finalized header;
@@ -242,7 +251,7 @@ pub mod source {
 	}
 
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash> {
-		fn size_hint(&self) -> u32 {
+		fn size(&self) -> u32 {
 			u32::try_from(
 				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)
@@ -563,7 +572,7 @@ pub mod target {
 	}
 
 	impl<BridgedHeaderHash> Size for FromBridgedChainMessagesProof<BridgedHeaderHash> {
-		fn size_hint(&self) -> u32 {
+		fn size(&self) -> u32 {
 			u32::try_from(
 				self.storage_proof.iter().fold(0usize, |sum, node| sum.saturating_add(node.len())),
 			)

@@ -154,7 +154,7 @@ pub struct TestPayload {
 	pub extra: Vec<u8>,
 }
 impl Size for TestPayload {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		16 + self.extra.len() as u32
 	}
 }
@@ -169,7 +169,7 @@ pub struct TestMessagesProof {
 	pub result: Result<MessagesByLaneVec, ()>,
 }
 impl Size for TestMessagesProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -178,7 +178,7 @@ impl Size for TestMessagesProof {
 #[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub struct TestMessagesDeliveryProof(pub Result<(LaneId, InboundLaneData<TestRelayer>), ()>);
 impl Size for TestMessagesDeliveryProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -410,6 +410,9 @@ frame_support::parameter_types! {
 	pub const TestBridgedChainId: bp_runtime::ChainId = *b"test";
 }
 
+/// Maximal outbound payload size.
+pub const MAX_OUTBOUND_PAYLOAD_SIZE: u32 = 4096;
+
 impl pallet_bridge_messages::Config for Test {
 	type AccountIdConverter = AccountIdConverter;
 	type BridgedChainId = TestBridgedChainId;
@@ -431,6 +434,7 @@ impl pallet_bridge_messages::Config for Test {
 	type SourceHeaderChain = TestSourceHeaderChain;
 	type TargetHeaderChain = TestTargetHeaderChain;
 	type WeightInfo = ();
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
 }
 
 impl SenderOrigin<AccountId> for Origin {
@@ -816,7 +820,7 @@ fn test_callback_no_order_created_when_fee_market_not_ready() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: [3, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -1384,7 +1388,7 @@ fn test_fee_verification_when_send_message() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: [3, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -1395,7 +1399,7 @@ fn test_fee_verification_when_send_message() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 49),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: [3, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);

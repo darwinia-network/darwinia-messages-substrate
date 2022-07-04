@@ -147,7 +147,7 @@ pub struct MessagePayload<
 impl<SourceChainAccountId, TargetChainAccountPublic, TargetChainSignature> Size
 	for MessagePayload<SourceChainAccountId, TargetChainAccountPublic, TargetChainSignature, Vec<u8>>
 {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		self.call.len() as _
 	}
 }
