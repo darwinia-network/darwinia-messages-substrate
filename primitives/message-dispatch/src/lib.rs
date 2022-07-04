@@ -177,3 +177,16 @@ pub trait CallValidate<AccountId, Origin, Call> {
 		call: &Call,
 	) -> Result<(), TransactionValidityError>;
 }
+
+/// CallValidate's default implementation, no additional validation
+pub enum Everything {}
+
+impl<AccountId, Origin, Call> CallValidate<AccountId, Origin, Call> for Everything {
+	fn check_receiving_before_dispatch(_: &AccountId, _: &Call) -> Result<(), &'static str> {
+		Ok(())
+	}
+
+	fn call_validate(_: &AccountId, _: &Origin, _: &Call) -> Result<(), TransactionValidityError> {
+		Ok(())
+	}
+}
