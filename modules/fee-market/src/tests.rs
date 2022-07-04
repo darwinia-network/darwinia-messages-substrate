@@ -311,7 +311,8 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
-		let treasury_account: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let treasury_account: AccountId =
+			<Test as Config>::TreasuryPalletId::get().into_account_truncating();
 		let treasury_key = (b":relayer-reward:", &treasury_account, treasury_sum).encode();
 		frame_support::storage::unhashed::put(&treasury_key, &true);
 	}

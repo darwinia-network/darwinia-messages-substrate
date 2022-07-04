@@ -167,7 +167,10 @@ pub trait CallValidate<AccountId, Origin, Call> {
 	///
 	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
 	/// be not be processed by this relayer, latter relayers can still continue process it.
-	fn check_receiving_before_dispatch(relayer_account: &AccountId, call: &Call) -> Result<(), &'static str>;
+	fn check_receiving_before_dispatch(
+		relayer_account: &AccountId,
+		call: &Call,
+	) -> Result<(), &'static str>;
 	/// In-dispatch call validation
 	///
 	/// This will be called in the dispatch process, If failed, return message dispatch errors.
