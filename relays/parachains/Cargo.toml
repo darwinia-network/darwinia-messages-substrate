@@ -25,4 +25,4 @@ relay-substrate-client = { path = "../client-substrate" }
 [dev-dependencies]
 codec                  = { package = "parity-scale-codec", version = "2.2.0" }
 relay-substrate-client = { path = "../client-substrate", features = ["test-helpers"] }
-sp-core                = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.3" }
+sp-core                = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.4" }
