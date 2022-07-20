@@ -246,7 +246,7 @@ benchmarks_instance_pallet! {
 	}: increase_message_fee(RawOrigin::Signed(sender.clone()), lane_id, nonce, additional_fee)
 	verify {
 		assert_eq!(
-			OutboundMessages::<T, I>::get(MessageKey { lane_id: T::bench_lane_id(), nonce }).unwrap().fee,
+			OutboundMessages::<T, I>::get(MessageKey { lane_id, nonce }).unwrap().fee,
 			T::message_fee() + additional_fee,
 		);
 	}
@@ -270,7 +270,7 @@ benchmarks_instance_pallet! {
 	}: increase_message_fee(RawOrigin::Signed(sender.clone()), lane_id, nonce, additional_fee)
 	verify {
 		assert_eq!(
-			OutboundMessages::<T, I>::get(MessageKey { lane_id: T::bench_lane_id(), nonce }).unwrap().fee,
+			OutboundMessages::<T, I>::get(MessageKey { lane_id, nonce }).unwrap().fee,
 			T::message_fee() + additional_fee,
 		);
 	}
