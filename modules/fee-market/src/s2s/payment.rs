@@ -144,13 +144,71 @@ where
 				// before the reward payment.
 				let order_confirm_time =
 					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
-				let message_fee = order.fee();
+
+				let mut extra_slash_amount = BalanceOf::<T, I>::zero();
+
+				match order.required_delivery_relayer_for_time(order_confirm_time) {
+					Some((index, slot_id, base_fee)) if index == 0 => {
+						// finished in the first slot
+					},
+					Some((index, slot_id, base_fee)) if index >= 1 => {
+						let lazy_relayers =
+							order.relayers_slice().into_iter().take(index - 1).collect::<Vec<_>>();
+
+						// Slash 20%
+						for relayer in lazy_relayers {
+							let locked_collateral =
+								Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
+							T::Currency::remove_lock(T::LockId::get(), &relayer.id);
+							let amount = T::AssignedRelayerSlashRatio::get() * locked_collateral;
+
+							let pay_result = <T as Config<I>>::Currency::transfer(
+								&relayer.id,
+								relayer_fund_account,
+								amount,
+								ExistenceRequirement::AllowDeath,
+							);
+							match pay_result {
+								Ok(_) => {
+									// crate::Pallet::<T, I>::update_relayer_after_slash(
+									// 	relayer,
+									// 	locked_collateral.saturating_sub(slash_amount),
+									// 	report,
+									// );
+									log::trace!("Slash {:?} amount: {:?}", relayer, amount);
+									// return amount;
+								},
+								Err(e) => {
+									// crate::Pallet::<T, I>::update_relayer_after_slash(
+									// 	who,
+									// 	locked_collateral,
+									// 	report,
+									// );
+									log::error!(
+										"Slash {:?} amount {:?}, err {:?}",
+										relayer,
+										amount,
+										e
+									)
+								},
+							}
+						}
+					},
+					Some(_) => {
+						todo!()
+					},
+					None => {
+						todo!()
+					},
+				}
+
+				let message_fee = order.fee() + extra_slash_amount;
 
 				let mut reward_item = RewardItem::new();
 				let message_reward;
 				let confirm_reward;
 
-				if let Some((who, base_fee)) =
+				if let Some((index, who, base_fee)) =
 					order.required_delivery_relayer_for_time(order_confirm_time)
 				{
 					// message fee - base fee => treasury_sum
@@ -172,7 +230,7 @@ where
 					let mut total_slash = message_fee;
 
 					// calculate slash amount
-					let mut amount: BalanceOf<T, I> = T::Slasher::slash(
+					let mut amount: BalanceOf<T, I> = T::Slasher::cal_slash_amount(
 						order.locked_collateral,
 						order.delivery_delay().unwrap_or_default(),
 					);

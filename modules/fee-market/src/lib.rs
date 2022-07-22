@@ -84,9 +84,11 @@ pub mod pallet {
 		type ConfirmRelayersRewardRatio: Get<Permill>;
 
 		/// The slash rule
+		#[pallet::constant]
+		type AssignedRelayerSlashRatio: Get<Permill>;
 		type Slasher: Slasher<Self, I>;
-		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 
+		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
 	}
@@ -510,5 +512,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 }
 
 pub trait Slasher<T: Config<I>, I: 'static> {
-	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I>;
+	fn cal_slash_amount(
+		locked_collateral: BalanceOf<T, I>,
+		timeout: T::BlockNumber,
+	) -> BalanceOf<T, I>;
 }

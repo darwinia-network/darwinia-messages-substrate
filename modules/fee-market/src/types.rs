@@ -142,10 +142,10 @@ where
 	pub fn required_delivery_relayer_for_time(
 		&self,
 		message_confirm_time: BlockNumber,
-	) -> Option<(AccountId, Balance)> {
-		for prior_relayer in self.relayers.iter() {
+	) -> Option<(usize, AccountId, Balance)> {
+		for (index, prior_relayer) in self.relayers.iter().enumerate() {
 			if prior_relayer.valid_range.contains(&message_confirm_time) {
-				return Some((prior_relayer.id.clone(), prior_relayer.fee));
+				return Some((index, prior_relayer.id.clone(), prior_relayer.fee));
 			}
 		}
 		None
