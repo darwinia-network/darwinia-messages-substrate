@@ -26,6 +26,7 @@ use bp_runtime::{
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
 use scale_info::TypeInfo;
+use sp_runtime::transaction_validity::TransactionValidityError;
 use sp_std::prelude::*;
 
 /// Message dispatch weight.
@@ -45,6 +46,15 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	/// of dispatch weight.
 	fn dispatch_weight(message: &Self::Message) -> Weight;
 
+	/// Checking in message receiving step before dispatch
+	///
+	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
+	/// be not be processed by this relayer, latter relayers can still continue process it.
+	fn pre_dispatch(
+		relayer_account: &AccountId,
+		message: Result<&Self::Message, ()>,
+	) -> Result<(), &'static str>;
+
 	/// Dispatches the message internally.
 	///
 	/// `source_chain` indicates the chain where the message came from.
@@ -61,6 +71,7 @@ pub trait MessageDispatch<AccountId, BridgeMessageId> {
 	fn dispatch<P: FnOnce(&AccountId, Weight) -> Result<(), ()>>(
 		source_chain: ChainId,
 		target_chain: ChainId,
+		relayer_account: &AccountId,
 		id: BridgeMessageId,
 		message: Result<Self::Message, ()>,
 		pay_dispatch_fee: P,
@@ -138,5 +149,47 @@ impl<SourceChainAccountId, TargetChainAccountPublic, TargetChainSignature> Size
 {
 	fn size_hint(&self) -> u32 {
 		self.call.len() as _
+	}
+}
+
+/// Customize the dispatch origin before call dispatch.
+pub trait IntoDispatchOrigin<AccountId, Call, Origin> {
+	/// Generate the dispatch origin for the given call.
+	///
+	/// Normally, the dispatch origin is one kind of frame_system::RawOrigin, however, sometimes
+	/// it is useful for a dispatch call with a custom origin.
+	fn into_dispatch_origin(id: &AccountId, call: &Call) -> Origin;
+}
+
+/// A generic trait to validate message before dispatch.
+pub trait CallValidate<AccountId, Origin, Call> {
+	/// Checking in message receiving step before dispatch
+	///
+	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
+	/// be not be processed by this relayer, latter relayers can still continue process it.
+	fn check_receiving_before_dispatch(
+		relayer_account: &AccountId,
+		call: &Call,
+	) -> Result<(), &'static str>;
+	/// In-dispatch call validation
+	///
+	/// This will be called in the dispatch process, If failed, return message dispatch errors.
+	fn call_validate(
+		relayer_account: &AccountId,
+		origin: &Origin,
+		call: &Call,
+	) -> Result<(), TransactionValidityError>;
+}
+
+/// CallValidate's default implementation, no additional validation
+pub enum Everything {}
+
+impl<AccountId, Origin, Call> CallValidate<AccountId, Origin, Call> for Everything {
+	fn check_receiving_before_dispatch(_: &AccountId, _: &Call) -> Result<(), &'static str> {
+		Ok(())
+	}
+
+	fn call_validate(_: &AccountId, _: &Origin, _: &Call) -> Result<(), TransactionValidityError> {
+		Ok(())
 	}
 }

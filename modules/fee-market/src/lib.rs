@@ -38,7 +38,7 @@ use frame_support::{
 	ensure,
 	pallet_prelude::*,
 	traits::{Currency, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
-	transactional, PalletId,
+	PalletId,
 };
 use frame_system::{ensure_signed, pallet_prelude::*};
 use sp_runtime::{
@@ -47,6 +47,7 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 // --- darwinia-network ---
+use s2s::RewardItem;
 use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
@@ -107,6 +108,17 @@ pub mod pallet {
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
 		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
+		/// Create new order. \[lane_id, message_nonce, order_fee, assigned_relayers,
+		/// out_of_slots_time\]
+		OrderCreated(
+			LaneId,
+			MessageNonce,
+			BalanceOf<T, I>,
+			Vec<T::AccountId>,
+			Option<T::BlockNumber>,
+		),
+		/// Reward distribute of the order. \[lane_id, message_nonce, rewards\]
+		OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
 	}
 
 	#[pallet::error]
@@ -117,6 +129,8 @@ pub mod pallet {
 		AlreadyEnrolled,
 		/// This relayer doesn't enroll ever.
 		NotEnrolled,
+		/// Locked collateral is too low to cover one order.
+		CollateralTooLow,
 		/// Update locked collateral is not allow since some orders are not confirm.
 		StillHasOrdersNotConfirmed,
 		/// The fee is lower than MinimumRelayFee.
@@ -195,7 +209,6 @@ pub mod pallet {
 		/// the default value is MinimumRelayFee in runtime. (Update market needed)
 		/// Note: One account can enroll only once.
 		#[pallet::weight(<T as Config<I>>::WeightInfo::enroll_and_lock_collateral())]
-		#[transactional]
 		pub fn enroll_and_lock_collateral(
 			origin: OriginFor<T>,
 			lock_collateral: BalanceOf<T, I>,
@@ -207,6 +220,12 @@ pub mod pallet {
 				T::Currency::free_balance(&who) >= lock_collateral,
 				<Error<T, I>>::InsufficientBalance
 			);
+
+			ensure!(
+				Self::collateral_to_order_capacity(lock_collateral) > 0,
+				<Error<T, I>>::CollateralTooLow
+			);
+
 			if let Some(fee) = relay_fee {
 				ensure!(fee >= T::MinimumRelayFee::get(), <Error<T, I>>::RelayFeeTooLow);
 			}
@@ -235,7 +254,6 @@ pub mod pallet {
 		/// Update locked collateral for enrolled relayer, only supporting lock more. (Update market
 		/// needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_locked_collateral())]
-		#[transactional]
 		pub fn update_locked_collateral(
 			origin: OriginFor<T>,
 			new_collateral: BalanceOf<T, I>,
@@ -288,7 +306,6 @@ pub mod pallet {
 
 		/// Update relay fee for enrolled relayer. (Update market needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_relay_fee())]
-		#[transactional]
 		pub fn update_relay_fee(origin: OriginFor<T>, new_fee: BalanceOf<T, I>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
@@ -309,7 +326,6 @@ pub mod pallet {
 
 		/// Cancel enrolled relayer(Update market needed)
 		#[pallet::weight(<T as Config<I>>::WeightInfo::cancel_enrollment())]
-		#[transactional]
 		pub fn cancel_enrollment(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
@@ -337,7 +353,6 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_slash_protect())]
-		#[transactional]
 		pub fn set_slash_protect(
 			origin: OriginFor<T>,
 			slash_protect: BalanceOf<T, I>,
@@ -349,7 +364,6 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_assigned_relayers_number())]
-		#[transactional]
 		pub fn set_assigned_relayers_number(origin: OriginFor<T>, number: u32) -> DispatchResult {
 			ensure_root(origin)?;
 

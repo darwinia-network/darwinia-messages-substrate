@@ -33,7 +33,7 @@ use bp_runtime::{
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
 	traits::{Currency, ExistenceRequirement},
-	weights::{Weight, WeightToFeePolynomial},
+	weights::{Weight, WeightToFee},
 	RuntimeDebug,
 };
 use hash_db::Hasher;
@@ -523,7 +523,7 @@ pub mod target {
 	///
 	/// Our Call is opaque (`Vec<u8>`) for Bridged chain. So it is encoded, prefixed with
 	/// vector length. Custom decode implementation here is exactly to deal with this.
-	#[derive(Decode, Encode, RuntimeDebug, PartialEq)]
+	#[derive(Decode, Encode, Clone, RuntimeDebug, PartialEq)]
 	pub struct FromBridgedChainEncodedMessageCall<DecodedCall> {
 		encoded_call: Vec<u8>,
 		_marker: PhantomData<DecodedCall>,
@@ -533,18 +533,6 @@ pub mod target {
 		/// Create encoded call.
 		pub fn new(encoded_call: Vec<u8>) -> Self {
 			FromBridgedChainEncodedMessageCall { encoded_call, _marker: PhantomData::default() }
-		}
-	}
-
-	impl<DecodedCall: Decode> From<FromBridgedChainEncodedMessageCall<DecodedCall>>
-		for Result<DecodedCall, ()>
-	{
-		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
-			DecodedCall::decode_with_depth_limit(
-				sp_api::MAX_EXTRINSIC_DEPTH,
-				&mut &encoded_call.encoded_call[..],
-			)
-			.map_err(drop)
 		}
 	}
 
@@ -585,6 +573,16 @@ pub mod target {
 			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
 		}
 
+		fn pre_dispatch(
+			relayer_account: &AccountIdOf<ThisChain<B>>,
+			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+		) -> Result<(), &'static str> {
+			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
+				relayer_account,
+				message.data.payload.as_ref().map_err(drop),
+			)
+		}
+
 		fn dispatch(
 			relayer_account: &AccountIdOf<ThisChain<B>>,
 			message: DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
@@ -593,10 +591,12 @@ pub mod target {
 			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::dispatch(
 				B::BRIDGED_CHAIN_ID,
 				B::THIS_CHAIN_ID,
+				relayer_account,
 				message_id,
 				message.data.payload.map_err(drop),
 				|dispatch_origin, dispatch_weight| {
-					let unadjusted_weight_fee = ThisRuntime::WeightToFee::calc(&dispatch_weight);
+					let unadjusted_weight_fee =
+						ThisRuntime::WeightToFee::weight_to_fee(&dispatch_weight);
 					let fee_multiplier =
 						pallet_transaction_payment::Pallet::<ThisRuntime>::next_fee_multiplier();
 					let adjusted_weight_fee =
@@ -614,6 +614,18 @@ pub mod target {
 					}
 				},
 			)
+		}
+	}
+
+	impl<DecodedCall: Decode> From<FromBridgedChainEncodedMessageCall<DecodedCall>>
+		for Result<DecodedCall, ()>
+	{
+		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
+			DecodedCall::decode_with_depth_limit(
+				sp_api::MAX_EXTRINSIC_DEPTH,
+				&mut &encoded_call.encoded_call[..],
+			)
+			.map_err(drop)
 		}
 	}
 

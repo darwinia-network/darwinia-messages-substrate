@@ -25,6 +25,7 @@ use frame_support::{
 	log,
 	traits::{Currency as CurrencyT, ExistenceRequirement, Get},
 };
+use scale_info::TypeInfo;
 use sp_runtime::traits::{AccountIdConversion, Saturating, Zero};
 use sp_std::{
 	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
@@ -89,61 +90,54 @@ where
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &T::AccountId,
 	) {
-		let RewardsBook {
-			messages_relayers_rewards,
-			confirmation_relayer_rewards,
-			assigned_relayers_rewards,
-			treasury_total_rewards,
-		} = slash_and_calculate_rewards::<T, I>(
-			lane_id,
-			messages_relayers,
-			received_range,
-			relayer_fund_account,
-		);
+		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
+			slash_and_calculate_rewards::<T, I>(
+				lane_id,
+				messages_relayers,
+				confirmation_relayer.clone(),
+				received_range,
+				relayer_fund_account,
+			);
 
 		// Pay confirmation relayer rewards
-		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirmation_relayer_rewards);
+		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_sum);
 		// Pay messages relayers rewards
-		for (relayer, reward) in messages_relayers_rewards {
+		for (relayer, reward) in deliver_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
 		// Pay assign relayer reward
-		for (relayer, reward) in assigned_relayers_rewards {
+		for (relayer, reward) in assigned_relayers_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
-		// Pay treasury reward
+		// Pay treasury_sum reward
 		do_reward::<T, I>(
 			relayer_fund_account,
-			&T::TreasuryPalletId::get().into_account(),
-			treasury_total_rewards,
+			&T::TreasuryPalletId::get().into_account_truncating(),
+			treasury_sum,
 		);
 	}
 }
 
-/// Slash and calculate rewards for messages_relayers, confirmation relayers, treasury,
+/// Slash and calculate rewards for messages_relayers, confirmation relayers, treasury_sum,
 /// assigned_relayers
 pub fn slash_and_calculate_rewards<T, I>(
 	lane_id: LaneId,
 	messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
+	confirm_relayer: T::AccountId,
 	received_range: &RangeInclusive<MessageNonce>,
 	relayer_fund_account: &T::AccountId,
-) -> RewardsBook<T::AccountId, BalanceOf<T, I>>
+) -> RewardsBook<T, I>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
 {
-	let mut confirmation_rewards = BalanceOf::<T, I>::zero();
-	let mut messages_rewards = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
-	let mut assigned_relayers_rewards = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
-	let mut treasury_total_rewards = BalanceOf::<T, I>::zero();
-
+	let mut rewards_book = RewardsBook::new();
 	for entry in messages_relayers {
 		let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
 		let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
 
 		for message_nonce in nonce_begin..nonce_end + 1 {
-			// The order created when message was accepted, so we can always get the order info
-			// below.
+			// The order created when message was accepted, so we can always get the order info.
 			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
 				// The confirm_time of the order is set in the `OnDeliveryConfirmed` callback. And
 				// the callback function was called as source chain received message delivery proof,
@@ -152,31 +146,29 @@ where
 					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
 				let message_fee = order.fee();
 
+				let mut reward_item = RewardItem::new();
 				let message_reward;
 				let confirm_reward;
 
 				if let Some((who, base_fee)) =
 					order.required_delivery_relayer_for_time(order_confirm_time)
 				{
-					// message fee - base fee => treasury
-					let treasury_reward = message_fee.saturating_sub(base_fee);
-					treasury_total_rewards = treasury_total_rewards.saturating_add(treasury_reward);
+					// message fee - base fee => treasury_sum
+					reward_item.to_treasury = Some(message_fee.saturating_sub(base_fee));
 
-					// 60% * base fee => assigned_relayers_rewards
-					let assigned_relayers_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
-					assigned_relayers_rewards
-						.entry(who)
-						.and_modify(|r| *r = r.saturating_add(assigned_relayers_reward))
-						.or_insert(assigned_relayers_reward);
+					// AssignedRelayersRewardRatio * base fee => slot relayer
+					let slot_relayer_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
+					reward_item.to_slot_relayer = Some((who, slot_relayer_reward));
 
-					let bridger_relayers_reward = base_fee.saturating_sub(assigned_relayers_reward);
-
-					// 80% * (1 - 60%) * base_fee => message relayer
+					let bridger_relayers_reward = base_fee.saturating_sub(slot_relayer_reward);
+					// MessageRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
+					// message relayer
 					message_reward = T::MessageRelayersRewardRatio::get() * bridger_relayers_reward;
-					// 20% * (1 - 60%) * base_fee => confirm relayer
+					// ConfirmRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
+					// confirm relayer
 					confirm_reward = T::ConfirmRelayersRewardRatio::get() * bridger_relayers_reward;
 				} else {
-					// The order delivery is delay
+					// The order delivery is delay, slash occurs.
 					let mut total_slash = message_fee;
 
 					// calculate slash amount
@@ -202,29 +194,26 @@ where
 					}
 					total_slash += assigned_relayers_slash;
 
-					// 80% total slash => confirm relayer
+					// MessageRelayersRewardRatio total slash => message relayer
 					message_reward = T::MessageRelayersRewardRatio::get() * total_slash;
-					// 20% total slash => confirm relayer
+					// ConfirmRelayersRewardRatio total slash => confirm relayer
 					confirm_reward = T::ConfirmRelayersRewardRatio::get() * total_slash;
 				}
 
-				// Update confirmation relayer total rewards
-				confirmation_rewards = confirmation_rewards.saturating_add(confirm_reward);
-				// Update message relayers total rewards
-				messages_rewards
-					.entry(entry.relayer.clone())
-					.and_modify(|r| *r = r.saturating_add(message_reward))
-					.or_insert(message_reward);
+				reward_item.to_message_relayer = Some((entry.clone().relayer, message_reward));
+				reward_item.to_confirm_relayer = Some((confirm_relayer.clone(), confirm_reward));
+
+				Pallet::<T, I>::deposit_event(Event::OrderReward(
+					lane_id,
+					message_nonce,
+					reward_item.clone(),
+				));
+
+				rewards_book.add_reward_item(reward_item);
 			}
 		}
 	}
-
-	RewardsBook {
-		messages_relayers_rewards: messages_rewards,
-		confirmation_relayer_rewards: confirmation_rewards,
-		assigned_relayers_rewards,
-		treasury_total_rewards,
-	}
+	rewards_book
 }
 
 /// Do slash for absent assigned relayers
@@ -290,10 +279,66 @@ pub(crate) fn do_reward<T: Config<I>, I: 'static>(
 	}
 }
 
+/// Record the concrete reward distribution of certain order
+#[derive(Clone, Debug, Encode, Decode, Eq, PartialEq, TypeInfo)]
+pub struct RewardItem<AccountId, Balance> {
+	pub to_slot_relayer: Option<(AccountId, Balance)>,
+	pub to_treasury: Option<Balance>,
+	pub to_message_relayer: Option<(AccountId, Balance)>,
+	pub to_confirm_relayer: Option<(AccountId, Balance)>,
+}
+
+impl<AccountId, Balance> RewardItem<AccountId, Balance> {
+	fn new() -> Self {
+		Self {
+			to_slot_relayer: None,
+			to_treasury: None,
+			to_message_relayer: None,
+			to_confirm_relayer: None,
+		}
+	}
+}
+
 /// Record the calculation rewards result
-pub struct RewardsBook<AccountId, Balance> {
-	pub messages_relayers_rewards: BTreeMap<AccountId, Balance>,
-	pub confirmation_relayer_rewards: Balance,
-	pub assigned_relayers_rewards: BTreeMap<AccountId, Balance>,
-	pub treasury_total_rewards: Balance,
+#[derive(Clone, Debug, Eq, PartialEq, TypeInfo)]
+pub struct RewardsBook<T: Config<I>, I: 'static> {
+	pub deliver_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+	pub confirm_sum: BalanceOf<T, I>,
+	pub assigned_relayers_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+	pub treasury_sum: BalanceOf<T, I>,
+}
+
+impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
+	fn new() -> Self {
+		Self {
+			deliver_sum: BTreeMap::new(),
+			confirm_sum: BalanceOf::<T, I>::zero(),
+			assigned_relayers_sum: BTreeMap::new(),
+			treasury_sum: BalanceOf::<T, I>::zero(),
+		}
+	}
+
+	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
+		if let Some((id, reward)) = item.to_slot_relayer {
+			self.assigned_relayers_sum
+				.entry(id)
+				.and_modify(|r| *r = r.saturating_add(reward))
+				.or_insert(reward);
+		}
+
+		if let Some(reward) = item.to_treasury {
+			self.treasury_sum = self.treasury_sum.saturating_add(reward);
+		}
+
+		if let Some((id, reward)) = item.to_message_relayer {
+			self.deliver_sum
+				.entry(id)
+				.and_modify(|r| *r = r.saturating_add(reward))
+				.or_insert(reward);
+		}
+
+		if let Some((_id, reward)) = item.to_confirm_relayer {
+			self.confirm_sum = self.confirm_sum.saturating_add(reward);
+		}
+	}
 }
