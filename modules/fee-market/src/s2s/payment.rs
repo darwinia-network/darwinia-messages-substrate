@@ -155,7 +155,6 @@ where
 						let lazy_relayers =
 							order.relayers_slice().into_iter().take(index - 1).collect::<Vec<_>>();
 
-						// Slash 20%
 						for relayer in lazy_relayers {
 							let locked_collateral =
 								Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
@@ -241,12 +240,11 @@ where
 					// Slash order's assigned relayers
 					let mut assigned_relayers_slash = BalanceOf::<T, I>::zero();
 					for assigned_relayer in order.relayers_slice() {
-						let report = SlashReport::new(&order, assigned_relayer.id.clone(), amount);
-						let slashed = do_slash::<T, I>(
+						let slashed = slash_assigned_relayer::<T, I>(
+							&order,
 							&assigned_relayer.id,
 							relayer_fund_account,
 							amount,
-							report,
 						);
 						assigned_relayers_slash += slashed;
 					}
@@ -274,12 +272,11 @@ where
 	rewards_book
 }
 
-/// Do slash for absent assigned relayers
-pub(crate) fn do_slash<T: Config<I>, I: 'static>(
+pub fn slash_assigned_relayer<T: Config<I>, I: 'static>(
+	order: &Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 	who: &T::AccountId,
 	fund_account: &T::AccountId,
 	amount: BalanceOf<T, I>,
-	report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 ) -> BalanceOf<T, I> {
 	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(who);
 	T::Currency::remove_lock(T::LockId::get(), who);
@@ -294,6 +291,7 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 		amount,
 		ExistenceRequirement::AllowDeath,
 	);
+	let report = SlashReport::new(&order, who.clone(), amount);
 	match pay_result {
 		Ok(_) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(
@@ -312,6 +310,45 @@ pub(crate) fn do_slash<T: Config<I>, I: 'static>(
 
 	BalanceOf::<T, I>::zero()
 }
+
+// /// Do slash for absent assigned relayers
+// pub(crate) fn do_slash<T: Config<I>, I: 'static>(
+// 	who: &T::AccountId,
+// 	fund_account: &T::AccountId,
+// 	amount: BalanceOf<T, I>,
+// 	report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
+// ) -> BalanceOf<T, I> {
+// 	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(who);
+// 	T::Currency::remove_lock(T::LockId::get(), who);
+// 	debug_assert!(
+// 		locked_collateral >= amount,
+// 		"The locked collateral must alway greater than slash max"
+// 	);
+
+// 	let pay_result = <T as Config<I>>::Currency::transfer(
+// 		who,
+// 		fund_account,
+// 		amount,
+// 		ExistenceRequirement::AllowDeath,
+// 	);
+// 	match pay_result {
+// 		Ok(_) => {
+// 			crate::Pallet::<T, I>::update_relayer_after_slash(
+// 				who,
+// 				locked_collateral.saturating_sub(amount),
+// 				report,
+// 			);
+// 			log::trace!("Slash {:?} amount: {:?}", who, amount);
+// 			return amount;
+// 		},
+// 		Err(e) => {
+// 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
+// 			log::error!("Slash {:?} amount {:?}, err {:?}", who, amount, e)
+// 		},
+// 	}
+
+// 	BalanceOf::<T, I>::zero()
+// }
 
 /// Do reward
 pub(crate) fn do_reward<T: Config<I>, I: 'static>(
