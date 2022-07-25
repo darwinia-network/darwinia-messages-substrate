@@ -423,12 +423,16 @@ frame_support::parameter_types! {
 	pub const AssignedRelayersRewardRatio: Permill = Permill::from_percent(60);
 	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
 	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
+	pub const AssignedRelayerSlashRatio: Permill = Permill::from_percent(20);
 	pub const TreasuryPalletAccount: u64 = 666;
 }
 
 pub struct TestSlasher;
 impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
-	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I> {
+	fn cal_slash_amount(
+		locked_collateral: BalanceOf<T, I>,
+		timeout: T::BlockNumber,
+	) -> BalanceOf<T, I> {
 		let slash_each_block = 2;
 		let slash_value = UniqueSaturatedInto::<u128>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<u128>::unique_saturated_into(slash_each_block))
@@ -438,6 +442,7 @@ impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 }
 
 impl Config for Test {
+	type AssignedRelayerSlashRatio = AssignedRelayerSlashRatio;
 	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;

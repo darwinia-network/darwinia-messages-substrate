@@ -139,7 +139,7 @@ where
 		None
 	}
 
-	pub fn required_delivery_relayer_for_time(
+	pub fn delivery_info(
 		&self,
 		message_confirm_time: BlockNumber,
 	) -> Option<(usize, AccountId, Balance)> {

@@ -139,21 +139,36 @@ where
 		for message_nonce in nonce_begin..nonce_end + 1 {
 			// The order created when message was accepted, so we can always get the order info.
 			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
-				// The confirm_time of the order is set in the `OnDeliveryConfirmed` callback. And
-				// the callback function was called as source chain received message delivery proof,
-				// before the reward payment.
+				// The confirm_time of the order is already set in the `OnDeliveryConfirmed`
+				// callback. the callback function was called as source chain received message
+				// delivery proof, before the reward payment.
 				let order_confirm_time =
 					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
 
-				let mut extra_slash_amount = BalanceOf::<T, I>::zero();
-
-				match order.required_delivery_relayer_for_time(order_confirm_time) {
-					Some((index, slot_id, base_fee)) if index == 0 => {
-						// finished in the first slot
+				let mut total_reward = order.fee();
+				let mut reward_item = RewardItem::new();
+				match order.delivery_info(order_confirm_time) {
+					// The order has been confirmed at the first assigned relayers slot, no slash
+					// happens.
+					Some((relayer_index, slot_relayer_id, base_fee)) if relayer_index == 0 => {
+						cal_rewards_before_deadline::<T, I>(
+							&slot_relayer_id,
+							&entry.relayer,
+							&confirm_relayer,
+							total_reward,
+							base_fee,
+							&mut reward_item,
+						);
 					},
-					Some((index, slot_id, base_fee)) if index >= 1 => {
-						let lazy_relayers =
-							order.relayers_slice().into_iter().take(index - 1).collect::<Vec<_>>();
+					// The order is confirmed after the first slot and the assigned relayers
+					// corresponding to the previous slots are penalised.
+					Some((relayer_index, slot_relayer_id, base_fee)) if relayer_index >= 1 => {
+						// Calculate the penalty for the previous relayers.
+						let lazy_relayers = order
+							.relayers_slice()
+							.into_iter()
+							.take(relayer_index - 1)
+							.collect::<Vec<_>>();
 
 						for relayer in lazy_relayers {
 							let amount = slash_assigned_relayer::<T, I>(
@@ -163,75 +178,54 @@ where
 								T::AssignedRelayerSlashRatio::get()
 									* Pallet::<T, I>::relayer_locked_collateral(&relayer.id),
 							);
-
-							extra_slash_amount += amount;
+							total_reward += amount;
 						}
-					},
-					Some(_) => {
-						todo!()
-					},
-					None => {
-						todo!()
-					},
-				}
 
-				let message_fee = order.fee() + extra_slash_amount;
-
-				let mut reward_item = RewardItem::new();
-				let message_reward;
-				let confirm_reward;
-
-				if let Some((index, who, base_fee)) =
-					order.required_delivery_relayer_for_time(order_confirm_time)
-				{
-					// message fee - base fee => treasury_sum
-					reward_item.to_treasury = Some(message_fee.saturating_sub(base_fee));
-
-					// AssignedRelayersRewardRatio * base fee => slot relayer
-					let slot_relayer_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
-					reward_item.to_slot_relayer = Some((who, slot_relayer_reward));
-
-					let bridger_relayers_reward = base_fee.saturating_sub(slot_relayer_reward);
-					// MessageRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
-					// message relayer
-					message_reward = T::MessageRelayersRewardRatio::get() * bridger_relayers_reward;
-					// ConfirmRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee =>
-					// confirm relayer
-					confirm_reward = T::ConfirmRelayersRewardRatio::get() * bridger_relayers_reward;
-				} else {
-					// The order delivery is delay, slash occurs.
-					let mut total_slash = message_fee;
-
-					// calculate slash amount
-					let mut amount: BalanceOf<T, I> = T::Slasher::cal_slash_amount(
-						order.locked_collateral,
-						order.delivery_delay().unwrap_or_default(),
-					);
-					if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect() {
-						amount = sp_std::cmp::min(amount, slash_protect);
-					}
-
-					// Slash order's assigned relayers
-					let mut assigned_relayers_slash = BalanceOf::<T, I>::zero();
-					for assigned_relayer in order.relayers_slice() {
-						let slashed = slash_assigned_relayer::<T, I>(
-							&order,
-							&assigned_relayer.id,
-							relayer_fund_account,
-							amount,
+						cal_rewards_before_deadline::<T, I>(
+							&slot_relayer_id,
+							&entry.relayer,
+							&confirm_relayer,
+							total_reward,
+							base_fee,
+							&mut reward_item,
 						);
-						assigned_relayers_slash += slashed;
-					}
-					total_slash += assigned_relayers_slash;
+					},
+					// Out of deadline, all assigned relayers are penalised.
+					_ => {
+						// Calculate the penalty from the slasher.
+						let mut slash_amount: BalanceOf<T, I> = T::Slasher::cal_slash_amount(
+							order.locked_collateral,
+							order.delivery_delay().unwrap_or_default(),
+						);
 
-					// MessageRelayersRewardRatio total slash => message relayer
-					message_reward = T::MessageRelayersRewardRatio::get() * total_slash;
-					// ConfirmRelayersRewardRatio total slash => confirm relayer
-					confirm_reward = T::ConfirmRelayersRewardRatio::get() * total_slash;
+						for relayer in order.relayers_slice() {
+							// Calculate the penalty for the previous relayers.
+							slash_amount += T::AssignedRelayerSlashRatio::get()
+								* Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
+
+							// The slash amount can't be greater than the slash protect.
+							if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect()
+							{
+								slash_amount = sp_std::cmp::min(slash_amount, slash_protect);
+							}
+
+							let slashed = slash_assigned_relayer::<T, I>(
+								&order,
+								&relayer.id,
+								relayer_fund_account,
+								slash_amount,
+							);
+							total_reward += slashed;
+						}
+
+						cal_reward_after_deadline::<T, I>(
+							&entry.relayer,
+							&confirm_relayer,
+							total_reward,
+							&mut reward_item,
+						);
+					},
 				}
-
-				reward_item.to_message_relayer = Some((entry.clone().relayer, message_reward));
-				reward_item.to_confirm_relayer = Some((confirm_relayer.clone(), confirm_reward));
 
 				Pallet::<T, I>::deposit_event(Event::OrderReward(
 					lane_id,
@@ -246,7 +240,52 @@ where
 	rewards_book
 }
 
-pub fn slash_assigned_relayer<T: Config<I>, I: 'static>(
+/// Calculate the reward for the order which has been confirmed in time.
+pub(crate) fn cal_rewards_before_deadline<T: Config<I>, I: 'static>(
+	slot_relayer_id: &T::AccountId,
+	message_relayer_id: &T::AccountId,
+	confirm_relayer_id: &T::AccountId,
+	total_reward: BalanceOf<T, I>,
+	base_fee: BalanceOf<T, I>,
+	reward_item: &mut RewardItem<T::AccountId, BalanceOf<T, I>>,
+) {
+	// message fee - base fee => treasury_sum
+	reward_item.to_treasury = Some(total_reward.saturating_sub(base_fee));
+
+	// AssignedRelayersRewardRatio * base fee => slot relayer
+	let slot_relayer_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
+	reward_item.to_slot_relayer = Some((slot_relayer_id.clone(), slot_relayer_reward));
+
+	let bridger_relayers_reward = base_fee.saturating_sub(slot_relayer_reward);
+	// MessageRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee
+	// => message relayer
+	let message_reward = T::MessageRelayersRewardRatio::get() * bridger_relayers_reward;
+	// ConfirmRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee
+	// => confirm relayer
+	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * bridger_relayers_reward;
+
+	reward_item.to_message_relayer = Some((message_relayer_id.clone(), message_reward));
+	reward_item.to_confirm_relayer = Some((confirm_relayer_id.clone(), confirm_reward));
+}
+
+/// Calculate the reward for the order which has been confirmed out of deadline.
+pub(crate) fn cal_reward_after_deadline<T: Config<I>, I: 'static>(
+	message_relayer_id: &T::AccountId,
+	confirm_relayer_id: &T::AccountId,
+	total_reward: BalanceOf<T, I>,
+	reward_item: &mut RewardItem<T::AccountId, BalanceOf<T, I>>,
+) {
+	// MessageRelayersRewardRatio total reward => message relayer
+	let message_reward = T::MessageRelayersRewardRatio::get() * total_reward;
+	// ConfirmRelayersRewardRatio total reward => confirm relayer
+	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * total_reward;
+
+	reward_item.to_message_relayer = Some((message_relayer_id.clone(), message_reward));
+	reward_item.to_confirm_relayer = Some((confirm_relayer_id.clone(), confirm_reward));
+}
+
+/// Slash the assigned relayer and emit the slash report.
+pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 	order: &Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 	who: &T::AccountId,
 	fund_account: &T::AccountId,
