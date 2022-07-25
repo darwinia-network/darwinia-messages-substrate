@@ -513,7 +513,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 pub trait Slasher<T: Config<I>, I: 'static> {
 	fn cal_slash_amount(
-		locked_collateral: BalanceOf<T, I>,
+		collateral_per_order: BalanceOf<T, I>,
 		timeout: T::BlockNumber,
 	) -> BalanceOf<T, I>;
 }

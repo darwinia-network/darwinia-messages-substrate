@@ -167,7 +167,7 @@ where
 						let lazy_relayers = order
 							.relayers_slice()
 							.into_iter()
-							.take(relayer_index - 1)
+							.take(relayer_index)
 							.collect::<Vec<_>>();
 
 						for relayer in lazy_relayers {
@@ -192,22 +192,26 @@ where
 					},
 					// Out of deadline, all assigned relayers are penalised.
 					_ => {
-						// Calculate the penalty from the slasher.
-						let mut slash_amount: BalanceOf<T, I> = T::Slasher::cal_slash_amount(
-							order.locked_collateral,
-							order.delivery_delay().unwrap_or_default(),
-						);
-
 						for relayer in order.relayers_slice() {
 							// Calculate the penalty for the previous relayers.
-							slash_amount += T::AssignedRelayerSlashRatio::get()
+							let mut slash_amount = T::AssignedRelayerSlashRatio::get()
 								* Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
+
+							// Calculate the penalty from the slasher.
+							slash_amount += T::Slasher::cal_slash_amount(
+								order.locked_collateral,
+								order.delivery_delay().unwrap_or_default(),
+							);
 
 							// The slash amount can't be greater than the slash protect.
 							if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect()
 							{
 								slash_amount = sp_std::cmp::min(slash_amount, slash_protect);
 							}
+
+							let locked_collateral =
+								Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
+							slash_amount = sp_std::cmp::min(slash_amount, locked_collateral);
 
 							let slashed = slash_assigned_relayer::<T, I>(
 								&order,
@@ -316,6 +320,7 @@ pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 			return amount;
 		},
 		Err(e) => {
+			println!("slash_assigned_relayer error: {:?}", e);
 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
 			log::error!("Slash {:?} amount {:?}, err {:?}", who, amount, e)
 		},
