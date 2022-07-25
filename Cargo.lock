@@ -505,6 +505,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hash-db",
+ "log",
  "pallet-balances",
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",

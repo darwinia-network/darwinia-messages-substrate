@@ -14,121 +14,83 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-/// Declares a runtime-specific `BridgeRejectObsoleteMessages` and
-/// `BridgeRejectObsoleteMessageConfirmations` signed extensions.
-///
-/// ## Example
-///
-/// ```nocompile
-/// bridge_runtime_common::declare_bridge_reject_obsolete_messages!{
-///     Runtime,
-///     Call::BridgeRialtoMessages => WithRialtoMessagesInstance,
-///     Call::BridgeRialtoParachainMessages => WithRialtoParachainMessagesInstance,
-/// }
-/// ```
-///
-/// The goal of this extension is to avoid "mining" messages delivery and delivery confirmation
-/// transactions, that are delivering outdated messages/confirmations. Without that extension,
+use crate::{
+	messages::{
+		source::FromBridgedChainMessagesDeliveryProof, target::FromBridgedChainMessagesProof,
+	},
+	BridgeRuntimeFilterCall,
+};
+use frame_support::{dispatch::CallableCallFor, traits::IsSubType};
+use pallet_bridge_messages::{Config, Pallet};
+use sp_runtime::transaction_validity::TransactionValidity;
+
+/// Validate messages in order to avoid "mining" messages delivery and delivery confirmation
+/// transactions, that are delivering outdated messages/confirmations. Without this validation,
 /// even honest relayers may lose their funds if there are multiple relays running and submitting
 /// the same messages/confirmations.
-#[macro_export]
-macro_rules! declare_bridge_reject_obsolete_messages {
-	($runtime:ident, $($call:path => $instance:ty),*) => {
-		/// Transaction-with-obsolete-messages check that will reject transaction if
-		/// it submits obsolete messages/confirmations.
-		#[derive(Clone, codec::Decode, codec::Encode, Eq, PartialEq, frame_support::RuntimeDebug, scale_info::TypeInfo)]
-		pub struct BridgeRejectObsoleteMessages;
+impl<
+		BridgedHeaderHash,
+		SourceHeaderChain: bp_messages::target_chain::SourceHeaderChain<
+			<T as Config<I>>::InboundMessageFee,
+			MessagesProof = FromBridgedChainMessagesProof<BridgedHeaderHash>,
+		>,
+		TargetHeaderChain: bp_messages::source_chain::TargetHeaderChain<
+			<T as Config<I>>::OutboundPayload,
+			<T as frame_system::Config>::AccountId,
+			MessagesDeliveryProof = FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash>,
+		>,
+		Call: IsSubType<CallableCallFor<Pallet<T, I>, T>>,
+		T: frame_system::Config<Call = Call>
+			+ Config<I, SourceHeaderChain = SourceHeaderChain, TargetHeaderChain = TargetHeaderChain>,
+		I: 'static,
+	> BridgeRuntimeFilterCall<Call> for Pallet<T, I>
+{
+	fn validate(call: &Call) -> TransactionValidity {
+		match call.is_sub_type() {
+			Some(pallet_bridge_messages::Call::<T, I>::receive_messages_proof {
+				ref proof,
+				..
+			}) => {
+				let inbound_lane_data =
+					pallet_bridge_messages::InboundLanes::<T, I>::get(&proof.lane);
+				if proof.nonces_end <= inbound_lane_data.last_delivered_nonce() {
+					log::trace!(
+						target: pallet_bridge_messages::LOG_TARGET,
+						"Rejecting obsolete messages delivery transaction: \
+                            lane {:?}, bundled {:?}, best {:?}",
+						proof.lane,
+						proof.nonces_end,
+						inbound_lane_data.last_delivered_nonce(),
+					);
 
-		impl sp_runtime::traits::SignedExtension for BridgeRejectObsoleteMessages {
-			const IDENTIFIER: &'static str = "BridgeRejectObsoleteMessages";
-			type AccountId = <$runtime as frame_system::Config>::AccountId;
-			type Call = <$runtime as frame_system::Config>::Call;
-			type AdditionalSigned = ();
-			type Pre = ();
-
-			fn additional_signed(&self) -> sp_std::result::Result<
-				(),
-				sp_runtime::transaction_validity::TransactionValidityError,
-			> {
-				Ok(())
-			}
-
-			fn validate(
-				&self,
-				_who: &Self::AccountId,
-				call: &Self::Call,
-				_info: &sp_runtime::traits::DispatchInfoOf<Self::Call>,
-				_len: usize,
-			) -> sp_runtime::transaction_validity::TransactionValidity {
-				match *call {
-					$(
-						$call(pallet_bridge_messages::Call::<$runtime, $instance>::receive_messages_proof {
-							ref proof,
-							..
-						}) => {
-							let nonces_end = proof.nonces_end;
-
-							let inbound_lane_data = pallet_bridge_messages::InboundLanes::<$runtime, $instance>::get(&proof.lane);
-							if proof.nonces_end <= inbound_lane_data.last_delivered_nonce() {
-								log::trace!(
-									target: pallet_bridge_messages::LOG_TARGET,
-									"Rejecting obsolete messages delivery transaction: lane {:?}, bundled {:?}, best {:?}",
-									proof.lane,
-									proof.nonces_end,
-									inbound_lane_data.last_delivered_nonce(),
-								);
-
-								return sp_runtime::transaction_validity::InvalidTransaction::Stale.into();
-							}
-
-							Ok(sp_runtime::transaction_validity::ValidTransaction::default())
-						},
-						$call(pallet_bridge_messages::Call::<$runtime, $instance>::receive_messages_delivery_proof {
-							ref proof,
-							ref relayers_state,
-							..
-						}) => {
-							let latest_delivered_nonce = relayers_state.last_delivered_nonce;
-
-							let outbound_lane_data = pallet_bridge_messages::OutboundLanes::<$runtime, $instance>::get(&proof.lane);
-							if latest_delivered_nonce <= outbound_lane_data.latest_received_nonce {
-								log::trace!(
-									target: pallet_bridge_messages::LOG_TARGET,
-									"Rejecting obsolete messages confirmation transaction: lane {:?}, bundled {:?}, best {:?}",
-									proof.lane,
-									latest_delivered_nonce,
-									outbound_lane_data.latest_received_nonce,
-								);
-
-								return sp_runtime::transaction_validity::InvalidTransaction::Stale.into();
-							}
-
-							Ok(sp_runtime::transaction_validity::ValidTransaction::default())
-						}
-					)*
-					_ => Ok(sp_runtime::transaction_validity::ValidTransaction::default()),
+					return sp_runtime::transaction_validity::InvalidTransaction::Stale.into()
 				}
-			}
+			},
+			Some(pallet_bridge_messages::Call::<T, I>::receive_messages_delivery_proof {
+				ref proof,
+				ref relayers_state,
+				..
+			}) => {
+				let latest_delivered_nonce = relayers_state.last_delivered_nonce;
 
-			fn pre_dispatch(
-				self,
-				who: &Self::AccountId,
-				call: &Self::Call,
-				info: &sp_runtime::traits::DispatchInfoOf<Self::Call>,
-				len: usize,
-			) -> Result<Self::Pre, sp_runtime::transaction_validity::TransactionValidityError> {
-				self.validate(who, call, info, len).map(drop)
-			}
+				let outbound_lane_data =
+					pallet_bridge_messages::OutboundLanes::<T, I>::get(&proof.lane);
+				if latest_delivered_nonce <= outbound_lane_data.latest_received_nonce {
+					log::trace!(
+						target: pallet_bridge_messages::LOG_TARGET,
+						"Rejecting obsolete messages confirmation transaction: \
+                            lane {:?}, bundled {:?}, best {:?}",
+						proof.lane,
+						latest_delivered_nonce,
+						outbound_lane_data.latest_received_nonce,
+					);
 
-			fn post_dispatch(
-				_maybe_pre: Option<Self::Pre>,
-				_info: &sp_runtime::traits::DispatchInfoOf<Self::Call>,
-				_post_info: &sp_runtime::traits::PostDispatchInfoOf<Self::Call>,
-				_len: usize,
-				_result: &sp_runtime::DispatchResult,
-			) -> Result<(), sp_runtime::transaction_validity::TransactionValidityError> {
-				Ok(())
-			}
+					return sp_runtime::transaction_validity::InvalidTransaction::Stale.into()
+				}
+			},
+			_ => {},
 		}
-	};
+
+		Ok(sp_runtime::transaction_validity::ValidTransaction::default())
+	}
 }
