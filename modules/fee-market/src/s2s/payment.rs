@@ -193,7 +193,7 @@ where
 					// Out of deadline, all assigned relayers are penalised.
 					_ => {
 						for relayer in order.relayers_slice() {
-							// Calculate the penalty for the previous relayers.
+							// Calculate the basic slash for all assigned relayers.
 							let mut slash_amount = T::AssignedRelayerSlashRatio::get()
 								* Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
 
@@ -320,7 +320,6 @@ pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 			return amount;
 		},
 		Err(e) => {
-			println!("slash_assigned_relayer error: {:?}", e);
 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
 			log::error!("Slash {:?} amount {:?}, err {:?}", who, amount, e)
 		},

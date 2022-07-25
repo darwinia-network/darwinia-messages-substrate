@@ -83,7 +83,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type ConfirmRelayersRewardRatio: Get<Permill>;
 
-		/// The slash rule
+		/// The slash ratio for assigned relayers.
 		#[pallet::constant]
 		type AssignedRelayerSlashRatio: Get<Permill>;
 		type Slasher: Slasher<Self, I>;
@@ -511,6 +511,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 }
 
+/// The assigned relayers slash trait
 pub trait Slasher<T: Config<I>, I: 'static> {
 	fn cal_slash_amount(
 		collateral_per_order: BalanceOf<T, I>,
