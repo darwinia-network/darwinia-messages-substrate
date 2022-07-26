@@ -163,14 +163,16 @@ where
 					// The order is confirmed after the first slot and the assigned relayers
 					// corresponding to the previous slots are penalised.
 					Some((relayer_index, slot_relayer_id, base_fee)) if relayer_index >= 1 => {
-						// Calculate the penalty for the previous relayers.
-						let previous_relayers = order
+						// Since the slot whose order is confirmed is not the first one, it is
+						// necessary to obtain the assigned relayers corresponding to all the
+						// previous slots.
+						let previous_assigned_relayers = order
 							.relayers_slice()
 							.into_iter()
 							.take(relayer_index)
 							.collect::<Vec<_>>();
 
-						for r in previous_relayers {
+						for r in previous_assigned_relayers {
 							let amount = slash_assigned_relayer::<T, I>(
 								&order,
 								&r.id,

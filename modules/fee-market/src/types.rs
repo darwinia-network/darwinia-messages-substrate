@@ -77,7 +77,7 @@ pub struct Order<AccountId, BlockNumber, Balance> {
 	pub sent_time: BlockNumber,
 	pub confirm_time: Option<BlockNumber>,
 	pub locked_collateral: Balance,
-	pub relayers: Vec<PriorRelayer<AccountId, BlockNumber, Balance>>,
+	pub assigned_relayers: Vec<AssignedRelayer<AccountId, BlockNumber, Balance>>,
 }
 impl<AccountId, BlockNumber, Balance> Order<AccountId, BlockNumber, Balance>
 where
@@ -90,36 +90,36 @@ where
 		message: MessageNonce,
 		sent_time: BlockNumber,
 		locked_collateral: Balance,
-		assigned_relayers: Vec<Relayer<AccountId, Balance>>,
+		relayers: Vec<Relayer<AccountId, Balance>>,
 		slot: BlockNumber,
 	) -> Self {
-		let prior_relayers_len = assigned_relayers.len();
-		let mut relayers = Vec::with_capacity(prior_relayers_len);
+		let relayers_len = relayers.len();
+		let mut assigned_relayers = Vec::with_capacity(relayers_len);
 		let mut start_time = sent_time;
 
-		// PriorRelayer has a duty time zone
-		for i in 0..prior_relayers_len {
-			if let Some(r) = assigned_relayers.get(i) {
-				let p = PriorRelayer::new(r.id.clone(), r.fee, start_time, slot);
+		// AssignedRelayer has a duty time zone
+		for i in 0..relayers_len {
+			if let Some(r) = relayers.get(i) {
+				let p = AssignedRelayer::new(r.id.clone(), r.fee, start_time, slot);
 
 				start_time += slot;
-				relayers.push(p);
+				assigned_relayers.push(p);
 			}
 		}
 
-		Self { lane, message, sent_time, confirm_time: None, locked_collateral, relayers }
+		Self { lane, message, sent_time, confirm_time: None, locked_collateral, assigned_relayers }
 	}
 
 	pub fn set_confirm_time(&mut self, confirm_time: Option<BlockNumber>) {
 		self.confirm_time = confirm_time;
 	}
 
-	pub fn relayers_slice(&self) -> &[PriorRelayer<AccountId, BlockNumber, Balance>] {
-		self.relayers.as_ref()
+	pub fn relayers_slice(&self) -> &[AssignedRelayer<AccountId, BlockNumber, Balance>] {
+		self.assigned_relayers.as_ref()
 	}
 
 	pub fn fee(&self) -> Balance {
-		self.relayers.iter().last().map(|r| r.fee).unwrap_or_default()
+		self.assigned_relayers.iter().last().map(|r| r.fee).unwrap_or_default()
 	}
 
 	pub fn is_confirmed(&self) -> bool {
@@ -127,7 +127,7 @@ where
 	}
 
 	pub fn range_end(&self) -> Option<BlockNumber> {
-		self.relayers.iter().last().map(|r| r.valid_range.end)
+		self.assigned_relayers.iter().last().map(|r| r.valid_range.end)
 	}
 
 	pub fn delivery_delay(&self) -> Option<BlockNumber> {
@@ -143,7 +143,7 @@ where
 		&self,
 		message_confirm_time: BlockNumber,
 	) -> Option<(usize, AccountId, Balance)> {
-		for (index, prior_relayer) in self.relayers.iter().enumerate() {
+		for (index, prior_relayer) in self.assigned_relayers.iter().enumerate() {
 			if prior_relayer.valid_range.contains(&message_confirm_time) {
 				return Some((index, prior_relayer.id.clone(), prior_relayer.fee));
 			}
@@ -156,7 +156,7 @@ where
 	where
 		AccountId: Clone + PartialEq,
 	{
-		for prior_relayer in self.relayers.iter() {
+		for prior_relayer in self.assigned_relayers.iter() {
 			if prior_relayer.id == id {
 				return Some(prior_relayer.valid_range.clone());
 			}
@@ -165,16 +165,16 @@ where
 	}
 }
 
-/// Relayers selected by the fee market. Each prior relayer has a valid slot, if the order can
-/// finished in time, will be rewarded with more percentage. PriorRelayer are responsible for the
+/// Relayers selected by the fee market. Each assigned relayer has a valid slot, if the order can
+/// finished in time, will be rewarded with more percentage. AssignedRelayer are responsible for the
 /// messages relay in most time.
 #[derive(Clone, Debug, Default, Encode, Decode, TypeInfo)]
-pub struct PriorRelayer<AccountId, BlockNumber, Balance> {
+pub struct AssignedRelayer<AccountId, BlockNumber, Balance> {
 	pub id: AccountId,
 	pub fee: Balance,
 	pub valid_range: Range<BlockNumber>,
 }
-impl<AccountId, BlockNumber, Balance> PriorRelayer<AccountId, BlockNumber, Balance>
+impl<AccountId, BlockNumber, Balance> AssignedRelayer<AccountId, BlockNumber, Balance>
 where
 	BlockNumber: Copy + AtLeast32BitUnsigned,
 {
