@@ -142,12 +142,12 @@ where
 				// The confirm_time of the order is already set in the `OnDeliveryConfirmed`
 				// callback. the callback function was called as source chain received message
 				// delivery proof, before the reward payment.
-				let order_confirm_time =
+				let confirmed_at =
 					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
 
 				let mut total_reward = order.fee();
 				let mut reward_item = RewardItem::new();
-				match order.delivery_info(order_confirm_time) {
+				match order.delivery_info(confirmed_at) {
 					// The order has been confirmed at the first assigned relayers slot, no slash
 					// happens.
 					Some((relayer_index, slot_relayer_id, base_fee)) if relayer_index == 0 => {
@@ -164,19 +164,19 @@ where
 					// corresponding to the previous slots are penalised.
 					Some((relayer_index, slot_relayer_id, base_fee)) if relayer_index >= 1 => {
 						// Calculate the penalty for the previous relayers.
-						let lazy_relayers = order
+						let previous_relayers = order
 							.relayers_slice()
 							.into_iter()
 							.take(relayer_index)
 							.collect::<Vec<_>>();
 
-						for relayer in lazy_relayers {
+						for r in previous_relayers {
 							let amount = slash_assigned_relayer::<T, I>(
 								&order,
-								&relayer.id,
+								&r.id,
 								relayer_fund_account,
 								T::AssignedRelayerSlashRatio::get()
-									* Pallet::<T, I>::relayer_locked_collateral(&relayer.id),
+									* Pallet::<T, I>::relayer_locked_collateral(&r.id),
 							);
 							total_reward += amount;
 						}
@@ -192,10 +192,10 @@ where
 					},
 					// Out of deadline, all assigned relayers are penalised.
 					_ => {
-						for relayer in order.relayers_slice() {
+						for assigned_relayer in order.relayers_slice() {
 							// Calculate the basic slash for all assigned relayers.
 							let mut slash_amount = T::AssignedRelayerSlashRatio::get()
-								* Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
+								* Pallet::<T, I>::relayer_locked_collateral(&assigned_relayer.id);
 
 							// Calculate the penalty from the slasher.
 							slash_amount += T::Slasher::cal_slash_amount(
@@ -210,12 +210,12 @@ where
 							}
 
 							let locked_collateral =
-								Pallet::<T, I>::relayer_locked_collateral(&relayer.id);
+								Pallet::<T, I>::relayer_locked_collateral(&assigned_relayer.id);
 							slash_amount = sp_std::cmp::min(slash_amount, locked_collateral);
 
 							let slashed = slash_assigned_relayer::<T, I>(
 								&order,
-								&relayer.id,
+								&assigned_relayer.id,
 								relayer_fund_account,
 								slash_amount,
 							);
