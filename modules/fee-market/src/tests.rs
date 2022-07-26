@@ -756,7 +756,7 @@ fn test_callback_order_creation() {
 		assert!(FeeMarket::assigned_relayers().is_some());
 
 		let order = FeeMarket::order((&lane, &message_nonce)).unwrap();
-		let relayers = order.relayers_slice();
+		let relayers = order.assigned_relayers_slice();
 		assert_eq!(relayers[0].id, assigned_relayers.get(0).unwrap().id);
 		assert_eq!(relayers[1].id, assigned_relayers.get(1).unwrap().id);
 		assert_eq!(relayers[2].id, assigned_relayers.get(2).unwrap().id);
@@ -856,7 +856,7 @@ fn test_payment_cal_reward_normally_single_message() {
 			lane,
 			message_nonce,
 			RewardItem {
-				to_slot_relayer: Some((1, 18)),
+				to_assigned_relayer: Some((1, 18)),
 				to_treasury: Some(70),
 				to_message_relayer: Some((100, 10)),
 				to_confirm_relayer: Some((5, 2)),

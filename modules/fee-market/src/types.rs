@@ -114,7 +114,7 @@ where
 		self.confirm_time = confirm_time;
 	}
 
-	pub fn relayers_slice(&self) -> &[AssignedRelayer<AccountId, BlockNumber, Balance>] {
+	pub fn assigned_relayers_slice(&self) -> &[AssignedRelayer<AccountId, BlockNumber, Balance>] {
 		self.assigned_relayers.as_ref()
 	}
 
@@ -130,7 +130,7 @@ where
 		self.assigned_relayers.iter().last().map(|r| r.valid_range.end)
 	}
 
-	pub fn delivery_delay(&self) -> Option<BlockNumber> {
+	pub fn comfirm_delay(&self) -> Option<BlockNumber> {
 		if let (Some(confirm_time), Some(range_end)) = (self.confirm_time, self.range_end()) {
 			if confirm_time > range_end {
 				return Some(confirm_time - range_end);
@@ -139,13 +139,13 @@ where
 		None
 	}
 
-	pub fn delivery_info(
+	pub fn confirmed_assigned_relayer_info(
 		&self,
 		message_confirm_time: BlockNumber,
 	) -> Option<(usize, AccountId, Balance)> {
-		for (index, prior_relayer) in self.assigned_relayers.iter().enumerate() {
-			if prior_relayer.valid_range.contains(&message_confirm_time) {
-				return Some((index, prior_relayer.id.clone(), prior_relayer.fee));
+		for (index, assigned_relayer) in self.assigned_relayers.iter().enumerate() {
+			if assigned_relayer.valid_range.contains(&message_confirm_time) {
+				return Some((index, assigned_relayer.id.clone(), assigned_relayer.fee));
 			}
 		}
 		None
@@ -156,9 +156,9 @@ where
 	where
 		AccountId: Clone + PartialEq,
 	{
-		for prior_relayer in self.assigned_relayers.iter() {
-			if prior_relayer.id == id {
-				return Some(prior_relayer.valid_range.clone());
+		for assigned_relayer in self.assigned_relayers.iter() {
+			if assigned_relayer.id == id {
+				return Some(assigned_relayer.valid_range.clone());
 			}
 		}
 		None
@@ -215,7 +215,7 @@ where
 			message: order.message,
 			sent_time: order.sent_time,
 			confirm_time: order.confirm_time,
-			delay_time: order.delivery_delay(),
+			delay_time: order.comfirm_delay(),
 			account_id,
 			amount,
 		}

@@ -481,7 +481,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		let mut count = 0u32;
 		let mut orders_locked_collateral = BalanceOf::<T, I>::zero();
 		for (_, order) in <Orders<T, I>>::iter() {
-			if order.relayers_slice().iter().any(|r| r.id == *who) && !order.is_confirmed() {
+			if order.assigned_relayers_slice().iter().any(|r| r.id == *who) && !order.is_confirmed()
+			{
 				count += 1;
 				orders_locked_collateral =
 					orders_locked_collateral.saturating_add(order.locked_collateral);
