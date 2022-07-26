@@ -297,9 +297,9 @@ pub(crate) fn cal_reward_after_deadline<T: Config<I>, I: 'static>(
 	total_reward: BalanceOf<T, I>,
 	reward_item: &mut RewardItem<T::AccountId, BalanceOf<T, I>>,
 ) {
-	// MessageRelayersRewardRatio total_reward => message relayer
+	// MessageRelayersRewardRatio total_reward => message_relayer
 	let message_reward = T::MessageRelayersRewardRatio::get() * total_reward;
-	// ConfirmRelayersRewardRatio total_reward => confirm relayer
+	// ConfirmRelayersRewardRatio total_reward => confirm_relayer
 	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * total_reward;
 
 	reward_item.to_message_relayer = Some((message_relayer_id.clone(), message_reward));
@@ -307,6 +307,10 @@ pub(crate) fn cal_reward_after_deadline<T: Config<I>, I: 'static>(
 }
 
 /// Slash the assigned relayer and emit the slash report.
+///
+/// fund_account refers to the user who pays the cross-chain fee to this account when creating an
+/// order. The slash part will be transferred to fund_account first, and then distributed to various
+/// relayers.
 pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 	order: &Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 	who: &T::AccountId,
