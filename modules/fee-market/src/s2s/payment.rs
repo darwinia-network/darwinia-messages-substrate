@@ -260,13 +260,13 @@ pub(crate) fn cal_rewards_before_deadline<T: Config<I>, I: 'static>(
 	let slot_relayer_reward = T::AssignedRelayersRewardRatio::get() * base_fee;
 	reward_item.to_slot_relayer = Some((slot_relayer_id.clone(), slot_relayer_reward));
 
-	let bridger_relayers_reward = base_fee.saturating_sub(slot_relayer_reward);
+	let message_and_confirm_reward = base_fee.saturating_sub(slot_relayer_reward);
 	// MessageRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee
 	// => message relayer
-	let message_reward = T::MessageRelayersRewardRatio::get() * bridger_relayers_reward;
+	let message_reward = T::MessageRelayersRewardRatio::get() * message_and_confirm_reward;
 	// ConfirmRelayersRewardRatio * (1 - AssignedRelayersRewardRatio) * base_fee
 	// => confirm relayer
-	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * bridger_relayers_reward;
+	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * message_and_confirm_reward;
 
 	reward_item.to_message_relayer = Some((message_relayer_id.clone(), message_reward));
 	reward_item.to_confirm_relayer = Some((confirm_relayer_id.clone(), confirm_reward));
