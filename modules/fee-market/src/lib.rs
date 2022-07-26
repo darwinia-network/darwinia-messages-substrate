@@ -462,11 +462,6 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		Self::assigned_relayers().and_then(|relayers| relayers.last().map(|r| r.fee))
 	}
 
-	/// Get order indexes in the storage
-	pub fn in_process_orders() -> Vec<(LaneId, MessageNonce)> {
-		Orders::<T, I>::iter().map(|(k, _v)| k).collect()
-	}
-
 	/// Get the relayer locked collateral value
 	pub fn relayer_locked_collateral(who: &T::AccountId) -> BalanceOf<T, I> {
 		RelayersMap::<T, I>::get(who).map_or(BalanceOf::<T, I>::zero(), |r| r.collateral)
