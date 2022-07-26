@@ -40,8 +40,12 @@ impl<T: Config<I>, I: 'static> OnMessageAccepted for FeeMarketMessageAcceptedHan
 				assigned_relayers.clone(),
 				T::Slot::get(),
 			);
+
 			// Store the create order
 			<Orders<T, I>>::insert((order.lane, order.message), order.clone());
+			// Once order is created, the assigned relayers's order capacity should reduce by one.
+			// Thus, the whole market needs to re-sort to generate new assigned relayers set.
+			let _ = Pallet::<T, I>::update_market(|| Ok(()), None);
 
 			let ids: Vec<T::AccountId> = assigned_relayers.iter().map(|r| r.id.clone()).collect();
 			Pallet::<T, I>::deposit_event(Event::OrderCreated(
@@ -72,6 +76,11 @@ impl<T: Config<I>, I: 'static> OnDeliveryConfirmed for FeeMarketMessageConfirmed
 						Some(order) => order.set_confirm_time(Some(now)),
 						None => {},
 					});
+
+					// Once order is confirmed, the assigned relayers's order capacity should
+					// increase by one. Thus, the whole market needs to re-sort to generate new
+					// assigned relayers set.
+					let _ = Pallet::<T, I>::update_market(|| Ok(()), None);
 				}
 			}
 		}
