@@ -145,24 +145,26 @@ where
 				let confirmed_at =
 					order.confirm_time.unwrap_or_else(|| frame_system::Pallet::<T>::block_number());
 
-				let mut total_reward = order.fee();
 				let mut reward_item = RewardItem::new();
 				match order.confirmed_assigned_relayer_info(confirmed_at) {
 					// The order has been confirmed at the first assigned relayers slot, there is
 					// only reward, no slash happens.The total_reward all comes from the cross-chain
 					// fee paid by the user.
-					Some((assigned_relayer_index, assigned_relayer_id, assigned_relayer_fee))
-						if assigned_relayer_index == 0 =>
-					{
+					Some((
+						confirmed_slot_relayer_index,
+						_confirmed_slot_relayer_id,
+						confirmed_slot_relayer_fee,
+					)) if confirmed_slot_relayer_index == 0 => {
 						let assigned_relayers_list: Vec<T::AccountId> =
 							order.assigned_relayers_slice().iter().map(|r| r.id.clone()).collect();
-						cal_rewards_before_deadline::<T, I>(
+
+						cal_order_reward_item::<T, I>(
 							&assigned_relayers_list,
 							&entry.relayer,
 							&confirm_relayer,
 							order.fee(),
+							Some(confirmed_slot_relayer_fee),
 							None,
-							Some(assigned_relayer_fee),
 							&mut reward_item,
 						);
 					},
@@ -172,13 +174,15 @@ where
 					// fixed percentage of locked collateral is deducted.
 					// The total_reward is the sum of the cross-chain fee paid by the user and the
 					// slash part.
-					Some((assigned_relayer_index, assigned_relayer_id, assigned_relayer_fee))
-						if assigned_relayer_index >= 1 =>
-					{
+					Some((
+						confirmed_slot_relayer_index,
+						_confirmed_slot_relayer_id,
+						confirmed_slot_relayer_fee,
+					)) if confirmed_slot_relayer_index >= 1 => {
 						let mut previous_assigned_relayers: Vec<T::AccountId> =
 							order.assigned_relayers_slice().iter().map(|r| r.id.clone()).collect();
 						let reward_assigned_relayers_list =
-							previous_assigned_relayers.split_off(assigned_relayer_index);
+							previous_assigned_relayers.split_off(confirmed_slot_relayer_index);
 
 						// Obtain the previous assigned relayers
 						// let previous_assigned_relayers = order
@@ -200,13 +204,13 @@ where
 							slash_part += amount;
 						}
 
-						cal_rewards_before_deadline::<T, I>(
+						cal_order_reward_item::<T, I>(
 							&reward_assigned_relayers_list,
 							&entry.relayer,
 							&confirm_relayer,
 							order.fee(),
+							Some(confirmed_slot_relayer_fee),
 							Some(slash_part),
-							Some(assigned_relayer_fee),
 							&mut reward_item,
 						);
 					},
@@ -251,13 +255,13 @@ where
 							total_slashed_amount += slashed_amount;
 						}
 
-						cal_rewards_before_deadline::<T, I>(
+						cal_order_reward_item::<T, I>(
 							&[],
 							&entry.relayer,
 							&confirm_relayer,
 							order.fee(),
-							Some(total_slashed_amount),
 							None,
+							Some(total_slashed_amount),
 							&mut reward_item,
 						);
 					},
@@ -280,63 +284,82 @@ where
 ///
 /// The total reward is the sum of the cross-chain fee paid by the user and the
 // slash part(If have).
-pub(crate) fn cal_rewards_before_deadline<T: Config<I>, I: 'static>(
-	assigned_relayers_list: &[T::AccountId],
-	message_relayer_id: &T::AccountId,
-	confirm_relayer_id: &T::AccountId,
-	cross_chain_message_fee: BalanceOf<T, I>,
-	slot_relayers_offensive_slash: Option<BalanceOf<T, I>>,
-	assigned_relayer_fee: Option<BalanceOf<T, I>>,
+pub(crate) fn cal_order_reward_item<T: Config<I>, I: 'static>(
+	reward_assigned_relayers_list: &[T::AccountId],
+	message_deliver_relayer_id: &T::AccountId,
+	message_confirm_relayer_id: &T::AccountId,
+	order_fee: BalanceOf<T, I>,
+	confirmed_slot_price: Option<BalanceOf<T, I>>,
+	other_assigned_relayers_slash: Option<BalanceOf<T, I>>,
 	reward_item: &mut RewardItem<T::AccountId, BalanceOf<T, I>>,
 ) {
-	match (assigned_relayer_fee, slash_and_calculate_rewards) {
-		(Some(assigned_relayer_fee), None) => {},
-		(None, Some(slash_and_calculate_rewards)) => {},
-		(Some(assigned_relayer_fee), Some(slash_and_calculate_rewards)) => {},
+	match (confirmed_slot_price, other_assigned_relayers_slash) {
+		// The order confirmed at the first slot
+		(Some(confirmed_slot_price), None) => {
+			let cross_chain_message_remaining_fee = order_fee.saturating_sub(confirmed_slot_price);
+			reward_item.to_treasury = Some(cross_chain_message_remaining_fee);
+
+			let reward_for_delivery_and_confirm = confirmed_slot_price;
+
+			// MessageRelayersRewardRatio * total_reward => message_relayer
+			let message_reward =
+				T::MessageRelayersRewardRatio::get() * reward_for_delivery_and_confirm;
+			// ConfirmRelayersRewardRatio * total_reward => confirm_relayer
+			let confirm_reward =
+				T::ConfirmRelayersRewardRatio::get() * reward_for_delivery_and_confirm;
+			reward_item.to_message_relayer =
+				Some((message_deliver_relayer_id.clone(), message_reward));
+			reward_item.to_confirm_relayer =
+				Some((message_confirm_relayer_id.clone(), confirm_reward));
+		},
+		// The order is confirmed not in the first slot, but not delayed.
+		(Some(confirmed_slot_price), Some(slash_and_calculate_rewards)) => {
+			let reward_for_delivery_and_confirm =
+				confirmed_slot_price.saturating_add(slash_and_calculate_rewards);
+
+			// MessageRelayersRewardRatio * total_reward => message_relayer
+			let message_reward =
+				T::MessageRelayersRewardRatio::get() * reward_for_delivery_and_confirm;
+			// ConfirmRelayersRewardRatio * total_reward => confirm_relayer
+			let confirm_reward =
+				T::ConfirmRelayersRewardRatio::get() * reward_for_delivery_and_confirm;
+			reward_item.to_message_relayer =
+				Some((message_deliver_relayer_id.clone(), message_reward));
+			reward_item.to_confirm_relayer =
+				Some((message_confirm_relayer_id.clone(), confirm_reward));
+
+			let cross_chain_message_remaining_fee = order_fee.saturating_sub(confirmed_slot_price);
+			let slots_relayers_guarding_rewards =
+				T::AssignedRelayersRewardRatio::get() * cross_chain_message_remaining_fee;
+			let each_relayers_reward = slots_relayers_guarding_rewards
+				.checked_div(&(reward_assigned_relayers_list.len() as u128).unique_saturated_into())
+				.unwrap();
+			for r in reward_assigned_relayers_list {
+				reward_item.to_assigned_relayers.insert(r.clone(), each_relayers_reward);
+			}
+
+			let to_treasury_reward =
+				cross_chain_message_remaining_fee.saturating_sub(slots_relayers_guarding_rewards);
+			reward_item.to_treasury = Some(to_treasury_reward);
+		},
+		// The order is delayed.
+		(None, Some(slash_and_calculate_rewards)) => {
+			let reward_for_delivery_and_confirm =
+				order_fee.saturating_add(slash_and_calculate_rewards);
+
+			let message_reward =
+				T::MessageRelayersRewardRatio::get() * reward_for_delivery_and_confirm;
+			// ConfirmRelayersRewardRatio * total_reward => confirm_relayer
+			let confirm_reward =
+				T::ConfirmRelayersRewardRatio::get() * reward_for_delivery_and_confirm;
+			reward_item.to_message_relayer =
+				Some((message_deliver_relayer_id.clone(), message_reward));
+			reward_item.to_confirm_relayer =
+				Some((message_confirm_relayer_id.clone(), confirm_reward));
+		},
 		_ => todo!(),
 	}
-	let mut cross_chain_message_remaining_fee =
-		cross_chain_message_fee.saturating_sub(assigned_relayer_fee.unwrap_or_default());
-	let slots_relayers_guarding_rewards =
-		T::AssignedRelayersRewardRatio::get() * cross_chain_message_remaining_fee;
-	let to_treasury_reward =
-		cross_chain_message_remaining_fee.saturating_sub(slots_relayers_guarding_rewards);
-	reward_item.to_treasury = Some(to_treasury_reward);
-
-	// First part
-	let each_relayers_reward = slots_relayers_guarding_rewards
-		.checked_div(&(assigned_relayers_list.len() as u128).unique_saturated_into())
-		.unwrap();
-	for r in assigned_relayers_list {
-		reward_item.to_assigned_relayers.insert(r.clone(), each_relayers_reward);
-	}
-
-	// Second part
-	let message_total_reward =
-		assigned_relayer_fee.saturating_add(slot_relayers_offensive_slash.unwrap_or_default());
-	// MessageRelayersRewardRatio * total_reward => message_relayer
-	let message_reward = T::MessageRelayersRewardRatio::get() * message_total_reward;
-	// ConfirmRelayersRewardRatio * total_reward => confirm_relayer
-	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * message_total_reward;
-
-	reward_item.to_message_relayer = Some((message_relayer_id.clone(), message_reward));
-	reward_item.to_confirm_relayer = Some((confirm_relayer_id.clone(), confirm_reward));
 }
-
-// pub(crate) fn cal_reward_after_deadline<T: Config<I>, I: 'static>(
-// 	message_relayer_id: &T::AccountId,
-// 	confirm_relayer_id: &T::AccountId,
-// 	total_reward: BalanceOf<T, I>,
-// 	reward_item: &mut RewardItem<T::AccountId, BalanceOf<T, I>>,
-// ) {
-// 	// MessageRelayersRewardRatio total_reward => message_relayer
-// 	let message_reward = T::MessageRelayersRewardRatio::get() * total_reward;
-// 	// ConfirmRelayersRewardRatio total_reward => confirm_relayer
-// 	let confirm_reward = T::ConfirmRelayersRewardRatio::get() * total_reward;
-
-// 	reward_item.to_message_relayer = Some((message_relayer_id.clone(), message_reward));
-// 	reward_item.to_confirm_relayer = Some((confirm_relayer_id.clone(), confirm_reward));
-// }
 
 /// Slash the assigned relayer and emit the slash report.
 ///
