@@ -54,7 +54,7 @@ use sp_runtime::{
 use crate::{
 	self as darwinia_fee_market,
 	s2s::{
-		payment::{slash_and_calculate_rewards, RewardsBook},
+		payment::{calculate_rewards, RewardsBook},
 		FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler,
 	},
 	*,
@@ -293,7 +293,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		relayer_fund_account: &AccountId,
 	) {
 		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
-			slash_and_calculate_rewards::<Test, ()>(
+			calculate_rewards::<Test, ()>(
 				lane_id,
 				message_relayers,
 				confirmation_relayer.clone(),
@@ -428,7 +428,7 @@ frame_support::parameter_types! {
 	pub const CollateralPerOrder: Balance = 100;
 	pub const Slot: u64 = 50;
 
-	pub const AssignedRelayersRewardRatio: Permill = Permill::from_percent(20);
+	pub const GuardingRelayersRewardRatio: Permill = Permill::from_percent(20);
 	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
 	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
 	pub const AssignedRelayerSlashRatio: Permill = Permill::from_percent(20);
@@ -451,11 +451,11 @@ impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 
 impl Config for Test {
 	type AssignedRelayerSlashRatio = AssignedRelayerSlashRatio;
-	type AssignedRelayersRewardRatio = AssignedRelayersRewardRatio;
 	type CollateralPerOrder = CollateralPerOrder;
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type Event = Event;
+	type GuardingRelayersRewardRatio = GuardingRelayersRewardRatio;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;

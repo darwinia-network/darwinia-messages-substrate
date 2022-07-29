@@ -82,7 +82,7 @@ pub struct Order<AccountId, BlockNumber, Balance> {
 impl<AccountId, BlockNumber, Balance> Order<AccountId, BlockNumber, Balance>
 where
 	AccountId: Clone,
-	BlockNumber: Copy + AtLeast32BitUnsigned,
+	BlockNumber: Copy + AtLeast32BitUnsigned + Default,
 	Balance: Copy + Default,
 {
 	pub fn new(
@@ -139,12 +139,13 @@ where
 		None
 	}
 
-	pub fn confirmed_assigned_relayer_info(
-		&self,
-		message_confirm_time: BlockNumber,
-	) -> Option<(usize, Balance)> {
+	pub fn confirmed_info(&self) -> Option<(usize, Balance)> {
+		// The confirm_time of the order is already set in the `OnDeliveryConfirmed`
+		// callback.And the callback was called as source chain received message
+		// delivery proof, before the reward payment.
+		let order_confirmed_time = self.confirm_time.unwrap_or_default();
 		for (index, assigned_relayer) in self.assigned_relayers.iter().enumerate() {
-			if assigned_relayer.valid_range.contains(&message_confirm_time) {
+			if assigned_relayer.valid_range.contains(&order_confirmed_time) {
 				return Some((index, assigned_relayer.fee));
 			}
 		}
@@ -176,7 +177,7 @@ pub struct AssignedRelayer<AccountId, BlockNumber, Balance> {
 }
 impl<AccountId, BlockNumber, Balance> AssignedRelayer<AccountId, BlockNumber, Balance>
 where
-	BlockNumber: Copy + AtLeast32BitUnsigned,
+	BlockNumber: Copy + AtLeast32BitUnsigned + Default,
 {
 	pub fn new(
 		id: AccountId,
@@ -202,7 +203,7 @@ pub struct SlashReport<AccountId, BlockNumber, Balance> {
 impl<AccountId, BlockNumber, Balance> SlashReport<AccountId, BlockNumber, Balance>
 where
 	AccountId: Clone,
-	BlockNumber: Copy + AtLeast32BitUnsigned,
+	BlockNumber: Copy + AtLeast32BitUnsigned + Default,
 	Balance: Copy + Default,
 {
 	pub fn new(
