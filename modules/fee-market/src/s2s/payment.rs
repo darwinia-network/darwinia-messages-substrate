@@ -178,7 +178,7 @@ where
 						let guarding_relayers_list = assigned_relayers.split_off(slot_index);
 
 						// Calculate the slash part
-						let mut slash_part = BalanceOf::<T, I>::zero();
+						let mut other_assigned_relayers_slash = BalanceOf::<T, I>::zero();
 						for r in assigned_relayers {
 							let amount = slash_assigned_relayer::<T, I>(
 								&order,
@@ -187,7 +187,7 @@ where
 								T::AssignedRelayerSlashRatio::get()
 									* Pallet::<T, I>::relayer_locked_collateral(&r),
 							);
-							slash_part += amount;
+							other_assigned_relayers_slash += amount;
 						}
 
 						cal_order_reward_item::<T, I>(
@@ -197,7 +197,7 @@ where
 							&entry.relayer, // message delivery relayer
 							&confirm_relayer,
 							&guarding_relayers_list,
-							Some(slash_part),
+							Some(other_assigned_relayers_slash),
 						);
 					},
 					// When the order is delayed and confirmed, all assigned relayers responsible
@@ -207,14 +207,14 @@ where
 					// The total_reward is the sum of the cross-chain fee paid by the user and the
 					// slash part.
 					_ => {
-						let mut total_slashed_amount = BalanceOf::<T, I>::zero();
+						let mut other_assigned_relayers_slash = BalanceOf::<T, I>::zero();
 						for assigned_relayer in order.assigned_relayers_slice() {
 							// 1. For the fixed part
-							let mut total_slash_amount = T::AssignedRelayerSlashRatio::get()
+							let mut slash_amount = T::AssignedRelayerSlashRatio::get()
 								* Pallet::<T, I>::relayer_locked_collateral(&assigned_relayer.id);
 
 							// 2. For the dynamic part
-							total_slash_amount += T::Slasher::cal_slash_amount(
+							slash_amount += T::Slasher::cal_slash_amount(
 								order.locked_collateral,
 								order.comfirm_delay().unwrap_or_default(),
 							);
@@ -222,23 +222,22 @@ where
 							// The total_slash_amount can't be greater than the slash_protect.
 							if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect()
 							{
-								total_slash_amount =
-									sp_std::cmp::min(total_slash_amount, slash_protect);
+								// slash_amount = sp_std::cmp::min(slash_amount, slash_protect);
+								slash_amount = slash_amount.min(slash_protect);
 							}
 
 							// The total_slash_amount can't be greater than the locked_collateral.
 							let locked_collateral =
 								Pallet::<T, I>::relayer_locked_collateral(&assigned_relayer.id);
-							total_slash_amount =
-								sp_std::cmp::min(total_slash_amount, locked_collateral);
+							slash_amount = sp_std::cmp::min(slash_amount, locked_collateral);
 
-							let slashed_amount = slash_assigned_relayer::<T, I>(
+							let amount = slash_assigned_relayer::<T, I>(
 								&order,
 								&assigned_relayer.id,
 								relayer_fund_account,
-								total_slash_amount,
+								slash_amount,
 							);
-							total_slashed_amount += slashed_amount;
+							other_assigned_relayers_slash += amount;
 						}
 
 						cal_order_reward_item::<T, I>(
@@ -248,7 +247,7 @@ where
 							&entry.relayer, // message delivery relayer
 							&confirm_relayer,
 							&[], // empty list, since the order is out of slots.
-							Some(total_slashed_amount),
+							Some(other_assigned_relayers_slash),
 						);
 					},
 				}
@@ -267,8 +266,6 @@ where
 }
 
 /// Calculate the reward item for the order that has been confirmed on-time or delay.
-///
-/// For the on-time order, the reward item is calculated as follows:
 pub(crate) fn cal_order_reward_item<T: Config<I>, I: 'static>(
 	reward_item: &mut RewardItem<T::AccountId, BalanceOf<T, I>>,
 	order_fee: BalanceOf<T, I>,
@@ -449,12 +446,12 @@ impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
 	}
 
 	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
-		// if let Some((id, reward)) = item.to_assigned_relayers {
-		// 	self.assigned_relayers_sum
-		// 		.entry(id)
-		// 		.and_modify(|r| *r = r.saturating_add(reward))
-		// 		.or_insert(reward);
-		// }
+		for (k, v) in item.to_assigned_relayers.iter() {
+			self.assigned_relayers_sum
+				.entry(k.clone())
+				.and_modify(|r| *r = r.saturating_add(v.clone()))
+				.or_insert(*v);
+		}
 
 		if let Some(reward) = item.to_treasury {
 			self.treasury_sum = self.treasury_sum.saturating_add(reward);
