@@ -106,7 +106,7 @@ where
 			for (k, v) in item.to_assigned_relayers.iter() {
 				assigned_relayers_sum
 					.entry(k.clone())
-					.and_modify(|r| *r = r.saturating_add(v.clone()))
+					.and_modify(|r| *r = r.saturating_add(*v))
 					.or_insert(*v);
 			}
 
@@ -126,17 +126,17 @@ where
 			}
 		}
 
-		// Pay confirmation relayer rewards
+		// Pay rewards to the message confirm relayer
 		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_sum);
-		// Pay messages relayers rewards
+		// Pay rewards to the messages deliver relayers
 		for (relayer, reward) in deliver_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
-		// Pay assign relayer reward
+		// Pay rewards to the assigned relayers
 		for (relayer, reward) in assigned_relayers_sum {
 			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
 		}
-		// Pay treasury_sum reward
+		// Pay to treasury
 		do_reward::<T, I>(
 			relayer_fund_account,
 			&T::TreasuryPalletId::get().into_account_truncating(),
@@ -232,9 +232,10 @@ where
 							order_remain_fee = order_remain_fee.saturating_sub(average_reward);
 						}
 
-						let delivery_and_confirm_reward =
-							slot_price.saturating_add(other_assigned_relayers_slash);
-						(delivery_and_confirm_reward, Some(order_remain_fee))
+						(
+							slot_price.saturating_add(other_assigned_relayers_slash),
+							Some(order_remain_fee),
+						)
 					},
 					// When the order is confirmed delayer, all assigned relayers will be slashed in
 					// this case. So, no confirmed slot price here. All reward will distribute to
@@ -327,7 +328,7 @@ pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 		amount,
 		ExistenceRequirement::AllowDeath,
 	);
-	let report = SlashReport::new(&order, who.clone(), amount);
+	let report = SlashReport::new(order, who.clone(), amount);
 	match pay_result {
 		Ok(_) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(
@@ -390,47 +391,3 @@ impl<AccountId, Balance> RewardItem<AccountId, Balance> {
 		}
 	}
 }
-
-// /// Record the calculation rewards result
-// #[derive(Clone, Debug, Eq, PartialEq, TypeInfo)]
-// pub struct RewardsBook<T: Config<I>, I: 'static> {
-// 	pub deliver_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
-// 	pub confirm_sum: BalanceOf<T, I>,
-// 	pub assigned_relayers_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
-// 	pub treasury_sum: BalanceOf<T, I>,
-// }
-
-// impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
-// 	fn new() -> Self {
-// 		Self {
-// 			deliver_sum: BTreeMap::new(),
-// 			confirm_sum: BalanceOf::<T, I>::zero(),
-// 			assigned_relayers_sum: BTreeMap::new(),
-// 			treasury_sum: BalanceOf::<T, I>::zero(),
-// 		}
-// 	}
-
-// 	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
-// 		for (k, v) in item.to_assigned_relayers.iter() {
-// 			self.assigned_relayers_sum
-// 				.entry(k.clone())
-// 				.and_modify(|r| *r = r.saturating_add(v.clone()))
-// 				.or_insert(*v);
-// 		}
-
-// 		if let Some(reward) = item.to_treasury {
-// 			self.treasury_sum = self.treasury_sum.saturating_add(reward);
-// 		}
-
-// 		if let Some((id, reward)) = item.to_message_relayer {
-// 			self.deliver_sum
-// 				.entry(id)
-// 				.and_modify(|r| *r = r.saturating_add(reward))
-// 				.or_insert(reward);
-// 		}
-
-// 		if let Some((_id, reward)) = item.to_confirm_relayer {
-// 			self.confirm_sum = self.confirm_sum.saturating_add(reward);
-// 		}
-// 	}
-// }
