@@ -275,7 +275,14 @@ pub(crate) fn cal_order_reward_item<T: Config<I>, I: 'static>(
 	guarding_relayers_list: &[T::AccountId],
 	other_assigned_relayers_slash: Option<BalanceOf<T, I>>,
 ) {
-	let (delivery_and_confirm_reward, guarding_rewards, treasury_rewards) =
+	let average_guarding_reward_per_relayer =
+		|guarding_rewards: BalanceOf<T, I>| -> BalanceOf<T, I> {
+			guarding_rewards
+				.checked_div(&(guarding_relayers_list.len()).unique_saturated_into())
+				.unwrap_or_default()
+		};
+
+	let (delivery_and_confirm_reward, treasury_rewards) =
 		match (confirmed_slot_price, other_assigned_relayers_slash) {
 			// When the order is confirmed at the first slot, no assigned relayers will be not
 			// slashed in this case. The total reward to the message deliver relayer and message
@@ -284,11 +291,16 @@ pub(crate) fn cal_order_reward_item<T: Config<I>, I: 'static>(
 			// share the guarding_rewards equally. Finally, the remaining the order_fee goes to the
 			// treasury.
 			(Some(confirmed_slot_price), None) => {
-				let order_remaining_fee = order_fee.saturating_sub(confirmed_slot_price);
-				let guarding_rewards = T::AssignedRelayersRewardRatio::get() * order_remaining_fee;
-				let treasury_reward = order_remaining_fee.saturating_sub(guarding_rewards);
+				let mut order_remaining_fee = order_fee.saturating_sub(confirmed_slot_price);
 
-				(confirmed_slot_price, Some(guarding_rewards), Some(treasury_reward))
+				let guarding_rewards = T::AssignedRelayersRewardRatio::get() * order_remaining_fee;
+				let average_reward = average_guarding_reward_per_relayer(guarding_rewards);
+				for id in guarding_relayers_list {
+					reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
+					order_remaining_fee = order_remaining_fee.saturating_sub(average_reward);
+				}
+
+				(confirmed_slot_price, Some(order_remaining_fee))
 			},
 			// When the order is confirmed not at the first slot but within the deadline, some other
 			// assigned relayers will be slashed in this case. The total reward to the message
@@ -300,11 +312,16 @@ pub(crate) fn cal_order_reward_item<T: Config<I>, I: 'static>(
 				let delivery_and_confirm_reward =
 					confirmed_slot_price.saturating_add(other_assigned_relayers_slash);
 
-				let order_remaining_fee = order_fee.saturating_sub(confirmed_slot_price);
-				let guarding_rewards = T::AssignedRelayersRewardRatio::get() * order_remaining_fee;
-				let treasury_reward = order_remaining_fee.saturating_sub(guarding_rewards);
+				let mut order_remaining_fee = order_fee.saturating_sub(confirmed_slot_price);
 
-				(delivery_and_confirm_reward, Some(guarding_rewards), Some(treasury_reward))
+				let guarding_rewards = T::AssignedRelayersRewardRatio::get() * order_remaining_fee;
+				let average_reward = average_guarding_reward_per_relayer(guarding_rewards);
+				for id in guarding_relayers_list {
+					reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
+					order_remaining_fee = order_remaining_fee.saturating_sub(average_reward);
+				}
+
+				(delivery_and_confirm_reward, Some(order_remaining_fee))
 			},
 			// When the order is confirmed delayer, all assigned relayers will be slashed in this
 			// case. So, no confirmed slot price here. All reward will distribute to the message
@@ -313,20 +330,11 @@ pub(crate) fn cal_order_reward_item<T: Config<I>, I: 'static>(
 				let delivery_and_confirm_reward =
 					order_fee.saturating_add(other_assigned_relayers_slash);
 
-				(delivery_and_confirm_reward, None, None)
+				(delivery_and_confirm_reward, None)
 			},
 			// This will never happen.
-			_ => (BalanceOf::<T, I>::zero(), None, None),
+			_ => (BalanceOf::<T, I>::zero(), None),
 		};
-
-	if let Some(guarding_rewards) = guarding_rewards {
-		let average_reward = guarding_rewards
-			.checked_div(&(guarding_relayers_list.len()).unique_saturated_into())
-			.unwrap_or_default();
-		for id in guarding_relayers_list {
-			reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
-		}
-	}
 
 	if let Some(treasury_rewards) = treasury_rewards {
 		reward_item.to_treasury = Some(treasury_rewards);
