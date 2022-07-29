@@ -142,10 +142,10 @@ where
 	pub fn confirmed_assigned_relayer_info(
 		&self,
 		message_confirm_time: BlockNumber,
-	) -> Option<(usize, AccountId, Balance)> {
+	) -> Option<(usize, Balance)> {
 		for (index, assigned_relayer) in self.assigned_relayers.iter().enumerate() {
 			if assigned_relayer.valid_range.contains(&message_confirm_time) {
-				return Some((index, assigned_relayer.id.clone(), assigned_relayer.fee));
+				return Some((index, assigned_relayer.fee));
 			}
 		}
 		None
