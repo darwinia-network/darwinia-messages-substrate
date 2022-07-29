@@ -275,10 +275,7 @@ where
 							other_assigned_relayers_slash += amount;
 						}
 
-						let delivery_and_confirm_reward =
-							order.fee().saturating_add(other_assigned_relayers_slash);
-
-						(delivery_and_confirm_reward, None)
+						(order.fee().saturating_add(other_assigned_relayers_slash), None)
 					},
 				};
 
