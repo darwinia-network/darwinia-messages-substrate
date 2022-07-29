@@ -428,7 +428,7 @@ frame_support::parameter_types! {
 	pub const CollateralPerOrder: Balance = 100;
 	pub const Slot: u64 = 50;
 
-	pub const GuardingRelayersRewardRatio: Permill = Permill::from_percent(20);
+	pub const GuardRelayersRewardRatio: Permill = Permill::from_percent(20);
 	pub const MessageRelayersRewardRatio: Permill = Permill::from_percent(80);
 	pub const ConfirmRelayersRewardRatio: Permill = Permill::from_percent(20);
 	pub const AssignedRelayerSlashRatio: Permill = Permill::from_percent(20);
@@ -455,7 +455,7 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type Event = Event;
-	type GuardingRelayersRewardRatio = GuardingRelayersRewardRatio;
+	type GuardRelayersRewardRatio = GuardRelayersRewardRatio;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;

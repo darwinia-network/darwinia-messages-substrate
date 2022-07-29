@@ -146,21 +146,20 @@ where
 					// not slashed in this case. The total reward to the message deliver relayer and
 					// message confirm relayer is the confirmed slot price(first slot price), the
 					// guarding relayers would be rewarded with the 20% remaining order_fee, and all
-					// the guarding relayers share the guarding_rewards equally. Finally, the
+					// the guarding relayers share the guard_rewards equally. Finally, the
 					// remaining the order_fee goes to the treasury.
 					Some((slot_index, slot_price)) if slot_index == 0 => {
 						let mut order_remain_fee = order.fee().saturating_sub(slot_price);
-						let guarding_rewards =
-							T::GuardingRelayersRewardRatio::get() * order_remain_fee;
+						let guard_rewards = T::GuardRelayersRewardRatio::get() * order_remain_fee;
 
 						// All assigned relayers successfully guarded in this case, no slash
 						// happens, just calculate the guarding relayers rewards.
-						let guarding_relayers_list: Vec<_> =
+						let guard_relayers_list: Vec<_> =
 							order.assigned_relayers_slice().iter().map(|r| r.id.clone()).collect();
-						let average_reward = guarding_rewards
-							.checked_div(&(guarding_relayers_list.len()).unique_saturated_into())
+						let average_reward = guard_rewards
+							.checked_div(&(guard_relayers_list.len()).unique_saturated_into())
 							.unwrap_or_default();
-						for id in guarding_relayers_list {
+						for id in guard_relayers_list {
 							reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
 							order_remain_fee = order_remain_fee.saturating_sub(average_reward);
 						}
@@ -172,18 +171,17 @@ where
 					// to the message deliver relayer and message confirm relayer is the confirmed
 					// slot price(first slot price) + other_assigned_relayers_slash part, the
 					// guarding relayers would be rewarded with the 20% remaining order_fee, and all
-					// the guarding relayers share the guarding_rewards equally. Finally, the
+					// the guarding relayers share the guard_rewards equally. Finally, the
 					// remaining the order_fee goes to the treasury.
 					Some((slot_index, slot_price)) if slot_index >= 1 => {
 						let mut order_remain_fee = order.fee().saturating_sub(slot_price);
-						let guarding_rewards =
-							T::GuardingRelayersRewardRatio::get() * order_remain_fee;
+						let guard_rewards = T::GuardRelayersRewardRatio::get() * order_remain_fee;
 
 						// Since part of the assigned relayers successfully guarded, calculate the
 						// guarding relayers slash part first.
-						let mut slashed_relayers_list: Vec<T::AccountId> =
+						let mut slashed_relayers_list: Vec<_> =
 							order.assigned_relayers_slice().iter().map(|r| r.id.clone()).collect();
-						let guarding_relayers_list = slashed_relayers_list.split_off(slot_index);
+						let guard_relayers_list = slashed_relayers_list.split_off(slot_index);
 
 						// Calculate the assigned relayers slash part
 						let mut other_assigned_relayers_slash = BalanceOf::<T, I>::zero();
@@ -199,10 +197,10 @@ where
 						}
 
 						// Calculate the guarding relayers rewards
-						let average_reward = guarding_rewards
-							.checked_div(&(guarding_relayers_list.len()).unique_saturated_into())
+						let average_reward = guard_rewards
+							.checked_div(&(guard_relayers_list.len()).unique_saturated_into())
 							.unwrap_or_default();
-						for id in guarding_relayers_list {
+						for id in guard_relayers_list {
 							reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
 							order_remain_fee = order_remain_fee.saturating_sub(average_reward);
 						}

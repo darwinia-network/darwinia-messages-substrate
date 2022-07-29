@@ -77,7 +77,7 @@ pub mod pallet {
 
 		/// Reward parameters
 		#[pallet::constant]
-		type GuardingRelayersRewardRatio: Get<Permill>;
+		type GuardRelayersRewardRatio: Get<Permill>;
 		#[pallet::constant]
 		type MessageRelayersRewardRatio: Get<Permill>;
 		#[pallet::constant]
