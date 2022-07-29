@@ -90,14 +90,41 @@ where
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &T::AccountId,
 	) {
-		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
-			calculate_rewards::<T, I>(
-				lane_id,
-				messages_relayers,
-				confirmation_relayer.clone(),
-				received_range,
-				relayer_fund_account,
-			);
+		let rewards_items = calculate_rewards::<T, I>(
+			lane_id,
+			messages_relayers,
+			confirmation_relayer.clone(),
+			received_range,
+			relayer_fund_account,
+		);
+
+		let mut deliver_sum = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
+		let mut confirm_sum = BalanceOf::<T, I>::zero();
+		let mut assigned_relayers_sum = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
+		let mut treasury_sum = BalanceOf::<T, I>::zero();
+		for item in rewards_items {
+			for (k, v) in item.to_assigned_relayers.iter() {
+				assigned_relayers_sum
+					.entry(k.clone())
+					.and_modify(|r| *r = r.saturating_add(v.clone()))
+					.or_insert(*v);
+			}
+
+			if let Some(reward) = item.to_treasury {
+				treasury_sum = treasury_sum.saturating_add(reward);
+			}
+
+			if let Some((id, reward)) = item.to_message_relayer {
+				deliver_sum
+					.entry(id)
+					.and_modify(|r| *r = r.saturating_add(reward))
+					.or_insert(reward);
+			}
+
+			if let Some((_id, reward)) = item.to_confirm_relayer {
+				confirm_sum = confirm_sum.saturating_add(reward);
+			}
+		}
 
 		// Pay confirmation relayer rewards
 		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_sum);
@@ -126,12 +153,12 @@ pub fn calculate_rewards<T, I>(
 	confirm_relayer: T::AccountId,
 	received_range: &RangeInclusive<MessageNonce>,
 	relayer_fund_account: &T::AccountId,
-) -> RewardsBook<T, I>
+) -> Vec<RewardItem<T::AccountId, BalanceOf<T, I>>>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
 {
-	let mut rewards_book = RewardsBook::new();
+	let mut rewards_items = Vec::new();
 	for entry in messages_relayers {
 		let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
 		let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
@@ -269,11 +296,11 @@ where
 					reward_item.clone(),
 				));
 
-				rewards_book.add_reward_item(reward_item);
+				rewards_items.push(reward_item);
 			}
 		}
 	}
-	rewards_book
+	rewards_items
 }
 
 /// Slash the assigned relayer and emit the slash report.
@@ -364,46 +391,46 @@ impl<AccountId, Balance> RewardItem<AccountId, Balance> {
 	}
 }
 
-/// Record the calculation rewards result
-#[derive(Clone, Debug, Eq, PartialEq, TypeInfo)]
-pub struct RewardsBook<T: Config<I>, I: 'static> {
-	pub deliver_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
-	pub confirm_sum: BalanceOf<T, I>,
-	pub assigned_relayers_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
-	pub treasury_sum: BalanceOf<T, I>,
-}
+// /// Record the calculation rewards result
+// #[derive(Clone, Debug, Eq, PartialEq, TypeInfo)]
+// pub struct RewardsBook<T: Config<I>, I: 'static> {
+// 	pub deliver_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+// 	pub confirm_sum: BalanceOf<T, I>,
+// 	pub assigned_relayers_sum: BTreeMap<T::AccountId, BalanceOf<T, I>>,
+// 	pub treasury_sum: BalanceOf<T, I>,
+// }
 
-impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
-	fn new() -> Self {
-		Self {
-			deliver_sum: BTreeMap::new(),
-			confirm_sum: BalanceOf::<T, I>::zero(),
-			assigned_relayers_sum: BTreeMap::new(),
-			treasury_sum: BalanceOf::<T, I>::zero(),
-		}
-	}
+// impl<T: Config<I>, I: 'static> RewardsBook<T, I> {
+// 	fn new() -> Self {
+// 		Self {
+// 			deliver_sum: BTreeMap::new(),
+// 			confirm_sum: BalanceOf::<T, I>::zero(),
+// 			assigned_relayers_sum: BTreeMap::new(),
+// 			treasury_sum: BalanceOf::<T, I>::zero(),
+// 		}
+// 	}
 
-	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
-		for (k, v) in item.to_assigned_relayers.iter() {
-			self.assigned_relayers_sum
-				.entry(k.clone())
-				.and_modify(|r| *r = r.saturating_add(v.clone()))
-				.or_insert(*v);
-		}
+// 	fn add_reward_item(&mut self, item: RewardItem<T::AccountId, BalanceOf<T, I>>) {
+// 		for (k, v) in item.to_assigned_relayers.iter() {
+// 			self.assigned_relayers_sum
+// 				.entry(k.clone())
+// 				.and_modify(|r| *r = r.saturating_add(v.clone()))
+// 				.or_insert(*v);
+// 		}
 
-		if let Some(reward) = item.to_treasury {
-			self.treasury_sum = self.treasury_sum.saturating_add(reward);
-		}
+// 		if let Some(reward) = item.to_treasury {
+// 			self.treasury_sum = self.treasury_sum.saturating_add(reward);
+// 		}
 
-		if let Some((id, reward)) = item.to_message_relayer {
-			self.deliver_sum
-				.entry(id)
-				.and_modify(|r| *r = r.saturating_add(reward))
-				.or_insert(reward);
-		}
+// 		if let Some((id, reward)) = item.to_message_relayer {
+// 			self.deliver_sum
+// 				.entry(id)
+// 				.and_modify(|r| *r = r.saturating_add(reward))
+// 				.or_insert(reward);
+// 		}
 
-		if let Some((_id, reward)) = item.to_confirm_relayer {
-			self.confirm_sum = self.confirm_sum.saturating_add(reward);
-		}
-	}
-}
+// 		if let Some((_id, reward)) = item.to_confirm_relayer {
+// 			self.confirm_sum = self.confirm_sum.saturating_add(reward);
+// 		}
+// 	}
+// }

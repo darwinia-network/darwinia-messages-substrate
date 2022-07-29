@@ -54,8 +54,8 @@ use sp_runtime::{
 use crate::{
 	self as darwinia_fee_market,
 	s2s::{
-		payment::{calculate_rewards, RewardsBook},
-		FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler,
+		payment::calculate_rewards, FeeMarketMessageAcceptedHandler,
+		FeeMarketMessageConfirmedHandler,
 	},
 	*,
 };
@@ -287,24 +287,46 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 
 	fn pay_relayers_rewards(
 		lane_id: LaneId,
-		message_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
+		messages_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
 		confirmation_relayer: &AccountId,
 		received_range: &RangeInclusive<MessageNonce>,
 		relayer_fund_account: &AccountId,
 	) {
-		let RewardsBook { deliver_sum, confirm_sum, assigned_relayers_sum, treasury_sum } =
-			calculate_rewards::<Test, ()>(
-				lane_id,
-				message_relayers,
-				confirmation_relayer.clone(),
-				received_range,
-				relayer_fund_account,
-			);
+		let rewards_items = calculate_rewards::<Test, ()>(
+			lane_id,
+			messages_relayers,
+			confirmation_relayer.clone(),
+			received_range,
+			relayer_fund_account,
+		);
 
-		println!("bear: --- deliver_sum: {:?}", deliver_sum);
-		println!("bear: --- confirm_sum: {:?}", confirm_sum);
-		println!("bear: --- assigned_relayers_sum: {:?}", assigned_relayers_sum);
-		println!("bear: --- treasury_sum: {:?}", treasury_sum);
+		let mut deliver_sum = BTreeMap::<AccountId, Balance>::new();
+		let mut confirm_sum = Balance::zero();
+		let mut assigned_relayers_sum = BTreeMap::<AccountId, Balance>::new();
+		let mut treasury_sum = Balance::zero();
+		for item in rewards_items {
+			for (k, v) in item.to_assigned_relayers.iter() {
+				assigned_relayers_sum
+					.entry(k.clone())
+					.and_modify(|r| *r = r.saturating_add(v.clone()))
+					.or_insert(*v);
+			}
+
+			if let Some(reward) = item.to_treasury {
+				treasury_sum = treasury_sum.saturating_add(reward);
+			}
+
+			if let Some((id, reward)) = item.to_message_relayer {
+				deliver_sum
+					.entry(id)
+					.and_modify(|r| *r = r.saturating_add(reward))
+					.or_insert(reward);
+			}
+
+			if let Some((_id, reward)) = item.to_confirm_relayer {
+				confirm_sum = confirm_sum.saturating_add(reward);
+			}
+		}
 
 		let confimation_key = (b":relayer-reward:", confirmation_relayer, confirm_sum).encode();
 		frame_support::storage::unhashed::put(&confimation_key, &true);
