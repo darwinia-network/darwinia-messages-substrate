@@ -903,9 +903,9 @@ fn test_payment_cal_rewards_normally_single_message() {
 fn test_payment_cal_rewards_normally_multi_message() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(2);
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, Some(30));
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(2), 110, Some(50));
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 120, Some(100));
+		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(5), 300, Some(30));
+		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(6), 300, Some(50));
+		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(7), 300, Some(100));
 
 		// Send message
 		let market_fee = FeeMarket::market_fee().unwrap();
@@ -916,7 +916,7 @@ fn test_payment_cal_rewards_normally_multi_message() {
 		// Receive delivery message proof
 		System::set_block_number(4); // confirmed at block 4, the first slot
 		assert_ok!(Messages::receive_messages_delivery_proof(
-			Origin::signed(5),
+			Origin::signed(1),
 			TestMessagesDeliveryProof(Ok((
 				TEST_LANE_ID,
 				InboundLaneData {
@@ -937,18 +937,18 @@ fn test_payment_cal_rewards_normally_multi_message() {
 		));
 
 		// Rewards order1 Analysis(The same with order2):
-		//  1. The order's assigned_relayers: [(1, 30, 2-52),(2, 50, 52-102),(3, 100, 102-152)]
+		//  1. The order's assigned_relayers: [(5, 30, 2-52),(6, 50, 52-102),(7, 100, 102-152)]
 		//  2. The order's fee: 100
 		// For message delivery relayer(id=100): 30 * 80% = 24
-		// For message confirm relayer(id=5): 30 * 20% = 6
-		// For each assigned_relayer(id=1, 2, 3): (100 - 30) * 20% / 3 = 4
+		// For message confirm relayer(id=1): 30 * 20% = 6
+		// For each assigned_relayer(id=5, 6, 7): (100 - 30) * 20% / 3 = 4
 		// For treasury: 100 - (24 + 6) - (4 * 3) = 58
 		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 116));
-		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 8));
-		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 8));
-		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(3, 8));
-		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 12));
+		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 8));
+		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(6, 8));
+		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(7, 8));
+		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 12));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 24));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_B, 24));
 	});
