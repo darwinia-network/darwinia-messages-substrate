@@ -69,9 +69,6 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinimumRelayFee: Get<BalanceOf<Self, I>>;
 		/// The collateral relayer need to lock for each order.
-		///
-		/// This also represents the maximum slash value for a single delayed order.
-		/// Please note that if this value is set to zero the fee market will be suspended.
 		#[pallet::constant]
 		type CollateralPerOrder: Get<BalanceOf<Self, I>>;
 		/// The slot times set
@@ -80,7 +77,7 @@ pub mod pallet {
 
 		/// Reward parameters
 		#[pallet::constant]
-		type DutyRelayersRewardRatio: Get<Permill>;
+		type GuardRelayersRewardRatio: Get<Permill>;
 		#[pallet::constant]
 		type MessageRelayersRewardRatio: Get<Permill>;
 		#[pallet::constant]
@@ -506,13 +503,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 
 	fn collateral_to_order_capacity(collateral: BalanceOf<T, I>) -> u32 {
-		let collateral_per_order = T::CollateralPerOrder::get();
-
-		if collateral_per_order.is_zero() {
-			0
-		} else {
-			(collateral / collateral_per_order).saturated_into::<u32>()
-		}
+		(collateral / T::CollateralPerOrder::get()).saturated_into::<u32>()
 	}
 }
 
