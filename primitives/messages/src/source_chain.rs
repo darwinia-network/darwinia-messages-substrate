@@ -150,7 +150,7 @@ pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
 }
 
 /// Send message artifacts.
-#[derive(RuntimeDebug, PartialEq)]
+#[derive(Eq, RuntimeDebug, PartialEq)]
 pub struct SendMessageArtifacts {
 	/// Nonce of the message.
 	pub nonce: MessageNonce,
@@ -175,7 +175,7 @@ pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
 }
 
 /// Bridge that does nothing when message is being sent.
-#[derive(RuntimeDebug, PartialEq)]
+#[derive(Eq, RuntimeDebug, PartialEq)]
 pub struct NoopMessagesBridge;
 
 impl<SenderOrigin, AccountId, Balance, Payload>
