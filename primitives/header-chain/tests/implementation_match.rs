@@ -20,7 +20,6 @@
 //! Some of tests in this module may partially duplicate tests from `justification.rs`,
 //! but their purpose is different.
 
-use assert_matches::assert_matches;
 use bp_header_chain::justification::{verify_justification, Error, GrandpaJustification};
 use bp_test_utils::{
 	header_id, make_justification_for_header, signed_precommit, test_header, Account,
@@ -127,14 +126,15 @@ fn same_result_when_precommit_target_has_lower_number_than_commit_target() {
 		Err(Error::PrecommitIsNotCommitDescendant),
 	);
 	// original implementation returns empty GHOST
-	assert_matches!(
+	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
+	assert_eq!(
 		finality_grandpa::validate_commit(
 			&justification.commit,
 			&full_voter_set(),
 			&AncestryChain::new(&justification.votes_ancestries),
 		)
-		.map(|result| result.ghost().cloned()),
-		Ok(None)
+		.map(|result| result.is_valid()),
+		Ok(false)
 	);
 }
 
@@ -159,14 +159,15 @@ fn same_result_when_precommit_target_is_not_descendant_of_commit_target() {
 		Err(Error::PrecommitIsNotCommitDescendant),
 	);
 	// original implementation returns empty GHOST
-	assert_matches!(
+	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
+	assert_eq!(
 		finality_grandpa::validate_commit(
 			&justification.commit,
 			&full_voter_set(),
 			&AncestryChain::new(&justification.votes_ancestries),
 		)
-		.map(|result| result.ghost().cloned()),
-		Ok(None)
+		.map(|result| result.is_valid()),
+		Ok(false)
 	);
 }
 
@@ -189,14 +190,15 @@ fn same_result_when_justification_contains_duplicate_vote() {
 		Ok(()),
 	);
 	// original implementation returns non-empty GHOST
-	assert_matches!(
+	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
+	assert_eq!(
 		finality_grandpa::validate_commit(
 			&justification.commit,
 			&full_voter_set(),
 			&AncestryChain::new(&justification.votes_ancestries),
 		)
-		.map(|result| result.ghost().cloned()),
-		Ok(Some(_))
+		.map(|result| result.is_valid()),
+		Ok(false)
 	);
 }
 
@@ -223,14 +225,15 @@ fn same_result_when_authority_equivocates_once_in_a_round() {
 		Ok(()),
 	);
 	// original implementation returns non-empty GHOST
-	assert_matches!(
+	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
+	assert_eq!(
 		finality_grandpa::validate_commit(
 			&justification.commit,
 			&full_voter_set(),
 			&AncestryChain::new(&justification.votes_ancestries),
 		)
-		.map(|result| result.ghost().cloned()),
-		Ok(Some(_))
+		.map(|result| result.is_valid()),
+		Ok(false)
 	);
 }
 
@@ -267,14 +270,15 @@ fn same_result_when_authority_equivocates_twice_in_a_round() {
 		Ok(()),
 	);
 	// original implementation returns non-empty GHOST
-	assert_matches!(
+	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
+	assert_eq!(
 		finality_grandpa::validate_commit(
 			&justification.commit,
 			&full_voter_set(),
 			&AncestryChain::new(&justification.votes_ancestries),
 		)
-		.map(|result| result.ghost().cloned()),
-		Ok(Some(_))
+		.map(|result| result.is_valid()),
+		Ok(false)
 	);
 }
 
@@ -300,13 +304,14 @@ fn same_result_when_there_are_not_enough_cumulative_weight_to_finalize_commit_ta
 		Err(Error::TooLowCumulativeWeight),
 	);
 	// original implementation returns empty GHOST
-	assert_matches!(
+	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
+	assert_eq!(
 		finality_grandpa::validate_commit(
 			&justification.commit,
 			&full_voter_set(),
 			&AncestryChain::new(&justification.votes_ancestries),
 		)
-		.map(|result| result.ghost().cloned()),
-		Ok(None)
+		.map(|result| result.is_valid()),
+		Ok(false)
 	);
 }
