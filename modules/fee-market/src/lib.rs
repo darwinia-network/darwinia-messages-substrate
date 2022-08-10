@@ -503,7 +503,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 
 	fn collateral_to_order_capacity(collateral: BalanceOf<T, I>) -> u32 {
-		(collateral / T::CollateralPerOrder::get()).saturated_into::<u32>()
+		// If the `CollateralPerOrder` is zero, the maximum order capacity is `collateral`.
+		(collateral / T::CollateralPerOrder::get().min(1)).saturated_into::<u32>()
 	}
 }
 
