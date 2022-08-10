@@ -268,7 +268,7 @@ pub mod pallet {
 			Self::update_market(
 				|| {
 					// Increase the locked collateral
-					if new_collateral >= Self::relayer_locked_collateral(&who) {
+					if new_collateral >= Self::relayer(&who).collateral {
 						T::Currency::set_lock(
 							T::LockId::get(),
 							&who,
@@ -294,9 +294,7 @@ pub mod pallet {
 					}
 
 					<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
-						if let Some(ref mut r) = relayer {
-							r.collateral = new_collateral;
-						}
+						relayer.collateral = new_collateral;
 					});
 					Ok(())
 				},
@@ -315,9 +313,7 @@ pub mod pallet {
 			Self::update_market(
 				|| {
 					<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
-						if let Some(ref mut r) = relayer {
-							r.fee = new_fee;
-						}
+						relayer.fee = new_fee;
 					});
 					Ok(())
 				},
@@ -338,11 +334,7 @@ pub mod pallet {
 					T::Currency::remove_lock(T::LockId::get(), &who);
 
 					<RelayersMap<T, I>>::remove(who.clone());
-					<Relayers<T, I>>::mutate(|relayers| {
-						if let Some(ref mut r) = relayers {
-							r.retain(|x| x != &who)
-						}
-					});
+					<Relayers<T, I>>::mutate(|relayers| relayers.retain(|x| x != &who));
 					<AssignedRelayers<T, I>>::mutate(|assigned_relayers| {
 						if let Some(relayers) = assigned_relayers {
 							relayers.retain(|x| x.id != who);
@@ -431,32 +423,21 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		new_collateral: BalanceOf<T, I>,
 		report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
 	) {
-		T::Currency::set_lock(T::LockId::get(), &who, new_collateral, WithdrawReasons::all());
-		<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
-			if let Some(ref mut r) = relayer {
-				r.collateral = new_collateral;
-			}
-		});
-		Self::update_market();
-		Self::deposit_event(<Event<T, I>>::FeeMarketSlash(report));
-	}
-
-	/// Remove enrolled relayer, then update market fee. (Update market needed)
-	pub(crate) fn remove_enrolled_relayer(who: &T::AccountId) {
-		T::Currency::remove_lock(T::LockId::get(), who);
-
-		<RelayersMap<T, I>>::remove(who.clone());
-		<Relayers<T, I>>::mutate(|relayers| {
-			if let Some(ref mut r) = relayers {
-				r.retain(|x| x != who)
-			}
-		});
-		<AssignedRelayers<T, I>>::mutate(|assigned_relayers| {
-			if let Some(relayers) = assigned_relayers {
-				relayers.retain(|x| x.id != *who);
-			}
-		});
-		Self::update_market();
+		let _ = Self::update_market(
+			|| {
+				T::Currency::set_lock(
+					T::LockId::get(),
+					who,
+					new_collateral,
+					WithdrawReasons::all(),
+				);
+				<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
+					relayer.collateral = new_collateral;
+				});
+				Ok(())
+			},
+			Some(<Event<T, I>>::FeeMarketSlash(report)),
+		);
 	}
 
 	/// Whether the relayer has enrolled
