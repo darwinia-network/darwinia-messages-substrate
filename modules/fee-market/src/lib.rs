@@ -69,6 +69,8 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinimumRelayFee: Get<BalanceOf<Self, I>>;
 		/// The collateral relayer need to lock for each order.
+		///
+		/// Set this to zero to disable the relay.
 		#[pallet::constant]
 		type CollateralPerOrder: Get<BalanceOf<Self, I>>;
 		/// The slot times set
@@ -503,8 +505,13 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 
 	fn collateral_to_order_capacity(collateral: BalanceOf<T, I>) -> u32 {
-		// If the `CollateralPerOrder` is zero, the maximum order capacity is `collateral`.
-		(collateral / T::CollateralPerOrder::get().min(1)).saturated_into::<u32>()
+		let collateral_per_order = T::CollateralPerOrder::get();
+
+		if collateral_per_order.is_zero() {
+			0
+		} else {
+			(collateral / collateral_per_order).saturated_into::<u32>()
+		}
 	}
 }
 
