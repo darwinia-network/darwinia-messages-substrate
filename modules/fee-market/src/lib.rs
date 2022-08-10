@@ -70,7 +70,8 @@ pub mod pallet {
 		type MinimumRelayFee: Get<BalanceOf<Self, I>>;
 		/// The collateral relayer need to lock for each order.
 		///
-		/// Set this to zero to disable the relay.
+		/// This also represents the maximum slash value for a single delayed order.
+		/// Please note that if this value is set to zero the fee market will be suspended.
 		#[pallet::constant]
 		type CollateralPerOrder: Get<BalanceOf<Self, I>>;
 		/// The slot times set
