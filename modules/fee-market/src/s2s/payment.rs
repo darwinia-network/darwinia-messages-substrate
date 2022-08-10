@@ -206,8 +206,8 @@ where
 								&order,
 								&r,
 								relayer_fund_account,
-								T::AssignedRelayerSlashRatio::get()
-									* Pallet::<T, I>::relayer_locked_collateral(&r),
+								T::AssignedRelayerSlashRatio::get() *
+									Pallet::<T, I>::relayer_locked_collateral(&r),
 							);
 							other_assigned_relayers_slash += amount;
 						}
@@ -234,8 +234,8 @@ where
 						let mut other_assigned_relayers_slash = BalanceOf::<T, I>::zero();
 						for r in order.assigned_relayers_slice() {
 							// 1. For the fixed part
-							let mut slash_amount = T::AssignedRelayerSlashRatio::get()
-								* Pallet::<T, I>::relayer_locked_collateral(&r.id);
+							let mut slash_amount = T::AssignedRelayerSlashRatio::get() *
+								Pallet::<T, I>::relayer_locked_collateral(&r.id);
 
 							// 2. For the dynamic part
 							slash_amount += T::Slasher::cal_slash_amount(

@@ -167,10 +167,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		match message {
 			Ok(raw_message) =>
 				if let Ok(call) = raw_message.clone().call.into() {
-					return T::CallValidator::check_receiving_before_dispatch(
-						relayer_account,
-						&call,
-					);
+					return T::CallValidator::check_receiving_before_dispatch(relayer_account, &call)
 				},
 			Err(_) => {
 				log::trace!(

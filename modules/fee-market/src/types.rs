@@ -146,7 +146,7 @@ where
 		let order_confirmed_time = self.confirm_time.unwrap_or_default();
 		for (index, assigned_relayer) in self.assigned_relayers.iter().enumerate() {
 			if assigned_relayer.valid_range.contains(&order_confirmed_time) {
-				return Some((index, assigned_relayer.fee));
+				return Some((index, assigned_relayer.fee))
 			}
 		}
 		None
@@ -159,7 +159,7 @@ where
 	{
 		for assigned_relayer in self.assigned_relayers.iter() {
 			if assigned_relayer.id == id {
-				return Some(assigned_relayer.valid_range.clone());
+				return Some(assigned_relayer.valid_range.clone())
 			}
 		}
 		None

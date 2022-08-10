@@ -458,6 +458,11 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		Orders::<T, I>::iter().map(|(k, _v)| k).collect()
 	}
 
+	/// Get the relayer locked collateral value
+	pub fn relayer_locked_collateral(who: &T::AccountId) -> BalanceOf<T, I> {
+		Pallet::<T, I>::relayer(&who).collateral
+	}
+
 	/// Whether the enrolled relayer is occupied(Responsible for order relaying)
 	/// Whether the enrolled relayer is occupied, If occupied, return the number of orders and
 	/// orders locked collateral, otherwise, return None.

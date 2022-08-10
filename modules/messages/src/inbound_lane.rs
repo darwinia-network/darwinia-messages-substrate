@@ -149,7 +149,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 		};
 		// if there are some extra pre-dispatch validation errors, reject this message.
 		if P::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
-			return ReceivalResult::PreDispatchValidateFailed;
+			return ReceivalResult::PreDispatchValidateFailed
 		}
 
 		// then, dispatch message

@@ -469,10 +469,10 @@ pub mod pallet {
 								!dispatch_result.dispatch_fee_paid_during_dispatch,
 							)
 						},
-						ReceivalResult::InvalidNonce
-						| ReceivalResult::TooManyUnrewardedRelayers
-						| ReceivalResult::PreDispatchValidateFailed
-						| ReceivalResult::TooManyUnconfirmedMessages => (dispatch_weight, true),
+						ReceivalResult::InvalidNonce |
+						ReceivalResult::TooManyUnrewardedRelayers |
+						ReceivalResult::PreDispatchValidateFailed |
+						ReceivalResult::TooManyUnconfirmedMessages => (dispatch_weight, true),
 					};
 
 					let unspent_weight = sp_std::cmp::min(unspent_weight, dispatch_weight);
