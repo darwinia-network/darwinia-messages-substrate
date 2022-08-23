@@ -67,9 +67,9 @@ The slash, reward analysis is divided into two cases.
         Reward Summary:
 
         * To assigned relayers (R1, R2, R3): `(GuardRelayersRewardRatio * (30 - 10)) / 3 = 1`
-        * To treasury: `30 - 10 - 3 = 17`
-        * To message delivery relayer: `10 * MessageRelayersRewardRatio = 0.8`
-        * To message confirm relayer: `10 * ConfirmRelayersRewardRatio = 0.2`
+        * To treasury: `30 - 10 - 1 * 3 = 17`
+        * To message delivery relayer: `10 * MessageRelayersRewardRatio = 8`
+        * To message confirm relayer: `10 * ConfirmRelayersRewardRatio = 2`
 
     - Confirmed at block `160(the second slot)`
 
@@ -81,10 +81,10 @@ The slash, reward analysis is divided into two cases.
 
         Reward Summary:
 
-        * To assigned relayers (R2, R3) = `(GuardRelayersRewardRatio * (30 - 10)) / 2 = 2`
-        * To treasury: `30 - 10 - 4 = 16`
-        * To message delivery relayer: `(10 + 20) * MessageRelayersRewardRatio = 24`
-        * To message confirm relayer: `(10 + 20) * MessageRelayersRewardRatio = 6`
+        * To assigned relayers (R2, R3) = `(GuardRelayersRewardRatio * (30 - 20)) / 2 = 1`
+        * To treasury: `30 - 20 - 1 * 2 = 8`
+        * To message delivery relayer: `(20 + 20) * MessageRelayersRewardRatio = 32`
+        * To message confirm relayer: `(20 + 20) * MessageRelayersRewardRatio = 8`
 
 
     - Confirmed at block `210(the third slot)`
@@ -98,10 +98,10 @@ The slash, reward analysis is divided into two cases.
 
         Reward Summary:
 
-        * To assigned relayers (R3) = `(GuardRelayersRewardRatio * (30 - 10)) / 1 = 4`
-        * To treasury: `30 - 10 - 4 = 16`
-        * To message delivery relayer: `(10 + 40) * MessageRelayersRewardRatio = 40`
-        * To message confirm relayer: `(10 + 40) * MessageRelayersRewardRatio = 10`
+        * To assigned relayers (R3) = `(GuardRelayersRewardRatio * (30 - 30)) / 1 = 0`
+        * To treasury: `30 - 30 - 0 = 0`
+        * To message delivery relayer: `(10 + 20 * 2) * MessageRelayersRewardRatio = 56`
+        * To message confirm relayer: `(10 + 20 * 2) * MessageRelayersRewardRatio = 14`
 
  * *the message times out (confirmed after the end of the 3rd assigned relayer's slot)*
 
@@ -119,5 +119,5 @@ The slash, reward analysis is divided into two cases.
 
         * To assigned relayers: `0`
         * To treasury: `0`
-        * To message delivery relayer: `(30 + 120) * MessageRelayersRewardRatio = 120`
-        * To message confirm relayer: `(30 + 120) * MessageRelayersRewardRatio = 30`
+        * To message delivery relayer: `(30 + 40 * 3) * MessageRelayersRewardRatio = 120`
+        * To message confirm relayer: `(30 + 40 * 3) * MessageRelayersRewardRatio = 30`
