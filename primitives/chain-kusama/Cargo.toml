@@ -17,11 +17,11 @@ bp-runtime       = { default-features = false, path = "../runtime" }
 
 # Substrate Based Dependencies
 
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-api        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-version    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+sp-api        = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+sp-runtime    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+sp-std        = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+sp-version    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 
 [features]
 default = ["std"]

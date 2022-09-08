@@ -139,7 +139,7 @@ where
 		// Pay to treasury
 		do_reward::<T, I>(
 			relayer_fund_account,
-			&T::TreasuryPalletId::get().into_account_truncating(),
+			&T::TreasuryPalletId::get().into_account(),
 			treasury_sum,
 		);
 	}

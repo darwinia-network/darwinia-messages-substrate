@@ -189,7 +189,7 @@ pub struct MessageDetails<OutboundMessageFee> {
 }
 
 /// Bit vector of message dispatch results.
-pub type DispatchResultsBitVec = BitVec<u8, Msb0>;
+pub type DispatchResultsBitVec = BitVec<Msb0, u8>;
 
 /// Unrewarded relayer entry stored in the inbound lane data.
 ///
