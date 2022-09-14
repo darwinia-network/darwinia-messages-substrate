@@ -82,7 +82,6 @@ mod inbound_lane;
 mod outbound_lane;
 mod weights_ext;
 
-pub mod instant_payments;
 pub mod weights;
 
 #[cfg(feature = "runtime-benchmarks")]
