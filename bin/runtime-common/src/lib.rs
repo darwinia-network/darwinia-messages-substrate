@@ -26,9 +26,6 @@ pub mod messages_benchmarking;
 pub mod messages_extension;
 pub mod parachains_benchmarking;
 
-#[cfg(feature = "integrity-test")]
-pub mod integrity;
-
 /// A duplication of the `FilterCall` trait.
 ///
 /// We need this trait in order to be able to implement it for the messages pallet,
