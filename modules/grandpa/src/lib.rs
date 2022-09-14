@@ -122,10 +122,11 @@ pub mod pallet {
 	}
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
-		const LOG_TARGET: &'static str = LOG_TARGET;
-		type OwnerStorage = PalletOwner<T, I>;
 		type OperatingMode = BasicOperatingMode;
 		type OperatingModeStorage = PalletOperatingMode<T, I>;
+		type OwnerStorage = PalletOwner<T, I>;
+
+		const LOG_TARGET: &'static str = LOG_TARGET;
 	}
 
 	#[pallet::call]

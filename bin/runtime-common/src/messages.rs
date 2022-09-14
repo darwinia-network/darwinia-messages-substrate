@@ -26,21 +26,24 @@ use bp_messages::{
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
+use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{
 	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, Size, StorageProofChecker,
 };
-use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use codec::{Decode, DecodeLimit, Encode, MaxEncodedLen};
-use frame_support::{traits::Get,
-	traits::{Currency, ExistenceRequirement},
+use frame_support::{
+	traits::{Currency, ExistenceRequirement, Get},
 	weights::{Weight, WeightToFee},
 	RuntimeDebug,
 };
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Saturating, Zero, Header as HeaderT},
+	traits::{
+		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating,
+		Zero,
+	},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
 use sp_std::{
@@ -1152,13 +1155,13 @@ mod tests {
 
 	impl ThisChainWithMessages for ThisChain {
 		type Call = ThisChainCall;
-		type Origin = ThisChainOrigin;
 		type ConfirmationTransactionEstimation = BasicConfirmationTransactionEstimation<
 			<ThisChain as ChainWithMessages>::AccountId,
 			{ DELIVERY_CONFIRMATION_TRANSACTION_WEIGHT },
 			0,
 			0,
 		>;
+		type Origin = ThisChainOrigin;
 
 		fn is_message_accepted(_send_origin: &Self::Origin, lane: &LaneId) -> bool {
 			lane == TEST_LANE_ID
@@ -1212,13 +1215,13 @@ mod tests {
 
 	impl ThisChainWithMessages for BridgedChain {
 		type Call = BridgedChainCall;
-		type Origin = BridgedChainOrigin;
 		type ConfirmationTransactionEstimation = BasicConfirmationTransactionEstimation<
 			<BridgedChain as ChainWithMessages>::AccountId,
 			0,
 			0,
 			0,
 		>;
+		type Origin = BridgedChainOrigin;
 
 		fn is_message_accepted(_send_origin: &Self::Origin, _lane: &LaneId) -> bool {
 			unreachable!()

@@ -186,10 +186,11 @@ pub mod pallet {
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
-		const LOG_TARGET: &'static str = LOG_TARGET;
-		type OwnerStorage = PalletOwner<T, I>;
 		type OperatingMode = BasicOperatingMode;
 		type OperatingModeStorage = PalletOperatingMode<T, I>;
+		type OwnerStorage = PalletOwner<T, I>;
+
+		const LOG_TARGET: &'static str = LOG_TARGET;
 	}
 
 	#[pallet::call]
@@ -403,7 +404,7 @@ pub mod pallet {
 					stored_best_head.at_relay_block_number,
 					updated_at_relay_block_number
 				);
-				return InvalidTransaction::Stale.into()
+				return InvalidTransaction::Stale.into();
 			}
 
 			if stored_best_head.head_hash == updated_head_hash {
@@ -416,7 +417,7 @@ pub mod pallet {
 					stored_best_head.at_relay_block_number,
 					updated_at_relay_block_number
 				);
-				return InvalidTransaction::Stale.into()
+				return InvalidTransaction::Stale.into();
 			}
 
 			Ok(ValidTransaction::default())

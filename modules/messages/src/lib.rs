@@ -60,8 +60,7 @@ use bp_messages::{
 	},
 	total_unrewarded_messages, DeliveredMessages, InboundLaneData, InboundMessageDetails, LaneId,
 	MessageData, MessageKey, MessageNonce, MessagePayload, MessagesOperatingMode, OutboundLaneData,
-	OutboundMessageDetails, Parameter as MessagesParameter,
-	UnrewardedRelayersState,
+	OutboundMessageDetails, Parameter as MessagesParameter, UnrewardedRelayersState,
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 use codec::{Decode, Encode, MaxEncodedLen};
@@ -73,10 +72,7 @@ use frame_support::{
 use num_traits::{SaturatingAdd, Zero};
 use sp_core::H256;
 use sp_runtime::traits::Convert;
-use sp_std::{
-	cell::RefCell, cmp::PartialOrd, marker::PhantomData,
-	prelude::*,
-};
+use sp_std::{cell::RefCell, cmp::PartialOrd, marker::PhantomData, prelude::*};
 
 mod inbound_lane;
 mod outbound_lane;
@@ -225,10 +221,11 @@ pub mod pallet {
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
-		const LOG_TARGET: &'static str = LOG_TARGET;
-		type OwnerStorage = PalletOwner<T, I>;
 		type OperatingMode = MessagesOperatingMode;
 		type OperatingModeStorage = PalletOperatingMode<T, I>;
+		type OwnerStorage = PalletOwner<T, I>;
+
+		const LOG_TARGET: &'static str = LOG_TARGET;
 	}
 
 	#[pallet::call]
@@ -954,10 +951,10 @@ fn send_message<T: Config<I>, I: 'static>(
 
 /// Ensure that the pallet is in normal operational mode.
 fn ensure_normal_operating_mode<T: Config<I>, I: 'static>() -> Result<(), Error<T, I>> {
-	if PalletOperatingMode::<T, I>::get() ==
-		MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+	if PalletOperatingMode::<T, I>::get()
+		== MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
 	{
-		return Ok(())
+		return Ok(());
 	}
 
 	Err(Error::<T, I>::NotOperatingNormally)
@@ -1443,9 +1440,7 @@ mod tests {
 			let mut message_payload = message_payload(1, 0);
 			// the payload isn't simply extra, so it'll definitely overflow
 			// `MAX_OUTBOUND_PAYLOAD_SIZE` if we add `MAX_OUTBOUND_PAYLOAD_SIZE` bytes to extra
-			message_payload
-				.extra
-				.extend_from_slice(&[0u8; MAX_OUTBOUND_PAYLOAD_SIZE as usize]);
+			message_payload.extra.extend_from_slice(&[0u8; MAX_OUTBOUND_PAYLOAD_SIZE as usize]);
 			assert_noop!(
 				Pallet::<TestRuntime>::send_message(
 					Origin::signed(1),

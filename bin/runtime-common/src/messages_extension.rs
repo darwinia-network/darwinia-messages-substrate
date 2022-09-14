@@ -63,7 +63,7 @@ impl<
 						inbound_lane_data.last_delivered_nonce(),
 					);
 
-					return sp_runtime::transaction_validity::InvalidTransaction::Stale.into()
+					return sp_runtime::transaction_validity::InvalidTransaction::Stale.into();
 				}
 			},
 			Some(pallet_bridge_messages::Call::<T, I>::receive_messages_delivery_proof {
@@ -85,7 +85,7 @@ impl<
 						outbound_lane_data.latest_received_nonce,
 					);
 
-					return sp_runtime::transaction_validity::InvalidTransaction::Stale.into()
+					return sp_runtime::transaction_validity::InvalidTransaction::Stale.into();
 				}
 			},
 			_ => {},
