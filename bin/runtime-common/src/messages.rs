@@ -244,24 +244,6 @@ pub mod source {
 	pub type ParsedMessagesDeliveryProofFromBridgedChain<B> =
 		(LaneId, InboundLaneData<AccountIdOf<ThisChain<B>>>);
 
-	/// Message verifier that is doing all basic checks.
-	///
-	/// This verifier assumes following:
-	///
-	/// - all message lanes are equivalent, so all checks are the same;
-	/// - messages are being dispatched using `pallet-bridge-dispatch` pallet on the target chain.
-	///
-	/// Following checks are made:
-	///
-	/// - message is rejected if its lane is currently blocked;
-	/// - message is rejected if there are too many pending (undelivered) messages at the outbound
-	///   lane;
-	/// - check that the sender has rights to dispatch the call on target chain using provided
-	///   dispatch origin;
-	/// - check that the sender has paid enough funds for both message delivery and dispatch.
-	#[derive(RuntimeDebug)]
-	pub struct FromThisChainMessageVerifier<B>(PhantomData<B>);
-
 	/// The error message returned from LaneMessageVerifier when outbound lane is disabled.
 	pub const MESSAGE_REJECTED_BY_OUTBOUND_LANE: &str =
 		"The outbound message lane has rejected the message.";
@@ -272,77 +254,6 @@ pub mod source {
 	pub const BAD_ORIGIN: &str = "Unable to match the source origin to expected target origin.";
 	/// The error message returned from LaneMessageVerifier when the message fee is too low.
 	pub const TOO_LOW_FEE: &str = "Provided fee is below minimal threshold required by the lane.";
-
-	impl<B>
-		LaneMessageVerifier<
-			OriginOf<ThisChain<B>>,
-			AccountIdOf<ThisChain<B>>,
-			FromThisChainMessagePayload<B>,
-			BalanceOf<ThisChain<B>>,
-		> for FromThisChainMessageVerifier<B>
-	where
-		B: MessageBridge,
-		// matches requirements from the `frame_system::Config::Origin`
-		OriginOf<ThisChain<B>>: Clone
-			+ Into<Result<frame_system::RawOrigin<AccountIdOf<ThisChain<B>>>, OriginOf<ThisChain<B>>>>,
-		AccountIdOf<ThisChain<B>>: PartialEq + Clone,
-	{
-		type Error = &'static str;
-
-		#[allow(clippy::single_match)]
-		fn verify_message(
-			submitter: &OriginOf<ThisChain<B>>,
-			delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
-			lane: &LaneId,
-			lane_outbound_data: &OutboundLaneData,
-			payload: &FromThisChainMessagePayload<B>,
-		) -> Result<(), Self::Error> {
-			// reject message if lane is blocked
-			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
-				return Err(MESSAGE_REJECTED_BY_OUTBOUND_LANE);
-			}
-
-			// reject message if there are too many pending messages at this lane
-			let max_pending_messages = ThisChain::<B>::maximal_pending_messages_at_outbound_lane();
-			let pending_messages = lane_outbound_data
-				.latest_generated_nonce
-				.saturating_sub(lane_outbound_data.latest_received_nonce);
-			if pending_messages > max_pending_messages {
-				return Err(TOO_MANY_PENDING_MESSAGES);
-			}
-
-			// Do the dispatch-specific check. We assume that the target chain uses
-			// `Dispatch`, so we verify the message accordingly.
-			let raw_origin_or_err: Result<
-				frame_system::RawOrigin<AccountIdOf<ThisChain<B>>>,
-				OriginOf<ThisChain<B>>,
-			> = submitter.clone().into();
-			if let Ok(raw_origin) = raw_origin_or_err {
-				pallet_bridge_dispatch::verify_message_origin(&raw_origin, payload)
-					.map(drop)
-					.map_err(|_| BAD_ORIGIN)?;
-			} else {
-				// so what it means that we've failed to convert origin to the
-				// `frame_system::RawOrigin`? now it means that the custom pallet origin has
-				// been used to send the message. Do we need to verify it? The answer is no,
-				// because pallet may craft any origin (e.g. root) && we can't verify whether it
-				// is valid, or not.
-			};
-
-			let minimal_fee_in_this_tokens = estimate_message_dispatch_and_delivery_fee::<B>(
-				payload,
-				B::RELAYER_FEE_PERCENT,
-				None,
-			)?;
-
-			// compare with actual fee paid
-			if *delivery_and_dispatch_fee < minimal_fee_in_this_tokens {
-				return Err(TOO_LOW_FEE);
-			}
-
-			Ok(())
-		}
-	}
 
 	/// Return maximal message size of This -> Bridged chain message.
 	pub fn maximal_message_size<B: MessageBridge>() -> u32 {
