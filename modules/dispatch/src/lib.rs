@@ -386,7 +386,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 
 fn extract_actual_weight(result: &DispatchResultWithPostInfo, info: &DispatchInfo) -> Weight {
 	let post_info = match result {
-		Ok(post_info) => &post_info,
+		Ok(post_info) => post_info,
 		Err(err) => &err.post_info,
 	};
 	match post_info.pays_fee {

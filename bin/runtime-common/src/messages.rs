@@ -22,12 +22,12 @@
 
 use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
-	source_chain::LaneMessageVerifier,
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
+use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{
-	messages::{DispatchFeePayment, MessageDispatchResult},
+	messages::{ MessageDispatchResult},
 	ChainId, Size, StorageProofChecker,
 };
 use codec::{Decode, DecodeLimit, Encode};
@@ -39,7 +39,10 @@ use frame_support::{
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Saturating, Zero},
+	traits::{
+		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating,
+		Zero,
+	},
 	FixedPointNumber, FixedPointOperand, FixedU128,
 };
 use sp_std::{
@@ -291,6 +294,9 @@ pub mod source {
 	}
 
 	/// Verify proof of This -> Bridged chain messages delivery.
+	///
+	/// This function is used when Bridged chain is directly using GRANDPA finality. For Bridged
+	/// parachains, please use the `verify_messages_delivery_proof_from_parachain`.
 	pub fn verify_messages_delivery_proof<B: MessageBridge, ThisRuntime, GrandpaInstance: 'static>(
 		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
 	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
@@ -307,22 +313,69 @@ pub mod source {
 		pallet_bridge_grandpa::Pallet::<ThisRuntime, GrandpaInstance>::parse_finalized_storage_proof(
 			bridged_header_hash.into(),
 			StorageProof::new(storage_proof),
-			|storage| {
-				// Messages delivery proof is just proof of single storage key read => any error
-				// is fatal.
-				let storage_inbound_lane_data_key =
-					bp_messages::storage_keys::inbound_lane_data_key(B::BRIDGED_MESSAGES_PALLET_NAME, &lane);
-				let raw_inbound_lane_data = storage
-					.read_value(storage_inbound_lane_data_key.0.as_ref())
-					.map_err(|_| "Failed to read inbound lane state from storage proof")?
-					.ok_or("Inbound lane state is missing from the messages proof")?;
-				let inbound_lane_data = InboundLaneData::decode(&mut &raw_inbound_lane_data[..])
-					.map_err(|_| "Failed to decode inbound lane state from the proof")?;
-
-				Ok((lane, inbound_lane_data))
-			},
+			|storage| do_verify_messages_delivery_proof::<
+				B,
+				bp_runtime::HasherOf<
+					<ThisRuntime as pallet_bridge_grandpa::Config<GrandpaInstance>>::BridgedChain,
+				>,
+			>(lane, storage),
 		)
 		.map_err(<&'static str>::from)?
+	}
+
+	/// Verify proof of This -> Bridged chain messages delivery.
+	///
+	/// This function is used when Bridged chain is using parachain finality. For Bridged
+	/// chains with direct GRANDPA finality, please use the `verify_messages_delivery_proof`.
+	///
+	/// This function currently only supports parachains, which are using header type that
+	/// implements `sp_runtime::traits::Header` trait.
+	pub fn verify_messages_delivery_proof_from_parachain<
+		B,
+		BridgedHeader,
+		ThisRuntime,
+		ParachainsInstance: 'static,
+	>(
+		bridged_parachain: ParaId,
+		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
+	where
+		B: MessageBridge,
+		B::BridgedChain: ChainWithMessages<Hash = ParaHash>,
+		BridgedHeader: HeaderT<Hash = HashOf<BridgedChain<B>>>,
+		ThisRuntime: pallet_bridge_parachains::Config<ParachainsInstance>,
+	{
+		let FromBridgedChainMessagesDeliveryProof { bridged_header_hash, storage_proof, lane } =
+			proof;
+		pallet_bridge_parachains::Pallet::<ThisRuntime, ParachainsInstance>::parse_finalized_storage_proof(
+			bridged_parachain,
+			bridged_header_hash,
+			StorageProof::new(storage_proof),
+			|para_head| BridgedHeader::decode(&mut &para_head.0[..]).ok().map(|h| *h.state_root()),
+			|storage| do_verify_messages_delivery_proof::<B, ParaHasher>(lane, storage),
+		)
+		.map_err(<&'static str>::from)?
+	}
+
+	/// The essense of This -> Bridged chain messages delivery proof verification.
+	fn do_verify_messages_delivery_proof<B: MessageBridge, H: Hasher>(
+		lane: LaneId,
+		storage: bp_runtime::StorageProofChecker<H>,
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str> {
+		// Messages delivery proof is just proof of single storage key read => any error
+		// is fatal.
+		let storage_inbound_lane_data_key = bp_messages::storage_keys::inbound_lane_data_key(
+			B::BRIDGED_MESSAGES_PALLET_NAME,
+			&lane,
+		);
+		let raw_inbound_lane_data = storage
+			.read_value(storage_inbound_lane_data_key.0.as_ref())
+			.map_err(|_| "Failed to read inbound lane state from storage proof")?
+			.ok_or("Inbound lane state is missing from the messages proof")?;
+		let inbound_lane_data = InboundLaneData::decode(&mut &raw_inbound_lane_data[..])
+			.map_err(|_| "Failed to decode inbound lane state from the proof")?;
+
+		Ok((lane, inbound_lane_data))
 	}
 }
 
@@ -449,8 +502,7 @@ pub mod target {
 				message_id,
 				message.data.payload.map_err(drop),
 				|dispatch_origin, dispatch_weight| {
-					let unadjusted_weight_fee =
-						ThisRuntime::WeightToFee::calc(&dispatch_weight);
+					let unadjusted_weight_fee = ThisRuntime::WeightToFee::calc(&dispatch_weight);
 					let fee_multiplier =
 						pallet_transaction_payment::Pallet::<ThisRuntime>::next_fee_multiplier();
 					let adjusted_weight_fee =
@@ -477,7 +529,7 @@ pub mod target {
 		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
 			DecodedCall::decode_with_depth_limit(
 				sp_api::MAX_EXTRINSIC_DEPTH,
-				&mut &encoded_call.encoded_call[..],
+				 &encoded_call.encoded_call[..],
 			)
 			.map_err(drop)
 		}
@@ -494,6 +546,9 @@ pub mod target {
 	}
 
 	/// Verify proof of Bridged -> This chain messages.
+	///
+	/// This function is used when Bridged chain is directly using GRANDPA finality. For Bridged
+	/// parachains, please use the `verify_messages_proof_from_parachain`.
 	///
 	/// The `messages_count` argument verification (sane limits) is supposed to be made
 	/// outside of this function. This function only verifies that the proof declares exactly
@@ -517,6 +572,54 @@ pub mod target {
 				pallet_bridge_grandpa::Pallet::<ThisRuntime, GrandpaInstance>::parse_finalized_storage_proof(
 					bridged_header_hash.into(),
 					StorageProof::new(bridged_storage_proof),
+					|storage_adapter| storage_adapter,
+				)
+				.map(|storage| StorageProofCheckerAdapter::<_, B> {
+					storage,
+					_dummy: Default::default(),
+				})
+				.map_err(|err| MessageProofError::Custom(err.into()))
+			},
+		)
+		.map_err(Into::into)
+	}
+
+	/// Verify proof of Bridged -> This chain messages.
+	///
+	/// This function is used when Bridged chain is using parachain finality. For Bridged
+	/// chains with direct GRANDPA finality, please use the `verify_messages_proof`.
+	///
+	/// The `messages_count` argument verification (sane limits) is supposed to be made
+	/// outside of this function. This function only verifies that the proof declares exactly
+	/// `messages_count` messages.
+	///
+	/// This function currently only supports parachains, which are using header type that
+	/// implements `sp_runtime::traits::Header` trait.
+	pub fn verify_messages_proof_from_parachain<
+		B,
+		BridgedHeader,
+		ThisRuntime,
+		ParachainsInstance: 'static,
+	>(
+		bridged_parachain: ParaId,
+		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
+		messages_count: u32,
+	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, &'static str>
+	where
+		B: MessageBridge,
+		B::BridgedChain: ChainWithMessages<Hash = ParaHash>,
+		BridgedHeader: HeaderT<Hash = HashOf<BridgedChain<B>>>,
+		ThisRuntime: pallet_bridge_parachains::Config<ParachainsInstance>,
+	{
+		verify_messages_proof_with_parser::<B, _, _>(
+			proof,
+			messages_count,
+			|bridged_header_hash, bridged_storage_proof| {
+				pallet_bridge_parachains::Pallet::<ThisRuntime, ParachainsInstance>::parse_finalized_storage_proof(
+					bridged_parachain,
+					bridged_header_hash,
+					StorageProof::new(bridged_storage_proof),
+					|para_head| BridgedHeader::decode(&mut &para_head.0[..]).ok().map(|h| *h.state_root()),
 					|storage_adapter| storage_adapter,
 				)
 				.map(|storage| StorageProofCheckerAdapter::<_, B> {
