@@ -492,6 +492,7 @@ dependencies = [
  "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
+ "pallet-fee-market",
  "pallet-transaction-payment",
  "parity-scale-codec",
  "scale-info",
