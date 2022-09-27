@@ -33,6 +33,8 @@ pub type RelayBlockHeader =
 type Block = frame_system::mocking::MockBlock<TestRuntime>;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
 
+pub const PARAS_PALLET_NAME: &str = "Paras";
+
 construct_runtime! {
 	pub enum TestRuntime where
 		Block = Block,
