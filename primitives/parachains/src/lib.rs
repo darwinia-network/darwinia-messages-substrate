@@ -73,11 +73,11 @@ pub fn best_parachain_head_hash_storage_key_at_target(
 /// The head is stored by the `pallet-bridge-parachains` pallet in the `ImportedParaHeads` map.
 pub struct ImportedParaHeadsKeyProvider;
 impl StorageDoubleMapKeyProvider for ImportedParaHeadsKeyProvider {
-	const MAP_NAME: &'static str = "ImportedParaHeads";
-
 	type Hasher1 = Blake2_128Concat;
-	type Key1 = ParaId;
 	type Hasher2 = Blake2_128Concat;
+	type Key1 = ParaId;
 	type Key2 = ParaHash;
 	type Value = ParaHead;
+
+	const MAP_NAME: &'static str = "ImportedParaHeads";
 }

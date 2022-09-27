@@ -424,6 +424,7 @@ impl pallet_bridge_messages::Config for Test {
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
 	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
 	type MessageDispatch = TestMessageDispatch;
 	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, ()>;
@@ -434,7 +435,6 @@ impl pallet_bridge_messages::Config for Test {
 	type SourceHeaderChain = TestSourceHeaderChain;
 	type TargetHeaderChain = TestTargetHeaderChain;
 	type WeightInfo = ();
-	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
 }
 
 impl SenderOrigin<AccountId> for Origin {

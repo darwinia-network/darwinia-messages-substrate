@@ -79,8 +79,7 @@ where
 	/// read, but decoding fails, this function returns an error.
 	pub fn read_and_decode_value<T: Decode>(&self, key: &[u8]) -> Result<Option<T>, Error> {
 		self.read_value(key).and_then(|v| {
-			v.map(|v| T::decode(&mut &v[..]).map_err(Error::StorageValueDecodeFailed))
-				.transpose()
+			v.map(|v| T::decode(&mut &v[..]).map_err(Error::StorageValueDecodeFailed)).transpose()
 		})
 	}
 }

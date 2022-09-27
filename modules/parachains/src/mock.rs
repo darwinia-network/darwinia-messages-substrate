@@ -112,11 +112,11 @@ parameter_types! {
 }
 
 impl pallet_bridge_parachains::Config for TestRuntime {
-	type WeightInfo = ();
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
+	type HeadsToKeep = HeadsToKeep;
 	type ParasPalletName = ParasPalletName;
 	type TrackedParachains = IsInVec<GetTenFirstParachains>;
-	type HeadsToKeep = HeadsToKeep;
+	type WeightInfo = ();
 }
 
 #[derive(Debug)]

@@ -26,9 +26,6 @@ pub mod messages_benchmarking;
 pub mod messages_extension;
 pub mod parachains_benchmarking;
 
-#[cfg(feature = "integrity-test")]
-pub mod integrity;
-
 /// A duplication of the `FilterCall` trait.
 ///
 /// We need this trait in order to be able to implement it for the messages pallet,
@@ -132,9 +129,9 @@ mod tests {
 	}
 
 	impl sp_runtime::traits::Dispatchable for MockCall {
-		type Origin = ();
 		type Config = ();
 		type Info = ();
+		type Origin = ();
 		type PostInfo = ();
 
 		fn dispatch(
@@ -149,7 +146,7 @@ mod tests {
 	impl BridgeRuntimeFilterCall<MockCall> for FirstFilterCall {
 		fn validate(call: &MockCall) -> TransactionValidity {
 			if call.data <= 1 {
-				return InvalidTransaction::Custom(1).into()
+				return InvalidTransaction::Custom(1).into();
 			}
 
 			Ok(ValidTransaction { priority: 1, ..Default::default() })
@@ -160,7 +157,7 @@ mod tests {
 	impl BridgeRuntimeFilterCall<MockCall> for SecondFilterCall {
 		fn validate(call: &MockCall) -> TransactionValidity {
 			if call.data <= 2 {
-				return InvalidTransaction::Custom(2).into()
+				return InvalidTransaction::Custom(2).into();
 			}
 
 			Ok(ValidTransaction { priority: 2, ..Default::default() })
