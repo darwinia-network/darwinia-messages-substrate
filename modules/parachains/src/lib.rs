@@ -327,7 +327,7 @@ pub mod storage_keys {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::mock::{run_test, test_relay_header, Origin, TestRuntime};
+	use crate::mock::*;
 
 	use bp_test_utils::{authority_list, make_default_justification};
 	use frame_support::{assert_noop, assert_ok, traits::OnInitialize};
@@ -374,8 +374,10 @@ mod tests {
 		{
 			let mut trie = TrieDBMutV1::<RelayBlockHasher>::new(&mut mdb, &mut root);
 			for (parachain, head) in heads {
-				let storage_key =
-					parachain_head_storage_key_at_source(PARAS_PALLET_NAME, ParaId(parachain));
+				let storage_key = bp_parachains::parachain_head_storage_key_at_source(
+					PARAS_PALLET_NAME,
+					ParaId(parachain),
+				);
 				trie.insert(&storage_key.0, &head.encode())
 					.map_err(|_| "TrieMut::insert has failed")
 					.expect("TrieMut::insert should not fail in tests");
@@ -585,7 +587,7 @@ mod tests {
 
 			// import next relay chain header and next parachain head
 			let (state_root, proof) =
-				prepare_parachain_heads_proof(vec![(ParaId(1), head_data(1, heads_to_keep))]);
+				prepare_parachain_heads_proof(vec![(1, head_data(1, heads_to_keep))]);
 			proceed(heads_to_keep, state_root);
 			assert_ok!(import_parachain_1_head(heads_to_keep, state_root, proof));
 
@@ -602,7 +604,7 @@ mod tests {
 
 	#[test]
 	fn fails_on_unknown_relay_chain_block() {
-		let (state_root, proof) = prepare_parachain_heads_proof(vec![(ParaId(1), head_data(1, 5))]);
+		let (state_root, proof) = prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
 		run_test(|| {
 			// start with relay block #0
 			initialize(state_root);

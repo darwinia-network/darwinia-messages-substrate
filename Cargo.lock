@@ -395,6 +395,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-parachains"
+version = "0.1.0"
+dependencies = [
+ "bp-polkadot-core",
+ "bp-runtime",
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+]
+
+[[package]]
 name = "bp-polkadot"
 version = "0.1.0"
 dependencies = [
@@ -1716,6 +1729,7 @@ name = "pallet-bridge-parachains"
 version = "0.1.0"
 dependencies = [
  "bp-header-chain",
+ "bp-parachains",
  "bp-polkadot-core",
  "bp-runtime",
  "bp-test-utils",
