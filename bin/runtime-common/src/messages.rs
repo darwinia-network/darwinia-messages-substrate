@@ -22,9 +22,11 @@
 
 use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
+	source_chain::LaneMessageVerifier,
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
+use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
