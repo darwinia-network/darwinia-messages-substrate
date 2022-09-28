@@ -10,7 +10,7 @@ pub const PANGORO_PANGOLIN_LANE: LaneId = *b"roli";
 pub const PANGOLIN_PANGOLIN_PARACHAIN_LANE: LaneId = *b"pali";
 
 /// Identifier of bridge between Pangolin and Pangolin Parachain Alpha.
-pub const PANGOLIN_PANGOLIN_PARACHAIN_ALPHA_LANE: LaneId = *b"phli";
+pub const PANGOLIN_PANGOLIN_PARACHAIN_ALPHA_LANE: LaneId = *b"plpa";
 
 /// Identifier of bridge between Crab and Crab Parachain.
 pub const CRAB_CRAB_PARACHAIN_LANE: LaneId = *b"pacr";
