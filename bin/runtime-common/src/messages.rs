@@ -636,7 +636,7 @@ pub mod target {
 		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
 			DecodedCall::decode_with_depth_limit(
 				sp_api::MAX_EXTRINSIC_DEPTH,
-				 &encoded_call.encoded_call[..],
+				&encoded_call.encoded_call[..],
 			)
 			.map_err(drop)
 		}
