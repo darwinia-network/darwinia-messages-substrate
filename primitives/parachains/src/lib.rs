@@ -18,14 +18,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use bp_polkadot_core::{
-	parachains::{ParaHash, ParaHead, ParaId},
-	BlockNumber as RelayBlockNumber,
-};
+use bp_polkadot_core::parachains::ParaId;
 // use bp_runtime::{StorageDoubleMapKeyProvider, StorageMapKeyProvider};
-use codec::{Decode, Encode};
-use frame_support::{Blake2_128Concat, RuntimeDebug, Twox64Concat};
-use scale_info::TypeInfo;
+use codec::Encode;
+use frame_support::Twox64Concat;
 use sp_core::storage::StorageKey;
 
 // /// Best known parachain head hash.
