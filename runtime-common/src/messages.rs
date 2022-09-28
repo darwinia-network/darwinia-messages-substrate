@@ -26,10 +26,7 @@ use bp_messages::{
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
-use bp_runtime::{
-	messages::{ MessageDispatchResult},
-	ChainId, Size, StorageProofChecker,
-};
+use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
 	traits::{Currency, ExistenceRequirement},
@@ -530,7 +527,7 @@ pub mod target {
 		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
 			DecodedCall::decode_with_depth_limit(
 				sp_api::MAX_EXTRINSIC_DEPTH,
-				 &mut &encoded_call.encoded_call[..],
+				&mut &encoded_call.encoded_call[..],
 			)
 			.map_err(drop)
 		}
