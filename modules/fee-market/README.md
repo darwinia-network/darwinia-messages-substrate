@@ -26,7 +26,7 @@ In any time, the message delivery and confirmation relayer can be anyone, do not
 
 When calculating rewards and penalties, the following parameters are crucial.
 
-- GuardRelayersRewardRatio: `20% by default`
+- DutyRelayersRewardRatio: `20% by default`
 - MessageRelayersRewardRatio: `80% by default`
 - ConfirmRelayersRewardRatio: `20% by default`
 - AssignedRelayerSlashRatio: `20% by default` 
@@ -40,7 +40,7 @@ After a user sends a cross-chain transaction, the fee market system calculates t
 
     As long as the order is confirmed before the last block of the nth slot, we consider it to be delivered on time, and the calculation of rewards and penalties varies depending on when the message is confirmed.
 
-    Suppose the cross-chain message has n slots, the message is confirmed at the m-th slot, and `Pm` denotes the quote price of m-th slot. At this point, the assigned relayers from 0 to m slots will be penalized, and the penalty will be calculated as `AssignedRelayerSlashRatio * collateral`, while the assigned relayers from m to n slots will receive a reward for ensuring the message is completed on time `(GuardRelayersRewardRatio * (fee - Pm)) / (n - m)`. `Pm` plus the penalties for the other assigned relayers mentioned above will be distributed as new rewards to the message delivery relayer and the message confirm relayer, where the message delivery relayer receive the `MessageRelayersRewardRatio` of this reward, the message confirm relayer gets the `ConfirmRelayersRewardRatio` of this reward. The rest of the fee will be given to treasury.
+    Suppose the cross-chain message has n slots, the message is confirmed at the m-th slot, and `Pm` denotes the quote price of m-th slot. At this point, the assigned relayers from 0 to m slots will be penalized, and the penalty will be calculated as `AssignedRelayerSlashRatio * collateral`, while the assigned relayers from m to n slots will receive a reward for ensuring the message is completed on time `(DutyRelayersRewardRatio * (fee - Pm)) / (n - m)`. `Pm` plus the penalties for the other assigned relayers mentioned above will be distributed as new rewards to the message delivery relayer and the message confirm relayer, where the message delivery relayer receive the `MessageRelayersRewardRatio` of this reward, the message confirm relayer gets the `ConfirmRelayersRewardRatio` of this reward. The rest of the fee will be given to treasury.
 
 - The cross-chain transaction is confirmed after the last block of the n slot.
 
@@ -66,7 +66,7 @@ The slash, reward analysis is divided into two cases.
         
         Reward Summary:
 
-        * To assigned relayers (R1, R2, R3): `(GuardRelayersRewardRatio * (30 - 10)) / 3 = 1`
+        * To assigned relayers (R1, R2, R3): `(DutyRelayersRewardRatio * (30 - 10)) / 3 = 1`
         * To treasury: `30 - 10 - 1 * 3 = 17`
         * To message delivery relayer: `10 * MessageRelayersRewardRatio = 8`
         * To message confirm relayer: `10 * ConfirmRelayersRewardRatio = 2`
@@ -81,7 +81,7 @@ The slash, reward analysis is divided into two cases.
 
         Reward Summary:
 
-        * To assigned relayers (R2, R3) = `(GuardRelayersRewardRatio * (30 - 20)) / 2 = 1`
+        * To assigned relayers (R2, R3) = `(DutyRelayersRewardRatio * (30 - 20)) / 2 = 1`
         * To treasury: `30 - 20 - 1 * 2 = 8`
         * To message delivery relayer: `(20 + 20) * MessageRelayersRewardRatio = 32`
         * To message confirm relayer: `(20 + 20) * MessageRelayersRewardRatio = 8`
@@ -98,7 +98,7 @@ The slash, reward analysis is divided into two cases.
 
         Reward Summary:
 
-        * To assigned relayers (R3) = `(GuardRelayersRewardRatio * (30 - 30)) / 1 = 0`
+        * To assigned relayers (R3) = `(DutyRelayersRewardRatio * (30 - 30)) / 1 = 0`
         * To treasury: `30 - 30 - 0 = 0`
         * To message delivery relayer: `(10 + 20 * 2) * MessageRelayersRewardRatio = 56`
         * To message confirm relayer: `(10 + 20 * 2) * MessageRelayersRewardRatio = 14`

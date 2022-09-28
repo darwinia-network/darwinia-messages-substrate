@@ -28,6 +28,7 @@ use frame_support::{
 use scale_info::TypeInfo;
 use sp_runtime::traits::{AccountIdConversion, CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
 use sp_std::{
+	cmp::{max, min},
 	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
 	ops::RangeInclusive,
 };
@@ -160,8 +161,8 @@ where
 {
 	let mut rewards_items = Vec::new();
 	for entry in messages_relayers {
-		let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
-		let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
+		let nonce_begin = max(entry.messages.begin, *received_range.start());
+		let nonce_end = min(entry.messages.end, *received_range.end());
 
 		for message_nonce in nonce_begin..nonce_end + 1 {
 			// The order created when message was accepted, so we can always get the order info.
@@ -172,43 +173,43 @@ where
 					// When the order is confirmed at the first slot, no assigned relayers will be
 					// not slashed in this case. The total reward to the message deliver relayer and
 					// message confirm relayer is the confirmed slot price(first slot price), the
-					// guarding relayers would be rewarded with the 20% remaining order_fee, and all
-					// the guarding relayers share the guard_rewards equally. Finally, the
-					// remaining the order_fee goes to the treasury.
+					// duty relayers would be rewarded with the 20% of the message fee, and all
+					// the duty relayers share the duty_rewards equally. Finally, the
+					// surplus of the message fee goes to the treasury.
 					Some((slot_index, slot_price)) if slot_index == 0 => {
-						let mut order_remain_fee = order.fee().saturating_sub(slot_price);
-						let guard_rewards = T::GuardRelayersRewardRatio::get() * order_remain_fee;
+						let mut message_surplus = order.fee().saturating_sub(slot_price);
+						let duty_rewards = T::DutyRelayersRewardRatio::get() * message_surplus;
 
-						// All assigned relayers successfully guarded in this case, no slash
-						// happens, just calculate the guarding relayers rewards.
-						let guard_relayers_list: Vec<_> =
+						// All assigned relayers successfully are on duty in this case, no slash
+						// happens, just calculate the duty relayers rewards.
+						let duty_relayers_list: Vec<_> =
 							order.assigned_relayers_slice().iter().map(|r| r.id.clone()).collect();
-						let average_reward = guard_rewards
-							.checked_div(&(guard_relayers_list.len()).unique_saturated_into())
+						let average_reward = duty_rewards
+							.checked_div(&(duty_relayers_list.len()).unique_saturated_into())
 							.unwrap_or_default();
-						for id in guard_relayers_list {
+						for id in duty_relayers_list {
 							reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
-							order_remain_fee = order_remain_fee.saturating_sub(average_reward);
+							message_surplus = message_surplus.saturating_sub(average_reward);
 						}
 
-						(slot_price, Some(order_remain_fee))
+						(slot_price, Some(message_surplus))
 					},
 					// When the order is confirmed not at the first slot but within the deadline,
 					// some other assigned relayers will be slashed in this case. The total reward
 					// to the message deliver relayer and message confirm relayer is the confirmed
 					// slot price(first slot price) + other_assigned_relayers_slash part, the
-					// guarding relayers would be rewarded with the 20% remaining order_fee, and all
-					// the guarding relayers share the guard_rewards equally. Finally, the
-					// remaining the order_fee goes to the treasury.
+					// duty relayers would be rewarded with the 20% of the message surplus, and all
+					// the duty relayers share the duty_rewards equally. Finally, the
+					// surplus of the message fee goes to the treasury.
 					Some((slot_index, slot_price)) if slot_index >= 1 => {
-						let mut order_remain_fee = order.fee().saturating_sub(slot_price);
-						let guard_rewards = T::GuardRelayersRewardRatio::get() * order_remain_fee;
+						let mut message_surplus = order.fee().saturating_sub(slot_price);
+						let duty_rewards = T::DutyRelayersRewardRatio::get() * message_surplus;
 
-						// Since part of the assigned relayers successfully guarded, calculate the
-						// guarding relayers slash part first.
+						// Since part of the assigned relayers are on duty, calculate the
+						// duty relayers slash part first.
 						let mut slashed_relayers_list: Vec<_> =
 							order.assigned_relayers_slice().iter().map(|r| r.id.clone()).collect();
-						let guard_relayers_list = slashed_relayers_list.split_off(slot_index);
+						let duty_relayers_list = slashed_relayers_list.split_off(slot_index);
 
 						// Calculate the assigned relayers slash part
 						let mut other_assigned_relayers_slash = BalanceOf::<T, I>::zero();
@@ -223,23 +224,23 @@ where
 							other_assigned_relayers_slash += amount;
 						}
 
-						// Calculate the guarding relayers rewards
-						let average_reward = guard_rewards
-							.checked_div(&(guard_relayers_list.len()).unique_saturated_into())
+						// Calculate the duty relayers rewards
+						let average_reward = duty_rewards
+							.checked_div(&(duty_relayers_list.len()).unique_saturated_into())
 							.unwrap_or_default();
-						for id in guard_relayers_list {
+						for id in duty_relayers_list {
 							reward_item.to_assigned_relayers.insert(id.clone(), average_reward);
-							order_remain_fee = order_remain_fee.saturating_sub(average_reward);
+							message_surplus = message_surplus.saturating_sub(average_reward);
 						}
 
 						(
 							slot_price.saturating_add(other_assigned_relayers_slash),
-							Some(order_remain_fee),
+							Some(message_surplus),
 						)
 					},
 					// When the order is confirmed delayer, all assigned relayers will be slashed in
 					// this case. So, no confirmed slot price here. All reward will distribute to
-					// the message deliver relayer and message confirm relayer. No guarding rewards
+					// the message deliver relayer and message confirm relayer. No duty rewards
 					// and treasury reward.
 					_ => {
 						let mut other_assigned_relayers_slash = BalanceOf::<T, I>::zero();
