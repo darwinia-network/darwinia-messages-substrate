@@ -330,12 +330,26 @@ mod tests {
 	use crate::mock::{run_test, test_relay_header, Origin, TestRuntime};
 
 	use bp_test_utils::{authority_list, make_default_justification};
-	use frame_support::{assert_noop, assert_ok, traits::OnInitialize};
+	use frame_support::{assert_noop, assert_ok, traits::OnInitialize, Twox64Concat};
+	use sp_core::storage::StorageKey;
 	use sp_trie::{
 		record_all_keys, trie_types::TrieDBMutV1, LayoutV1, MemoryDB, Recorder, TrieMut,
 	};
 
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
+
+	const PARAS_PALLET_NAME: &str = "Paras";
+
+	fn parachain_head_storage_key_at_source(
+		paras_pallet_name: &str,
+		para_id: ParaId,
+	) -> StorageKey {
+		bp_runtime::storage_map_final_key::<Twox64Concat>(
+			paras_pallet_name,
+			"Heads",
+			&para_id.encode(),
+		)
+	}
 
 	fn initialize(state_root: RelayBlockHash) {
 		pallet_bridge_grandpa::Pallet::<TestRuntime, BridgesGrandpaPalletInstance>::initialize(
@@ -585,7 +599,7 @@ mod tests {
 
 			// import next relay chain header and next parachain head
 			let (state_root, proof) =
-				prepare_parachain_heads_proof(vec![(ParaId(1), head_data(1, heads_to_keep))]);
+				prepare_parachain_heads_proof(vec![(1, head_data(1, heads_to_keep))]);
 			proceed(heads_to_keep, state_root);
 			assert_ok!(import_parachain_1_head(heads_to_keep, state_root, proof));
 
@@ -602,7 +616,7 @@ mod tests {
 
 	#[test]
 	fn fails_on_unknown_relay_chain_block() {
-		let (state_root, proof) = prepare_parachain_heads_proof(vec![(ParaId(1), head_data(1, 5))]);
+		let (state_root, proof) = prepare_parachain_heads_proof(vec![(1, head_data(1, 5))]);
 		run_test(|| {
 			// start with relay block #0
 			initialize(state_root);
