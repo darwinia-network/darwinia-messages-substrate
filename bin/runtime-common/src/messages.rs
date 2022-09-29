@@ -39,8 +39,8 @@ use frame_support::{
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Saturating, Zero},
-	FixedPointNumber, FixedPointOperand, FixedU128,
+	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
+	FixedPointNumber, FixedPointOperand,
 };
 use sp_std::{
 	cmp::PartialOrd, convert::TryFrom, fmt::Debug, marker::PhantomData, ops::RangeInclusive,
@@ -100,15 +100,6 @@ pub trait ChainWithMessages {
 		+ Copy;
 }
 
-/// Message related transaction parameters estimation.
-#[derive(RuntimeDebug)]
-pub struct MessageTransaction<Weight> {
-	/// The estimated dispatch weight of the transaction.
-	pub dispatch_weight: Weight,
-	/// The estimated size of the encoded transaction.
-	pub size: u32,
-}
-
 /// This chain that has `pallet-bridge-messages` and `dispatch` modules.
 pub trait ThisChainWithMessages: ChainWithMessages {
 	/// Call origin on the chain.
@@ -123,12 +114,6 @@ pub trait ThisChainWithMessages: ChainWithMessages {
 	///
 	/// Any messages over this limit, will be rejected.
 	fn maximal_pending_messages_at_outbound_lane() -> MessageNonce;
-
-	/// Estimate size and weight of single message delivery confirmation transaction at This chain.
-	fn estimate_delivery_confirmation_transaction() -> MessageTransaction<WeightOf<Self>>;
-
-	/// Returns minimal transaction fee that must be paid for given transaction at This chain.
-	fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self>;
 }
 
 /// Bridged chain that has `pallet-bridge-messages` and `dispatch` modules.
@@ -146,17 +131,6 @@ pub trait BridgedChainWithMessages: ChainWithMessages {
 	/// already accounted by the `weight_of_delivery_transaction`. So this function should
 	/// return pure call dispatch weights range.
 	fn message_weight_limits(message_payload: &[u8]) -> RangeInclusive<Self::Weight>;
-
-	/// Estimate size and weight of single message delivery transaction at the Bridged chain.
-	fn estimate_delivery_transaction(
-		message_payload: &[u8],
-		include_pay_dispatch_fee_cost: bool,
-		message_dispatch_weight: WeightOf<Self>,
-	) -> MessageTransaction<WeightOf<Self>>;
-
-	/// Returns minimal transaction fee that must be paid for given transaction at the Bridged
-	/// chain.
-	fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self>;
 }
 
 /// This chain in context of message bridge.
@@ -182,33 +156,6 @@ pub type CallOf<C> = <C as ThisChainWithMessages>::Call;
 
 /// Raw storage proof type (just raw trie nodes).
 pub type RawStorageProof = Vec<Vec<u8>>;
-
-/// Compute fee of transaction at runtime where regular transaction payment pallet is being used.
-///
-/// The value of `multiplier` parameter is the expected value of
-/// `pallet_transaction_payment::NextFeeMultiplier` at the moment when transaction is submitted. If
-/// you're charging this payment in advance (and that's what happens with delivery and confirmation
-/// transaction in this crate), then there's a chance that the actual fee will be larger than what
-/// is paid in advance. So the value must be chosen carefully.
-pub fn transaction_payment<Balance: AtLeast32BitUnsigned + FixedPointOperand>(
-	base_extrinsic_weight: Weight,
-	per_byte_fee: Balance,
-	multiplier: FixedU128,
-	weight_to_fee: impl Fn(Weight) -> Balance,
-	transaction: MessageTransaction<Weight>,
-) -> Balance {
-	// base fee is charged for every tx
-	let base_fee = weight_to_fee(base_extrinsic_weight);
-
-	// non-adjustable per-byte fee
-	let len_fee = per_byte_fee.saturating_mul(Balance::from(transaction.size));
-
-	// the adjustable part of the fee
-	let unadjusted_weight_fee = weight_to_fee(transaction.dispatch_weight);
-	let adjusted_weight_fee = multiplier.saturating_mul_int(unadjusted_weight_fee);
-
-	base_fee.saturating_add(len_fee).saturating_add(adjusted_weight_fee)
-}
 
 /// Sub-module that is declaring types required for processing This -> Bridged chain messages.
 pub mod source {
@@ -838,9 +785,6 @@ mod tests {
 	use frame_support::weights::Weight;
 	use std::ops::RangeInclusive;
 
-	const DELIVERY_TRANSACTION_WEIGHT: Weight = 100;
-	const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 2;
-	const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 4;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: Weight = 2048;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE: u32 = 1024;
 
@@ -1024,19 +968,6 @@ mod tests {
 		fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
 			MAXIMAL_PENDING_MESSAGES_AT_TEST_LANE
 		}
-
-		fn estimate_delivery_confirmation_transaction() -> MessageTransaction<WeightOf<Self>> {
-			MessageTransaction {
-				dispatch_weight: DELIVERY_CONFIRMATION_TRANSACTION_WEIGHT,
-				size: 0,
-			}
-		}
-
-		fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self> {
-			ThisChainBalance(
-				transaction.dispatch_weight as u32 * THIS_CHAIN_WEIGHT_TO_BALANCE_RATE as u32,
-			)
-		}
 	}
 
 	impl BridgedChainWithMessages for ThisChain {
@@ -1045,20 +976,6 @@ mod tests {
 		}
 
 		fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Self::Weight> {
-			unreachable!()
-		}
-
-		fn estimate_delivery_transaction(
-			_message_payload: &[u8],
-			_include_pay_dispatch_fee_cost: bool,
-			_message_dispatch_weight: WeightOf<Self>,
-		) -> MessageTransaction<WeightOf<Self>> {
-			unreachable!()
-		}
-
-		fn transaction_payment(
-			_transaction: MessageTransaction<WeightOf<Self>>,
-		) -> BalanceOf<Self> {
 			unreachable!()
 		}
 	}
@@ -1085,16 +1002,6 @@ mod tests {
 		fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
 			unreachable!()
 		}
-
-		fn estimate_delivery_confirmation_transaction() -> MessageTransaction<WeightOf<Self>> {
-			unreachable!()
-		}
-
-		fn transaction_payment(
-			_transaction: MessageTransaction<WeightOf<Self>>,
-		) -> BalanceOf<Self> {
-			unreachable!()
-		}
 	}
 
 	impl BridgedChainWithMessages for BridgedChain {
@@ -1106,23 +1013,6 @@ mod tests {
 			let begin =
 				std::cmp::min(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT, message_payload.len() as Weight);
 			begin..=BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT
-		}
-
-		fn estimate_delivery_transaction(
-			_message_payload: &[u8],
-			_include_pay_dispatch_fee_cost: bool,
-			message_dispatch_weight: WeightOf<Self>,
-		) -> MessageTransaction<WeightOf<Self>> {
-			MessageTransaction {
-				dispatch_weight: DELIVERY_TRANSACTION_WEIGHT + message_dispatch_weight,
-				size: 0,
-			}
-		}
-
-		fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self> {
-			BridgedChainBalance(
-				transaction.dispatch_weight as u32 * BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE as u32,
-			)
 		}
 	}
 
@@ -1457,38 +1347,6 @@ mod tests {
 				}),
 			),
 			Err(target::MessageProofError::MessagesCountMismatch),
-		);
-	}
-
-	#[test]
-	fn transaction_payment_works_with_zero_multiplier() {
-		use sp_runtime::traits::Zero;
-
-		assert_eq!(
-			transaction_payment(
-				100,
-				10,
-				FixedU128::zero(),
-				|weight| weight,
-				MessageTransaction { size: 50, dispatch_weight: 777 },
-			),
-			100 + 50 * 10,
-		);
-	}
-
-	#[test]
-	fn transaction_payment_works_with_non_zero_multiplier() {
-		use sp_runtime::traits::One;
-
-		assert_eq!(
-			transaction_payment(
-				100,
-				10,
-				FixedU128::one(),
-				|weight| weight,
-				MessageTransaction { size: 50, dispatch_weight: 777 },
-			),
-			100 + 50 * 10 + 777,
 		);
 	}
 }
