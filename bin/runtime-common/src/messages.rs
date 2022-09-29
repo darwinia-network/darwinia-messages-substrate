@@ -118,9 +118,6 @@ pub trait ThisChainWithMessages: ChainWithMessages {
 	///
 	/// Any messages over this limit, will be rejected.
 	fn maximal_pending_messages_at_outbound_lane() -> MessageNonce;
-
-	/// Returns minimal transaction fee that must be paid for given transaction at This chain.
-	fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self>;
 }
 
 /// Bridged chain that has `pallet-bridge-messages` and `dispatch` modules.
@@ -138,10 +135,6 @@ pub trait BridgedChainWithMessages: ChainWithMessages {
 	/// already accounted by the `weight_of_delivery_transaction`. So this function should
 	/// return pure call dispatch weights range.
 	fn message_weight_limits(message_payload: &[u8]) -> RangeInclusive<Self::Weight>;
-
-	/// Returns minimal transaction fee that must be paid for given transaction at the Bridged
-	/// chain.
-	fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self>;
 }
 
 /// This chain in context of message bridge.
@@ -1045,12 +1038,6 @@ mod tests {
 		fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
 			MAXIMAL_PENDING_MESSAGES_AT_TEST_LANE
 		}
-
-		fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self> {
-			ThisChainBalance(
-				transaction.dispatch_weight as u32 * THIS_CHAIN_WEIGHT_TO_BALANCE_RATE as u32,
-			)
-		}
 	}
 
 	impl BridgedChainWithMessages for ThisChain {
@@ -1059,12 +1046,6 @@ mod tests {
 		}
 
 		fn message_weight_limits(_message_payload: &[u8]) -> RangeInclusive<Self::Weight> {
-			unreachable!()
-		}
-
-		fn transaction_payment(
-			_transaction: MessageTransaction<WeightOf<Self>>,
-		) -> BalanceOf<Self> {
 			unreachable!()
 		}
 	}
@@ -1091,12 +1072,6 @@ mod tests {
 		fn maximal_pending_messages_at_outbound_lane() -> MessageNonce {
 			unreachable!()
 		}
-
-		fn transaction_payment(
-			_transaction: MessageTransaction<WeightOf<Self>>,
-		) -> BalanceOf<Self> {
-			unreachable!()
-		}
 	}
 
 	impl BridgedChainWithMessages for BridgedChain {
@@ -1108,12 +1083,6 @@ mod tests {
 			let begin =
 				std::cmp::min(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT, message_payload.len() as Weight);
 			begin..=BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT
-		}
-
-		fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self> {
-			BridgedChainBalance(
-				transaction.dispatch_weight as u32 * BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE as u32,
-			)
 		}
 	}
 
@@ -1448,38 +1417,6 @@ mod tests {
 				}),
 			),
 			Err(target::MessageProofError::MessagesCountMismatch),
-		);
-	}
-
-	#[test]
-	fn transaction_payment_works_with_zero_multiplier() {
-		use sp_runtime::traits::Zero;
-
-		assert_eq!(
-			transaction_payment(
-				100,
-				10,
-				FixedU128::zero(),
-				|weight| weight,
-				MessageTransaction { size: 50, dispatch_weight: 777 },
-			),
-			100 + 50 * 10,
-		);
-	}
-
-	#[test]
-	fn transaction_payment_works_with_non_zero_multiplier() {
-		use sp_runtime::traits::One;
-
-		assert_eq!(
-			transaction_payment(
-				100,
-				10,
-				FixedU128::one(),
-				|weight| weight,
-				MessageTransaction { size: 50, dispatch_weight: 777 },
-			),
-			100 + 50 * 10 + 777,
 		);
 	}
 }
