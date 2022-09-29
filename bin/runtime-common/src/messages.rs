@@ -22,14 +22,12 @@
 
 use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
+	source_chain::LaneMessageVerifier,
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
-use bp_runtime::{
-	messages::{ MessageDispatchResult},
-	ChainId, Size, StorageProofChecker,
-};
+use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
 	traits::{Currency, ExistenceRequirement},
@@ -247,6 +245,24 @@ pub mod source {
 	pub type ParsedMessagesDeliveryProofFromBridgedChain<B> =
 		(LaneId, InboundLaneData<AccountIdOf<ThisChain<B>>>);
 
+	/// Message verifier that is doing all basic checks.
+	///
+	/// This verifier assumes following:
+	///
+	/// - all message lanes are equivalent, so all checks are the same;
+	/// - messages are being dispatched using `pallet-bridge-dispatch` pallet on the target chain.
+	///
+	/// Following checks are made:
+	///
+	/// - message is rejected if its lane is currently blocked;
+	/// - message is rejected if there are too many pending (undelivered) messages at the outbound
+	///   lane;
+	/// - check that the sender has rights to dispatch the call on target chain using provided
+	///   dispatch origin;
+	/// - check that the sender has paid enough funds for both message delivery and dispatch.
+	#[derive(RuntimeDebug)]
+	pub struct FromThisChainMessageVerifier<B, F, I>(PhantomData<(B, F, I)>);
+
 	/// The error message returned from LaneMessageVerifier when outbound lane is disabled.
 	pub const MESSAGE_REJECTED_BY_OUTBOUND_LANE: &str =
 		"The outbound message lane has rejected the message.";
@@ -257,6 +273,97 @@ pub mod source {
 	pub const BAD_ORIGIN: &str = "Unable to match the source origin to expected target origin.";
 	/// The error message returned from LaneMessageVerifier when the message fee is too low.
 	pub const TOO_LOW_FEE: &str = "Provided fee is below minimal threshold required by the lane.";
+
+	impl<B, F, I>
+		LaneMessageVerifier<
+			OriginOf<ThisChain<B>>,
+			AccountIdOf<ThisChain<B>>,
+			FromThisChainMessagePayload<B>,
+			BalanceOf<ThisChain<B>>,
+		> for FromThisChainMessageVerifier<B, F, I>
+	where
+		B: MessageBridge,
+		F: pallet_fee_market::Config<I>,
+		I: 'static,
+		// matches requirements from the `frame_system::Config::Origin`
+		OriginOf<ThisChain<B>>: Clone
+			+ Into<Result<frame_system::RawOrigin<AccountIdOf<ThisChain<B>>>, OriginOf<ThisChain<B>>>>,
+		AccountIdOf<ThisChain<B>>: PartialEq + Clone,
+		pallet_fee_market::BalanceOf<F, I>: From<BalanceOf<ThisChain<B>>>,
+	{
+		type Error = &'static str;
+
+		#[allow(clippy::single_match)]
+		#[cfg(not(feature = "runtime-benchmarks"))]
+		fn verify_message(
+			submitter: &OriginOf<ThisChain<B>>,
+			delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
+			lane: &LaneId,
+			lane_outbound_data: &OutboundLaneData,
+			payload: &FromThisChainMessagePayload<B>,
+		) -> Result<(), Self::Error> {
+			// reject message if lane is blocked
+			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
+				return Err(MESSAGE_REJECTED_BY_OUTBOUND_LANE);
+			}
+
+			// reject message if there are too many pending messages at this lane
+			let max_pending_messages = ThisChain::<B>::maximal_pending_messages_at_outbound_lane();
+			let pending_messages = lane_outbound_data
+				.latest_generated_nonce
+				.saturating_sub(lane_outbound_data.latest_received_nonce);
+			if pending_messages > max_pending_messages {
+				return Err(TOO_MANY_PENDING_MESSAGES);
+			}
+
+			// Do the dispatch-specific check. We assume that the target chain uses
+			// `Dispatch`, so we verify the message accordingly.
+			let raw_origin_or_err: Result<
+				frame_system::RawOrigin<AccountIdOf<ThisChain<B>>>,
+				OriginOf<ThisChain<B>>,
+			> = submitter.clone().into();
+			if let Ok(raw_origin) = raw_origin_or_err {
+				pallet_bridge_dispatch::verify_message_origin(&raw_origin, payload)
+					.map(drop)
+					.map_err(|_| BAD_ORIGIN)?;
+			} else {
+				// so what it means that we've failed to convert origin to the
+				// `frame_system::RawOrigin`? now it means that the custom pallet origin has
+				// been used to send the message. Do we need to verify it? The answer is no,
+				// because pallet may craft any origin (e.g. root) && we can't verify whether it
+				// is valid, or not.
+			};
+
+			// Do the delivery_and_dispatch_fee. We assume that the delivery and dispatch fee always
+			// greater than the fee market provided fee.
+			if let Some(market_fee) = pallet_fee_market::Pallet::<F, I>::market_fee() {
+				let message_fee: pallet_fee_market::BalanceOf<F, I> =
+					(*delivery_and_dispatch_fee).into();
+
+				// compare with actual fee paid
+				if message_fee < market_fee {
+					return Err(TOO_LOW_FEE);
+				}
+			} else {
+				const NO_MARKET_FEE: &str = "The fee market are not ready for accepting messages.";
+
+				return Err(NO_MARKET_FEE);
+			}
+
+			Ok(())
+		}
+
+		#[cfg(feature = "runtime-benchmarks")]
+		fn verify_message(
+			_submitter: &OriginOf<ThisChain<B>>,
+			_delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
+			_lane: &LaneId,
+			_lane_outbound_data: &OutboundLaneData,
+			_payload: &FromThisChainMessagePayload<B>,
+		) -> Result<(), Self::Error> {
+			Ok(())
+		}
+	}
 
 	/// Return maximal message size of This -> Bridged chain message.
 	pub fn maximal_message_size<B: MessageBridge>() -> u32 {
@@ -529,7 +636,7 @@ pub mod target {
 		fn from(encoded_call: FromBridgedChainEncodedMessageCall<DecodedCall>) -> Self {
 			DecodedCall::decode_with_depth_limit(
 				sp_api::MAX_EXTRINSIC_DEPTH,
-				 &encoded_call.encoded_call[..],
+				&encoded_call.encoded_call[..],
 			)
 			.map_err(drop)
 		}
@@ -770,15 +877,14 @@ pub mod target {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use bp_runtime::messages::DispatchFeePayment;
 	use codec::{Decode, Encode};
 	use frame_support::weights::Weight;
 	use std::ops::RangeInclusive;
 
 	const DELIVERY_TRANSACTION_WEIGHT: Weight = 100;
-	const DELIVERY_CONFIRMATION_TRANSACTION_WEIGHT: Weight = 100;
 	const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 2;
 	const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 4;
-	const BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE: u32 = 6;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: Weight = 2048;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE: u32 = 1024;
 
@@ -1036,10 +1142,6 @@ mod tests {
 		}
 	}
 
-	fn test_lane_outbound_data() -> OutboundLaneData {
-		OutboundLaneData::default()
-	}
-
 	#[test]
 	fn message_from_bridged_chain_is_decoded() {
 		// the message is encoded on the bridged chain
@@ -1076,180 +1178,6 @@ mod tests {
 
 	const TEST_LANE_ID: &LaneId = b"test";
 	const MAXIMAL_PENDING_MESSAGES_AT_TEST_LANE: MessageNonce = 32;
-
-	fn regular_outbound_message_payload() -> source::FromThisChainMessagePayload<OnThisChainBridge>
-	{
-		source::FromThisChainMessagePayload::<OnThisChainBridge> {
-			spec_version: 1,
-			weight: 100,
-			origin: bp_message_dispatch::CallOrigin::SourceRoot,
-			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-			call: vec![42],
-		}
-	}
-
-	#[test]
-	fn message_fee_is_checked_by_verifier() {
-		const EXPECTED_MINIMAL_FEE: u32 = 5500;
-
-		// payload of the This -> Bridged chain message
-		let payload = regular_outbound_message_payload();
-
-		// let's check if estimation matching hardcoded value
-		assert_eq!(
-			source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
-				&payload,
-				OnThisChainBridge::RELAYER_FEE_PERCENT,
-				None,
-			),
-			Ok(ThisChainBalance(EXPECTED_MINIMAL_FEE)),
-		);
-
-		// let's check if estimation is less than hardcoded, if dispatch is paid at target chain
-		let mut payload_with_pay_on_target = regular_outbound_message_payload();
-		payload_with_pay_on_target.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
-		let fee_at_source =
-			source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
-				&payload_with_pay_on_target,
-				OnThisChainBridge::RELAYER_FEE_PERCENT,
-				None,
-			)
-			.expect(
-				"estimate_message_dispatch_and_delivery_fee failed for pay-at-target-chain message",
-			);
-		assert!(
-			fee_at_source < EXPECTED_MINIMAL_FEE.into(),
-			"Computed fee {:?} without prepaid dispatch must be less than the fee with prepaid dispatch {}",
-			fee_at_source,
-			EXPECTED_MINIMAL_FEE,
-		);
-
-		// and now check that the verifier checks the fee
-		assert_eq!(
-			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-				&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-				&ThisChainBalance(1),
-				TEST_LANE_ID,
-				&test_lane_outbound_data(),
-				&payload,
-			),
-			Err(source::TOO_LOW_FEE)
-		);
-		assert!(source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-			&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-			&ThisChainBalance(1_000_000),
-			TEST_LANE_ID,
-			&test_lane_outbound_data(),
-			&payload,
-		)
-		.is_ok(),);
-	}
-
-	#[test]
-	fn should_disallow_root_calls_from_regular_accounts() {
-		// payload of the This -> Bridged chain message
-		let payload = source::FromThisChainMessagePayload::<OnThisChainBridge> {
-			spec_version: 1,
-			weight: 100,
-			origin: bp_message_dispatch::CallOrigin::SourceRoot,
-			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-			call: vec![42],
-		};
-
-		// and now check that the verifier checks the fee
-		assert_eq!(
-			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-				&ThisChainOrigin(Ok(frame_system::RawOrigin::Signed(ThisChainAccountId(0)))),
-				&ThisChainBalance(1_000_000),
-				TEST_LANE_ID,
-				&test_lane_outbound_data(),
-				&payload,
-			),
-			Err(source::BAD_ORIGIN)
-		);
-		assert_eq!(
-			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-				&ThisChainOrigin(Ok(frame_system::RawOrigin::None)),
-				&ThisChainBalance(1_000_000),
-				TEST_LANE_ID,
-				&test_lane_outbound_data(),
-				&payload,
-			),
-			Err(source::BAD_ORIGIN)
-		);
-		assert!(source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-			&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-			&ThisChainBalance(1_000_000),
-			TEST_LANE_ID,
-			&test_lane_outbound_data(),
-			&payload,
-		)
-		.is_ok(),);
-	}
-
-	#[test]
-	fn should_verify_source_and_target_origin_matching() {
-		// payload of the This -> Bridged chain message
-		let payload = source::FromThisChainMessagePayload::<OnThisChainBridge> {
-			spec_version: 1,
-			weight: 100,
-			origin: bp_message_dispatch::CallOrigin::SourceAccount(ThisChainAccountId(1)),
-			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-			call: vec![42],
-		};
-
-		// and now check that the verifier checks the fee
-		assert_eq!(
-			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-				&ThisChainOrigin(Ok(frame_system::RawOrigin::Signed(ThisChainAccountId(0)))),
-				&ThisChainBalance(1_000_000),
-				TEST_LANE_ID,
-				&test_lane_outbound_data(),
-				&payload,
-			),
-			Err(source::BAD_ORIGIN)
-		);
-		assert!(source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-			&ThisChainOrigin(Ok(frame_system::RawOrigin::Signed(ThisChainAccountId(1)))),
-			&ThisChainBalance(1_000_000),
-			TEST_LANE_ID,
-			&test_lane_outbound_data(),
-			&payload,
-		)
-		.is_ok(),);
-	}
-
-	#[test]
-	fn message_is_rejected_when_sent_using_disabled_lane() {
-		assert_eq!(
-			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-				&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-				&ThisChainBalance(1_000_000),
-				b"dsbl",
-				&test_lane_outbound_data(),
-				&regular_outbound_message_payload(),
-			),
-			Err(source::MESSAGE_REJECTED_BY_OUTBOUND_LANE)
-		);
-	}
-
-	#[test]
-	fn message_is_rejected_when_there_are_too_many_pending_messages_at_outbound_lane() {
-		assert_eq!(
-			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-				&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-				&ThisChainBalance(1_000_000),
-				TEST_LANE_ID,
-				&OutboundLaneData {
-					latest_received_nonce: 100,
-					latest_generated_nonce: 100 + MAXIMAL_PENDING_MESSAGES_AT_TEST_LANE + 1,
-					..Default::default()
-				},
-				&regular_outbound_message_payload(),
-			),
-			Err(source::TOO_MANY_PENDING_MESSAGES)
-		);
-	}
 
 	#[test]
 	fn verify_chain_message_rejects_message_with_too_small_declared_weight() {
@@ -1578,22 +1506,5 @@ mod tests {
 			),
 			100 + 50 * 10 + 777,
 		);
-	}
-
-	#[test]
-	fn conversion_rate_override_works() {
-		let payload = regular_outbound_message_payload();
-		let regular_fee = source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
-			&payload,
-			OnThisChainBridge::RELAYER_FEE_PERCENT,
-			None,
-		);
-		let overrided_fee = source::estimate_message_dispatch_and_delivery_fee::<OnThisChainBridge>(
-			&payload,
-			OnThisChainBridge::RELAYER_FEE_PERCENT,
-			Some(FixedU128::from_float((BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE * 2) as f64)),
-		);
-
-		assert!(regular_fee < overrided_fee);
 	}
 }
