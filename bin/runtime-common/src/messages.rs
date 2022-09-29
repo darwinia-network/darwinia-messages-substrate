@@ -26,10 +26,7 @@ use bp_messages::{
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
 };
-use bp_runtime::{
-	messages::{DispatchFeePayment, MessageDispatchResult},
-	ChainId, Size, StorageProofChecker,
-};
+use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 use codec::{Decode, DecodeLimit, Encode};
 use frame_support::{
 	traits::{Currency, ExistenceRequirement},
@@ -39,7 +36,7 @@ use frame_support::{
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
+	traits::{CheckedAdd, CheckedDiv, CheckedMul, Saturating, Zero},
 	FixedPointNumber, FixedPointOperand,
 };
 use sp_std::{
