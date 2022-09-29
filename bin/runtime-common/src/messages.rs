@@ -66,12 +66,6 @@ pub trait MessageBridge {
 	type ThisChain: ThisChainWithMessages;
 	/// Bridged chain in context of message bridge.
 	type BridgedChain: BridgedChainWithMessages;
-
-	/// Convert Bridged chain balance into This chain balance.
-	fn bridged_balance_to_this_balance(
-		bridged_balance: BalanceOf<BridgedChain<Self>>,
-		bridged_to_this_conversion_rate_override: Option<FixedU128>,
-	) -> BalanceOf<ThisChain<Self>>;
 }
 
 /// Chain that has `pallet-bridge-messages` and `dispatch` modules.
@@ -353,54 +347,6 @@ pub mod source {
 		}
 
 		Ok(())
-	}
-
-	/// Estimate delivery and dispatch fee that must be paid for delivering a message to the Bridged
-	/// chain.
-	///
-	/// The fee is paid in This chain Balance, but we use Bridged chain balance to avoid additional
-	/// conversions. Returns `None` if overflow has happened.
-	pub fn estimate_message_dispatch_and_delivery_fee<B: MessageBridge>(
-		payload: &FromThisChainMessagePayload<B>,
-		relayer_fee_percent: u32,
-		bridged_to_this_conversion_rate: Option<FixedU128>,
-	) -> Result<BalanceOf<ThisChain<B>>, &'static str> {
-		// the fee (in Bridged tokens) of all transactions that are made on the Bridged chain
-		//
-		// if we're going to pay dispatch fee at the target chain, then we don't include weight
-		// of the message dispatch in the delivery transaction cost
-		let pay_dispatch_fee_at_target_chain =
-			payload.dispatch_fee_payment == DispatchFeePayment::AtTargetChain;
-		let delivery_transaction = BridgedChain::<B>::estimate_delivery_transaction(
-			&payload.encode(),
-			pay_dispatch_fee_at_target_chain,
-			if pay_dispatch_fee_at_target_chain { 0.into() } else { payload.weight.into() },
-		);
-		let delivery_transaction_fee = BridgedChain::<B>::transaction_payment(delivery_transaction);
-
-		// the fee (in This tokens) of all transactions that are made on This chain
-		let confirmation_transaction = ThisChain::<B>::estimate_delivery_confirmation_transaction();
-		let confirmation_transaction_fee =
-			ThisChain::<B>::transaction_payment(confirmation_transaction);
-
-		// minimal fee (in This tokens) is a sum of all required fees
-		let minimal_fee = B::bridged_balance_to_this_balance(
-			delivery_transaction_fee,
-			bridged_to_this_conversion_rate,
-		)
-		.checked_add(&confirmation_transaction_fee);
-
-		// before returning, add extra fee that is paid to the relayer (relayer interest)
-		minimal_fee
-			.and_then(|fee|
-			// having message with fee that is near the `Balance::MAX_VALUE` of the chain is
-			// unlikely and should be treated as an error
-			// => let's do multiplication first
-			fee
-				.checked_mul(&relayer_fee_percent.into())
-				.and_then(|interest| interest.checked_div(&100u32.into()))
-				.and_then(|interest| fee.checked_add(&interest)))
-			.ok_or("Overflow when computing minimal required message delivery and dispatch fee")
 	}
 
 	/// Verify proof of This -> Bridged chain messages delivery.
@@ -801,16 +747,6 @@ mod tests {
 		const BRIDGED_MESSAGES_PALLET_NAME: &'static str = "";
 		const RELAYER_FEE_PERCENT: u32 = 10;
 		const THIS_CHAIN_ID: ChainId = *b"this";
-
-		fn bridged_balance_to_this_balance(
-			bridged_balance: BridgedChainBalance,
-			bridged_to_this_conversion_rate_override: Option<FixedU128>,
-		) -> ThisChainBalance {
-			let conversion_rate = bridged_to_this_conversion_rate_override
-				.map(|r| r.to_float() as u32)
-				.unwrap_or(BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE);
-			ThisChainBalance(bridged_balance.0 * conversion_rate)
-		}
 	}
 
 	/// Bridge that is deployed on BridgedChain and allows sending/receiving messages to/from
