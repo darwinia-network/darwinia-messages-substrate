@@ -139,13 +139,6 @@ pub trait BridgedChainWithMessages: ChainWithMessages {
 	/// return pure call dispatch weights range.
 	fn message_weight_limits(message_payload: &[u8]) -> RangeInclusive<Self::Weight>;
 
-	/// Estimate size and weight of single message delivery transaction at the Bridged chain.
-	fn estimate_delivery_transaction(
-		message_payload: &[u8],
-		include_pay_dispatch_fee_cost: bool,
-		message_dispatch_weight: WeightOf<Self>,
-	) -> MessageTransaction<WeightOf<Self>>;
-
 	/// Returns minimal transaction fee that must be paid for given transaction at the Bridged
 	/// chain.
 	fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self>;
@@ -1069,14 +1062,6 @@ mod tests {
 			unreachable!()
 		}
 
-		fn estimate_delivery_transaction(
-			_message_payload: &[u8],
-			_include_pay_dispatch_fee_cost: bool,
-			_message_dispatch_weight: WeightOf<Self>,
-		) -> MessageTransaction<WeightOf<Self>> {
-			unreachable!()
-		}
-
 		fn transaction_payment(
 			_transaction: MessageTransaction<WeightOf<Self>>,
 		) -> BalanceOf<Self> {
@@ -1123,17 +1108,6 @@ mod tests {
 			let begin =
 				std::cmp::min(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT, message_payload.len() as Weight);
 			begin..=BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT
-		}
-
-		fn estimate_delivery_transaction(
-			_message_payload: &[u8],
-			_include_pay_dispatch_fee_cost: bool,
-			message_dispatch_weight: WeightOf<Self>,
-		) -> MessageTransaction<WeightOf<Self>> {
-			MessageTransaction {
-				dispatch_weight: DELIVERY_TRANSACTION_WEIGHT + message_dispatch_weight,
-				size: 0,
-			}
 		}
 
 		fn transaction_payment(transaction: MessageTransaction<WeightOf<Self>>) -> BalanceOf<Self> {
