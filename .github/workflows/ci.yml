@@ -23,6 +23,7 @@ jobs:
           - bp-pangolin-parachain
           - bp-rococo
           - bp-darwinia-core
+          - bridge-runtime-common
     steps:
       - uses: actions/checkout@v2
       - name: Check ${{ matrix.package }}
