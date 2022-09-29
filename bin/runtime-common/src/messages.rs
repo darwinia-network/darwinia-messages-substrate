@@ -37,11 +37,8 @@ use frame_support::{
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{
-		AtLeast32BitUnsigned, CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating,
-		Zero,
-	},
-	FixedPointNumber, FixedPointOperand, FixedU128,
+	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
+	FixedPointNumber, FixedPointOperand,
 };
 use sp_std::{
 	cmp::PartialOrd, convert::TryFrom, fmt::Debug, marker::PhantomData, ops::RangeInclusive,
@@ -833,9 +830,6 @@ mod tests {
 	use frame_support::weights::Weight;
 	use std::ops::RangeInclusive;
 
-	const DELIVERY_TRANSACTION_WEIGHT: Weight = 100;
-	const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 2;
-	const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 4;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: Weight = 2048;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE: u32 = 1024;
 
