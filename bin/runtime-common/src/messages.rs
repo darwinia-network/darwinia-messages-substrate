@@ -95,15 +95,6 @@ pub trait ChainWithMessages {
 		+ Copy;
 }
 
-/// Message related transaction parameters estimation.
-#[derive(RuntimeDebug)]
-pub struct MessageTransaction<Weight> {
-	/// The estimated dispatch weight of the transaction.
-	pub dispatch_weight: Weight,
-	/// The estimated size of the encoded transaction.
-	pub size: u32,
-}
-
 /// This chain that has `pallet-bridge-messages` and `dispatch` modules.
 pub trait ThisChainWithMessages: ChainWithMessages {
 	/// Call origin on the chain.
@@ -160,33 +151,6 @@ pub type CallOf<C> = <C as ThisChainWithMessages>::Call;
 
 /// Raw storage proof type (just raw trie nodes).
 pub type RawStorageProof = Vec<Vec<u8>>;
-
-/// Compute fee of transaction at runtime where regular transaction payment pallet is being used.
-///
-/// The value of `multiplier` parameter is the expected value of
-/// `pallet_transaction_payment::NextFeeMultiplier` at the moment when transaction is submitted. If
-/// you're charging this payment in advance (and that's what happens with delivery and confirmation
-/// transaction in this crate), then there's a chance that the actual fee will be larger than what
-/// is paid in advance. So the value must be chosen carefully.
-pub fn transaction_payment<Balance: AtLeast32BitUnsigned + FixedPointOperand>(
-	base_extrinsic_weight: Weight,
-	per_byte_fee: Balance,
-	multiplier: FixedU128,
-	weight_to_fee: impl Fn(Weight) -> Balance,
-	transaction: MessageTransaction<Weight>,
-) -> Balance {
-	// base fee is charged for every tx
-	let base_fee = weight_to_fee(base_extrinsic_weight);
-
-	// non-adjustable per-byte fee
-	let len_fee = per_byte_fee.saturating_mul(Balance::from(transaction.size));
-
-	// the adjustable part of the fee
-	let unadjusted_weight_fee = weight_to_fee(transaction.dispatch_weight);
-	let adjusted_weight_fee = multiplier.saturating_mul_int(unadjusted_weight_fee);
-
-	base_fee.saturating_add(len_fee).saturating_add(adjusted_weight_fee)
-}
 
 /// Sub-module that is declaring types required for processing This -> Bridged chain messages.
 pub mod source {
