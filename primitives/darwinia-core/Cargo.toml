@@ -13,11 +13,11 @@ scale-info         = { version = "2.0.1", default-features = false, features = [
 # paritytech
 bp-messages   = { default-features = false, path = "../messages" }
 bp-runtime    = { default-features = false, path = "../runtime" }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
+frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
+sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
+sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27" }
 
 [features]
 default = ["std"]
