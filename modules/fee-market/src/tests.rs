@@ -48,7 +48,7 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup, UniqueSaturatedInto},
-	FixedU128, ModuleError, Permill,
+	FixedU128, Permill,
 };
 // --- darwinia-network ---
 use crate::{
@@ -342,7 +342,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		}
 
 		let treasury_account: AccountId =
-			<Test as Config>::TreasuryPalletId::get().into_account_truncating();
+			<Test as Config>::TreasuryPalletId::get().into_account();
 		let treasury_key = (b":relayer-reward:", &treasury_account, treasury_sum).encode();
 		frame_support::storage::unhashed::put(&treasury_key, &true);
 	}
@@ -546,7 +546,7 @@ pub fn unrewarded_relayer(
 			begin,
 			end,
 			dispatch_results: if end >= begin {
-				bitvec![u8, Msb0; 1; (end - begin + 1) as _]
+				bitvec![Msb0, u8; 1; (end - begin + 1) as _]
 			} else {
 				Default::default()
 			},
@@ -812,11 +812,11 @@ fn test_callback_no_order_created_when_fee_market_not_ready() {
 		assert!(FeeMarket::assigned_relayers().is_none());
 		assert_err!(
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
-			DispatchError::Module(ModuleError {
+			DispatchError::Module {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: 2,
 				message: Some("MessageRejectedByLaneVerifier")
-			})
+			}
 		);
 	});
 }
@@ -878,7 +878,7 @@ fn test_payment_cal_rewards_normally_single_message() {
 		// For message confirm relayer(id=5): 30 * 20% = 6
 		// For each assigned_relayer(id=1, 2, 3): (100 - 30) * 20% / 3 = 4
 		// For treasury: 100 - (24 + 6) - (4 * 3) = 58
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 58));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 4));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 4));
@@ -943,7 +943,7 @@ fn test_payment_cal_rewards_normally_multi_message() {
 		// For message confirm relayer(id=1): 30 * 20% = 6
 		// For each assigned_relayer(id=5, 6, 7): (100 - 30) * 20% / 3 = 4
 		// For treasury: 100 - (24 + 6) - (4 * 3) = 58
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 116));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 8));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(6, 8));
@@ -999,7 +999,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 		// For message confirm relayer(id=1): (50 + 60) * 20% = 22
 		// For each assigned_relayer(id=6, 7): (100 - 50) * 20% / 2 = 5
 		// For treasury: 100 - 50 - (5 * 2) = 40
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 40));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(6, 5));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(7, 5));
@@ -1053,7 +1053,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 		// For message confirm relayer(id=1): (100 + 60 * 2) * 20% = 44
 		// For each assigned_relayer(id=7): (100 - 100) * 20% = 0
 		// For treasury: 100 - 100 - (0 * 2) = 0
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 0));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(7, 0));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 44));
@@ -1114,7 +1114,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 		// For message confirm relayer(id=5): 30 * 20% = 6
 		// For each assigned_relayer(id=1, 2, 3): (100 - 30) * 20% / 3 = 4
 		// For treasury: 100 - (24 + 6) - (4 * 3) = 58
-		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 58));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 4));
 		assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 4));
@@ -1369,22 +1369,22 @@ fn test_fee_verification_when_send_message() {
 		// Case 1: When fee market are not ready, but somebody send messages
 		assert_err!(
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
-			DispatchError::Module(ModuleError {
+			DispatchError::Module {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: 2,
 				message: Some("MessageRejectedByLaneVerifier")
-			})
+			}
 		);
 
 		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 100, Some(50));
 		// Case 2: The fee market is ready, but the order fee is too low
 		assert_err!(
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 49),
-			DispatchError::Module(ModuleError {
+			DispatchError::Module {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: 2,
 				message: Some("MessageRejectedByLaneVerifier")
-			})
+			}
 		);
 
 		// Case 3: Normal workflow
