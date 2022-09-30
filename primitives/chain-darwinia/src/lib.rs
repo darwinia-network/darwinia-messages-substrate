@@ -22,13 +22,13 @@ mod copy_paste_from_darwinia {
 	// --- darwinia-network ---
 	use bp_darwinia_core::*;
 
-	pub const EXISTENTIAL_DEPOSIT: Balance = 0;
+	pub const EXISTENTIAL_DEPOSIT: Balance = 100 * MICRO;
 
-	pub const SESSION_LENGTH: BlockNumber = 1 * HOURS;
+	pub const SESSION_LENGTH: BlockNumber = 4 * HOURS;
 }
 pub use copy_paste_from_darwinia::*;
 
 pub use bp_darwinia_core::*;
 
-/// Crab Chain.
-pub type Crab = DarwiniaLike;
+/// Darwinia Chain.
+pub type Darwinia = DarwiniaLike;

@@ -29,7 +29,7 @@ mod copy_paste_from_darwinia {
 		impl_name: sp_runtime::create_runtime_str!("Pangolin"),
 		authoring_version: 0,
 		#[allow(clippy::inconsistent_digit_grouping)]
-		spec_version: 2_8_06_0,
+		spec_version: 2_9_05_0,
 		impl_version: 0,
 		apis: sp_version::create_apis_vec![[]],
 		transaction_version: 0,

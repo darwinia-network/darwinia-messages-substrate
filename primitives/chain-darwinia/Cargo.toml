@@ -1,9 +1,9 @@
 [package]
 authors     = ["Darwinia Network <hello@darwinia.network>"]
-description = "Primitives of Crab Parachain runtime."
+description = "Primitives of Darwinia runtime."
 edition     = "2021"
 license     = "GPL-3.0"
-name        = "bp-crab-parachain"
+name        = "bp-darwinia"
 version     = "0.1.0"
 
 [dependencies]

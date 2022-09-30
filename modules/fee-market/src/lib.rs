@@ -69,6 +69,9 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinimumRelayFee: Get<BalanceOf<Self, I>>;
 		/// The collateral relayer need to lock for each order.
+		///
+		/// This also represents the maximum slash value for a single delayed order.
+		/// Please note that if this value is set to zero the fee market will be suspended.
 		#[pallet::constant]
 		type CollateralPerOrder: Get<BalanceOf<Self, I>>;
 		/// The slot times set
@@ -77,16 +80,18 @@ pub mod pallet {
 
 		/// Reward parameters
 		#[pallet::constant]
-		type AssignedRelayersRewardRatio: Get<Permill>;
+		type DutyRelayersRewardRatio: Get<Permill>;
 		#[pallet::constant]
 		type MessageRelayersRewardRatio: Get<Permill>;
 		#[pallet::constant]
 		type ConfirmRelayersRewardRatio: Get<Permill>;
 
-		/// The slash rule
+		/// The slash ratio for assigned relayers.
+		#[pallet::constant]
+		type AssignedRelayerSlashRatio: Get<Permill>;
 		type Slasher: Slasher<Self, I>;
-		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 
+		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
 	}
@@ -462,11 +467,6 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		Self::assigned_relayers().and_then(|relayers| relayers.last().map(|r| r.fee))
 	}
 
-	/// Get order indexes in the storage
-	pub fn in_process_orders() -> Vec<(LaneId, MessageNonce)> {
-		Orders::<T, I>::iter().map(|(k, _v)| k).collect()
-	}
-
 	/// Get the relayer locked collateral value
 	pub fn relayer_locked_collateral(who: &T::AccountId) -> BalanceOf<T, I> {
 		RelayersMap::<T, I>::get(who).map_or(BalanceOf::<T, I>::zero(), |r| r.collateral)
@@ -479,7 +479,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		let mut count = 0u32;
 		let mut orders_locked_collateral = BalanceOf::<T, I>::zero();
 		for (_, order) in <Orders<T, I>>::iter() {
-			if order.relayers_slice().iter().any(|r| r.id == *who) && !order.is_confirmed() {
+			if order.assigned_relayers_slice().iter().any(|r| r.id == *who) && !order.is_confirmed()
+			{
 				count += 1;
 				orders_locked_collateral =
 					orders_locked_collateral.saturating_add(order.locked_collateral);
@@ -505,10 +506,20 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 
 	fn collateral_to_order_capacity(collateral: BalanceOf<T, I>) -> u32 {
-		(collateral / T::CollateralPerOrder::get()).saturated_into::<u32>()
+		let collateral_per_order = T::CollateralPerOrder::get();
+
+		if collateral_per_order.is_zero() {
+			0
+		} else {
+			(collateral / collateral_per_order).saturated_into::<u32>()
+		}
 	}
 }
 
+/// The assigned relayers slash trait
 pub trait Slasher<T: Config<I>, I: 'static> {
-	fn slash(locked_collateral: BalanceOf<T, I>, timeout: T::BlockNumber) -> BalanceOf<T, I>;
+	fn cal_slash_amount(
+		collateral_per_order: BalanceOf<T, I>,
+		timeout: T::BlockNumber,
+	) -> BalanceOf<T, I>;
 }
