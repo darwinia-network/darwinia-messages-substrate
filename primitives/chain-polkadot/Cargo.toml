@@ -21,7 +21,6 @@ frame-support = { git = "https://github.com/paritytech/substrate", branch = "mas
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-version = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 
 [features]
 default = ["std"]
@@ -33,5 +32,4 @@ std = [
 	"sp-api/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	"sp-version/std",
 ]

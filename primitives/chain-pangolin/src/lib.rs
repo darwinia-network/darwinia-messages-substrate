@@ -21,20 +21,6 @@
 mod copy_paste_from_darwinia {
 	// --- darwinia-network ---
 	use bp_darwinia_core::*;
-	// --- paritytech ---
-	use sp_version::RuntimeVersion;
-
-	pub const VERSION: RuntimeVersion = RuntimeVersion {
-		spec_name: sp_runtime::create_runtime_str!("Pangolin"),
-		impl_name: sp_runtime::create_runtime_str!("Pangolin"),
-		authoring_version: 0,
-		#[allow(clippy::inconsistent_digit_grouping)]
-		spec_version: 2_9_05_0,
-		impl_version: 0,
-		apis: sp_version::create_apis_vec![[]],
-		transaction_version: 0,
-		state_version: 0,
-	};
 
 	pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 

@@ -252,7 +252,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -266,7 +265,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -280,7 +278,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -330,7 +327,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -374,7 +370,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -388,7 +383,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -402,7 +396,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -430,7 +423,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]
@@ -466,7 +458,6 @@ dependencies = [
  "sp-api",
  "sp-runtime",
  "sp-std",
- "sp-version",
 ]
 
 [[package]]

@@ -21,19 +21,6 @@
 mod copy_paste_from_darwinia {
 	// --- darwinia-network ---
 	use bp_darwinia_core::*;
-	// --- paritytech ---
-	use sp_version::RuntimeVersion;
-
-	pub const VERSION: RuntimeVersion = RuntimeVersion {
-		spec_name: sp_runtime::create_runtime_str!("Crab Parachain"),
-		impl_name: sp_runtime::create_runtime_str!("Darwinia Crab Parachain"),
-		authoring_version: 1,
-		spec_version: 4,
-		impl_version: 1,
-		apis: sp_version::create_apis_vec![[]],
-		transaction_version: 1,
-		state_version: 0,
-	};
 
 	pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 }
