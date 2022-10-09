@@ -245,7 +245,7 @@ pub const PAY_INBOUND_DISPATCH_FEE_WEIGHT: Weight = 600_000_000;
 
 /// A simplified version of signed extensions meant for producing signed transactions
 /// and signed payload in the client code.
-#[derive(PartialEq, Eq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
 pub struct SignedExtensions<Call> {
 	encode_payload: SignedExtra,
 	// It may be set to `None` if extensions are decoded. We are never reconstructing transactions
