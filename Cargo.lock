@@ -242,45 +242,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-crab"
-version = "0.1.0"
-dependencies = [
- "bp-darwinia-core",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-crab-parachain"
-version = "0.1.0"
-dependencies = [
- "bp-darwinia-core",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-darwinia"
-version = "0.1.0"
-dependencies = [
- "bp-darwinia-core",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "bp-darwinia-core"
 version = "0.1.0"
 dependencies = [
@@ -316,20 +277,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-kusama"
-version = "0.1.0"
-dependencies = [
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "frame-support",
- "smallvec",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "bp-message-dispatch"
 version = "0.1.0"
 dependencies = [
@@ -360,45 +307,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-pangolin"
-version = "0.1.0"
-dependencies = [
- "bp-darwinia-core",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-pangolin-parachain"
-version = "0.1.0"
-dependencies = [
- "bp-darwinia-core",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-pangoro"
-version = "0.1.0"
-dependencies = [
- "bp-darwinia-core",
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "sp-api",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "bp-parachains"
 version = "0.1.0"
 dependencies = [
@@ -409,20 +317,6 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-core",
-]
-
-[[package]]
-name = "bp-polkadot"
-version = "0.1.0"
-dependencies = [
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "frame-support",
- "smallvec",
- "sp-api",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -443,21 +337,6 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "sp-version",
-]
-
-[[package]]
-name = "bp-rococo"
-version = "0.1.0"
-dependencies = [
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "frame-support",
- "parity-scale-codec",
- "smallvec",
- "sp-api",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
