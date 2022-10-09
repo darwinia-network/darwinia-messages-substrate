@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 # crates.io
-codec            = { package = "parity-scale-codec", version = "3.2", default-features = false }
+codec            = { package = "parity-scale-codec", version = "3.1", default-features = false }
 ed25519-dalek    = { version = "1.0", default-features = false, features = ["u64_backend"] }
 finality-grandpa = { version = "0.16", default-features = false }
 # darwinia-network
