@@ -144,11 +144,6 @@ pub type SignedExtra = ((), (), (), (), Era, Compact<Nonce>, (), Compact<Balance
 /// at next runtime upgrade.
 pub const EXTRA_STORAGE_PROOF_SIZE: u32 = 1024;
 
-/// Maximal size (in bytes) of encoded (using `Encode::encode()`) account id.
-///
-/// All Darwinia-like chains are using same crypto.
-pub const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = 32;
-
 // TODO [#78] may need to be updated after https://github.com/paritytech/parity-bridges-common/issues/78
 /// Maximal number of messages in single delivery transaction.
 pub const MAX_MESSAGES_IN_DELIVERY_TRANSACTION: MessageNonce = 128;

@@ -330,7 +330,6 @@ dependencies = [
  "bp-runtime",
  "frame-support",
  "frame-system",
- "hex",
  "parity-scale-codec",
  "parity-util-mem",
  "scale-info",
