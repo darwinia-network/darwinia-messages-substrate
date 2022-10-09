@@ -16,13 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// --- core ---
+// core
 use core::{cmp::Ordering, ops::Range};
-// --- crates.io ---
+// crates.io
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-// --- paritytech ---
+// darwinia-network
 use bp_messages::{LaneId, MessageNonce};
+// paritytech
 use sp_runtime::{traits::AtLeast32BitUnsigned, RuntimeDebug};
 use sp_std::vec::Vec;
 

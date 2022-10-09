@@ -19,7 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod copy_paste_from_darwinia {
-	// --- paritytech ---
+	// paritytech
 	use frame_support::weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, Weight,
@@ -87,14 +87,15 @@ mod copy_paste_from_darwinia {
 }
 pub use copy_paste_from_darwinia::*;
 
-// --- core ---
+// core
 use core::{fmt::Debug, marker::PhantomData};
-// --- crates.io ---
+// crates.io
 use parity_scale_codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input};
 use scale_info::{StaticTypeInfo, TypeInfo};
-// --- paritytech ---
+// darwinia-network
 use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
+// paritytech
 use frame_support::{
 	unsigned::{TransactionValidityError, UnknownTransaction},
 	weights::{DispatchClass, Weight},
