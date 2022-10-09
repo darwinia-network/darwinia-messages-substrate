@@ -19,10 +19,12 @@
 //! Adapted copy of substrate/client/finality-grandpa/src/justification.rs. If origin
 //! will ever be moved to the sp_finality_grandpa, we should reuse that implementation.
 
+// crates.io
 use codec::{Decode, Encode};
 use finality_grandpa::voter_set::VoterSet;
-use frame_support::RuntimeDebug;
 use scale_info::TypeInfo;
+// paritytech
+use frame_support::RuntimeDebug;
 use sp_finality_grandpa::{AuthorityId, AuthoritySignature, SetId};
 use sp_runtime::traits::Header as HeaderT;
 use sp_std::{

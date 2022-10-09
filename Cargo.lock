@@ -264,13 +264,12 @@ dependencies = [
 name = "bp-header-chain"
 version = "0.1.0"
 dependencies = [
+ "array-bytes",
  "assert_matches",
  "bp-runtime",
  "bp-test-utils",
  "finality-grandpa",
  "frame-support",
- "hex",
- "hex-literal",
  "parity-scale-codec",
  "scale-info",
  "serde",
