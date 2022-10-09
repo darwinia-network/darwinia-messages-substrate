@@ -17,8 +17,15 @@
 // From construct_runtime macro
 #![allow(clippy::from_over_into)]
 
+// darwinia-network
+use crate as grandpa;
 use bp_runtime::Chain;
-use frame_support::{construct_runtime, parameter_types, weights::Weight};
+// paritytech
+use frame_support::{
+	traits::{ConstU32, Everything},
+	weights::Weight,
+};
+use frame_system::mocking::*;
 use sp_core::sr25519::Signature;
 use sp_runtime::{
 	testing::{Header, H256},
@@ -30,33 +37,30 @@ pub type AccountId = u64;
 pub type TestHeader = crate::BridgedHeader<TestRuntime, ()>;
 pub type TestNumber = crate::BridgedBlockNumber<TestRuntime, ()>;
 
-type Block = frame_system::mocking::MockBlock<TestRuntime>;
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
+type Block = MockBlock<TestRuntime>;
+type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
-use crate as grandpa;
-
-construct_runtime! {
+frame_support::construct_runtime! {
 	pub enum TestRuntime where
 		Block = Block,
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Grandpa: grandpa::{Pallet},
+		Grandpa: grandpa::{Pallet, Call},
 	}
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-
 impl frame_system::Config for TestRuntime {
 	type AccountData = ();
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
+	type BaseCallFilter = Everything;
 	type BlockHashCount = BlockHashCount;
 	type BlockLength = ();
 	type BlockNumber = u64;
@@ -69,7 +73,7 @@ impl frame_system::Config for TestRuntime {
 	type Header = Header;
 	type Index = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type MaxConsumers = ConstU32<16>;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -80,13 +84,12 @@ impl frame_system::Config for TestRuntime {
 	type Version = ();
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const MaxRequests: u32 = 2;
 	pub const HeadersToKeep: u32 = 5;
 	pub const SessionLength: u64 = 5;
 	pub const NumValidators: u32 = 5;
 }
-
 impl grandpa::Config for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
@@ -96,7 +99,6 @@ impl grandpa::Config for TestRuntime {
 
 #[derive(Debug)]
 pub struct TestBridgedChain;
-
 impl Chain for TestBridgedChain {
 	type AccountId = AccountId;
 	type Balance = u64;
