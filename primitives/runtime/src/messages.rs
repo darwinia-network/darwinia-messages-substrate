@@ -16,9 +16,11 @@
 
 //! Primitives that may be used by different message delivery and dispatch mechanisms.
 
+// crates.io
 use codec::{Decode, Encode};
-use frame_support::{weights::Weight, RuntimeDebug};
 use scale_info::TypeInfo;
+// paritytech
+use frame_support::{weights::Weight, RuntimeDebug};
 
 /// Where message dispatch fee is paid?
 #[derive(Encode, Decode, RuntimeDebug, Clone, Copy, PartialEq, Eq, TypeInfo)]
