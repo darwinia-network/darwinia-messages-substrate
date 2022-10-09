@@ -1,27 +1,35 @@
 [package]
-name = "bp-test-utils"
-version = "0.1.0"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2021"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name    = "bp-test-utils"
+version = "0.1.0"
 
 [dependencies]
-bp-header-chain = { path = "../header-chain", default-features = false  }
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false }
-ed25519-dalek = { version = "1.0", default-features = false, features = ["u64_backend"] }
-finality-grandpa = { version = "0.16.0", default-features = false }
-sp-application-crypto = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-finality-grandpa = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false  }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+# crates.io
+codec            = { package = "parity-scale-codec", version = "3.2", default-features = false }
+ed25519-dalek    = { version = "1.0", default-features = false, features = ["u64_backend"] }
+finality-grandpa = { version = "0.16", default-features = false }
+# darwinia-network
+bp-header-chain = { default-features = false, path = "../header-chain" }
+# paritytech
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-finality-grandpa   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-runtime            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-std                = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 
+
+# paritytech
 [features]
 default = ["std"]
 std = [
-	"bp-header-chain/std",
+	# crates.io
 	"codec/std",
 	"ed25519-dalek/std",
 	"finality-grandpa/std",
+	# darwinia-network
+	"bp-header-chain/std",
+	# paritytech
 	"sp-application-crypto/std",
 	"sp-finality-grandpa/std",
 	"sp-runtime/std",

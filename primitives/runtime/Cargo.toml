@@ -25,6 +25,7 @@ sp-std           = { default-features = false, git = "https://github.com/parityt
 sp-trie          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 
 [dev-dependencies]
+# crates.io
 array-bytes = { version = "4.1" }
 
 [features]
