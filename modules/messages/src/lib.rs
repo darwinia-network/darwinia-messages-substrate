@@ -286,72 +286,6 @@ pub mod pallet {
 			)
 		}
 
-		/// Pay additional fee for the message.
-		#[pallet::weight(T::WeightInfo::maximal_increase_message_fee())]
-		pub fn increase_message_fee(
-			origin: OriginFor<T>,
-			lane_id: LaneId,
-			nonce: MessageNonce,
-			additional_fee: T::OutboundMessageFee,
-		) -> DispatchResultWithPostInfo {
-			ensure_not_halted::<T, I>()?;
-			// if someone tries to pay for already-delivered message, we're rejecting this intention
-			// (otherwise this additional fee will be locked forever in relayers fund)
-			//
-			// if someone tries to pay for not-yet-sent message, we're rejecting this intention, or
-			// we're risking to have mess in the storage
-			let lane = outbound_lane::<T, I>(lane_id);
-			ensure!(
-				nonce > lane.data().latest_received_nonce,
-				Error::<T, I>::MessageIsAlreadyDelivered
-			);
-			ensure!(
-				nonce <= lane.data().latest_generated_nonce,
-				Error::<T, I>::MessageIsNotYetSent
-			);
-
-			// withdraw additional fee from submitter
-			T::MessageDeliveryAndDispatchPayment::pay_delivery_and_dispatch_fee(
-				&origin,
-				&additional_fee,
-				&relayer_fund_account_id::<T::AccountId, T::AccountIdConverter>(),
-			)
-			.map_err(|err| {
-				log::trace!(
-					target: "runtime::bridge-messages",
-					"Submitter can't pay additional fee {:?} for the message {:?}/{:?} to {:?}: {:?}",
-					additional_fee,
-					lane_id,
-					nonce,
-					relayer_fund_account_id::<T::AccountId, T::AccountIdConverter>(),
-					err,
-				);
-
-				Error::<T, I>::FailedToWithdrawMessageFee
-			})?;
-
-			// and finally update fee in the storage
-			let message_key = MessageKey { lane_id, nonce };
-			let message_size = OutboundMessages::<T, I>::mutate(message_key, |message_data| {
-				// saturating_add is fine here - overflow here means that someone controls all
-				// chain funds, which shouldn't ever happen + `pay_delivery_and_dispatch_fee`
-				// above will fail before we reach here
-				let message_data = message_data.as_mut().expect(
-					"the message is sent and not yet delivered; so it is in the storage; qed",
-				);
-				message_data.fee = message_data.fee.saturating_add(&additional_fee);
-				message_data.payload.len()
-			});
-
-			// compute actual dispatch weight that depends on the stored message size
-			let actual_weight = sp_std::cmp::min(
-				T::WeightInfo::maximal_increase_message_fee(),
-				T::WeightInfo::increase_message_fee(message_size as _),
-			);
-
-			Ok(PostDispatchInfo { actual_weight: Some(actual_weight), pays_fee: Pays::Yes })
-		}
-
 		/// Receive messages proof from bridged chain.
 		///
 		/// The weight of the call assumes that the transaction always brings outbound lane
@@ -1389,11 +1323,6 @@ mod tests {
 			);
 
 			assert_noop!(
-				Pallet::<TestRuntime>::increase_message_fee(Origin::signed(1), TEST_LANE_ID, 1, 1,),
-				Error::<TestRuntime, ()>::Halted,
-			);
-
-			assert_noop!(
 				Pallet::<TestRuntime>::receive_messages_proof(
 					Origin::signed(1),
 					TEST_RELAYER_A,
@@ -1444,13 +1373,6 @@ mod tests {
 				),
 				Error::<TestRuntime, ()>::Halted,
 			);
-
-			assert_ok!(Pallet::<TestRuntime>::increase_message_fee(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				1,
-				1,
-			));
 
 			assert_ok!(Pallet::<TestRuntime>::receive_messages_proof(
 				Origin::signed(1),
@@ -1863,73 +1785,6 @@ mod tests {
 	}
 
 	#[test]
-	fn increase_message_fee_fails_if_message_is_already_delivered() {
-		run_test(|| {
-			send_regular_message();
-			receive_messages_delivery_proof();
-
-			assert_noop!(
-				Pallet::<TestRuntime, ()>::increase_message_fee(
-					Origin::signed(1),
-					TEST_LANE_ID,
-					1,
-					100,
-				),
-				Error::<TestRuntime, ()>::MessageIsAlreadyDelivered,
-			);
-		});
-	}
-
-	#[test]
-	fn increase_message_fee_fails_if_message_is_not_yet_sent() {
-		run_test(|| {
-			assert_noop!(
-				Pallet::<TestRuntime, ()>::increase_message_fee(
-					Origin::signed(1),
-					TEST_LANE_ID,
-					1,
-					100,
-				),
-				Error::<TestRuntime, ()>::MessageIsNotYetSent,
-			);
-		});
-	}
-
-	#[test]
-	fn increase_message_fee_fails_if_submitter_cant_pay_additional_fee() {
-		run_test(|| {
-			send_regular_message();
-
-			TestMessageDeliveryAndDispatchPayment::reject_payments();
-
-			assert_noop!(
-				Pallet::<TestRuntime, ()>::increase_message_fee(
-					Origin::signed(1),
-					TEST_LANE_ID,
-					1,
-					100,
-				),
-				Error::<TestRuntime, ()>::FailedToWithdrawMessageFee,
-			);
-		});
-	}
-
-	#[test]
-	fn increase_message_fee_succeeds() {
-		run_test(|| {
-			send_regular_message();
-
-			assert_ok!(Pallet::<TestRuntime, ()>::increase_message_fee(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				1,
-				100,
-			),);
-			assert!(TestMessageDeliveryAndDispatchPayment::is_fee_paid(1, 100));
-		});
-	}
-
-	#[test]
 	fn weight_refund_from_receive_messages_proof_works() {
 		run_test(|| {
 			fn submit_with_unspent_weight(
@@ -2146,48 +2001,6 @@ mod tests {
 					UnrewardedRelayersState::default(),
 				),
 				Error::<TestRuntime, ()>::TryingToConfirmMoreMessagesThanExpected,
-			);
-		});
-	}
-
-	#[test]
-	fn increase_message_fee_weight_depends_on_message_size() {
-		run_test(|| {
-			let mut small_payload = message_payload(0, 100);
-			let mut large_payload = message_payload(1, 100);
-			small_payload.extra = vec![1; 100];
-			large_payload.extra = vec![2; 16_384];
-
-			assert_ok!(Pallet::<TestRuntime>::send_message(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				small_payload,
-				100,
-			));
-			assert_ok!(Pallet::<TestRuntime>::send_message(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				large_payload,
-				100,
-			));
-
-			let small_weight =
-				Pallet::<TestRuntime>::increase_message_fee(Origin::signed(1), TEST_LANE_ID, 1, 1)
-					.expect("increase_message_fee has failed")
-					.actual_weight
-					.expect("increase_message_fee always returns Some");
-
-			let large_weight =
-				Pallet::<TestRuntime>::increase_message_fee(Origin::signed(1), TEST_LANE_ID, 2, 1)
-					.expect("increase_message_fee has failed")
-					.actual_weight
-					.expect("increase_message_fee always returns Some");
-
-			assert!(
-				large_weight > small_weight,
-				"Actual post-dispatch weigth for larger message {} must be larger than {} for small message",
-				large_weight,
-				small_weight,
 			);
 		});
 	}
