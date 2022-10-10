@@ -616,10 +616,6 @@ pub mod pallet {
 		/// The relayer has declared invalid unrewarded relayers state in the
 		/// `receive_messages_delivery_proof` call.
 		InvalidUnrewardedRelayersState,
-		/// The message someone is trying to work with (i.e. increase fee) is already-delivered.
-		MessageIsAlreadyDelivered,
-		/// The message someone is trying to work with (i.e. increase fee) is not yet sent.
-		MessageIsNotYetSent,
 		/// The number of actually confirmed messages is going to be larger than the number of
 		/// messages in the proof. This may mean that this or bridged chain storage is corrupted.
 		TryingToConfirmMoreMessagesThanExpected,
