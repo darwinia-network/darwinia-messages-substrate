@@ -23,6 +23,7 @@ jobs:
           - bp-crab-parachain
           - bp-darwinia
           - bp-kusama
+          - bp-moonbase
           - bp-pangolin
           - bp-pangolin-parachain
           - bp-pangoro
