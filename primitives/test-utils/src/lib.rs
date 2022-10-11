@@ -18,16 +18,17 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use bp_header_chain::justification::GrandpaJustification;
+mod keyring;
+pub use keyring::*;
+
+// crates.io
 use codec::Encode;
+// paritytech
 use sp_finality_grandpa::{AuthorityId, AuthoritySignature, AuthorityWeight, SetId};
 use sp_runtime::traits::{Header as HeaderT, One, Zero};
 use sp_std::prelude::*;
-
-// Re-export all our test account utilities
-pub use keyring::*;
-
-mod keyring;
+// darwinia-network
+use bp_header_chain::justification::GrandpaJustification;
 
 pub const TEST_GRANDPA_ROUND: u64 = 1;
 pub const TEST_GRANDPA_SET_ID: SetId = 1;
@@ -54,7 +55,6 @@ pub struct JustificationGeneratorParams<H> {
 	/// Useful for creating a "worst-case" scenario in which each authority is on its own fork.
 	pub forks: u32,
 }
-
 impl<H: HeaderT> Default for JustificationGeneratorParams<H> {
 	fn default() -> Self {
 		Self {
@@ -209,4 +209,93 @@ pub fn test_header<H: HeaderT>(number: H::Number) -> H {
 /// Convenience function for generating a Header ID at a given block number.
 pub fn header_id<H: HeaderT>(index: u8) -> (H::Hash, H::Number) {
 	(test_header::<H>(index.into()).hash(), index.into())
+}
+
+#[macro_export]
+/// Adds methods for testing the `set_owner()` and `set_operating_mode()` for a pallet.
+/// Some values are hardcoded like:
+/// - `run_test()`
+/// - `Pallet::<TestRuntime>`
+/// - `PalletOwner::<TestRuntime>`
+/// - `PalletOperatingMode::<TestRuntime>`
+/// While this is not ideal, all the pallets use the same names, so it works for the moment.
+/// We can revisit this in the future if anything changes.
+macro_rules! generate_owned_bridge_module_tests {
+	($normal_operating_mode: expr, $halted_operating_mode: expr) => {
+		#[test]
+		fn test_set_owner() {
+			run_test(|| {
+				PalletOwner::<TestRuntime>::put(1);
+
+				// The root should be able to change the owner.
+				assert_ok!(Pallet::<TestRuntime>::set_owner(Origin::root(), Some(2)));
+				assert_eq!(PalletOwner::<TestRuntime>::get(), Some(2));
+
+				// The owner should be able to change the owner.
+				assert_ok!(Pallet::<TestRuntime>::set_owner(Origin::signed(2), Some(3)));
+				assert_eq!(PalletOwner::<TestRuntime>::get(), Some(3));
+
+				// Other users shouldn't be able to change the owner.
+				assert_noop!(
+					Pallet::<TestRuntime>::set_owner(Origin::signed(1), Some(4)),
+					DispatchError::BadOrigin
+				);
+				assert_eq!(PalletOwner::<TestRuntime>::get(), Some(3));
+			});
+		}
+
+		#[test]
+		fn test_set_operating_mode() {
+			run_test(|| {
+				PalletOwner::<TestRuntime>::put(1);
+				PalletOperatingMode::<TestRuntime>::put($normal_operating_mode);
+
+				// The root should be able to halt the pallet.
+				assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
+					Origin::root(),
+					$halted_operating_mode
+				));
+				assert_eq!(PalletOperatingMode::<TestRuntime>::get(), $halted_operating_mode);
+				// The root should be able to resume the pallet.
+				assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
+					Origin::root(),
+					$normal_operating_mode
+				));
+				assert_eq!(PalletOperatingMode::<TestRuntime>::get(), $normal_operating_mode);
+
+				// The owner should be able to halt the pallet.
+				assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(1),
+					$halted_operating_mode
+				));
+				assert_eq!(PalletOperatingMode::<TestRuntime>::get(), $halted_operating_mode);
+				// The owner should be able to resume the pallet.
+				assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
+					Origin::signed(1),
+					$normal_operating_mode
+				));
+				assert_eq!(PalletOperatingMode::<TestRuntime>::get(), $normal_operating_mode);
+
+				// Other users shouldn't be able to halt the pallet.
+				assert_noop!(
+					Pallet::<TestRuntime>::set_operating_mode(
+						Origin::signed(2),
+						$halted_operating_mode
+					),
+					DispatchError::BadOrigin
+				);
+				assert_eq!(PalletOperatingMode::<TestRuntime>::get(), $normal_operating_mode);
+				// Other users shouldn't be able to resume the pallet.
+				PalletOperatingMode::<TestRuntime>::put($halted_operating_mode);
+				assert_noop!(
+					Pallet::<TestRuntime>::set_operating_mode(
+						Origin::signed(2),
+						$normal_operating_mode
+					),
+					DispatchError::BadOrigin
+				);
+				assert_eq!(PalletOperatingMode::<TestRuntime>::get(), $halted_operating_mode);
+			});
+		}
+	};
 }

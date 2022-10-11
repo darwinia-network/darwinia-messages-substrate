@@ -14,8 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
+// darwinia-network
+use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::Chain;
-use frame_support::{construct_runtime, parameter_types, weights::Weight};
+// paritytech
+use frame_support::{traits::IsInVec, weights::Weight};
+use frame_system::mocking::*;
 use sp_runtime::{
 	testing::{Header, H256},
 	traits::{BlakeTwo256, Header as HeaderT, IdentityLookup},
@@ -30,12 +34,13 @@ pub type TestNumber = u64;
 pub type RelayBlockHeader =
 	sp_runtime::generic::Header<crate::RelayBlockNumber, crate::RelayBlockHasher>;
 
-type Block = frame_system::mocking::MockBlock<TestRuntime>;
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
+type Block = MockBlock<TestRuntime>;
+type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 pub const PARAS_PALLET_NAME: &str = "Paras";
+pub const UNTRACKED_PARACHAIN_ID: u32 = 10;
 
-construct_runtime! {
+frame_support::construct_runtime! {
 	pub enum TestRuntime where
 		Block = Block,
 		NodeBlock = Block,
@@ -44,17 +49,16 @@ construct_runtime! {
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Grandpa1: pallet_bridge_grandpa::<Instance1>::{Pallet},
 		Grandpa2: pallet_bridge_grandpa::<Instance2>::{Pallet},
-		Parachains: pallet_bridge_parachains::{Pallet},
+		Parachains: pallet_bridge_parachains::{Call, Pallet, Event<T>},
 	}
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const BlockHashCount: TestNumber = 250;
 	pub const MaximumBlockWeight: Weight = 1024;
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
-
 impl frame_system::Config for TestRuntime {
 	type AccountData = ();
 	type AccountId = AccountId;
@@ -65,7 +69,7 @@ impl frame_system::Config for TestRuntime {
 	type BlockWeights = ();
 	type Call = Call;
 	type DbWeight = ();
-	type Event = ();
+	type Event = Event;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -82,13 +86,12 @@ impl frame_system::Config for TestRuntime {
 	type Version = ();
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const MaxRequests: u32 = 2;
 	pub const HeadersToKeep: u32 = 5;
 	pub const SessionLength: u64 = 5;
 	pub const NumValidators: u32 = 5;
 }
-
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
@@ -103,18 +106,22 @@ impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance2> for TestRun
 	type WeightInfo = ();
 }
 
-parameter_types! {
+frame_support::parameter_types! {
 	pub const HeadsToKeep: u32 = 4;
+	pub const ParasPalletName: &'static str = PARAS_PALLET_NAME;
+	pub GetTenFirstParachains: Vec<ParaId> = (0..10).map(ParaId).collect();
 }
-
 impl pallet_bridge_parachains::Config for TestRuntime {
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
+	type Event = Event;
 	type HeadsToKeep = HeadsToKeep;
+	type ParasPalletName = ParasPalletName;
+	type TrackedParachains = IsInVec<GetTenFirstParachains>;
+	type WeightInfo = ();
 }
 
 #[derive(Debug)]
 pub struct TestBridgedChain;
-
 impl Chain for TestBridgedChain {
 	type AccountId = AccountId;
 	type Balance = u32;
@@ -136,7 +143,6 @@ impl Chain for TestBridgedChain {
 
 #[derive(Debug)]
 pub struct OtherBridgedChain;
-
 impl Chain for OtherBridgedChain {
 	type AccountId = AccountId;
 	type Balance = u32;
@@ -157,7 +163,11 @@ impl Chain for OtherBridgedChain {
 }
 
 pub fn run_test<T>(test: impl FnOnce() -> T) -> T {
-	sp_io::TestExternalities::new(Default::default()).execute_with(test)
+	sp_io::TestExternalities::new(Default::default()).execute_with(|| {
+		System::set_block_number(1);
+		System::reset_events();
+		test()
+	})
 }
 
 pub fn test_relay_header(

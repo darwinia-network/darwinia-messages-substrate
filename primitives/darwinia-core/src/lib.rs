@@ -19,7 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod copy_paste_from_darwinia {
-	// --- paritytech ---
+	// paritytech
 	use frame_support::weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, Weight,
@@ -87,14 +87,15 @@ mod copy_paste_from_darwinia {
 }
 pub use copy_paste_from_darwinia::*;
 
-// --- core ---
+// core
 use core::{fmt::Debug, marker::PhantomData};
-// --- crates.io ---
+// crates.io
 use parity_scale_codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input};
 use scale_info::{StaticTypeInfo, TypeInfo};
-// --- paritytech ---
+// darwinia-network
 use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
+// paritytech
 use frame_support::{
 	unsigned::{TransactionValidityError, UnknownTransaction},
 	weights::{DispatchClass, Weight},
@@ -143,11 +144,6 @@ pub type SignedExtra = ((), (), (), (), Era, Compact<Nonce>, (), Compact<Balance
 /// nearest future. If it'll ever break this barrier, then we'll need to update this constant
 /// at next runtime upgrade.
 pub const EXTRA_STORAGE_PROOF_SIZE: u32 = 1024;
-
-/// Maximal size (in bytes) of encoded (using `Encode::encode()`) account id.
-///
-/// All Darwinia-like chains are using same crypto.
-pub const MAXIMAL_ENCODED_ACCOUNT_ID_SIZE: u32 = 32;
 
 // TODO [#78] may need to be updated after https://github.com/paritytech/parity-bridges-common/issues/78
 /// Maximal number of messages in single delivery transaction.

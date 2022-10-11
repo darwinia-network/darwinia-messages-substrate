@@ -16,12 +16,14 @@
 
 //! Primitives that may be used by different message delivery and dispatch mechanisms.
 
+// crates.io
 use codec::{Decode, Encode};
-use frame_support::{weights::Weight, RuntimeDebug};
 use scale_info::TypeInfo;
+// paritytech
+use frame_support::{weights::Weight, RuntimeDebug};
 
 /// Where message dispatch fee is paid?
-#[derive(Encode, Decode, RuntimeDebug, Clone, Copy, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum DispatchFeePayment {
 	/// The dispatch fee is paid at the source chain.
 	AtSourceChain,
@@ -35,7 +37,7 @@ pub enum DispatchFeePayment {
 }
 
 /// Message dispatch result.
-#[derive(Encode, Decode, RuntimeDebug, Clone, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct MessageDispatchResult {
 	/// Dispatch result flag. This flag is relayed back to the source chain and, generally
 	/// speaking, may bring any (that fits in single bit) information from the dispatcher at

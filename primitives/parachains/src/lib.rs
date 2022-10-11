@@ -18,36 +18,69 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use bp_polkadot_core::parachains::ParaId;
-// use bp_runtime::{StorageDoubleMapKeyProvider, StorageMapKeyProvider};
-use codec::Encode;
-use frame_support::Twox64Concat;
+// crates.io
+use codec::{Decode, Encode};
+use scale_info::TypeInfo;
+// darwinia-network
+use bp_polkadot_core::{
+	parachains::{ParaHash, ParaHead, ParaId},
+	BlockNumber as RelayBlockNumber,
+};
+use bp_runtime::{StorageDoubleMapKeyProvider, StorageMapKeyProvider};
+// paritytech
+use frame_support::{Blake2_128Concat, RuntimeDebug, Twox64Concat};
 use sp_core::storage::StorageKey;
 
-// /// Best known parachain head hash.
-// #[derive(Clone, Decode, Encode, PartialEq, RuntimeDebug, TypeInfo)]
-// pub struct BestParaHeadHash {
-// 	/// Number of relay block where this head has been read.
-// 	///
-// 	/// Parachain head is opaque to relay chain. So we can't simply decode it as a header of
-// 	/// parachains and call `block_number()` on it. Instead, we're using the fact that parachain
-// 	/// head is always built on top of previous head (because it is blockchain) and relay chain
-// 	/// always imports parachain heads in order. What it means for us is that at any given
-// 	/// **finalized** relay block `B`, head of parachain will be ancestor (or the same) of all
-// 	/// parachain heads available at descendants of `B`.
-// 	pub at_relay_block_number: RelayBlockNumber,
-// 	/// Hash of parachain head.
-// 	pub head_hash: ParaHash,
-// }
+/// Best known parachain head hash.
+#[derive(Clone, PartialEq, Decode, Encode, RuntimeDebug, TypeInfo)]
+pub struct BestParaHeadHash {
+	/// Number of relay block where this head has been read.
+	///
+	/// Parachain head is opaque to relay chain. So we can't simply decode it as a header of
+	/// parachains and call `block_number()` on it. Instead, we're using the fact that parachain
+	/// head is always built on top of previous head (because it is blockchain) and relay chain
+	/// always imports parachain heads in order. What it means for us is that at any given
+	/// **finalized** relay block `B`, head of parachain will be ancestor (or the same) of all
+	/// parachain heads available at descendants of `B`.
+	pub at_relay_block_number: RelayBlockNumber,
+	/// Hash of parachain head.
+	pub head_hash: ParaHash,
+}
 
-// /// Best known parachain head as it is stored in the runtime storage.
-// #[derive(Decode, Encode, PartialEq, RuntimeDebug, TypeInfo)]
-// pub struct ParaInfo {
-// 	/// Best known parachain head hash.
-// 	pub best_head_hash: BestParaHeadHash,
-// 	/// Current ring buffer position for this parachain.
-// 	pub next_imported_hash_position: u32,
-// }
+/// Best known parachain head as it is stored in the runtime storage.
+#[derive(PartialEq, Decode, Encode, RuntimeDebug, TypeInfo)]
+pub struct ParaInfo {
+	/// Best known parachain head hash.
+	pub best_head_hash: BestParaHeadHash,
+	/// Current ring buffer position for this parachain.
+	pub next_imported_hash_position: u32,
+}
+
+/// Can be use to access the runtime storage key of the parachains info at the target chain.
+///
+/// The info is stored by the `pallet-bridge-parachains` pallet in the `ParasInfo` map.
+pub struct ParasInfoKeyProvider;
+impl StorageMapKeyProvider for ParasInfoKeyProvider {
+	type Hasher = Blake2_128Concat;
+	type Key = ParaId;
+	type Value = ParaInfo;
+
+	const MAP_NAME: &'static str = "ParasInfo";
+}
+
+/// Can be use to access the runtime storage key of the parachain head at the target chain.
+///
+/// The head is stored by the `pallet-bridge-parachains` pallet in the `ImportedParaHeads` map.
+pub struct ImportedParaHeadsKeyProvider;
+impl StorageDoubleMapKeyProvider for ImportedParaHeadsKeyProvider {
+	type Hasher1 = Blake2_128Concat;
+	type Hasher2 = Blake2_128Concat;
+	type Key1 = ParaId;
+	type Key2 = ParaHash;
+	type Value = ParaHead;
+
+	const MAP_NAME: &'static str = "ImportedParaHeads";
+}
 
 /// Returns runtime storage key of given parachain head at the source chain.
 ///
@@ -58,29 +91,3 @@ pub fn parachain_head_storage_key_at_source(
 ) -> StorageKey {
 	bp_runtime::storage_map_final_key::<Twox64Concat>(paras_pallet_name, "Heads", &para_id.encode())
 }
-
-// /// Can be use to access the runtime storage key of the parachains info at the target chain.
-// ///
-// /// The info is stored by the `pallet-bridge-parachains` pallet in the `ParasInfo` map.
-// pub struct ParasInfoKeyProvider;
-// impl StorageMapKeyProvider for ParasInfoKeyProvider {
-// 	const MAP_NAME: &'static str = "ParasInfo";
-
-// 	type Hasher = Blake2_128Concat;
-// 	type Key = ParaId;
-// 	type Value = ParaInfo;
-// }
-
-// /// Can be use to access the runtime storage key of the parachain head at the target chain.
-// ///
-// /// The head is stored by the `pallet-bridge-parachains` pallet in the `ImportedParaHeads` map.
-// pub struct ImportedParaHeadsKeyProvider;
-// impl StorageDoubleMapKeyProvider for ImportedParaHeadsKeyProvider {
-// 	const MAP_NAME: &'static str = "ImportedParaHeads";
-
-// 	type Hasher1 = Blake2_128Concat;
-// 	type Key1 = ParaId;
-// 	type Hasher2 = Blake2_128Concat;
-// 	type Key2 = ParaHash;
-// 	type Value = ParaHead;
-// }

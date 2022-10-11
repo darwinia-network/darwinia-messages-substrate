@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// --- darwinia-network ---
+// darwinia-network
 use crate::{types::Order, *};
-// --- paritytech ---
 use bp_messages::{
 	source_chain::{OnDeliveryConfirmed, OnMessageAccepted},
 	DeliveredMessages, LaneId, MessageNonce,

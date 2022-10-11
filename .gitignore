@@ -1,26 +1,15 @@
-**/target/
-**/.env
-**/.env2
-**/rust-toolchain
-hfuzz_target
-hfuzz_workspace
-**/Cargo.lock
-
-**/*.rs.bk
-
-*.o
-*.so
-*.rlib
-*.dll
-.gdb_history
-
-*.exe
-
+# System
 .DS_Store
 
-.cargo
+# Integrated Development Environment
 .idea
 .vscode
-*.iml
-*.swp
-*.swo
+
+# Package Manager
+## cargo
+/target
+## npm
+node_modules
+
+# Test data
+test-data

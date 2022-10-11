@@ -32,7 +32,10 @@ pub use weight::WeightInfo;
 pub mod s2s;
 pub mod types;
 
-// --- paritytech ---
+// darwinia-network
+use s2s::RewardItem;
+use types::{Order, Relayer, SlashReport};
+// paritytech
 use bp_messages::{LaneId, MessageNonce};
 use frame_support::{
 	ensure,
@@ -46,9 +49,6 @@ use sp_runtime::{
 	Permill, SaturatedConversion,
 };
 use sp_std::vec::Vec;
-// --- darwinia-network ---
-use s2s::RewardItem;
-use types::{Order, Relayer, SlashReport};
 
 pub type AccountId<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountId<T>>>::Balance;

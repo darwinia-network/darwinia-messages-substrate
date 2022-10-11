@@ -21,10 +21,19 @@ use std::{
 	collections::{BTreeMap, VecDeque},
 	ops::RangeInclusive,
 };
-// --- crates.io ---
+// crates.io
 use bitvec::prelude::*;
 use scale_info::TypeInfo;
-// --- paritytech ---
+// darwinia-network
+use crate::{
+	self as darwinia_fee_market,
+	s2s::{
+		payment::calculate_rewards, FeeMarketMessageAcceptedHandler,
+		FeeMarketMessageConfirmedHandler,
+	},
+	*,
+};
+// paritytech
 use bp_messages::{
 	source_chain::{
 		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, SenderOrigin, TargetHeaderChain,
@@ -49,15 +58,6 @@ use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup, UniqueSaturatedInto},
 	FixedU128, ModuleError, Permill,
-};
-// --- darwinia-network ---
-use crate::{
-	self as darwinia_fee_market,
-	s2s::{
-		payment::calculate_rewards, FeeMarketMessageAcceptedHandler,
-		FeeMarketMessageConfirmedHandler,
-	},
-	*,
 };
 
 type Block = MockBlock<Test>;

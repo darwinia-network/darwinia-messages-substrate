@@ -1,28 +1,24 @@
 [package]
-name = "pallet-bridge-dispatch"
+authors     = ["Parity Technologies <admin@parity.io>"]
 description = "A Substrate Runtime module that dispatches a bridge message, treating it simply as encoded Call"
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2021"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+edition     = "2021"
+license     = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name        = "pallet-bridge-dispatch"
+version     = "0.1.0"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false }
-log = { version = "0.4.14", default-features = false }
-scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
-
-# Bridge dependencies
-
-bp-message-dispatch = { path = "../../primitives/message-dispatch", default-features = false }
-bp-runtime = { path = "../../primitives/runtime", default-features = false }
-
-# Substrate Dependencies
-
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+# crates.io
+codec      = { package = "parity-scale-codec", version = "3.1", default-features = false }
+scale-info = { version = "2.1", default-features = false, features = ["derive"] }
+# darwinia-network
+bp-message-dispatch = { default-features = false, path = "../../primitives/message-dispatch" }
+bp-runtime          = { default-features = false, path = "../../primitives/runtime" }
+# paritytech
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 
 [dev-dependencies]
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "master" }
@@ -30,12 +26,15 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "master" }
 [features]
 default = ["std"]
 std = [
+	# crates.io
+	"codec/std",
+	"scale-info/std",
+	# darwinia-network
 	"bp-message-dispatch/std",
 	"bp-runtime/std",
+	# paritytech
 	"frame-support/std",
 	"frame-system/std",
-	"log/std",
-	"scale-info/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
