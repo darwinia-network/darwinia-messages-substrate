@@ -31,7 +31,10 @@ use bp_messages::{
 	LaneId, MessageKey, MessageNonce, UnrewardedRelayer,
 };
 // paritytech
-use frame_support::traits::{Currency as CurrencyT, ExistenceRequirement, Get};
+use frame_support::{
+	log,
+	traits::{Currency as CurrencyT, ExistenceRequirement, Get},
+};
 use sp_runtime::traits::Saturating;
 use sp_std::{collections::vec_deque::VecDeque, ops::RangeInclusive};
 
