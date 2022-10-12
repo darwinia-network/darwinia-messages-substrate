@@ -75,6 +75,15 @@ pub trait MessageDispatch<AccountId, Fee> {
 	/// `From<Chain>InboundLaneApi::message_details().dispatch_weight` call.
 	fn dispatch_weight(message: &mut DispatchMessage<Self::DispatchPayload, Fee>) -> Weight;
 
+	/// Checking in message receiving step before dispatch
+	///
+	/// This will be called before the call enter dispatch phase. If failed, the message(call) will
+	/// be not be processed by this relayer, latter relayers can still continue process it.
+	fn pre_dispatch(
+		relayer_account: &AccountId,
+		message: &DispatchMessage<Self::DispatchPayload, Fee>,
+	) -> Result<(), &'static str>;
+
 	/// Called when inbound message is received.
 	///
 	/// It is up to the implementers of this trait to determine whether the message
@@ -154,6 +163,13 @@ impl<AccountId, Fee> MessageDispatch<AccountId, Fee> for ForbidInboundMessages {
 
 	fn dispatch_weight(_message: &mut DispatchMessage<Self::DispatchPayload, Fee>) -> Weight {
 		Weight::MAX
+	}
+
+	fn pre_dispatch(
+		_: &AccountId,
+		_message: &DispatchMessage<Self::DispatchPayload, Fee>,
+	) -> Result<(), &'static str> {
+		Ok(())
 	}
 
 	fn dispatch(
