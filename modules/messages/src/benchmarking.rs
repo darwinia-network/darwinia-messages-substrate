@@ -31,7 +31,7 @@ use bp_runtime::{messages::DispatchFeePayment, StorageProofSize};
 use frame_benchmarking::{account, benchmarks_instance_pallet};
 use frame_support::{traits::Get, weights::Weight};
 use frame_system::RawOrigin;
-use sp_std::{collections::vec_deque::VecDeque, convert::TryInto, ops::RangeInclusive, prelude::*};
+use sp_std::{collections::vec_deque::VecDeque, ops::RangeInclusive, prelude::*};
 
 const SEED: u32 = 0;
 
@@ -247,7 +247,7 @@ benchmarks_instance_pallet! {
 	// * message size varies from minimal to maximal;
 	// * submitter account is killed because its balance is less than ED after payment.
 	increase_message_fee {
-		let i in 0..T::maximal_message_size().try_into().unwrap_or_default();
+		let i in 0..T::maximal_message_size();
 
 		let sender = account("sender", 42, SEED);
 		T::endow_account(&sender);
@@ -577,7 +577,7 @@ benchmarks_instance_pallet! {
 						messages: DeliveredMessages::new(1, true),
 					},
 					UnrewardedRelayer {
-						relayer: relayer2_id.clone(),
+						relayer: relayer2_id,
 						messages: DeliveredMessages::new(2, true),
 					},
 				].into_iter().collect(),

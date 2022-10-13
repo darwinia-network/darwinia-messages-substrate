@@ -504,7 +504,7 @@ pub mod pallet {
 
 		let mut number = start_number;
 		while number < end_number {
-			number = number + sp_runtime::traits::One::one();
+			number += sp_runtime::traits::One::one();
 			let header = <BridgedHeader<T, I>>::new(
 				number,
 				Default::default(),
