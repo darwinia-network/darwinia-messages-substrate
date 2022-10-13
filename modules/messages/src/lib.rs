@@ -60,7 +60,6 @@ pub use weights_ext::{
 	ensure_weights_are_correct, WeightInfoExt, EXPECTED_DEFAULT_MESSAGE_LENGTH,
 };
 
-
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use num_traits::{SaturatingAdd, Zero};
@@ -1304,14 +1303,6 @@ mod tests {
 			);
 
 			assert_noop!(
-<<<<<<< HEAD
-=======
-				Pallet::<TestRuntime>::increase_message_fee(Origin::signed(1), TEST_LANE_ID, 1, 1,),
-				Error::<TestRuntime, ()>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted),
-			);
-
-			assert_noop!(
->>>>>>> origin/xavier/latest
 				Pallet::<TestRuntime>::receive_messages_proof(
 					Origin::signed(1),
 					TEST_RELAYER_A,
@@ -2065,51 +2056,6 @@ mod tests {
 	}
 
 	#[test]
-<<<<<<< HEAD
-=======
-	fn increase_message_fee_weight_depends_on_message_size() {
-		run_test(|| {
-			let mut small_payload = message_payload(0, 100);
-			let mut large_payload = message_payload(1, 100);
-			small_payload.extra = vec![1; MAX_OUTBOUND_PAYLOAD_SIZE as usize / 10];
-			large_payload.extra = vec![2; MAX_OUTBOUND_PAYLOAD_SIZE as usize / 5];
-
-			assert_ok!(Pallet::<TestRuntime>::send_message(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				small_payload,
-				100,
-			));
-			assert_ok!(Pallet::<TestRuntime>::send_message(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				large_payload,
-				100,
-			));
-
-			let small_weight =
-				Pallet::<TestRuntime>::increase_message_fee(Origin::signed(1), TEST_LANE_ID, 1, 1)
-					.expect("increase_message_fee has failed")
-					.actual_weight
-					.expect("increase_message_fee always returns Some");
-
-			let large_weight =
-				Pallet::<TestRuntime>::increase_message_fee(Origin::signed(1), TEST_LANE_ID, 2, 1)
-					.expect("increase_message_fee has failed")
-					.actual_weight
-					.expect("increase_message_fee always returns Some");
-
-			assert!(
-				large_weight > small_weight,
-				"Actual post-dispatch weigth for larger message {} must be larger than {} for small message",
-				large_weight,
-				small_weight,
-			);
-		});
-	}
-
-	#[test]
->>>>>>> origin/xavier/latest
 	fn weight_is_refunded_for_messages_that_are_not_pruned() {
 		run_test(|| {
 			// send first MAX messages - no messages are pruned
