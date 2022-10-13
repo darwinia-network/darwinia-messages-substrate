@@ -164,7 +164,7 @@ pub mod source {
 	/// - hash of finalized header;
 	/// - storage proof of inbound lane state;
 	/// - lane id.
-	#[derive(Clone, Decode, Encode, Eq, PartialEq, RuntimeDebug, TypeInfo)]
+	#[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, TypeInfo)]
 	pub struct FromBridgedChainMessagesDeliveryProof<BridgedHeaderHash> {
 		/// Hash of the bridge header the proof is for.
 		pub bridged_header_hash: BridgedHeaderHash,
@@ -452,7 +452,7 @@ pub mod target {
 	/// - storage proof of messages and (optionally) outbound lane state;
 	/// - lane id;
 	/// - nonces (inclusive range) of messages which are included in this proof.
-	#[derive(Clone, Decode, Encode, Eq, PartialEq, RuntimeDebug, TypeInfo)]
+	#[derive(Clone, Encode, PartialEq, Eq, Decode, RuntimeDebug, TypeInfo)]
 	pub struct FromBridgedChainMessagesProof<BridgedHeaderHash> {
 		/// Hash of the finalized bridged header the proof is for.
 		pub bridged_header_hash: BridgedHeaderHash,
@@ -478,7 +478,7 @@ pub mod target {
 	///
 	/// Our Call is opaque (`Vec<u8>`) for Bridged chain. So it is encoded, prefixed with
 	/// vector length. Custom decode implementation here is exactly to deal with this.
-	#[derive(Decode, Encode, Clone, RuntimeDebug, PartialEq)]
+	#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 	pub struct FromBridgedChainEncodedMessageCall<DecodedCall> {
 		encoded_call: Vec<u8>,
 		_marker: PhantomData<DecodedCall>,
@@ -491,7 +491,7 @@ pub mod target {
 	}
 
 	/// Dispatching Bridged -> This chain messages.
-	#[derive(RuntimeDebug, Clone, Copy)]
+	#[derive(Clone, Copy, RuntimeDebug)]
 	pub struct FromBridgedChainMessageDispatch<B, ThisRuntime, ThisCurrency, ThisDispatchInstance> {
 		_marker: PhantomData<(B, ThisRuntime, ThisCurrency, ThisDispatchInstance)>,
 	}
@@ -868,13 +868,13 @@ mod tests {
 		const THIS_CHAIN_ID: ChainId = *b"brdg";
 	}
 
-	#[derive(Debug, PartialEq, Eq, Decode, Encode, Clone, MaxEncodedLen)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone, MaxEncodedLen)]
 	struct ThisChainAccountId(u32);
-	#[derive(Debug, PartialEq, Eq, Decode, Encode)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode)]
 	struct ThisChainSigner(u32);
-	#[derive(Debug, PartialEq, Eq, Decode, Encode)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode)]
 	struct ThisChainSignature(u32);
-	#[derive(Debug, PartialEq, Eq, Decode, Encode)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode)]
 	enum ThisChainCall {
 		#[codec(index = 42)]
 		Transfer,
@@ -893,13 +893,13 @@ mod tests {
 		}
 	}
 
-	#[derive(Debug, PartialEq, Eq, Decode, Encode, MaxEncodedLen)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode, MaxEncodedLen)]
 	struct BridgedChainAccountId(u32);
-	#[derive(Debug, PartialEq, Eq, Decode, Encode)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode)]
 	struct BridgedChainSigner(u32);
-	#[derive(Debug, PartialEq, Eq, Decode, Encode)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode)]
 	struct BridgedChainSignature(u32);
-	#[derive(Debug, PartialEq, Eq, Decode, Encode)]
+	#[derive(Debug, PartialEq, Eq, Encode, Decode)]
 	enum BridgedChainCall {}
 	#[derive(Clone, Debug)]
 	struct BridgedChainOrigin;
@@ -915,7 +915,7 @@ mod tests {
 
 	macro_rules! impl_wrapped_balance {
 		($name:ident) => {
-			#[derive(Debug, PartialEq, Eq, Decode, Encode, Clone, Copy)]
+			#[derive(Clone, Copy, Debug, PartialEq, Eq, Encode, Decode)]
 			struct $name(u32);
 
 			impl From<u32> for $name {
