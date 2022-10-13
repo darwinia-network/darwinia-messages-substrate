@@ -130,6 +130,7 @@ pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
 	fn pay_delivery_and_dispatch_fee(
 		submitter: &SenderOrigin,
 		fee: &Balance,
+		relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error>;
 
 	/// Pay rewards for delivering messages to the given relayers.
@@ -141,6 +142,7 @@ pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
 		messages_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
 		confirmation_relayer: &AccountId,
 		received_range: &RangeInclusive<MessageNonce>,
+		relayer_fund_account: &AccountId,
 	);
 }
 impl<SenderOrigin, AccountId, Balance>
@@ -151,6 +153,7 @@ impl<SenderOrigin, AccountId, Balance>
 	fn pay_delivery_and_dispatch_fee(
 		_submitter: &SenderOrigin,
 		_fee: &Balance,
+		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
 		Ok(())
 	}
@@ -160,6 +163,7 @@ impl<SenderOrigin, AccountId, Balance>
 		_messages_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
 		_confirmation_relayer: &AccountId,
 		_received_range: &RangeInclusive<MessageNonce>,
+		_relayer_fund_account: &AccountId,
 	) {
 	}
 }
@@ -297,6 +301,7 @@ impl<SenderOrigin, AccountId, Balance>
 	fn pay_delivery_and_dispatch_fee(
 		_submitter: &SenderOrigin,
 		_fee: &Balance,
+		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
 		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
 	}
@@ -306,6 +311,7 @@ impl<SenderOrigin, AccountId, Balance>
 		_messages_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
 		_confirmation_relayer: &AccountId,
 		_received_range: &RangeInclusive<MessageNonce>,
+		_relayer_fund_account: &AccountId,
 	) {
 	}
 }

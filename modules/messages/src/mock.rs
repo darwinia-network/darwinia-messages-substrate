@@ -17,9 +17,18 @@
 // From construct_runtime macro
 #![allow(clippy::from_over_into)]
 
-use crate::{instant_payments::cal_relayers_rewards, Config};
-
+// std
+use std::{
+	collections::{BTreeMap, VecDeque},
+	ops::RangeInclusive,
+};
+// crates.io
 use bitvec::prelude::*;
+use codec::{Decode, Encode};
+use scale_info::TypeInfo;
+// darwinia-network
+use crate as pallet_bridge_messages;
+use crate::{calc_relayers_rewards, Config};
 use bp_messages::{
 	source_chain::{
 		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, OnDeliveryConfirmed,
@@ -32,25 +41,58 @@ use bp_messages::{
 	OutboundLaneData, Parameter as MessagesParameter, UnrewardedRelayer,
 };
 use bp_runtime::{messages::MessageDispatchResult, Size};
-use codec::{Decode, Encode};
+// paritytech
 use frame_support::{
 	parameter_types,
 	weights::{RuntimeDbWeight, Weight},
 };
-use scale_info::TypeInfo;
+use frame_system::mocking::*;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header as SubstrateHeader,
 	traits::{BlakeTwo256, IdentityLookup},
 	FixedU128, Perbill,
 };
-use std::{
-	collections::{BTreeMap, VecDeque},
-	ops::RangeInclusive,
-};
 
 pub type AccountId = u64;
 pub type Balance = u64;
+
+pub type TestMessageFee = u64;
+pub type TestRelayer = u64;
+
+type Block = MockBlock<TestRuntime>;
+type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
+
+/// Vec of proved messages, grouped by lane.
+pub type MessagesByLaneVec = Vec<(LaneId, ProvedLaneMessages<Message<TestMessageFee>>)>;
+
+/// Maximal outbound payload size.
+pub const MAX_OUTBOUND_PAYLOAD_SIZE: u32 = 4096;
+
+/// Account that has balance to use in tests.
+pub const ENDOWED_ACCOUNT: AccountId = 0xDEAD;
+
+/// Account id of test relayer.
+pub const TEST_RELAYER_A: AccountId = 100;
+
+/// Account id of additional test relayer - B.
+pub const TEST_RELAYER_B: AccountId = 101;
+
+/// Account id of additional test relayer - C.
+pub const TEST_RELAYER_C: AccountId = 102;
+
+/// Error that is returned by all test implementations.
+pub const TEST_ERROR: &str = "Test error";
+
+/// Lane that we're using in tests.
+pub const TEST_LANE_ID: LaneId = [0, 0, 0, 1];
+
+/// Regular message payload.
+pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, 50);
+
+/// Payload that is rejected by `TestTargetHeaderChain`.
+pub const PAYLOAD_REJECTED_BY_TARGET_CHAIN: TestPayload = message_payload(1, 50);
+
 #[derive(Decode, Encode, Clone, Debug, PartialEq, Eq, TypeInfo)]
 pub struct TestPayload {
 	/// Field that may be used to identify messages.
@@ -65,21 +107,13 @@ pub struct TestPayload {
 	/// Extra bytes that affect payload size.
 	pub extra: Vec<u8>,
 }
-pub type TestMessageFee = u64;
-pub type TestRelayer = u64;
 
 pub struct AccountIdConverter;
-
 impl sp_runtime::traits::Convert<H256, AccountId> for AccountIdConverter {
 	fn convert(hash: H256) -> AccountId {
 		hash.to_low_u64_ne()
 	}
 }
-
-type Block = frame_system::mocking::MockBlock<TestRuntime>;
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
-
-use crate as pallet_bridge_messages;
 
 frame_support::construct_runtime! {
 	pub enum TestRuntime where
@@ -100,7 +134,6 @@ parameter_types! {
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
 }
-
 impl frame_system::Config for TestRuntime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
@@ -131,7 +164,6 @@ impl frame_system::Config for TestRuntime {
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
 }
-
 impl pallet_balances::Config for TestRuntime {
 	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
@@ -144,19 +176,10 @@ impl pallet_balances::Config for TestRuntime {
 	type WeightInfo = ();
 }
 
-parameter_types! {
-	pub const MaxMessagesToPruneAtOnce: u64 = 10;
-	pub const MaxUnrewardedRelayerEntriesAtInboundLane: u64 = 16;
-	pub const MaxUnconfirmedMessagesAtInboundLane: u64 = 32;
-	pub storage TokenConversionRate: FixedU128 = 1.into();
-  pub const TestBridgedChainId: bp_runtime::ChainId = *b"test";
-}
-
 #[derive(Debug, Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 pub enum TestMessagesParameter {
 	TokenConversionRate(FixedU128),
 }
-
 impl MessagesParameter for TestMessagesParameter {
 	fn save(&self) {
 		match *self {
@@ -165,7 +188,13 @@ impl MessagesParameter for TestMessagesParameter {
 		}
 	}
 }
-
+parameter_types! {
+	pub const MaxMessagesToPruneAtOnce: u64 = 10;
+	pub const MaxUnrewardedRelayerEntriesAtInboundLane: u64 = 16;
+	pub const MaxUnconfirmedMessagesAtInboundLane: u64 = 32;
+	pub storage TokenConversionRate: FixedU128 = 1.into();
+	pub const TestBridgedChainId: bp_runtime::ChainId = *b"test";
+}
 impl Config for TestRuntime {
 	type AccountIdConverter = AccountIdConverter;
 	type BridgedChainId = TestBridgedChainId;
@@ -177,6 +206,7 @@ impl Config for TestRuntime {
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
 	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
 	type MessageDispatch = TestMessageDispatch;
 	type OnDeliveryConfirmed = (TestOnDeliveryConfirmed1, TestOnDeliveryConfirmed2);
@@ -200,50 +230,21 @@ impl SenderOrigin<AccountId> for Origin {
 }
 
 impl Size for TestPayload {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		16 + self.extra.len() as u32
 	}
 }
-
-/// Account that has balance to use in tests.
-pub const ENDOWED_ACCOUNT: AccountId = 0xDEAD;
-
-/// Account id of test relayer.
-pub const TEST_RELAYER_A: AccountId = 100;
-
-/// Account id of additional test relayer - B.
-pub const TEST_RELAYER_B: AccountId = 101;
-
-/// Account id of additional test relayer - C.
-pub const TEST_RELAYER_C: AccountId = 102;
-
-/// Error that is returned by all test implementations.
-pub const TEST_ERROR: &str = "Test error";
-
-/// Lane that we're using in tests.
-pub const TEST_LANE_ID: LaneId = [0, 0, 0, 1];
-
-/// Regular message payload.
-pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, 50);
-
-/// Payload that is rejected by `TestTargetHeaderChain`.
-pub const PAYLOAD_REJECTED_BY_TARGET_CHAIN: TestPayload = message_payload(1, 50);
-
-/// Vec of proved messages, grouped by lane.
-pub type MessagesByLaneVec = Vec<(LaneId, ProvedLaneMessages<Message<TestMessageFee>>)>;
 
 /// Test messages proof.
 #[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
 pub struct TestMessagesProof {
 	pub result: Result<MessagesByLaneVec, ()>,
 }
-
 impl Size for TestMessagesProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
-
 impl From<Result<Vec<Message<TestMessageFee>>, ()>> for TestMessagesProof {
 	fn from(result: Result<Vec<Message<TestMessageFee>>, ()>) -> Self {
 		Self {
@@ -264,9 +265,8 @@ impl From<Result<Vec<Message<TestMessageFee>>, ()>> for TestMessagesProof {
 /// Messages delivery proof used in tests.
 #[derive(Debug, Encode, Decode, Eq, Clone, PartialEq, TypeInfo)]
 pub struct TestMessagesDeliveryProof(pub Result<(LaneId, InboundLaneData<TestRelayer>), ()>);
-
 impl Size for TestMessagesDeliveryProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -274,7 +274,6 @@ impl Size for TestMessagesDeliveryProof {
 /// Target header chain that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestTargetHeaderChain;
-
 impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 	type Error = &'static str;
 	type MessagesDeliveryProof = TestMessagesDeliveryProof;
@@ -297,7 +296,6 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 /// Lane message verifier that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
-
 impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
 	for TestLaneMessageVerifier
 {
@@ -321,7 +319,6 @@ impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
 /// Message fee payment system that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestMessageDeliveryAndDispatchPayment;
-
 impl TestMessageDeliveryAndDispatchPayment {
 	/// Reject all payments.
 	pub fn reject_payments() {
@@ -341,7 +338,6 @@ impl TestMessageDeliveryAndDispatchPayment {
 		frame_support::storage::unhashed::take::<bool>(&key).is_some()
 	}
 }
-
 impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
@@ -369,7 +365,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		_relayer_fund_account: &AccountId,
 	) {
 		let relayers_rewards =
-			cal_relayers_rewards::<TestRuntime, ()>(lane_id, message_relayers, received_range);
+			calc_relayers_rewards::<TestRuntime, ()>(lane_id, message_relayers, received_range);
 		for (relayer, reward) in &relayers_rewards {
 			let key = (b":relayer-reward:", relayer, reward.reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
@@ -379,7 +375,6 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 
 #[derive(Debug)]
 pub struct TestOnMessageAccepted;
-
 impl TestOnMessageAccepted {
 	/// Verify that the callback has been called when the message is accepted.
 	pub fn ensure_called(lane: &LaneId, message: &MessageNonce) {
@@ -397,7 +392,6 @@ impl TestOnMessageAccepted {
 		frame_support::storage::unhashed::get(b"TestOnMessageAccepted_Weight")
 	}
 }
-
 impl OnMessageAccepted for TestOnMessageAccepted {
 	fn on_messages_accepted(lane: &LaneId, message: &MessageNonce) -> Weight {
 		let key = (b"TestOnMessageAccepted", lane, message).encode();
@@ -410,7 +404,6 @@ impl OnMessageAccepted for TestOnMessageAccepted {
 /// First on-messages-delivered callback.
 #[derive(Debug)]
 pub struct TestOnDeliveryConfirmed1;
-
 impl TestOnDeliveryConfirmed1 {
 	/// Verify that the callback has been called with given delivered messages.
 	pub fn ensure_called(lane: &LaneId, messages: &DeliveredMessages) {
@@ -428,7 +421,6 @@ impl TestOnDeliveryConfirmed1 {
 		frame_support::storage::unhashed::get(b"TestOnDeliveryConfirmed1_Weight")
 	}
 }
-
 impl OnDeliveryConfirmed for TestOnDeliveryConfirmed1 {
 	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
 		let key = (b"TestOnDeliveryConfirmed1", lane, messages).encode();
@@ -442,7 +434,6 @@ impl OnDeliveryConfirmed for TestOnDeliveryConfirmed1 {
 /// Second on-messages-delivered callback.
 #[derive(Debug)]
 pub struct TestOnDeliveryConfirmed2;
-
 impl TestOnDeliveryConfirmed2 {
 	/// Verify that the callback has been called with given delivered messages.
 	pub fn ensure_called(lane: &LaneId, messages: &DeliveredMessages) {
@@ -450,7 +441,6 @@ impl TestOnDeliveryConfirmed2 {
 		assert_eq!(frame_support::storage::unhashed::get(&key), Some(true));
 	}
 }
-
 impl OnDeliveryConfirmed for TestOnDeliveryConfirmed2 {
 	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
 		let key = (b"TestOnDeliveryConfirmed2", lane, messages).encode();
@@ -462,7 +452,6 @@ impl OnDeliveryConfirmed for TestOnDeliveryConfirmed2 {
 /// Source header chain that is used in tests.
 #[derive(Debug)]
 pub struct TestSourceHeaderChain;
-
 impl SourceHeaderChain<TestMessageFee> for TestSourceHeaderChain {
 	type Error = &'static str;
 	type MessagesProof = TestMessagesProof;
@@ -478,11 +467,10 @@ impl SourceHeaderChain<TestMessageFee> for TestSourceHeaderChain {
 /// Source header chain that is used in tests.
 #[derive(Debug)]
 pub struct TestMessageDispatch;
-
 impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	type DispatchPayload = TestPayload;
 
-	fn dispatch_weight(message: &DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
+	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.declared_weight,
 			Err(_) => 0,
