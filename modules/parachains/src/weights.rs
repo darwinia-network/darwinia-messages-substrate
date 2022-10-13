@@ -65,11 +65,13 @@ impl<T: frame_system::Config> WeightInfo for MillauWeight<T> {
 			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(p as Weight)))
 			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(p as Weight)))
 	}
+
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
 		(27_549_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
+
 	fn submit_parachain_heads_with_16kb_proof() -> Weight {
 		(80_792_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
@@ -86,11 +88,13 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads((2 as Weight).saturating_mul(p as Weight)))
 			.saturating_add(RocksDbWeight::get().writes((3 as Weight).saturating_mul(p as Weight)))
 	}
+
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
 		(27_549_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
+
 	fn submit_parachain_heads_with_16kb_proof() -> Weight {
 		(80_792_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
