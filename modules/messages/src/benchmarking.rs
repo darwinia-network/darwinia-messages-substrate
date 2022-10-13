@@ -221,50 +221,6 @@ benchmarks_instance_pallet! {
 		);
 	}
 
-	// Benchmark `increase_message_fee` with following conditions:
-	// * message has maximal message;
-	// * submitter account is killed because its balance is less than ED after payment.
-	//
-	// Result of this benchmark is directly used by weight formula of the call.
-	maximal_increase_message_fee {
-		let sender = account("sender", 42, SEED);
-		T::endow_account(&sender);
-
-		let additional_fee = T::account_balance(&sender);
-		let lane_id = T::bench_lane_id();
-		let nonce = 1;
-
-		send_regular_message_with_payload::<T, I>(vec![42u8; T::maximal_message_size() as _]);
-	}: increase_message_fee(RawOrigin::Signed(sender.clone()), lane_id, nonce, additional_fee)
-	verify {
-		assert_eq!(
-			OutboundMessages::<T, I>::get(MessageKey { lane_id, nonce }).unwrap().fee,
-			T::message_fee() + additional_fee,
-		);
-	}
-
-	// Benchmark `increase_message_fee` with following conditions:
-	// * message size varies from minimal to maximal;
-	// * submitter account is killed because its balance is less than ED after payment.
-	increase_message_fee {
-		let i in 0..T::maximal_message_size();
-
-		let sender = account("sender", 42, SEED);
-		T::endow_account(&sender);
-
-		let additional_fee = T::account_balance(&sender);
-		let lane_id = T::bench_lane_id();
-		let nonce = 1;
-
-		send_regular_message_with_payload::<T, I>(vec![42u8; i as _]);
-	}: increase_message_fee(RawOrigin::Signed(sender.clone()), lane_id, nonce, additional_fee)
-	verify {
-		assert_eq!(
-			OutboundMessages::<T, I>::get(MessageKey { lane_id, nonce }).unwrap().fee,
-			T::message_fee() + additional_fee,
-		);
-	}
-
 	// Benchmark `receive_messages_proof` extrinsic with single minimal-weight message and following conditions:
 	// * proof does not include outbound lane state proof;
 	// * inbound lane already has state, so it needs to be read and decoded;
@@ -594,11 +550,6 @@ benchmarks_instance_pallet! {
 fn send_regular_message<T: Config<I>, I: 'static>() {
 	let mut outbound_lane = outbound_lane::<T, I>(T::bench_lane_id());
 	outbound_lane.send_message(MessageData { payload: vec![], fee: T::message_fee() });
-}
-
-fn send_regular_message_with_payload<T: Config<I>, I: 'static>(payload: Vec<u8>) {
-	let mut outbound_lane = outbound_lane::<T, I>(T::bench_lane_id());
-	outbound_lane.send_message(MessageData { payload, fee: T::message_fee() });
 }
 
 fn confirm_message_delivery<T: Config<I>, I: 'static>(nonce: MessageNonce) {
