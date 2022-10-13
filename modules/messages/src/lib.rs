@@ -830,7 +830,7 @@ where
 }
 
 /// Runtime outbound lane storage.
-struct RuntimeOutboundLaneStorage<T, I = ()> {
+pub struct RuntimeOutboundLaneStorage<T, I = ()> {
 	lane_id: LaneId,
 	_phantom: PhantomData<(T, I)>,
 }
@@ -1060,7 +1060,7 @@ fn inbound_lane_storage<T: Config<I>, I: 'static>(
 }
 
 /// Creates new outbound lane object, backed by runtime storage.
-fn outbound_lane<T: Config<I>, I: 'static>(
+pub fn outbound_lane<T: Config<I>, I: 'static>(
 	lane_id: LaneId,
 ) -> OutboundLane<RuntimeOutboundLaneStorage<T, I>> {
 	OutboundLane::new(RuntimeOutboundLaneStorage { lane_id, _phantom: Default::default() })
