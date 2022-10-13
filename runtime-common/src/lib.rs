@@ -23,7 +23,7 @@ pub mod integrity;
 pub mod lanes;
 pub mod messages;
 pub mod messages_benchmarking;
-// pub mod messages_extension;
+pub mod messages_extension;
 
 // darwinia-network
 use bp_runtime::FilterCall;
