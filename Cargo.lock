@@ -381,6 +381,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-pangolin-parachain-alpha"
+version = "0.1.0"
+dependencies = [
+ "bp-darwinia-core",
+ "bp-messages",
+ "bp-runtime",
+ "frame-support",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
+]
+
+[[package]]
 name = "bp-pangoro"
 version = "0.1.0"
 dependencies = [
