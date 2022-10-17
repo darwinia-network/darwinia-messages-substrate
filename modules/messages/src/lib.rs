@@ -46,8 +46,6 @@ pub mod benchmarking;
 pub mod weights;
 pub use weights::WeightInfo;
 
-pub mod instant_payments;
-
 mod inbound_lane;
 pub use inbound_lane::StoredInboundLaneData;
 
