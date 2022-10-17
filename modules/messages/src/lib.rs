@@ -69,15 +69,14 @@ use crate::{
 use bp_messages::{
 	source_chain::{
 		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, OnDeliveryConfirmed,
-		OnMessageAccepted, RelayersRewards, SendMessageArtifacts, TargetHeaderChain,
+		OnMessageAccepted, SendMessageArtifacts, TargetHeaderChain,
 	},
 	target_chain::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
 	},
 	total_unrewarded_messages, DeliveredMessages, InboundLaneData, InboundMessageDetails, LaneId,
 	MessageData, MessageKey, MessageNonce, MessagePayload, MessagesOperatingMode, OutboundLaneData,
-	OutboundMessageDetails, Parameter as MessagesParameter, UnrewardedRelayer,
-	UnrewardedRelayersState,
+	OutboundMessageDetails, Parameter as MessagesParameter, UnrewardedRelayersState,
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
@@ -88,10 +87,7 @@ use frame_support::{
 };
 use sp_core::H256;
 use sp_runtime::traits::Convert;
-use sp_std::{
-	cell::RefCell, collections::vec_deque::VecDeque, marker::PhantomData, ops::RangeInclusive,
-	prelude::*,
-};
+use sp_std::{cell::RefCell, marker::PhantomData, prelude::*};
 
 /// The target that will be used when publishing logs related to this pallet.
 pub const LOG_TARGET: &str = "runtime::bridge-messages";
@@ -923,38 +919,6 @@ fn send_message<T: Config<I>, I: 'static>(
 	Pallet::<T, I>::deposit_event(Event::MessageAccepted { lane_id, nonce });
 
 	Ok(SendMessageArtifacts { nonce, weight: actual_weight })
-}
-
-// TODO: Maybe useless for Darwinia.
-/// Calculate the relayers rewards
-pub fn calc_relayers_rewards<T, I>(
-	lane_id: LaneId,
-	messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
-	received_range: &RangeInclusive<MessageNonce>,
-) -> RelayersRewards<T::AccountId, T::OutboundMessageFee>
-where
-	T: frame_system::Config + crate::Config<I>,
-	I: 'static,
-{
-	// remember to reward relayers that have delivered messages
-	// this loop is bounded by `T::MaxUnrewardedRelayerEntriesAtInboundLane` on the bridged chain
-	let mut relayers_rewards: RelayersRewards<_, T::OutboundMessageFee> = RelayersRewards::new();
-	for entry in messages_relayers {
-		let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
-		let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
-
-		// loop won't proceed if current entry is ahead of received range (begin > end).
-		// this loop is bound by `T::MaxUnconfirmedMessagesAtInboundLane` on the bridged chain
-		let mut relayer_reward = relayers_rewards.entry(entry.relayer).or_default();
-		for nonce in nonce_begin..=nonce_end {
-			let key = MessageKey { lane_id, nonce };
-			let message_data = OutboundMessages::<T, I>::get(key)
-				.expect("message was just confirmed; we never prune unconfirmed messages; qed");
-			relayer_reward.reward = relayer_reward.reward.saturating_add(&message_data.fee);
-			relayer_reward.messages += 1;
-		}
-	}
-	relayers_rewards
 }
 
 /// Ensure that the pallet is in normal operational mode.

@@ -28,7 +28,7 @@ use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // darwinia-network
 use crate as pallet_bridge_messages;
-use crate::{calc_relayers_rewards, Config};
+use crate::*;
 use bp_messages::{
 	source_chain::{
 		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, OnDeliveryConfirmed,
@@ -236,7 +236,7 @@ impl Size for TestPayload {
 }
 
 /// Test messages proof.
-#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub struct TestMessagesProof {
 	pub result: Result<MessagesByLaneVec, ()>,
 }
@@ -263,7 +263,7 @@ impl From<Result<Vec<Message<TestMessageFee>>, ()>> for TestMessagesProof {
 }
 
 /// Messages delivery proof used in tests.
-#[derive(Debug, Encode, Decode, Eq, Clone, PartialEq, TypeInfo)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub struct TestMessagesDeliveryProof(pub Result<(LaneId, InboundLaneData<TestRelayer>), ()>);
 impl Size for TestMessagesDeliveryProof {
 	fn size(&self) -> u32 {
@@ -364,6 +364,52 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		received_range: &RangeInclusive<MessageNonce>,
 		_relayer_fund_account: &AccountId,
 	) {
+		// Relayers rewards, grouped by relayer account id.
+		type RelayersRewards<AccountId, Balance> = BTreeMap<AccountId, RelayerRewards<Balance>>;
+
+		// Single relayer rewards.
+		#[derive(Default)]
+		struct RelayerRewards<Balance> {
+			// Total rewards that are to be paid to the relayer.
+			reward: Balance,
+			// Total number of messages relayed by this relayer.
+			messages: MessageNonce,
+		}
+
+		fn calc_relayers_rewards<T, I>(
+			lane_id: LaneId,
+			messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
+			received_range: &RangeInclusive<MessageNonce>,
+		) -> RelayersRewards<T::AccountId, T::OutboundMessageFee>
+		where
+			T: frame_system::Config + crate::Config<I>,
+			I: 'static,
+		{
+			// remember to reward relayers that have delivered messages
+			// this loop is bounded by `T::MaxUnrewardedRelayerEntriesAtInboundLane` on the bridged
+			// chain
+			let mut relayers_rewards: RelayersRewards<_, T::OutboundMessageFee> =
+				RelayersRewards::new();
+			for entry in messages_relayers {
+				let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
+				let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
+
+				// loop won't proceed if current entry is ahead of received range (begin > end).
+				// this loop is bound by `T::MaxUnconfirmedMessagesAtInboundLane` on the bridged
+				// chain
+				let mut relayer_reward = relayers_rewards.entry(entry.relayer).or_default();
+				for nonce in nonce_begin..=nonce_end {
+					let key = MessageKey { lane_id, nonce };
+					let message_data = OutboundMessages::<T, I>::get(key).expect(
+						"message was just confirmed; we never prune unconfirmed messages; qed",
+					);
+					relayer_reward.reward = relayer_reward.reward.saturating_add(&message_data.fee);
+					relayer_reward.messages += 1;
+				}
+			}
+			relayers_rewards
+		}
+
 		let relayers_rewards =
 			calc_relayers_rewards::<TestRuntime, ()>(lane_id, message_relayers, received_range);
 		for (relayer, reward) in &relayers_rewards {

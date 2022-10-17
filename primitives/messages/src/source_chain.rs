@@ -23,14 +23,7 @@ use crate::{
 use bp_runtime::Size;
 // paritytech
 use frame_support::{weights::Weight, Parameter, RuntimeDebug};
-use sp_std::{
-	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
-	fmt::Debug,
-	ops::RangeInclusive,
-};
-
-/// Relayers rewards, grouped by relayer account id.
-pub type RelayersRewards<AccountId, Balance> = BTreeMap<AccountId, RelayerRewards<Balance>>;
+use sp_std::{collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
 
 /// Error message that is used in `ForbidOutboundMessages` implementation.
 const ALL_OUTBOUND_MESSAGES_REJECTED: &str =
@@ -206,15 +199,6 @@ impl OnMessageAccepted for () {
 	fn on_messages_accepted(_lane: &LaneId, _message: &MessageNonce) -> Weight {
 		0
 	}
-}
-
-/// Single relayer rewards.
-#[derive(Default, RuntimeDebug)]
-pub struct RelayerRewards<Balance> {
-	/// Total rewards that are to be paid to the relayer.
-	pub reward: Balance,
-	/// Total number of messages relayed by this relayer.
-	pub messages: MessageNonce,
 }
 
 /// Send message artifacts.
