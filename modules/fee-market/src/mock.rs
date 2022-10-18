@@ -33,7 +33,7 @@ use bp_messages::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
 	},
 	DeliveredMessages, InboundLaneData, LaneId, Message, MessageNonce, OutboundLaneData,
-	Parameter as MessagesParameter, UnrewardedRelayer,
+	Parameter as MessagesParameter, UnrewardedRelayer, UnrewardedRelayersState,
 };
 use bp_runtime::{messages::MessageDispatchResult, Size};
 use frame_support::{
@@ -43,6 +43,7 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::mocking::*;
+use pallet_bridge_messages::outbound_lane;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -539,31 +540,6 @@ impl ExtBuilder {
 	}
 }
 
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	pallet_balances::GenesisConfig::<Test> {
-		balances: vec![
-			(1, 150),
-			(2, 200),
-			(3, 350),
-			(4, 220),
-			(5, 350),
-			(6, 500),
-			(7, 500),
-			(8, 500),
-			(12, 2000),
-			(13, 2000),
-			(14, 2000),
-		],
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
-
-	let mut ext = sp_io::TestExternalities::new(t);
-	ext.execute_with(|| System::set_block_number(1));
-	ext
-}
-
 /// Returns message dispatch result with given unspent weight.
 pub const fn dispatch_result(unspent_weight: Weight) -> MessageDispatchResult {
 	MessageDispatchResult {
@@ -591,4 +567,34 @@ pub fn unrewarded_relayer(
 			},
 		},
 	}
+}
+
+pub(crate) fn send_regular_message(fee: Balance) -> (LaneId, u64) {
+	let message_nonce = outbound_lane::<Test, ()>(TEST_LANE_ID).data().latest_generated_nonce + 1;
+	assert_ok!(Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, fee));
+
+	(TEST_LANE_ID, message_nonce)
+}
+
+pub(crate) fn receive_messages_delivery_proof() {
+	assert_ok!(Messages::receive_messages_delivery_proof(
+		Origin::signed(1),
+		TestMessagesDeliveryProof(Ok((
+			TEST_LANE_ID,
+			InboundLaneData {
+				last_confirmed_nonce: 1,
+				relayers: vec![UnrewardedRelayer {
+					relayer: 0,
+					messages: DeliveredMessages::new(1, true),
+				}]
+				.into_iter()
+				.collect(),
+			},
+		))),
+		UnrewardedRelayersState {
+			unrewarded_relayer_entries: 1,
+			total_messages: 1,
+			..Default::default()
+		},
+	));
 }
