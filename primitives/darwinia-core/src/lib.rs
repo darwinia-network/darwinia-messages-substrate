@@ -125,30 +125,6 @@ pub type AdditionalSigned = ((), u32, u32, Hash, Hash, (), (), ());
 /// A type of the data encoded as part of the transaction.
 pub type SignedExtra = ((), (), (), (), Era, Compact<Nonce>, (), Compact<Balance>);
 
-/// Number of extra bytes (excluding size of storage value itself) of storage proof, built at
-/// Darwinia-like chain. This mostly depends on number of entries in the storage trie.
-/// Some reserve is reserved to account future chain growth.
-///
-/// To compute this value, we've synced Kusama chain blocks [0; 6545733] to see if there were
-/// any significant changes of the storage proof size (NO):
-///
-/// - at block 3072 the storage proof size overhead was 579 bytes;
-/// - at block 2479616 it was 578 bytes;
-/// - at block 4118528 it was 711 bytes;
-/// - at block 6540800 it was 779 bytes.
-///
-/// The number of storage entries at the block 6546170 was 351207 and number of trie nodes in
-/// the storage proof was 5 (log(16, 351207) ~ 4.6).
-///
-/// So the assumption is that the storage proof size overhead won't be larger than 1024 in the
-/// nearest future. If it'll ever break this barrier, then we'll need to update this constant
-/// at next runtime upgrade.
-pub const EXTRA_STORAGE_PROOF_SIZE: u32 = 1024;
-
-// TODO [#78] may need to be updated after https://github.com/paritytech/parity-bridges-common/issues/78
-/// Maximal number of messages in single delivery transaction.
-pub const MAX_MESSAGES_IN_DELIVERY_TRANSACTION: MessageNonce = 128;
-
 /// Maximal number of unrewarded relayer entries at inbound lane.
 pub const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce = 128;
 
@@ -156,48 +132,6 @@ pub const MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX: MessageNonce = 128;
 // finality delay on both chains + reward payout cost + messages throughput.
 /// Maximal number of unconfirmed messages at inbound lane.
 pub const MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX: MessageNonce = 8192;
-
-// One important thing about weight-related constants here is that actually we may have
-// different weights on different Darwinia-like chains. But now all deployments are
-// almost the same, so we're exporting constants from this crate.
-
-/// Maximal weight of single message delivery confirmation transaction on Darwinia-like chain.
-///
-/// This value is a result of `pallet_bridge_messages::Pallet::receive_messages_delivery_proof`
-/// weight formula computation for the case when single message is confirmed. The result then must
-/// be rounded up to account possible future runtime upgrades.
-pub const MAX_SINGLE_MESSAGE_DELIVERY_CONFIRMATION_TX_WEIGHT: Weight = 2_000_000_000;
-
-/// Increase of delivery transaction weight on Darwinia-like chain with every additional message
-/// byte.
-///
-/// This value is a result of
-/// `pallet_bridge_messages::WeightInfoExt::storage_proof_size_overhead(1)` call. The result then
-/// must be rounded up to account possible future runtime upgrades.
-pub const ADDITIONAL_MESSAGE_BYTE_DELIVERY_WEIGHT: Weight = 25_000;
-
-/// Maximal number of bytes, included in the signed Darwinia-like transaction apart from the encoded
-/// call itself.
-///
-/// Can be computed by subtracting encoded call size from raw transaction size.
-pub const TX_EXTRA_BYTES: u32 = 256;
-
-/// Weight of single regular message delivery transaction on Darwinia-like chain.
-///
-/// This value is a result of `pallet_bridge_messages::Pallet::receive_messages_proof_weight()` call
-/// for the case when single message of `pallet_bridge_messages::EXPECTED_DEFAULT_MESSAGE_LENGTH`
-/// bytes is delivered. The message must have dispatch weight set to zero. The result then must be
-/// rounded up to account possible future runtime upgrades.
-pub const DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT: Weight = 1_500_000_000;
-
-/// Weight of pay-dispatch-fee operation for inbound messages at Darwinia-like chain.
-///
-/// This value corresponds to the result of
-/// `pallet_bridge_messages::WeightInfoExt::pay_inbound_dispatch_fee_overhead()` call for your
-/// chain. Don't put too much reserve there, because it is used to **decrease**
-/// `DEFAULT_MESSAGE_DELIVERY_TX_WEIGHT` cost. So putting large reserve would make delivery
-/// transactions cheaper.
-pub const PAY_INBOUND_DISPATCH_FEE_WEIGHT: Weight = 600_000_000;
 
 /// A simplified version of signed extensions meant for producing signed transactions
 /// and signed payload in the client code.
@@ -327,26 +261,4 @@ impl Convert<H256, AccountId> for AccountIdConverter {
 	fn convert(hash: H256) -> AccountId {
 		hash.to_fixed_bytes().into()
 	}
-}
-
-/// Return a storage key for account data.
-///
-/// This is based on FRAME storage-generation code from Substrate:
-/// [link](https://github.com/paritytech/substrate/blob/c939ceba381b6313462d47334f775e128ea4e95d/frame/support/src/storage/generator/map.rs#L74)
-/// The equivalent command to invoke in case full `Runtime` is known is this:
-/// `let key = frame_system::Account::<Runtime>::storage_map_final_key(&account_id);`
-pub fn account_info_storage_key(id: &AccountId) -> Vec<u8> {
-	let module_prefix_hashed = Twox128::hash(b"System");
-	let storage_prefix_hashed = Twox128::hash(b"Account");
-	let key_hashed = parity_scale_codec::Encode::using_encoded(id, Blake2_128Concat::hash);
-
-	let mut final_key = Vec::with_capacity(
-		module_prefix_hashed.len() + storage_prefix_hashed.len() + key_hashed.len(),
-	);
-
-	final_key.extend_from_slice(&module_prefix_hashed[..]);
-	final_key.extend_from_slice(&storage_prefix_hashed[..]);
-	final_key.extend_from_slice(&key_hashed);
-
-	final_key
 }
