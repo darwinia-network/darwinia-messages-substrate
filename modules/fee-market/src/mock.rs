@@ -550,7 +550,7 @@ pub const fn dispatch_result(unspent_weight: Weight) -> MessageDispatchResult {
 }
 
 /// Constructs unrewarded relayer entry from nonces range and relayer id.
-pub fn unrewarded_relayer(
+pub(crate) fn unrewarded_relayer(
 	begin: MessageNonce,
 	end: MessageNonce,
 	relayer: TestRelayer,
@@ -597,4 +597,33 @@ pub(crate) fn receive_messages_delivery_proof() {
 			..Default::default()
 		},
 	));
+}
+
+#[macro_export]
+macro_rules! assert_relayer_info {
+	(
+		"account_id": $id:expr,
+		"free_balance": $free_balance:expr,
+		"usable_balance": $usable_balance: expr,
+		"is_enrolled": $is_enrolled:expr,
+		"collateral": $collateral:expr,
+	) => {
+		assert_eq!(Balances::free_balance($id), $free_balance);
+		assert_eq!(Balances::usable_balance($id), $usable_balance);
+
+		let account_id = &$id;
+		assert_eq!(FeeMarket::is_enrolled(account_id), $is_enrolled);
+		assert_eq!(FeeMarket::relayer_locked_collateral(account_id), $collateral);
+	};
+}
+
+#[macro_export]
+macro_rules! assert_market_storage {
+	(
+		"relayers": $relayers:expr,
+		"market_fee": $fee:expr,
+	) => {
+		assert_eq!(FeeMarket::market_fee(), $fee);
+		assert_eq!(FeeMarket::relayers().unwrap(), $relayers);
+	};
 }

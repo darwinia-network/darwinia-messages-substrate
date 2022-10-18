@@ -24,6 +24,7 @@ use frame_support::{assert_err, assert_ok, traits::OnFinalize};
 use sp_runtime::{traits::AccountIdConversion, DispatchError, ModuleError};
 // --- darwinia-network ---
 use crate::{
+	assert_market_storage, assert_relayer_info,
 	mock::{
 		receive_messages_delivery_proof, send_regular_message, unrewarded_relayer, AccountId,
 		Balance, Balances, Event, ExtBuilder, FeeMarket, Messages, Origin, System, Test,
@@ -33,30 +34,41 @@ use crate::{
 	Config, Error, Relayer, RewardItem, SlashReport,
 };
 
+// enroll
 #[test]
 fn test_call_relayer_enroll_works() {
-	ExtBuilder::default().with_balances(vec![(1, 150)]).build().execute_with(|| {
-		assert_eq!(Balances::free_balance(1), 150);
+	ExtBuilder::default().with_balances(vec![(1, 120)]).build().execute_with(|| {
 		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 200, None),
+			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 120 + 1, None),
 			<Error<Test>>::InsufficientBalance
 		);
 		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 99, None),
+			FeeMarket::enroll_and_lock_collateral(
+				Origin::signed(1),
+				<Test as Config>::CollateralPerOrder::get() - 1,
+				None
+			),
 			<Error<Test>>::CollateralTooLow
 		);
 
 		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None));
-		assert!(FeeMarket::is_enrolled(&1));
-		assert_eq!(FeeMarket::relayers().unwrap().len(), 1);
-		assert_eq!(Balances::free_balance(1), 150);
-		assert_eq!(Balances::usable_balance(&1), 50);
-		assert_eq!(FeeMarket::relayer_locked_collateral(&1), 100);
-		assert_eq!(FeeMarket::market_fee(), None);
 		assert_err!(
 			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None),
 			<Error<Test>>::AlreadyEnrolled
 		);
+
+		assert_relayer_info! {
+			"account_id": 1,
+			"free_balance": 120,
+			"usable_balance": 20,
+			"is_enrolled": true,
+			"collateral": 100,
+		}
+
+		assert_market_storage! {
+			"relayers": vec![1],
+			"market_fee": None,
+		}
 	});
 }
 
@@ -775,9 +787,6 @@ fn test_payment_with_multiple_message_out_of_deadline() {
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(6), 400, Some(300));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(7), 400, Some(500));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(8), 400, Some(1000));
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
