@@ -99,7 +99,6 @@ use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
 use frame_support::{
 	unsigned::{TransactionValidityError, UnknownTransaction},
 	weights::{DispatchClass, Weight},
-	Blake2_128Concat, StorageHasher, Twox128,
 };
 use sp_core::H256;
 use sp_runtime::{
