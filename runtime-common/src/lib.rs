@@ -58,6 +58,20 @@ where
 	}
 }
 
+pub fn migrate_pallet_operation_mode(module: &[u8], item: &[u8]) {
+	// darwinia-network
+	use bp_messages::MessagesOperatingMode;
+	use bp_runtime::BasicOperatingMode;
+	// paritytech
+	use frame_support::migration;
+
+	let hash = &[];
+
+	if let Some(mode) = migration::take_storage_value::<BasicOperatingMode>(module, item, hash) {
+		migration::put_storage_value(module, item, hash, MessagesOperatingMode::Basic(mode));
+	}
+}
+
 /// Declares a runtime-specific `BridgeRejectObsoleteHeadersAndMessages` signed extension.
 ///
 /// ## Example
