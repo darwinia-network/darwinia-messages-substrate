@@ -58,7 +58,38 @@ where
 	}
 }
 
+pub fn put_pallet_operation_mode<Mode>(module: &[u8], mode: Mode)
+where
+	Mode: codec::FullCodec,
+{
+	// paritytech
+	use frame_support::migration;
+
+	let item = b"PalletOperatingMode";
+	let hash = &[];
+
+	migration::put_storage_value(module, item, hash, mode);
+}
+
 pub fn migrate_pallet_operation_mode(module: &[u8]) {
+	// darwinia-network
+	use bp_runtime::BasicOperatingMode;
+	// paritytech
+	use frame_support::migration;
+
+	let item = b"IsHalted";
+	let hash = &[];
+
+	if let Some(is_halted) = migration::take_storage_value::<bool>(module, item, hash) {
+		if is_halted {
+			put_pallet_operation_mode(module, BasicOperatingMode::Halted);
+		} else {
+			put_pallet_operation_mode(module, BasicOperatingMode::Normal);
+		}
+	}
+}
+
+pub fn migrate_message_pallet_operation_mode(module: &[u8]) {
 	// darwinia-network
 	use bp_messages::MessagesOperatingMode;
 	use bp_runtime::BasicOperatingMode;
@@ -69,7 +100,7 @@ pub fn migrate_pallet_operation_mode(module: &[u8]) {
 	let hash = &[];
 
 	if let Some(mode) = migration::take_storage_value::<BasicOperatingMode>(module, item, hash) {
-		migration::put_storage_value(module, item, hash, MessagesOperatingMode::Basic(mode));
+		put_pallet_operation_mode(module, MessagesOperatingMode::Basic(mode));
 	}
 }
 
