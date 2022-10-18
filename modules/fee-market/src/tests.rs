@@ -28,9 +28,9 @@ use sp_runtime::{traits::AccountIdConversion, DispatchError, ModuleError};
 // --- darwinia-network ---
 use crate::{
 	mock::{
-		new_test_ext, unrewarded_relayer, AccountId, Balance, Balances, Event, FeeMarket, Messages,
-		Origin, System, Test, TestMessageDeliveryAndDispatchPayment, TestMessagesDeliveryProof,
-		REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A, TEST_RELAYER_B,
+		new_test_ext, unrewarded_relayer, AccountId, Balance, Balances, Event, ExtBuilder,
+		FeeMarket, Messages, Origin, System, Test, TestMessageDeliveryAndDispatchPayment,
+		TestMessagesDeliveryProof, REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A, TEST_RELAYER_B,
 	},
 	Config, Error, Relayer, RewardItem, SlashReport,
 };
@@ -93,27 +93,28 @@ fn test_call_relayer_increase_lock_collateral_works() {
 
 #[test]
 fn test_call_relayer_decrease_lock_collateral_works() {
-	new_test_ext().execute_with(|| {
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(12), 800, None);
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(13), 800, None);
-		let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(14), 800, None);
-		let market_fee = FeeMarket::market_fee().unwrap();
-		let _ = send_regular_message(market_fee);
-		let _ = send_regular_message(market_fee);
-		let _ = send_regular_message(market_fee);
-		let _ = send_regular_message(market_fee);
+	ExtBuilder::default()
+		.with_balances(vec![(12, 2000), (13, 2000), (14, 2000)])
+		.with_relayers(vec![(12, 800, None), (13, 800, None), (14, 800, None)])
+		.build()
+		.execute_with(|| {
+			let market_fee = FeeMarket::market_fee().unwrap();
+			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(market_fee);
 
-		assert_err!(
-			FeeMarket::update_locked_collateral(Origin::signed(12), 300),
-			<Error::<Test>>::StillHasOrdersNotConfirmed
-		);
-		assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 400));
-		assert_eq!(FeeMarket::relayer_locked_collateral(&12), 400);
-		assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(13), 500));
-		assert_eq!(FeeMarket::relayer_locked_collateral(&13), 500);
-		assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(14), 700));
-		assert_eq!(FeeMarket::relayer_locked_collateral(&14), 700);
-	});
+			assert_err!(
+				FeeMarket::update_locked_collateral(Origin::signed(12), 300),
+				<Error::<Test>>::StillHasOrdersNotConfirmed
+			);
+			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 400));
+			assert_eq!(FeeMarket::relayer_locked_collateral(&12), 400);
+			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(13), 500));
+			assert_eq!(FeeMarket::relayer_locked_collateral(&13), 500);
+			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(14), 700));
+			assert_eq!(FeeMarket::relayer_locked_collateral(&14), 700);
+		});
 }
 
 #[test]

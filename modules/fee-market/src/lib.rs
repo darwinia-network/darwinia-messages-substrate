@@ -39,10 +39,10 @@ use bp_messages::{LaneId, MessageNonce};
 use frame_support::{
 	ensure,
 	pallet_prelude::*,
-	traits::{Currency, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
+	traits::{Currency, GenesisBuild, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
 	PalletId,
 };
-use frame_system::{ensure_signed, pallet_prelude::*};
+use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 use sp_runtime::{
 	traits::{Saturating, Zero},
 	Permill, SaturatedConversion,
@@ -190,6 +190,32 @@ pub mod pallet {
 	#[pallet::type_value]
 	pub fn DefaultAssignedRelayersNumber() -> u32 {
 		3
+	}
+
+	#[pallet::genesis_config]
+	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
+		// Initialization relayers data.[AccoundId, Collateral, Quota]
+		pub relayers: Vec<(T::AccountId, BalanceOf<T, I>, Option<BalanceOf<T, I>>)>,
+	}
+
+	#[cfg(feature = "std")]
+	impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
+		fn default() -> Self {
+			Self { relayers: vec![] }
+		}
+	}
+
+	#[pallet::genesis_build]
+	impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
+		fn build(&self) {
+			self.relayers.iter().cloned().for_each(|(id, collateral, quota)| {
+				let _ = Pallet::<T, I>::enroll_and_lock_collateral(
+					RawOrigin::Signed(id).into(),
+					collateral,
+					quota,
+				);
+			});
+		}
 	}
 
 	#[pallet::pallet]

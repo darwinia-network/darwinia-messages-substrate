@@ -37,6 +37,7 @@ use bp_messages::{
 };
 use bp_runtime::{messages::MessageDispatchResult, Size};
 use frame_support::{
+	assert_ok,
 	traits::{Everything, LockIdentifier},
 	weights::{RuntimeDbWeight, Weight},
 	PalletId,
@@ -50,7 +51,7 @@ use sp_runtime::{
 };
 // --- darwinia-network ---
 use crate::{
-	self as darwinia_fee_market,
+	self as pallet_fee_market,
 	s2s::{
 		payment::calculate_rewards, FeeMarketMessageAcceptedHandler,
 		FeeMarketMessageConfirmedHandler,
@@ -494,10 +495,50 @@ frame_support::construct_runtime! {
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		FeeMarket: darwinia_fee_market::{Pallet, Call, Storage, Event<T>},
+		FeeMarket: pallet_fee_market::{Pallet, Call, Storage, Event<T>},
 		Messages: pallet_bridge_messages::{Pallet, Call, Event<T>},
 	}
 }
+
+#[derive(Default)]
+pub(crate) struct ExtBuilder {
+	// endowed accounts with balances
+	balances: Vec<(AccountId, Balance)>,
+	// Registered relayers
+	relayers: Vec<(AccountId, Balance, Option<Balance>)>,
+}
+
+impl ExtBuilder {
+	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+		self.balances = balances;
+		self
+	}
+
+	pub(crate) fn with_relayers(
+		mut self,
+		relayers: Vec<(AccountId, Balance, Option<Balance>)>,
+	) -> Self {
+		self.relayers = relayers;
+		self
+	}
+
+	pub(crate) fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
+			.assimilate_storage(&mut t)
+			.expect("Pallet balances storage can be assimilated");
+
+		pallet_fee_market::GenesisConfig::<Test> { relayers: self.relayers }
+			.assimilate_storage(&mut t)
+			.expect("Pallet fee market storage can be assimilated");
+
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
+	}
+}
+
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	pallet_balances::GenesisConfig::<Test> {
