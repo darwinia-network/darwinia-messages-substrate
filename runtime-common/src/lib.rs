@@ -24,6 +24,7 @@ pub mod lanes;
 pub mod messages;
 pub mod messages_benchmarking;
 pub mod messages_extension;
+pub mod pallets;
 
 // darwinia-network
 use bp_runtime::FilterCall;
