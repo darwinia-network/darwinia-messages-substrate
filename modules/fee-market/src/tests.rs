@@ -21,10 +21,19 @@ use std::{
 	collections::{BTreeMap, VecDeque},
 	ops::RangeInclusive,
 };
-// --- crates.io ---
+// crates.io
 use bitvec::prelude::*;
 use scale_info::TypeInfo;
-// --- paritytech ---
+// darwinia-network
+use crate::{
+	self as darwinia_fee_market,
+	s2s::{
+		payment::calculate_rewards, FeeMarketMessageAcceptedHandler,
+		FeeMarketMessageConfirmedHandler,
+	},
+	*,
+};
+// paritytech
 use bp_messages::{
 	source_chain::{
 		LaneMessageVerifier, MessageDeliveryAndDispatchPayment, SenderOrigin, TargetHeaderChain,
@@ -49,15 +58,6 @@ use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup, UniqueSaturatedInto},
 	FixedU128, ModuleError, Permill,
-};
-// --- darwinia-network ---
-use crate::{
-	self as darwinia_fee_market,
-	s2s::{
-		payment::calculate_rewards, FeeMarketMessageAcceptedHandler,
-		FeeMarketMessageConfirmedHandler,
-	},
-	*,
 };
 
 type Block = MockBlock<Test>;
@@ -154,7 +154,7 @@ pub struct TestPayload {
 	pub extra: Vec<u8>,
 }
 impl Size for TestPayload {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		16 + self.extra.len() as u32
 	}
 }
@@ -169,7 +169,7 @@ pub struct TestMessagesProof {
 	pub result: Result<MessagesByLaneVec, ()>,
 }
 impl Size for TestMessagesProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -178,7 +178,7 @@ impl Size for TestMessagesProof {
 #[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub struct TestMessagesDeliveryProof(pub Result<(LaneId, InboundLaneData<TestRelayer>), ()>);
 impl Size for TestMessagesDeliveryProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -368,7 +368,7 @@ pub struct TestMessageDispatch;
 impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	type DispatchPayload = TestPayload;
 
-	fn dispatch_weight(message: &DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
+	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.declared_weight,
 			Err(_) => 0,
@@ -421,6 +421,7 @@ impl pallet_bridge_messages::Config for Test {
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<4096>;
 	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
 	type MessageDispatch = TestMessageDispatch;
 	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, ()>;
@@ -686,6 +687,7 @@ fn test_call_relayer_cancel_registration_works() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -766,6 +768,7 @@ fn receive_messages_delivery_proof() {
 		UnrewardedRelayersState {
 			unrewarded_relayer_entries: 1,
 			total_messages: 1,
+			last_delivered_nonce: 1,
 			..Default::default()
 		},
 	));
@@ -814,7 +817,7 @@ fn test_callback_no_order_created_when_fee_market_not_ready() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: [3, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -867,6 +870,7 @@ fn test_payment_cal_rewards_normally_single_message() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -932,6 +936,7 @@ fn test_payment_cal_rewards_normally_multi_message() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 2,
 				total_messages: 2,
+				last_delivered_nonce: 2,
 				..Default::default()
 			},
 		));
@@ -983,6 +988,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1037,6 +1043,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1087,6 +1094,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1103,6 +1111,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1150,6 +1159,7 @@ fn test_payment_with_slash_and_reduce_order_capacity() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1191,6 +1201,7 @@ fn test_payment_slash_with_protect() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1232,6 +1243,7 @@ fn test_payment_slash_event() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 1,
+				last_delivered_nonce: 1,
 				..Default::default()
 			},
 		));
@@ -1299,6 +1311,7 @@ fn test_payment_with_multiple_message_out_of_deadline() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 2,
 				total_messages: 2,
+				last_delivered_nonce: 2,
 				..Default::default()
 			},
 		));
@@ -1341,6 +1354,7 @@ fn test_clean_order_state_at_the_end_of_block() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 2,
 				total_messages: 4,
+				last_delivered_nonce: 4,
 				..Default::default()
 			},
 		));
@@ -1371,7 +1385,7 @@ fn test_fee_verification_when_send_message() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: [3, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -1382,7 +1396,7 @@ fn test_fee_verification_when_send_message() {
 			Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 49),
 			DispatchError::Module(ModuleError {
 				index: 4,
-				error: [2, 0, 0, 0],
+				error: [3, 0, 0, 0],
 				message: Some("MessageRejectedByLaneVerifier")
 			})
 		);
@@ -1453,6 +1467,7 @@ fn test_relayer_update_order_capacity() {
 			UnrewardedRelayersState {
 				unrewarded_relayer_entries: 1,
 				total_messages: 3,
+				last_delivered_nonce: 3,
 				..Default::default()
 			},
 		));

@@ -52,7 +52,6 @@ pub trait WeightInfo {
 	fn send_1_kb_message_worst_case() -> Weight;
 	fn send_16_kb_message_worst_case() -> Weight;
 	fn maximal_increase_message_fee() -> Weight;
-	fn increase_message_fee(i: u32) -> Weight;
 	fn receive_single_message_proof() -> Weight;
 	fn receive_two_messages_proof() -> Weight;
 	fn receive_single_message_proof_with_outbound_lane_state() -> Weight;
@@ -87,13 +86,6 @@ impl<T: frame_system::Config> WeightInfo for MillauWeight<T> {
 
 	fn maximal_increase_message_fee() -> Weight {
 		(6_015_058_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(5 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-
-	fn increase_message_fee(i: u32) -> Weight {
-		(0 as Weight)
-			.saturating_add((2_000 as Weight).saturating_mul(i as Weight))
 			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
@@ -175,13 +167,6 @@ impl WeightInfo for () {
 
 	fn maximal_increase_message_fee() -> Weight {
 		(6_015_058_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
-	}
-
-	fn increase_message_fee(i: u32) -> Weight {
-		(0 as Weight)
-			.saturating_add((2_000 as Weight).saturating_mul(i as Weight))
 			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
