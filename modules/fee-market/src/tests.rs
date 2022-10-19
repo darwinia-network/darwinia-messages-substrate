@@ -304,8 +304,8 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"order_capacity": 2,
 			}
 
-			let _ = send_regular_message(default_fee);
-			let _ = send_regular_message(default_fee);
+			let _ = send_regular_message(1, default_fee);
+			let _ = send_regular_message(1, default_fee);
 
 			assert_err!(
 				FeeMarket::decrease_locked_collateral(
@@ -456,7 +456,7 @@ fn test_cancel_enroll_failed_if_not_occuipied() {
 		])
 		.build()
 		.execute_with(|| {
-			let _ = send_regular_message(default_fee);
+			let _ = send_regular_message(1, default_fee);
 
 			assert_err!(
 				FeeMarket::cancel_enrollment(Origin::signed(1)),
@@ -491,7 +491,7 @@ fn test_cancel_enroll_ok_if_order_confirmed() {
 		])
 		.build()
 		.execute_with(|| {
-			let _ = send_regular_message(default_fee);
+			let _ = send_regular_message(1, default_fee);
 
 			System::set_block_number(3);
 			assert_ok!(Messages::receive_messages_delivery_proof(
@@ -944,7 +944,7 @@ fn test_market_fee_update_after_order_create() {
 			}
 
 			System::set_block_number(2);
-			let _ = send_regular_message(default_fee + 30);
+			let _ = send_regular_message(1, default_fee + 30);
 
 			assert_market_storage! {
 				"relayers": vec![1, 2, 3, 4],
@@ -980,7 +980,7 @@ fn test_market_fee_update_after_order_comfirm() {
 			}
 
 			System::set_block_number(2);
-			let _ = send_regular_message(default_fee + 30);
+			let _ = send_regular_message(1, default_fee + 30);
 
 			System::set_block_number(3);
 			receive_messages_delivery_proof();
@@ -1013,7 +1013,7 @@ fn test_order_create_if_market_ready() {
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-			let (lane, message_nonce) = send_regular_message(default_fee);
+			let (lane, message_nonce) = send_regular_message(1, default_fee);
 			let order = FeeMarket::order((&lane, &message_nonce)).unwrap();
 			let relayers = order.assigned_relayers_slice();
 			System::assert_has_event(Event::FeeMarket(crate::Event::OrderCreated(
@@ -1089,7 +1089,7 @@ fn test_order_create_then_order_capacity_reduce_by_one() {
 			}
 
 			System::set_block_number(2);
-			let _ = send_regular_message(default_fee);
+			let _ = send_regular_message(1, default_fee);
 
 			assert_relayer_info! {
 				"account_id": 1,
@@ -1117,7 +1117,7 @@ fn test_order_create_then_order_capacity_reduce_by_one() {
 			}
 
 			System::set_block_number(3);
-			let _ = send_regular_message(default_fee);
+			let _ = send_regular_message(1, default_fee);
 
 			assert_relayer_info! {
 				"account_id": 1,
@@ -1164,7 +1164,7 @@ fn test_order_confirm_works() {
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-			let (lane, message_nonce) = send_regular_message(default_fee);
+			let (lane, message_nonce) = send_regular_message(1, default_fee);
 			assert!(FeeMarket::order((&lane, &message_nonce)).is_some());
 
 			System::set_block_number(4);
@@ -1192,7 +1192,7 @@ fn test_order_clean_at_the_end_of_block() {
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-			let (lane, message_nonce) = send_regular_message(default_fee);
+			let (lane, message_nonce) = send_regular_message(1, default_fee);
 			assert!(FeeMarket::order((&lane, &message_nonce)).is_some());
 
 			System::set_block_number(4);
@@ -1247,7 +1247,7 @@ fn test_order_confirm_then_order_capacity_increase_by_one() {
 			}
 
 			System::set_block_number(2);
-			let _ = send_regular_message(default_fee);
+			let _ = send_regular_message(1, default_fee);
 
 			assert_relayer_info! {
 				"account_id": 1,
@@ -1326,7 +1326,7 @@ fn test_payment_cal_rewards_normally_single_message() {
 			// Send message
 			System::set_block_number(2);
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (lane, message_nonce) = send_regular_message(market_fee);
+			let (lane, message_nonce) = send_regular_message(1, market_fee);
 
 			// Receive delivery message proof
 			System::set_block_number(4); // confirmed at block 4, the first slot
@@ -1396,8 +1396,8 @@ fn test_payment_cal_rewards_normally_multi_message() {
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (_, message_nonce1) = send_regular_message(market_fee);
-			let (_, message_nonce2) = send_regular_message(market_fee);
+			let (_, message_nonce1) = send_regular_message(1, market_fee);
+			let (_, message_nonce2) = send_regular_message(1, market_fee);
 			assert_eq!(message_nonce1 + 1, message_nonce2);
 
 			// Receive delivery message proof
@@ -1461,7 +1461,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(1, market_fee);
 
 			System::set_block_number(55); // confirmed at block 55, the second slot
 			assert_ok!(Messages::receive_messages_delivery_proof(
@@ -1523,7 +1523,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(1, market_fee);
 
 			System::set_block_number(105); // confirmed at block 55, the third slot
 			assert_ok!(Messages::receive_messages_delivery_proof(
@@ -1580,7 +1580,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (_, _) = send_regular_message(market_fee);
+			let (_, _) = send_regular_message(1, market_fee);
 
 			// The first time receive delivery message proof
 			System::set_block_number(4);
@@ -1657,7 +1657,7 @@ fn test_payment_with_slash_and_reduce_order_capacity() {
 			System::set_block_number(2);
 			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 400);
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (_, _) = send_regular_message(market_fee);
+			let (_, _) = send_regular_message(1, market_fee);
 
 			// Receive delivery message proof
 			System::set_block_number(2000);
@@ -1708,7 +1708,7 @@ fn test_payment_slash_with_protect() {
 			// Send message
 			System::set_block_number(2);
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (_, _) = send_regular_message(market_fee);
+			let (_, _) = send_regular_message(1, market_fee);
 			assert_ok!(FeeMarket::set_slash_protect(Origin::root(), 50));
 
 			// Receive delivery message proof
@@ -1760,7 +1760,7 @@ fn test_payment_slash_event() {
 			// Send message
 			System::set_block_number(2);
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (_, _) = send_regular_message(market_fee);
+			let (_, _) = send_regular_message(1, market_fee);
 			assert_ok!(FeeMarket::set_slash_protect(Origin::root(), 50));
 
 			// Receive delivery message proof
@@ -1833,8 +1833,8 @@ fn test_payment_with_multiple_message_out_of_deadline() {
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
-			let (_, message_nonce1) = send_regular_message(market_fee);
-			let (_, message_nonce2) = send_regular_message(market_fee);
+			let (_, message_nonce1) = send_regular_message(1, market_fee);
+			let (_, message_nonce2) = send_regular_message(1, market_fee);
 			assert_eq!(message_nonce1 + 1, message_nonce2);
 
 			// Receive delivery message proof

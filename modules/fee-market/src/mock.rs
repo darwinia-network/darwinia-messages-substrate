@@ -569,9 +569,9 @@ pub(crate) fn unrewarded_relayer(
 	}
 }
 
-pub(crate) fn send_regular_message(fee: Balance) -> (LaneId, u64) {
+pub(crate) fn send_regular_message(sender: u64, fee: Balance) -> (LaneId, u64) {
 	let message_nonce = outbound_lane::<Test, ()>(TEST_LANE_ID).data().latest_generated_nonce + 1;
-	assert_ok!(Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, fee));
+	assert_ok!(Messages::send_message(Origin::signed(sender), TEST_LANE_ID, REGULAR_PAYLOAD, fee));
 
 	(TEST_LANE_ID, message_nonce)
 }
