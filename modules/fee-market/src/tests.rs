@@ -706,8 +706,216 @@ fn test_market_fee_generate_sort_the_same_quota_different_collater() {
 }
 
 #[test]
-fn test_market_fee_update_after_order_created() {
-	// TODO
+fn test_market_fee_update_after_new_relayer_enroll() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+			(4, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, Some(default_fee + 10)),
+			(2, collater_per_order, Some(default_fee + 20)),
+			(3, collater_per_order, Some(default_fee + 30)),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee + 30),
+			}
+
+			let _ = FeeMarket::enroll_and_lock_collateral(
+				Origin::signed(4),
+				collater_per_order,
+				Some(default_fee + 25),
+			);
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 4],
+				"market_fee": Some(default_fee + 25),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_increase_collateral() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order * 2),
+			(3, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, None),
+			(2, collater_per_order, None),
+			(3, collater_per_order, None),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee),
+			}
+
+			assert_ok!(FeeMarket::increase_locked_collateral(
+				Origin::signed(2),
+				collater_per_order + 1,
+			));
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![2, 1, 3],
+				"market_fee": Some(default_fee),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_decrease_collateral() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order * 2),
+			(2, collater_per_order * 2),
+			(3, collater_per_order * 2),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order * 2, None),
+			(2, collater_per_order * 2, None),
+			(3, collater_per_order * 2, None),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee),
+			}
+
+			assert_ok!(FeeMarket::decrease_locked_collateral(
+				Origin::signed(2),
+				collater_per_order * 2 - 1,
+			));
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 3, 2],
+				"market_fee": Some(default_fee),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_update_fee() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+			(4, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, Some(default_fee + 10)),
+			(2, collater_per_order, Some(default_fee + 20)),
+			(3, collater_per_order, Some(default_fee + 30)),
+			(4, collater_per_order, Some(default_fee + 40)),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee + 30),
+			}
+
+			assert_ok!(FeeMarket::update_relay_fee(Origin::signed(4), default_fee + 25,));
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 4],
+				"market_fee": Some(default_fee + 25),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_cancel_enroll() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+			(4, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, None),
+			(2, collater_per_order, None),
+			(3, collater_per_order, None),
+			(4, collater_per_order, None),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee),
+			}
+
+			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
+
+			assert_market_storage! {
+				"relayers": vec![2, 3, 4],
+				"assigned_relayers": vec![2, 3, 4],
+				"market_fee": Some(default_fee),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_adjust_assigned_relayers_number() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, None),
+			(2, collater_per_order, None),
+			(3, collater_per_order, None),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee),
+			}
+
+			assert_ok!(FeeMarket::set_assigned_relayers_number(Origin::root(), 2));
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 2],
+				"market_fee": Some(default_fee),
+			}
+		});
 }
 
 // Test Order
