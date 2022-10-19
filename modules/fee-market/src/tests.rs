@@ -1308,9 +1308,19 @@ fn test_order_confirm_then_order_capacity_increase_by_one() {
 
 #[test]
 fn test_payment_cal_rewards_normally_single_message() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(1, 150), (2, 200), (3, 350), (4, 220)])
-		.with_relayers(vec![(1, 100, Some(30)), (2, 110, Some(50)), (3, 120, Some(100))])
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+			(4, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, Some(30)),
+			(2, collater_per_order, Some(50)),
+			(3, collater_per_order, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			// Send message
@@ -1368,9 +1378,18 @@ fn test_payment_cal_rewards_normally_single_message() {
 
 #[test]
 fn test_payment_cal_rewards_normally_multi_message() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(5, 350), (6, 500), (7, 500)])
-		.with_relayers(vec![(5, 300, Some(30)), (6, 300, Some(50)), (7, 300, Some(100))])
+		.with_balances(vec![
+			(5, collater_per_order * 3),
+			(6, collater_per_order * 3),
+			(7, collater_per_order * 3),
+		])
+		.with_relayers(vec![
+			(5, collater_per_order * 3, Some(30)),
+			(6, collater_per_order * 3, Some(50)),
+			(7, collater_per_order * 3, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
@@ -1424,23 +1443,25 @@ fn test_payment_cal_rewards_normally_multi_message() {
 
 #[test]
 fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(5, 350), (6, 500), (7, 500)])
-		.with_relayers(vec![(5, 300, Some(30)), (6, 300, Some(50)), (7, 300, Some(100))])
+		.with_balances(vec![
+			(5, collater_per_order * 3),
+			(6, collater_per_order * 3),
+			(7, collater_per_order * 3),
+		])
+		.with_relayers(vec![
+			(5, collater_per_order * 3, Some(30)),
+			(6, collater_per_order * 3, Some(50)),
+			(7, collater_per_order * 3, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-			// let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(5), 300, Some(30));
-			// let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(6), 300, Some(50));
-			// let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(7), 300, Some(100));
 
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let _ = send_regular_message(market_fee);
-
-			assert_eq!(FeeMarket::relayer_locked_collateral(&5), 300);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 300);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&7), 300);
 
 			System::set_block_number(55); // confirmed at block 55, the second slot
 			assert_ok!(Messages::receive_messages_delivery_proof(
@@ -1484,9 +1505,18 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 
 #[test]
 fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(5, 350), (6, 500), (7, 500)])
-		.with_relayers(vec![(5, 300, Some(30)), (6, 300, Some(50)), (7, 300, Some(100))])
+		.with_balances(vec![
+			(5, collater_per_order * 3),
+			(6, collater_per_order * 3),
+			(7, collater_per_order * 3),
+		])
+		.with_relayers(vec![
+			(5, collater_per_order * 3, Some(30)),
+			(6, collater_per_order * 3, Some(50)),
+			(7, collater_per_order * 3, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
@@ -1494,10 +1524,6 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 			// Send message
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let _ = send_regular_message(market_fee);
-
-			assert_eq!(FeeMarket::relayer_locked_collateral(&5), 300);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 300);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&7), 300);
 
 			System::set_block_number(105); // confirmed at block 55, the third slot
 			assert_ok!(Messages::receive_messages_delivery_proof(
@@ -1540,8 +1566,13 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 
 #[test]
 fn test_payment_cal_reward_with_duplicated_delivery_proof() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(1, 150), (2, 200), (3, 350)])
+		.with_balances(vec![
+			(1, collater_per_order * 2),
+			(2, collater_per_order * 2),
+			(3, collater_per_order * 2),
+		])
 		.with_relayers(vec![(1, 100, Some(30)), (2, 110, Some(50)), (3, 120, Some(100))])
 		.build()
 		.execute_with(|| {
@@ -1608,16 +1639,22 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 
 #[test]
 fn test_payment_with_slash_and_reduce_order_capacity() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(6, 500), (7, 500), (8, 500)])
-		.with_relayers(vec![(6, 400, Some(30)), (7, 400, Some(50)), (8, 400, Some(100))])
+		.with_balances(vec![
+			(6, collater_per_order * 5),
+			(7, collater_per_order * 5),
+			(8, collater_per_order * 5),
+		])
+		.with_relayers(vec![
+			(6, collater_per_order * 4, Some(30)),
+			(7, collater_per_order * 4, Some(50)),
+			(8, collater_per_order * 4, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			// Send message
 			System::set_block_number(2);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(6), 400, Some(30));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(7), 400, Some(50));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(8), 400, Some(100));
 			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 400);
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let (_, _) = send_regular_message(market_fee);
@@ -1654,17 +1691,22 @@ fn test_payment_with_slash_and_reduce_order_capacity() {
 
 #[test]
 fn test_payment_slash_with_protect() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(6, 500), (7, 500), (8, 500)])
-		.with_relayers(vec![(6, 400, Some(30)), (7, 400, Some(50)), (8, 400, Some(100))])
+		.with_balances(vec![
+			(6, collater_per_order * 5),
+			(7, collater_per_order * 5),
+			(8, collater_per_order * 5),
+		])
+		.with_relayers(vec![
+			(6, collater_per_order * 4, Some(30)),
+			(7, collater_per_order * 4, Some(50)),
+			(8, collater_per_order * 4, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			// Send message
 			System::set_block_number(2);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(6), 400, Some(30));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(7), 400, Some(50));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(8), 400, Some(100));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 400);
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let (_, _) = send_regular_message(market_fee);
 			assert_ok!(FeeMarket::set_slash_protect(Origin::root(), 50));
@@ -1701,17 +1743,22 @@ fn test_payment_slash_with_protect() {
 
 #[test]
 fn test_payment_slash_event() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(6, 500), (7, 500), (8, 500)])
-		.with_relayers(vec![(6, 400, Some(30)), (7, 400, Some(50)), (8, 400, Some(100))])
+		.with_balances(vec![
+			(6, collater_per_order * 5),
+			(7, collater_per_order * 5),
+			(8, collater_per_order * 5),
+		])
+		.with_relayers(vec![
+			(6, collater_per_order * 4, Some(30)),
+			(7, collater_per_order * 4, Some(50)),
+			(8, collater_per_order * 4, Some(100)),
+		])
 		.build()
 		.execute_with(|| {
 			// Send message
 			System::set_block_number(2);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(6), 400, Some(30));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(7), 400, Some(50));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(8), 400, Some(100));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 400);
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let (_, _) = send_regular_message(market_fee);
 			assert_ok!(FeeMarket::set_slash_protect(Origin::root(), 50));
@@ -1768,9 +1815,18 @@ fn test_payment_slash_event() {
 
 #[test]
 fn test_payment_with_multiple_message_out_of_deadline() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(6, 500), (7, 500), (8, 500)])
-		.with_relayers(vec![(6, 400, Some(300)), (7, 400, Some(500)), (8, 400, Some(1000))])
+		.with_balances(vec![
+			(6, collater_per_order * 5),
+			(7, collater_per_order * 5),
+			(8, collater_per_order * 5),
+		])
+		.with_relayers(vec![
+			(6, collater_per_order * 4, Some(300)),
+			(7, collater_per_order * 4, Some(500)),
+			(8, collater_per_order * 4, Some(1000)),
+		])
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
