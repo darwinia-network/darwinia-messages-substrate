@@ -607,6 +607,7 @@ macro_rules! assert_relayer_info {
 		"usable_balance": $usable_balance: expr,
 		"is_enrolled": $is_enrolled:expr,
 		"collateral": $collateral:expr,
+		"order_capacity": $order_capacity:expr,
 	) => {
 		assert_eq!(Balances::free_balance($id), $free_balance);
 		assert_eq!(Balances::usable_balance($id), $usable_balance);
@@ -614,6 +615,7 @@ macro_rules! assert_relayer_info {
 		let account_id = &$id;
 		assert_eq!(FeeMarket::is_enrolled(account_id), $is_enrolled);
 		assert_eq!(FeeMarket::relayer_locked_collateral(account_id), $collateral);
+		assert_eq!(FeeMarket::usable_order_capacity(account_id), $order_capacity);
 	};
 }
 

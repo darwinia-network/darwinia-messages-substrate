@@ -106,6 +106,7 @@ fn test_enroll_with_correct_balance_changes() {
 				"usable_balance": init_balance - collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order,
+				"order_capacity":1,
 			}
 
 			assert_market_storage! {
@@ -189,6 +190,7 @@ fn test_increase_collateral_relayer_balance_update_correctly() {
 				"usable_balance": init_balance - collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order,
+				"order_capacity":1,
 			}
 
 			assert_market_storage! {
@@ -207,6 +209,7 @@ fn test_increase_collateral_relayer_balance_update_correctly() {
 				"usable_balance": init_balance - collater_per_order - 10,
 				"is_enrolled": true,
 				"collateral": collater_per_order + 10,
+				"order_capacity":1,
 			}
 		});
 }
@@ -282,6 +285,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order * 2,
+				"order_capacity": 2,
 			}
 			assert_relayer_info! {
 				"account_id": 2,
@@ -289,6 +293,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order * 2,
+				"order_capacity": 2,
 			}
 			assert_relayer_info! {
 				"account_id": 3,
@@ -296,6 +301,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order * 2,
+				"order_capacity": 2,
 			}
 
 			let _ = send_regular_message(default_fee);
@@ -315,6 +321,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order * 2,
+				"order_capacity": 0,
 			}
 			assert_relayer_info! {
 				"account_id": 2,
@@ -322,6 +329,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order * 2,
+				"order_capacity": 0,
 			}
 			assert_relayer_info! {
 				"account_id": 3,
@@ -329,6 +337,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order * 2,
+				"order_capacity": 0,
 			}
 		});
 }
@@ -347,6 +356,7 @@ fn test_decrease_collateral_without_occuiped() {
 				"usable_balance": collater_per_order,
 				"is_enrolled": true,
 				"collateral": collater_per_order,
+				"order_capacity": 1,
 			}
 
 			assert_ok!(FeeMarket::decrease_locked_collateral(
@@ -360,6 +370,7 @@ fn test_decrease_collateral_without_occuiped() {
 				"usable_balance": collater_per_order + 10,
 				"is_enrolled": true,
 				"collateral": collater_per_order - 10,
+				"order_capacity": 0,
 			}
 		});
 }
@@ -463,7 +474,52 @@ fn test_cancel_enroll_failed_if_not_occuipied() {
 }
 
 #[test]
-fn test_cancel_enroll_relayers_balances_update_correctly() {
+fn test_cancel_enroll_ok_if_order_confirmed() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+			(5, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, None),
+			(2, collater_per_order, None),
+			(3, collater_per_order, None),
+		])
+		.build()
+		.execute_with(|| {
+			let _ = send_regular_message(default_fee);
+
+			System::set_block_number(3);
+			assert_ok!(Messages::receive_messages_delivery_proof(
+				Origin::signed(5),
+				TestMessagesDeliveryProof(Ok((
+					TEST_LANE_ID,
+					InboundLaneData {
+						relayers: vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)]
+							.into_iter()
+							.collect(),
+						..Default::default()
+					}
+				))),
+				UnrewardedRelayersState {
+					unrewarded_relayer_entries: 1,
+					total_messages: 1,
+					..Default::default()
+				},
+			));
+
+			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
+			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(2)));
+			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(3)));
+		});
+}
+
+#[test]
+fn test_cancel_enroll_relayers_market_update_correctly() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	let default_fee = <Test as Config>::MinimumRelayFee::get();
 	ExtBuilder::default()
@@ -498,7 +554,7 @@ fn test_cancel_enroll_relayers_balances_update_correctly() {
 }
 
 #[test]
-fn test_cancel_enroll_relayers_market_update_correctly() {
+fn test_cancel_enroll_relayers_balances_update_correctly() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
 		.with_balances(vec![
@@ -523,6 +579,7 @@ fn test_cancel_enroll_relayers_market_update_correctly() {
 				"usable_balance": collater_per_order * 3,
 				"is_enrolled": false,
 				"collateral": 0,
+				"order_capacity": 0,
 			}
 			assert_relayer_info! {
 				"account_id": 2,
@@ -530,6 +587,7 @@ fn test_cancel_enroll_relayers_market_update_correctly() {
 				"usable_balance": collater_per_order * 3,
 				"is_enrolled": false,
 				"collateral": 0,
+				"order_capacity": 0,
 			}
 			assert_relayer_info! {
 				"account_id": 3,
@@ -537,123 +595,144 @@ fn test_cancel_enroll_relayers_market_update_correctly() {
 				"usable_balance": collater_per_order * 3,
 				"is_enrolled": false,
 				"collateral": 0,
+				"order_capacity": 0,
+			}
+		});
+}
+
+// Test market update
+
+#[test]
+fn test_market_fee_generate_failed_without_enough_relayers() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+		])
+		.with_relayers(vec![(1, collater_per_order, None), (2, collater_per_order, None)])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2],
+				"assigned_relayers": Vec::<u64>::new(),
+				"market_fee": None,
 			}
 		});
 }
 
 #[test]
-fn test_call_relayer_cancel_registration_works() {
-	ExtBuilder::default().with_balances(vec![(1, 150), (2, 200), (3, 350)]).build().execute_with(
-		|| {
-			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(1)),
-				<Error<Test>>::NotEnrolled
-			);
-
-			assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None));
-			assert!(FeeMarket::is_enrolled(&1));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
-			assert!(!FeeMarket::is_enrolled(&1));
-
-			System::set_block_number(2);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(2), 110, Some(50));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 120, Some(100));
-			assert_eq!(FeeMarket::relayers().unwrap(), vec![1, 2, 3]);
-			assert_eq!(
-				FeeMarket::assigned_relayers().unwrap(),
-				vec![
-					Relayer::<AccountId, Balance>::new(1, 100, 30),
-					Relayer::<AccountId, Balance>::new(2, 110, 50),
-					Relayer::<AccountId, Balance>::new(3, 120, 100),
-				]
-			);
-			let _ = send_regular_message(FeeMarket::market_fee().unwrap());
-			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(1)),
-				<Error<Test>>::OccupiedRelayer
-			);
-			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(2)),
-				<Error<Test>>::OccupiedRelayer
-			);
-			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(3)),
-				<Error<Test>>::OccupiedRelayer
-			);
-
-			// clean order info, then 3 is able to cancel enrollment.
-			System::set_block_number(3);
-			assert_ok!(Messages::receive_messages_delivery_proof(
-				Origin::signed(5),
-				TestMessagesDeliveryProof(Ok((
-					TEST_LANE_ID,
-					InboundLaneData {
-						relayers: vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)]
-							.into_iter()
-							.collect(),
-						..Default::default()
-					}
-				))),
-				UnrewardedRelayersState {
-					unrewarded_relayer_entries: 1,
-					total_messages: 1,
-					..Default::default()
-				},
-			));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(3)));
-			assert_eq!(FeeMarket::relayers().unwrap(), vec![1, 2]);
-			assert!(FeeMarket::assigned_relayers().is_none());
-			assert!(FeeMarket::market_fee().is_none());
-		},
-	);
-}
-
-#[test]
-fn test_rpc_market_fee_works() {
+fn test_market_fee_generate_failed_with_enough_relayers() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
 	ExtBuilder::default()
-		.with_balances(vec![(1, 150), (2, 200), (3, 350), (4, 220), (5, 350)])
-		.with_relayers(vec![(1, 100, None), (2, 110, Some(40))])
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, None),
+			(2, collater_per_order, None),
+			(3, collater_per_order, None),
+		])
 		.build()
 		.execute_with(|| {
-			assert!(FeeMarket::market_fee().is_none());
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 200, Some(40));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(4), 120, Some(40));
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(5), 150, Some(50));
-			assert_eq!(FeeMarket::market_fee(), Some(40));
-			assert_eq!(
-				FeeMarket::assigned_relayers().unwrap(),
-				vec![
-					Relayer::<AccountId, Balance>::new(1, 100, 30),
-					Relayer::<AccountId, Balance>::new(3, 200, 40),
-					Relayer::<AccountId, Balance>::new(4, 120, 40),
-				]
-			);
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee),
+			}
 		});
 }
 
 #[test]
-fn test_callback_order_creation() {
+fn test_market_fee_generate_sort_the_same_collater_different_fee() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
 	ExtBuilder::default()
-		.with_balances(vec![(1, 150), (2, 200), (3, 350), (4, 220)])
-		.with_relayers(vec![(2, 200, None), (3, 210, None), (4, 220, None)])
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+			(4, collater_per_order),
+			(5, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, Some(default_fee + 10)),
+			(2, collater_per_order, Some(default_fee + 30)),
+			(3, collater_per_order, Some(default_fee + 50)),
+			(4, collater_per_order, Some(default_fee + 70)),
+			(5, collater_per_order, Some(default_fee + 90)),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4, 5],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee + 50),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_generate_sort_the_same_quota_different_collater() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order * 2),
+			(2, collater_per_order * 2),
+			(3, collater_per_order * 2),
+			(4, collater_per_order * 2),
+			(5, collater_per_order * 2),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order + 10, Some(default_fee)),
+			(2, collater_per_order + 20, Some(default_fee)),
+			(3, collater_per_order + 30, Some(default_fee)),
+			(4, collater_per_order + 40, Some(default_fee)),
+			(5, collater_per_order + 50, Some(default_fee)),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4, 5],
+				"assigned_relayers": vec![5, 4, 3],
+				"market_fee": Some(default_fee),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_order_created() {
+	// TODO
+}
+
+// Test Order
+
+#[test]
+fn test_order_create_if_market_ready() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order),
+			(2, collater_per_order),
+			(3, collater_per_order),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order, None),
+			(2, collater_per_order, None),
+			(3, collater_per_order, None),
+		])
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-
-			let assigned_relayers = FeeMarket::assigned_relayers().unwrap();
-			let market_fee = FeeMarket::market_fee().unwrap();
-			let (lane, message_nonce) = send_regular_message(market_fee);
-			assert!(FeeMarket::market_fee().is_some());
-			assert!(FeeMarket::assigned_relayers().is_some());
-
+			let (lane, message_nonce) = send_regular_message(default_fee);
 			let order = FeeMarket::order((&lane, &message_nonce)).unwrap();
 			let relayers = order.assigned_relayers_slice();
-			assert_eq!(relayers[0].id, assigned_relayers.get(0).unwrap().id);
-			assert_eq!(relayers[1].id, assigned_relayers.get(1).unwrap().id);
-			assert_eq!(relayers[2].id, assigned_relayers.get(2).unwrap().id);
-			assert_eq!(order.sent_time, 2);
-
 			System::assert_has_event(Event::FeeMarket(crate::Event::OrderCreated(
 				lane,
 				message_nonce,
@@ -665,15 +744,15 @@ fn test_callback_order_creation() {
 }
 
 #[test]
-fn test_callback_no_order_created_when_fee_market_not_ready() {
+fn test_order_create_if_market_not_ready() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
 	ExtBuilder::default()
-		.with_balances(vec![(1, 150), (2, 200)])
-		.with_relayers(vec![(1, 100, None), (2, 100, None)])
+		.with_balances(vec![(1, collater_per_order)])
+		.with_relayers(vec![(1, collater_per_order, None)])
 		.build()
 		.execute_with(|| {
 			System::set_block_number(2);
-
-			assert!(FeeMarket::assigned_relayers().is_none());
 			assert_err!(
 				Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 				DispatchError::Module(ModuleError {
@@ -682,6 +761,106 @@ fn test_callback_no_order_created_when_fee_market_not_ready() {
 					message: Some("MessageRejectedByLaneVerifier")
 				})
 			);
+		});
+}
+
+#[test]
+fn test_order_create_then_order_capacity_reduce_by_one() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order * 3),
+			(2, collater_per_order * 3),
+			(3, collater_per_order * 3),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order * 2, None),
+			(2, collater_per_order * 2, None),
+			(3, collater_per_order * 2, None),
+		])
+		.build()
+		.execute_with(|| {
+			assert_relayer_info! {
+				"account_id": 1,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 2,
+			}
+			assert_relayer_info! {
+				"account_id": 2,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 2,
+			}
+			assert_relayer_info! {
+				"account_id": 3,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 2,
+			}
+
+			System::set_block_number(2);
+			let _ = send_regular_message(default_fee);
+
+			assert_relayer_info! {
+				"account_id": 1,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 1,
+			}
+			assert_relayer_info! {
+				"account_id": 2,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 1,
+			}
+			assert_relayer_info! {
+				"account_id": 3,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 1,
+			}
+
+			System::set_block_number(3);
+			let _ = send_regular_message(default_fee);
+
+			assert_relayer_info! {
+				"account_id": 1,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 0,
+			}
+			assert_relayer_info! {
+				"account_id": 2,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 0,
+			}
+			assert_relayer_info! {
+				"account_id": 3,
+				"free_balance": collater_per_order * 3,
+				"usable_balance": collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order * 2,
+				"order_capacity": 0,
+			}
 		});
 }
 
@@ -704,6 +883,134 @@ fn test_callback_order_confirm() {
 			assert_eq!(order.confirm_time, Some(4));
 			assert!(FeeMarket::market_fee().is_some());
 			assert!(FeeMarket::assigned_relayers().is_some());
+		});
+}
+
+#[test]
+fn test_relayer_update_order_capacity() {
+	ExtBuilder::default()
+		.with_balances(vec![(5, 500), (6, 500), (7, 500)])
+		.with_relayers(vec![(5, 300, None), (6, 300, None), (7, 300, None)])
+		.build()
+		.execute_with(|| {
+			System::set_block_number(2);
+
+			let market_fee = FeeMarket::market_fee().unwrap();
+			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(market_fee);
+
+			assert_eq!(FeeMarket::occupied(&5), Some((3, 300)));
+			assert_eq!(FeeMarket::usable_order_capacity(&5), 0);
+			assert_eq!(FeeMarket::usable_order_capacity(&6), 0);
+			assert_eq!(FeeMarket::usable_order_capacity(&7), 0);
+			assert!(FeeMarket::market_fee().is_none());
+
+			System::set_block_number(10);
+			assert_ok!(Messages::receive_messages_delivery_proof(
+				Origin::signed(5),
+				TestMessagesDeliveryProof(Ok((
+					TEST_LANE_ID,
+					InboundLaneData {
+						relayers: vec![unrewarded_relayer(1, 3, TEST_RELAYER_A),]
+							.into_iter()
+							.collect(),
+						..Default::default()
+					}
+				))),
+				UnrewardedRelayersState {
+					unrewarded_relayer_entries: 1,
+					total_messages: 3,
+					..Default::default()
+				},
+			));
+
+			assert_eq!(FeeMarket::occupied(&5), None);
+			assert_eq!(FeeMarket::usable_order_capacity(&5), 3);
+			assert_eq!(FeeMarket::usable_order_capacity(&6), 3);
+			assert_eq!(FeeMarket::usable_order_capacity(&7), 3);
+			assert!(FeeMarket::market_fee().is_some());
+		});
+}
+
+#[test]
+fn test_clean_order_state_at_the_end_of_block() {
+	ExtBuilder::default()
+		.with_balances(vec![(6, 500), (7, 500), (8, 500)])
+		.with_relayers(vec![(6, 400, None), (7, 400, None), (8, 400, None)])
+		.build()
+		.execute_with(|| {
+			System::set_block_number(2);
+			let market_fee = FeeMarket::market_fee().unwrap();
+			let (lane1, nonce1) = send_regular_message(market_fee);
+			let (lane2, nonce2) = send_regular_message(market_fee);
+			System::set_block_number(3);
+			let (lane3, nonce3) = send_regular_message(market_fee);
+			let (lane4, nonce4) = send_regular_message(market_fee);
+
+			System::set_block_number(10);
+			assert_ok!(Messages::receive_messages_delivery_proof(
+				Origin::signed(5),
+				TestMessagesDeliveryProof(Ok((
+					TEST_LANE_ID,
+					InboundLaneData {
+						relayers: vec![
+							unrewarded_relayer(1, 2, TEST_RELAYER_A),
+							unrewarded_relayer(3, 4, TEST_RELAYER_B)
+						]
+						.into_iter()
+						.collect(),
+						..Default::default()
+					}
+				))),
+				UnrewardedRelayersState {
+					unrewarded_relayer_entries: 2,
+					total_messages: 4,
+					..Default::default()
+				},
+			));
+			assert!(FeeMarket::order((&lane1, &nonce1)).is_some());
+			assert!(FeeMarket::order((&lane2, &nonce2)).is_some());
+			assert!(FeeMarket::order((&lane3, &nonce3)).is_some());
+			assert!(FeeMarket::order((&lane4, &nonce4)).is_some());
+
+			// Check in next block
+			FeeMarket::on_finalize(10);
+			System::set_block_number(1);
+			assert!(FeeMarket::order((&lane1, &nonce1)).is_none());
+			assert!(FeeMarket::order((&lane2, &nonce2)).is_none());
+			assert!(FeeMarket::order((&lane3, &nonce3)).is_none());
+			assert!(FeeMarket::order((&lane4, &nonce4)).is_none());
+		});
+}
+
+#[test]
+fn test_relayer_occupied_result() {
+	ExtBuilder::default()
+		.with_balances(vec![(5, 500), (6, 500), (7, 500)])
+		.with_relayers(vec![(5, 300, None), (6, 300, None), (7, 300, None)])
+		.build()
+		.execute_with(|| {
+			System::set_block_number(2);
+
+			// Send message
+			let market_fee = FeeMarket::market_fee().unwrap();
+			let _ = send_regular_message(market_fee);
+			let _ = send_regular_message(market_fee);
+
+			assert_eq!(FeeMarket::occupied(&5), Some((2, 200)));
+			assert_eq!(FeeMarket::occupied(&6), Some((2, 200)));
+			assert_eq!(FeeMarket::occupied(&7), Some((2, 200)));
+			assert_eq!(FeeMarket::usable_order_capacity(&5), 1);
+			assert_eq!(FeeMarket::usable_order_capacity(&6), 1);
+			assert_eq!(FeeMarket::usable_order_capacity(&7), 1);
+			receive_messages_delivery_proof();
+			assert_eq!(FeeMarket::occupied(&5), Some((1, 100)));
+			assert_eq!(FeeMarket::occupied(&6), Some((1, 100)));
+			assert_eq!(FeeMarket::occupied(&7), Some((1, 100)));
+			assert_eq!(FeeMarket::usable_order_capacity(&5), 2);
+			assert_eq!(FeeMarket::usable_order_capacity(&6), 2);
+			assert_eq!(FeeMarket::usable_order_capacity(&7), 2);
 		});
 }
 
@@ -1208,175 +1515,5 @@ fn test_payment_with_multiple_message_out_of_deadline() {
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 594));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 1232));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_B, 1146));
-		});
-}
-
-#[test]
-fn test_clean_order_state_at_the_end_of_block() {
-	ExtBuilder::default()
-		.with_balances(vec![(6, 500), (7, 500), (8, 500)])
-		.with_relayers(vec![(6, 400, None), (7, 400, None), (8, 400, None)])
-		.build()
-		.execute_with(|| {
-			System::set_block_number(2);
-			let market_fee = FeeMarket::market_fee().unwrap();
-			let (lane1, nonce1) = send_regular_message(market_fee);
-			let (lane2, nonce2) = send_regular_message(market_fee);
-			System::set_block_number(3);
-			let (lane3, nonce3) = send_regular_message(market_fee);
-			let (lane4, nonce4) = send_regular_message(market_fee);
-
-			System::set_block_number(10);
-			assert_ok!(Messages::receive_messages_delivery_proof(
-				Origin::signed(5),
-				TestMessagesDeliveryProof(Ok((
-					TEST_LANE_ID,
-					InboundLaneData {
-						relayers: vec![
-							unrewarded_relayer(1, 2, TEST_RELAYER_A),
-							unrewarded_relayer(3, 4, TEST_RELAYER_B)
-						]
-						.into_iter()
-						.collect(),
-						..Default::default()
-					}
-				))),
-				UnrewardedRelayersState {
-					unrewarded_relayer_entries: 2,
-					total_messages: 4,
-					..Default::default()
-				},
-			));
-			assert!(FeeMarket::order((&lane1, &nonce1)).is_some());
-			assert!(FeeMarket::order((&lane2, &nonce2)).is_some());
-			assert!(FeeMarket::order((&lane3, &nonce3)).is_some());
-			assert!(FeeMarket::order((&lane4, &nonce4)).is_some());
-
-			// Check in next block
-			FeeMarket::on_finalize(10);
-			System::set_block_number(1);
-			assert!(FeeMarket::order((&lane1, &nonce1)).is_none());
-			assert!(FeeMarket::order((&lane2, &nonce2)).is_none());
-			assert!(FeeMarket::order((&lane3, &nonce3)).is_none());
-			assert!(FeeMarket::order((&lane4, &nonce4)).is_none());
-		});
-}
-
-#[test]
-fn test_fee_verification_when_send_message() {
-	ExtBuilder::default()
-		.with_balances(vec![(1, 150), (2, 200), (3, 350)])
-		.with_relayers(vec![(1, 100, None), (2, 100, None)])
-		.build()
-		.execute_with(|| {
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(2), 100, None);
-			assert!(FeeMarket::market_fee().is_none());
-
-			// Case 1: When fee market are not ready, but somebody send messages
-			assert_err!(
-				Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
-				DispatchError::Module(ModuleError {
-					index: 4,
-					error: [2, 0, 0, 0],
-					message: Some("MessageRejectedByLaneVerifier")
-				})
-			);
-
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(3), 100, Some(50));
-			// Case 2: The fee market is ready, but the order fee is too low
-			assert_err!(
-				Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 49),
-				DispatchError::Module(ModuleError {
-					index: 4,
-					error: [2, 0, 0, 0],
-					message: Some("MessageRejectedByLaneVerifier")
-				})
-			);
-
-			// Case 3: Normal workflow
-			assert_ok!(Messages::send_message(
-				Origin::signed(1),
-				TEST_LANE_ID,
-				REGULAR_PAYLOAD,
-				50
-			),);
-		});
-}
-
-#[test]
-fn test_relayer_occupied_result() {
-	ExtBuilder::default()
-		.with_balances(vec![(5, 500), (6, 500), (7, 500)])
-		.with_relayers(vec![(5, 300, None), (6, 300, None), (7, 300, None)])
-		.build()
-		.execute_with(|| {
-			System::set_block_number(2);
-
-			// Send message
-			let market_fee = FeeMarket::market_fee().unwrap();
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-
-			assert_eq!(FeeMarket::occupied(&5), Some((2, 200)));
-			assert_eq!(FeeMarket::occupied(&6), Some((2, 200)));
-			assert_eq!(FeeMarket::occupied(&7), Some((2, 200)));
-			assert_eq!(FeeMarket::usable_order_capacity(&5), 1);
-			assert_eq!(FeeMarket::usable_order_capacity(&6), 1);
-			assert_eq!(FeeMarket::usable_order_capacity(&7), 1);
-			receive_messages_delivery_proof();
-			assert_eq!(FeeMarket::occupied(&5), Some((1, 100)));
-			assert_eq!(FeeMarket::occupied(&6), Some((1, 100)));
-			assert_eq!(FeeMarket::occupied(&7), Some((1, 100)));
-			assert_eq!(FeeMarket::usable_order_capacity(&5), 2);
-			assert_eq!(FeeMarket::usable_order_capacity(&6), 2);
-			assert_eq!(FeeMarket::usable_order_capacity(&7), 2);
-		});
-}
-
-#[test]
-fn test_relayer_update_order_capacity() {
-	ExtBuilder::default()
-		.with_balances(vec![(5, 500), (6, 500), (7, 500)])
-		.with_relayers(vec![(5, 300, None), (6, 300, None), (7, 300, None)])
-		.build()
-		.execute_with(|| {
-			System::set_block_number(2);
-
-			let market_fee = FeeMarket::market_fee().unwrap();
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-
-			assert_eq!(FeeMarket::occupied(&5), Some((3, 300)));
-			assert_eq!(FeeMarket::usable_order_capacity(&5), 0);
-			assert_eq!(FeeMarket::usable_order_capacity(&6), 0);
-			assert_eq!(FeeMarket::usable_order_capacity(&7), 0);
-			assert!(FeeMarket::market_fee().is_none());
-
-			System::set_block_number(10);
-			assert_ok!(Messages::receive_messages_delivery_proof(
-				Origin::signed(5),
-				TestMessagesDeliveryProof(Ok((
-					TEST_LANE_ID,
-					InboundLaneData {
-						relayers: vec![unrewarded_relayer(1, 3, TEST_RELAYER_A),]
-							.into_iter()
-							.collect(),
-						..Default::default()
-					}
-				))),
-				UnrewardedRelayersState {
-					unrewarded_relayer_entries: 1,
-					total_messages: 3,
-					..Default::default()
-				},
-			));
-
-			assert_eq!(FeeMarket::occupied(&5), None);
-			assert_eq!(FeeMarket::usable_order_capacity(&5), 3);
-			assert_eq!(FeeMarket::usable_order_capacity(&6), 3);
-			assert_eq!(FeeMarket::usable_order_capacity(&7), 3);
-			assert!(FeeMarket::market_fee().is_some());
 		});
 }
