@@ -1,9 +1,9 @@
 [package]
-name = "bp-test-utils"
-version = "0.1.0"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2021"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name    = "bp-test-utils"
+version = "0.1.0"
 
 [dependencies]
 bp-header-chain = { path = "../header-chain", default-features = false  }
@@ -15,13 +15,18 @@ sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", b
 sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 sp-std = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 
+
+# paritytech
 [features]
 default = ["std"]
 std = [
-	"bp-header-chain/std",
+	# crates.io
 	"codec/std",
 	"ed25519-dalek/std",
 	"finality-grandpa/std",
+	# darwinia-network
+	"bp-header-chain/std",
+	# paritytech
 	"sp-application-crypto/std",
 	"sp-finality-grandpa/std",
 	"sp-runtime/std",

@@ -19,56 +19,28 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub mod justification;
+pub mod storage_keys;
+
+// core
+use core::fmt::Debug;
+// crates.io
 use codec::{Codec, Decode, Encode, EncodeLike};
-use core::{clone::Clone, cmp::Eq, default::Default, fmt::Debug};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
+// darwinia-network
+use bp_runtime::BasicOperatingMode;
+// paritytech
 use sp_finality_grandpa::{AuthorityList, ConsensusLog, SetId, GRANDPA_ENGINE_ID};
 use sp_runtime::{generic::OpaqueDigestItemId, traits::Header as HeaderT, RuntimeDebug};
 use sp_std::boxed::Box;
-
-pub mod justification;
-pub mod storage_keys;
 
 /// A type that can be used as a parameter in a dispatchable function.
 ///
 /// When using `decl_module` all arguments for call functions must implement this trait.
 pub trait Parameter: Codec + EncodeLike + Clone + Eq + Debug + TypeInfo {}
 impl<T> Parameter for T where T: Codec + EncodeLike + Clone + Eq + Debug + TypeInfo {}
-
-/// A GRANDPA Authority List and ID.
-#[derive(Default, Encode, Decode, RuntimeDebug, PartialEq, Clone, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct AuthoritySet {
-	/// List of GRANDPA authorities for the current round.
-	pub authorities: AuthorityList,
-	/// Monotonic identifier of the current GRANDPA authority set.
-	pub set_id: SetId,
-}
-
-impl AuthoritySet {
-	/// Create a new GRANDPA Authority Set.
-	pub fn new(authorities: AuthorityList, set_id: SetId) -> Self {
-		Self { authorities, set_id }
-	}
-}
-
-/// Data required for initializing the bridge pallet.
-///
-/// The bridge needs to know where to start its sync from, and this provides that initial context.
-#[derive(Default, Encode, Decode, RuntimeDebug, PartialEq, Eq, Clone, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct InitializationData<H: HeaderT> {
-	/// The header from which we should start syncing.
-	pub header: Box<H>,
-	/// The initial authorities of the pallet.
-	pub authority_list: AuthorityList,
-	/// The ID of the initial authority set.
-	pub set_id: SetId,
-	/// Should the pallet block transaction immediately after initialization.
-	pub is_halted: bool,
-}
 
 /// base trait for verifying transaction inclusion proofs.
 pub trait InclusionProofVerifier {
@@ -88,7 +60,7 @@ pub trait InclusionProofVerifier {
 /// A trait for pallets which want to keep track of finalized headers from a bridged chain.
 pub trait HeaderChain<H, E> {
 	/// Get the best finalized header known to the header chain.
-	fn best_finalized() -> H;
+	fn best_finalized() -> Option<H>;
 
 	/// Get the best authority set known to the header chain.
 	fn authority_set() -> AuthoritySet;
@@ -96,10 +68,9 @@ pub trait HeaderChain<H, E> {
 	/// Write a header finalized by GRANDPA to the underlying pallet storage.
 	fn append_header(header: H) -> Result<(), E>;
 }
-
 impl<H: Default, E> HeaderChain<H, E> for () {
-	fn best_finalized() -> H {
-		H::default()
+	fn best_finalized() -> Option<H> {
+		None
 	}
 
 	fn authority_set() -> AuthoritySet {
@@ -115,6 +86,38 @@ impl<H: Default, E> HeaderChain<H, E> for () {
 pub trait FinalityProof<Number>: Clone + Send + Sync + Debug {
 	/// Return number of header that this proof is generated for.
 	fn target_header_number(&self) -> Number;
+}
+
+/// A GRANDPA Authority List and ID.
+#[derive(Clone, Default, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct AuthoritySet {
+	/// List of GRANDPA authorities for the current round.
+	pub authorities: AuthorityList,
+	/// Monotonic identifier of the current GRANDPA authority set.
+	pub set_id: SetId,
+}
+impl AuthoritySet {
+	/// Create a new GRANDPA Authority Set.
+	pub fn new(authorities: AuthorityList, set_id: SetId) -> Self {
+		Self { authorities, set_id }
+	}
+}
+
+/// Data required for initializing the bridge pallet.
+///
+/// The bridge needs to know where to start its sync from, and this provides that initial context.
+#[derive(Clone, Default, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct InitializationData<H: HeaderT> {
+	/// The header from which we should start syncing.
+	pub header: Box<H>,
+	/// The initial authorities of the pallet.
+	pub authority_list: AuthorityList,
+	/// The ID of the initial authority set.
+	pub set_id: SetId,
+	/// Pallet operating mode.
+	pub operating_mode: BasicOperatingMode,
 }
 
 /// Find header digest that schedules next GRANDPA authorities set.

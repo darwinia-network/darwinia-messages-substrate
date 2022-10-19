@@ -1,10 +1,10 @@
 [package]
-name = "bp-polkadot-core"
+authors     = ["Parity Technologies <admin@parity.io>"]
 description = "Primitives of Polkadot-like runtime."
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2021"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+edition     = "2021"
+license     = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name        = "bp-polkadot-core"
+version     = "0.1.0"
 
 [dependencies]
 parity-scale-codec = { version = "2.3", default-features = false, features = ["derive"] }
@@ -33,14 +33,17 @@ hex = "0.4"
 [features]
 default = ["std"]
 std = [
-	"bp-messages/std",
-	"bp-runtime/std",
-	"frame-support/std",
-	"frame-system/std",
-	"parity-scale-codec/std",
+	# crates.io
+	"codec/std",
 	"parity-util-mem",
 	"scale-info/std",
 	"serde",
+	# darwinia-network
+	"bp-messages/std",
+	"bp-runtime/std",
+	# paritytech
+	"frame-support/std",
+	"frame-system/std",
 	"sp-api/std",
 	"sp-core/std",
 	"sp-runtime/std",

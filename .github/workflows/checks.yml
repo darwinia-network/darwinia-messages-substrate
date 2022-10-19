@@ -1,0 +1,25 @@
+name: Checks
+
+on:
+  push:
+    branches: [main, darwinia-v*, polkadot-v*]
+  pull_request:
+    branches: [main, darwinia-v*, polkadot-v*]
+
+env:
+  RUST_TOOLCHAIN: nightly
+
+jobs:
+  basic-checks:
+    name: Basic checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Rust ${{ env.RUST_TOOLCHAIN }} toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          default: true
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Cargo test
+        run: cargo test --all --locked

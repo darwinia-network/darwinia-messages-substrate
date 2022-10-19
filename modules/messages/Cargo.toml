@@ -1,10 +1,10 @@
 [package]
-name = "pallet-bridge-messages"
+authors     = ["Parity Technologies <admin@parity.io>"]
 description = "Module that allows bridged chains to exchange messages using lane concept."
-version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
-edition = "2021"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+edition     = "2021"
+license     = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name        = "pallet-bridge-messages"
+version     = "0.1.0"
 
 [dependencies]
 bitvec = { version = "0.20", default-features = false, features = ["alloc"] }
@@ -36,20 +36,23 @@ pallet-balances = { git = "https://github.com/darwinia-network/substrate", branc
 [features]
 default = ["std"]
 std = [
-	"bp-message-dispatch/std",
-	"bp-messages/std",
-	"bp-runtime/std",
+	# crates.io
 	"codec/std",
-	"frame-support/std",
-	"frame-system/std",
-	"log/std",
 	"num-traits/std",
 	"scale-info/std",
 	"serde",
+	# darwinia-network
+	"bp-message-dispatch/std",
+	"bp-messages/std",
+	"bp-runtime/std",
+	# paritytech
+	"frame-support/std",
+	"frame-system/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
 ]
+
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 ]

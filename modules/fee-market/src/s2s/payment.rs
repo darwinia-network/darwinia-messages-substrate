@@ -16,24 +16,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// --- paritytech ---
+// crates.io
+use scale_info::TypeInfo;
+// darwinia-network
+use crate::{Config, Orders, Pallet, *};
 use bp_messages::{
 	source_chain::{MessageDeliveryAndDispatchPayment, SenderOrigin},
 	MessageNonce, UnrewardedRelayer,
 };
+// --- paritytech ---
 use frame_support::{
 	log,
 	traits::{Currency as CurrencyT, ExistenceRequirement, Get},
 };
-use scale_info::TypeInfo;
 use sp_runtime::traits::{AccountIdConversion, CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
 use sp_std::{
 	cmp::{max, min},
 	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
 	ops::RangeInclusive,
 };
-// --- darwinia-network ---
-use crate::{Config, Orders, Pallet, *};
 
 /// Error that occurs when message fee is non-zero, but payer is not defined.
 const NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE: &str =

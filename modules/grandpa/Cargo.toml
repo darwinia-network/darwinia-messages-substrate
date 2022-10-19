@@ -1,11 +1,9 @@
 [package]
-name = "pallet-bridge-grandpa"
-version = "0.1.0"
 authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2021"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+name    = "pallet-bridge-grandpa"
+version = "0.1.0"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2.3", default-features = false }
@@ -40,22 +38,25 @@ sp-io = { git = "https://github.com/darwinia-network/substrate", branch = "darwi
 [features]
 default = ["std"]
 std = [
-	"bp-header-chain/std",
-	"bp-runtime/std",
-	"bp-test-utils/std",
+	# crates.io
 	"codec/std",
 	"finality-grandpa/std",
-	"frame-support/std",
-	"frame-system/std",
-	"log/std",
 	"num-traits/std",
 	"scale-info/std",
 	"serde",
+	# darwinia-network
+	"bp-header-chain/std",
+	"bp-runtime/std",
+	"bp-test-utils/std",
+	# paritytech
+	"frame-support/std",
+	"frame-system/std",
 	"sp-finality-grandpa/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	"sp-trie/std",
 ]
+
 runtime-benchmarks = [
 	"bp-test-utils",
 	"frame-benchmarking/runtime-benchmarks",

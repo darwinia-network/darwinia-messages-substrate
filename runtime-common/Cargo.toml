@@ -1,0 +1,83 @@
+[package]
+authors    = ["Parity Technologies <admin@parity.io>"]
+edition    = "2021"
+license    = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+name       = "bridge-runtime-common"
+repository = "https://github.com/paritytech/parity-bridges-common/"
+version    = "0.1.0"
+
+[dependencies]
+# crates.io
+codec             = { package = "parity-scale-codec", version = "3.1", default-features = false, features = ["derive"] }
+hash-db           = { version = "0.15", default-features = false }
+num-traits        = { version = "0.2", default-features = false }
+scale-info        = { version = "2.1", default-features = false, features = ["derive"] }
+static_assertions = { version = "1.1", optional = true }
+# darwinia-network
+bp-message-dispatch      = { default-features = false, path = "../primitives/message-dispatch" }
+bp-messages              = { default-features = false, path = "../primitives/messages" }
+bp-parachains            = { default-features = false, path = "../primitives/parachains" }
+bp-polkadot-core         = { default-features = false, path = "../primitives/polkadot-core" }
+bp-runtime               = { default-features = false, path = "../primitives/runtime" }
+pallet-bridge-dispatch    = { default-features = false, path = "../modules/dispatch" }
+pallet-bridge-grandpa    = { default-features = false, path = "../modules/grandpa" }
+pallet-bridge-messages   = { default-features = false, path = "../modules/messages" }
+pallet-bridge-parachains = { default-features = false, path = "../modules/parachains" }
+pallet-fee-market        = { default-features = false, path = "../modules/fee-market" }
+# paritytech
+frame-support              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-system               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+pallet-balances            = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-api                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-core                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-io                      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-runtime                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-state-machine           = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-std                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-trie                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-version                 = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+
+[features]
+default = ["std"]
+std = [
+	# darwinia-network
+	"bp-message-dispatch/std",
+	"bp-messages/std",
+	"bp-parachains/std",
+	"bp-polkadot-core/std",
+	"bp-runtime/std",
+	"pallet-bridge-dispatch/std",
+	"pallet-bridge-grandpa/std",
+	"pallet-bridge-messages/std",
+	"pallet-bridge-parachains/std",
+	"pallet-fee-market/std",
+	# crates.io
+	"codec/std",
+	"hash-db/std",
+	"num-traits/std",
+	"scale-info/std",
+	# paritytech
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-transaction-payment/std",
+	"sp-api/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-state-machine/std",
+	"sp-std/std",
+	"sp-trie/std",
+]
+
+integrity-test = [
+	"static_assertions",
+]
+
+runtime-benchmarks = [
+	"pallet-balances",
+	"pallet-bridge-grandpa/runtime-benchmarks",
+	"pallet-bridge-messages/runtime-benchmarks",
+	"sp-state-machine",
+	"sp-version",
+]
