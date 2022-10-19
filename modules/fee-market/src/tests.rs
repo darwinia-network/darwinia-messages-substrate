@@ -34,101 +34,273 @@ use crate::{
 	Config, Error, Relayer, RewardItem, SlashReport,
 };
 
-// enroll
+// enroll_and_lock_collateral
+
 #[test]
-fn test_call_relayer_enroll_works() {
-	ExtBuilder::default().with_balances(vec![(1, 120)]).build().execute_with(|| {
+fn test_enroll_failed_with_insuffience_balance() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 120 + 1, None),
+			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order + 1, None),
 			<Error<Test>>::InsufficientBalance
 		);
-		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(
-				Origin::signed(1),
-				<Test as Config>::CollateralPerOrder::get() - 1,
-				None
-			),
-			<Error<Test>>::CollateralTooLow
-		);
-
-		assert_ok!(FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None));
-		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), 100, None),
-			<Error<Test>>::AlreadyEnrolled
-		);
-
-		assert_relayer_info! {
-			"account_id": 1,
-			"free_balance": 120,
-			"usable_balance": 20,
-			"is_enrolled": true,
-			"collateral": 100,
-		}
-
-		assert_market_storage! {
-			"relayers": vec![1],
-			"market_fee": None,
-		}
 	});
 }
 
 #[test]
-fn test_call_relayer_increase_lock_collateral_works() {
+fn test_enroll_failed_if_collateral_too_low() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
+		assert_err!(
+			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order - 1, None),
+			<Error<Test>>::CollateralTooLow
+		);
+	});
+}
+
+#[test]
+fn test_enroll_with_default_quota() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
+		assert_ok!(FeeMarket::enroll_and_lock_collateral(
+			Origin::signed(1),
+			collater_per_order,
+			None
+		));
+		assert_eq!(FeeMarket::relayer(&1).unwrap().fee, <Test as Config>::MinimumRelayFee::get());
+	});
+}
+
+#[test]
+fn test_enroll_failed_if_quota_too_low() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
+		assert_err!(
+			FeeMarket::enroll_and_lock_collateral(
+				Origin::signed(1),
+				collater_per_order,
+				Some(<Test as Config>::MinimumRelayFee::get() - 1),
+			),
+			<Error<Test>>::RelayFeeTooLow
+		);
+	});
+}
+
+#[test]
+fn test_enroll_with_correct_balance_changes() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let init_balance = collater_per_order + 20;
 	ExtBuilder::default()
-		.with_balances(vec![(12, 2000), (13, 2000), (14, 2000)])
+		.with_balances(vec![(1, init_balance)])
+		.with_relayers(vec![(1, collater_per_order, None)])
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::update_locked_collateral(Origin::signed(12), 100),
-				<Error::<Test>>::NotEnrolled
+				FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order, None),
+				<Error<Test>>::AlreadyEnrolled
 			);
 
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(12), 200, None);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&12), 200);
+			assert_relayer_info! {
+				"account_id": 1,
+				"free_balance": init_balance,
+				"usable_balance": init_balance - collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order,
+			}
 
-			// Increase locked collateral from 200 to 500
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 500));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&12), 500);
-
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(13), 200, None);
-			let _ = FeeMarket::enroll_and_lock_collateral(Origin::signed(14), 300, None);
-			let market_fee = FeeMarket::market_fee().unwrap();
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 800));
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(13), 800));
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(14), 800));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&12), 800);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&13), 800);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&14), 800);
+			assert_market_storage! {
+				"relayers": vec![1],
+				"market_fee": None,
+			}
 		});
 }
 
 #[test]
-fn test_call_relayer_decrease_lock_collateral_works() {
+fn test_enroll_again_failed() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
-		.with_balances(vec![(12, 2000), (13, 2000), (14, 2000)])
-		.with_relayers(vec![(12, 800, None), (13, 800, None), (14, 800, None)])
+		.with_balances(vec![(1, collater_per_order)])
+		.with_relayers(vec![(1, collater_per_order, None)])
 		.build()
 		.execute_with(|| {
-			let market_fee = FeeMarket::market_fee().unwrap();
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-			let _ = send_regular_message(market_fee);
-
 			assert_err!(
-				FeeMarket::update_locked_collateral(Origin::signed(12), 300),
-				<Error::<Test>>::StillHasOrdersNotConfirmed
+				FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order, None),
+				<Error<Test>>::AlreadyEnrolled
 			);
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 400));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&12), 400);
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(13), 500));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&13), 500);
-			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(14), 700));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&14), 700);
 		});
 }
+
+// increase_locked_collateral
+
+#[test]
+fn test_increase_collateral_with_insuffience_balance() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default()
+		.with_balances(vec![(1, collater_per_order)])
+		.with_relayers(vec![(1, collater_per_order, None)])
+		.build()
+		.execute_with(|| {
+			assert_err!(
+				FeeMarket::increase_locked_collateral(Origin::signed(1), collater_per_order + 1),
+				<Error<Test>>::InsufficientBalance
+			);
+		});
+}
+
+#[test]
+fn test_increase_collateral_not_enrolled() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
+		assert_err!(
+			FeeMarket::increase_locked_collateral(Origin::signed(1), collater_per_order),
+			<Error<Test>>::NotEnrolled
+		);
+	});
+}
+
+#[test]
+fn test_increase_collateral_new_collateral_less_than_before() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default()
+		.with_balances(vec![(1, collater_per_order)])
+		.with_relayers(vec![(1, collater_per_order, None)])
+		.build()
+		.execute_with(|| {
+			assert_err!(
+				FeeMarket::increase_locked_collateral(Origin::signed(1), collater_per_order - 1),
+				<Error<Test>>::NewCollateralShouldLargerThanBefore
+			);
+		});
+}
+
+#[test]
+fn test_increase_collateral_relayer_balance_update_correctly() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let init_balance = collater_per_order + 20;
+	ExtBuilder::default()
+		.with_balances(vec![(1, init_balance)])
+		.with_relayers(vec![(1, collater_per_order, None)])
+		.build()
+		.execute_with(|| {
+			assert_relayer_info! {
+				"account_id": 1,
+				"free_balance": init_balance,
+				"usable_balance": init_balance - collater_per_order,
+				"is_enrolled": true,
+				"collateral": collater_per_order,
+			}
+
+			assert_market_storage! {
+				"relayers": vec![1],
+				"market_fee": None,
+			}
+
+			assert_ok!(FeeMarket::increase_locked_collateral(
+				Origin::signed(1),
+				collater_per_order + 10
+			));
+			assert_relayer_info! {
+				"account_id": 1,
+				"free_balance": init_balance,
+				"usable_balance": init_balance - collater_per_order - 10,
+				"is_enrolled": true,
+				"collateral": collater_per_order + 10,
+			}
+		});
+}
+
+// decrease_locked_collateral
+
+#[test]
+fn test_decrease_collateral_with_insuffience_balance() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default()
+		.with_balances(vec![(1, collater_per_order)])
+		.with_relayers(vec![(1, collater_per_order, None)])
+		.build()
+		.execute_with(|| {
+			assert_err!(
+				FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order + 1),
+				<Error<Test>>::InsufficientBalance
+			);
+		});
+}
+
+#[test]
+fn test_decrease_collateral_not_enrolled() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
+		assert_err!(
+			FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order),
+			<Error<Test>>::NotEnrolled
+		);
+	});
+}
+
+#[test]
+fn test_decrease_collateral_new_collateral_more_than_before() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default()
+		.with_balances(vec![(1, collater_per_order * 2)])
+		.with_relayers(vec![(1, collater_per_order, None)])
+		.build()
+		.execute_with(|| {
+			assert_err!(
+				FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order + 1),
+				<Error<Test>>::NewCollateralShouldLessThanBefore
+			);
+		});
+}
+
+#[test]
+fn test_decrease_collateral_are_not_allowed_when_occupied() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order * 2),
+			(2, collater_per_order * 2),
+			(3, collater_per_order * 2),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order * 2, None),
+			(2, collater_per_order * 2, None),
+			(3, collater_per_order * 2, None),
+		])
+		.build()
+		.execute_with(|| {
+
+			// assert_err!(
+			// 	FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order + 1),
+			// 	<Error<Test>>::NewCollateralShouldLessThanBefore
+			// );
+		});
+}
+
+// #[test]
+// fn test_call_relayer_decrease_lock_collateral_works() {
+// 	ExtBuilder::default()
+// 		.with_balances(vec![(12, 2000), (13, 2000), (14, 2000)])
+// 		.with_relayers(vec![(12, 800, None), (13, 800, None), (14, 800, None)])
+// 		.build()
+// 		.execute_with(|| {
+// 			let market_fee = FeeMarket::market_fee().unwrap();
+// 			let _ = send_regular_message(market_fee);
+// 			let _ = send_regular_message(market_fee);
+// 			let _ = send_regular_message(market_fee);
+// 			let _ = send_regular_message(market_fee);
+
+// 			assert_err!(
+// 				FeeMarket::update_locked_collateral(Origin::signed(12), 300),
+// 				<Error::<Test>>::StillHasOrdersNotConfirmed
+// 			);
+// 			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(12), 400));
+// 			assert_eq!(FeeMarket::relayer_locked_collateral(&12), 400);
+// 			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(13), 500));
+// 			assert_eq!(FeeMarket::relayer_locked_collateral(&13), 500);
+// 			assert_ok!(FeeMarket::update_locked_collateral(Origin::signed(14), 700));
+// 			assert_eq!(FeeMarket::relayer_locked_collateral(&14), 700);
+// 		});
+// }
 
 #[test]
 fn test_call_relayer_cancel_registration_works() {

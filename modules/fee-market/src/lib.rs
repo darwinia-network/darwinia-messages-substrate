@@ -138,6 +138,10 @@ pub mod pallet {
 		NotEnrolled,
 		/// Locked collateral is too low to cover one order.
 		CollateralTooLow,
+		/// New collateral should large than the original one.
+		NewCollateralShouldLargerThanBefore,
+		/// New collateral should less than the original one.
+		NewCollateralShouldLessThanBefore,
 		/// Update locked collateral is not allow since some orders are not confirm.
 		StillHasOrdersNotConfirmed,
 		/// The fee is lower than MinimumRelayFee.
@@ -284,10 +288,9 @@ pub mod pallet {
 			)
 		}
 
-		/// Update locked collateral for enrolled relayer, only supporting lock more. (Update market
-		/// needed)
+		// TODO: Update the weight info?
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_locked_collateral())]
-		pub fn update_locked_collateral(
+		pub fn increase_locked_collateral(
 			origin: OriginFor<T>,
 			new_collateral: BalanceOf<T, I>,
 		) -> DispatchResult {
@@ -297,35 +300,63 @@ pub mod pallet {
 				T::Currency::free_balance(&who) >= new_collateral,
 				<Error<T, I>>::InsufficientBalance
 			);
+			ensure!(
+				new_collateral > Self::relayer_locked_collateral(&who),
+				<Error<T, I>>::NewCollateralShouldLargerThanBefore
+			);
 
 			Self::update_market(
 				|| {
-					// Increase the locked collateral
-					if new_collateral >= Self::relayer_locked_collateral(&who) {
-						T::Currency::set_lock(
-							T::LockId::get(),
-							&who,
-							new_collateral,
-							WithdrawReasons::all(),
-						);
-					} else {
-						// Decrease the locked collateral
-						if let Some((_, orders_locked_collateral)) = Self::occupied(&who) {
-							ensure!(
-								new_collateral >= orders_locked_collateral,
-								<Error<T, I>>::StillHasOrdersNotConfirmed
-							);
+					T::Currency::set_lock(
+						T::LockId::get(),
+						&who,
+						new_collateral,
+						WithdrawReasons::all(),
+					);
 
-							T::Currency::remove_lock(T::LockId::get(), &who);
-							T::Currency::set_lock(
-								T::LockId::get(),
-								&who,
-								new_collateral,
-								WithdrawReasons::all(),
-							);
+					<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
+						if let Some(ref mut r) = relayer {
+							r.collateral = new_collateral;
 						}
+					});
+					Ok(())
+				},
+				Some(Event::<T, I>::UpdateLockedCollateral(who.clone(), new_collateral)),
+			)
+		}
+
+		#[pallet::weight(<T as Config<I>>::WeightInfo::update_locked_collateral())]
+		pub fn decrease_locked_collateral(
+			origin: OriginFor<T>,
+			new_collateral: BalanceOf<T, I>,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+			ensure!(Self::is_enrolled(&who), <Error<T, I>>::NotEnrolled);
+			ensure!(
+				T::Currency::free_balance(&who) >= new_collateral,
+				<Error<T, I>>::InsufficientBalance
+			);
+			ensure!(
+				new_collateral < Self::relayer_locked_collateral(&who),
+				<Error<T, I>>::NewCollateralShouldLessThanBefore
+			);
+
+			Self::update_market(
+				|| {
+					if let Some((_, orders_locked_collateral)) = Self::occupied(&who) {
+						ensure!(
+							new_collateral >= orders_locked_collateral,
+							<Error<T, I>>::StillHasOrdersNotConfirmed
+						);
 					}
 
+					T::Currency::remove_lock(T::LockId::get(), &who);
+					T::Currency::set_lock(
+						T::LockId::get(),
+						&who,
+						new_collateral,
+						WithdrawReasons::all(),
+					);
 					<RelayersMap<T, I>>::mutate(who.clone(), |relayer| {
 						if let Some(ref mut r) = relayer {
 							r.collateral = new_collateral;
