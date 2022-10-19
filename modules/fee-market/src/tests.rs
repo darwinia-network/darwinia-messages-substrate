@@ -19,7 +19,6 @@
 // --- std ---
 use std::collections::BTreeMap;
 // --- paritytech ---
-use bp_messages::{InboundLaneData, UnrewardedRelayersState};
 use frame_support::{assert_err, assert_ok, traits::OnFinalize};
 use sp_runtime::{traits::AccountIdConversion, DispatchError, ModuleError};
 // --- darwinia-network ---
@@ -28,8 +27,8 @@ use crate::{
 	mock::{
 		receive_messages_delivery_proof, send_regular_message, unrewarded_relayer, AccountId,
 		Balances, Event, ExtBuilder, FeeMarket, Messages, Origin, System, Test,
-		TestMessageDeliveryAndDispatchPayment, TestMessagesDeliveryProof, REGULAR_PAYLOAD,
-		TEST_LANE_ID, TEST_RELAYER_A, TEST_RELAYER_B,
+		TestMessageDeliveryAndDispatchPayment, REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A,
+		TEST_RELAYER_B,
 	},
 	Config, Error, RewardItem, SlashReport,
 };
