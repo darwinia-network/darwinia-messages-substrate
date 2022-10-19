@@ -16,16 +16,18 @@
 
 //! Primitives of messages module, that are used on the source chain.
 
-use crate::{DeliveredMessages, InboundLaneData, LaneId, MessageNonce, OutboundLaneData};
-
-use crate::UnrewardedRelayer;
-use bp_runtime::Size;
-use frame_support::{weights::Weight, Parameter, RuntimeDebug};
-use sp_std::{
-	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
-	fmt::Debug,
-	ops::RangeInclusive,
+// darwinia-network
+use crate::{
+	DeliveredMessages, InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer,
 };
+use bp_runtime::Size;
+// paritytech
+use frame_support::{weights::Weight, Parameter, RuntimeDebug};
+use sp_std::{collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
+
+/// Error message that is used in `ForbidOutboundMessages` implementation.
+const ALL_OUTBOUND_MESSAGES_REJECTED: &str =
+	"This chain is configured to reject all outbound messages";
 
 /// The sender of the message on the source chain.
 pub trait SenderOrigin<AccountId> {
@@ -42,18 +44,6 @@ pub trait SenderOrigin<AccountId> {
 	///   This may be useful for pallets that are sending important system-wide information (like
 	///   update of runtime version).
 	fn linked_account(&self) -> Option<AccountId>;
-}
-
-/// Relayers rewards, grouped by relayer account id.
-pub type RelayersRewards<AccountId, Balance> = BTreeMap<AccountId, RelayerRewards<Balance>>;
-
-/// Single relayer rewards.
-#[derive(RuntimeDebug, Default)]
-pub struct RelayerRewards<Balance> {
-	/// Total rewards that are to be paid to the relayer.
-	pub reward: Balance,
-	/// Total number of messages relayed by this relayer.
-	pub messages: MessageNonce,
 }
 
 /// Target chain API. Used by source chain to verify target chain proofs.
@@ -148,9 +138,71 @@ pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
 		relayer_fund_account: &AccountId,
 	);
 }
+impl<SenderOrigin, AccountId, Balance>
+	MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> for ()
+{
+	type Error = &'static str;
+
+	fn pay_delivery_and_dispatch_fee(
+		_submitter: &SenderOrigin,
+		_fee: &Balance,
+		_relayer_fund_account: &AccountId,
+	) -> Result<(), Self::Error> {
+		Ok(())
+	}
+
+	fn pay_relayers_rewards(
+		_lane_id: LaneId,
+		_messages_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
+		_confirmation_relayer: &AccountId,
+		_received_range: &RangeInclusive<MessageNonce>,
+		_relayer_fund_account: &AccountId,
+	) {
+	}
+}
+
+/// Handler for messages delivery confirmation.
+pub trait OnDeliveryConfirmed {
+	/// Called when we receive confirmation that our messages have been delivered to the
+	/// target chain. The confirmation also has single bit dispatch result for every
+	/// confirmed message (see `DeliveredMessages` for details). Guaranteed to be called
+	/// only when at least one message is delivered.
+	///
+	/// Should return total weight consumed by the call.
+	///
+	/// NOTE: messages pallet assumes that maximal weight that may be spent on processing
+	/// single message is single DB read + single DB write. So this function shall never
+	/// return weight that is larger than total number of messages * (db read + db write).
+	/// If your pallet needs more time for processing single message, please do it
+	/// from `on_initialize` call(s) of the next block(s).
+	fn on_messages_delivered(_lane: &LaneId, _messages: &DeliveredMessages) -> Weight;
+}
+#[impl_trait_for_tuples::impl_for_tuples(30)]
+impl OnDeliveryConfirmed for Tuple {
+	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
+		let mut total_weight: Weight = 0;
+		for_tuples!(
+			#(
+				total_weight = total_weight.saturating_add(Tuple::on_messages_delivered(lane, messages));
+			)*
+		);
+		total_weight
+	}
+}
+
+/// Handler for messages have been accepted
+pub trait OnMessageAccepted {
+	/// Called when a message has been accepted by message pallet.
+	fn on_messages_accepted(lane: &LaneId, message: &MessageNonce) -> Weight;
+}
+impl OnMessageAccepted for () {
+	fn on_messages_accepted(_lane: &LaneId, _message: &MessageNonce) -> Weight {
+		0
+	}
+}
 
 /// Send message artifacts.
-#[derive(RuntimeDebug, PartialEq)]
+#[derive(PartialEq, Eq, RuntimeDebug)]
 pub struct SendMessageArtifacts {
 	/// Nonce of the message.
 	pub nonce: MessageNonce,
@@ -175,7 +227,7 @@ pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
 }
 
 /// Bridge that does nothing when message is being sent.
-#[derive(RuntimeDebug, PartialEq)]
+#[derive(Eq, PartialEq, RuntimeDebug)]
 pub struct NoopMessagesBridge;
 
 impl<SenderOrigin, AccountId, Balance, Payload>
@@ -193,56 +245,9 @@ impl<SenderOrigin, AccountId, Balance, Payload>
 	}
 }
 
-/// Handler for messages delivery confirmation.
-pub trait OnDeliveryConfirmed {
-	/// Called when we receive confirmation that our messages have been delivered to the
-	/// target chain. The confirmation also has single bit dispatch result for every
-	/// confirmed message (see `DeliveredMessages` for details). Guaranteed to be called
-	/// only when at least one message is delivered.
-	///
-	/// Should return total weight consumed by the call.
-	///
-	/// NOTE: messages pallet assumes that maximal weight that may be spent on processing
-	/// single message is single DB read + single DB write. So this function shall never
-	/// return weight that is larger than total number of messages * (db read + db write).
-	/// If your pallet needs more time for processing single message, please do it
-	/// from `on_initialize` call(s) of the next block(s).
-	fn on_messages_delivered(_lane: &LaneId, _messages: &DeliveredMessages) -> Weight;
-}
-
-#[impl_trait_for_tuples::impl_for_tuples(30)]
-impl OnDeliveryConfirmed for Tuple {
-	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
-		let mut total_weight: Weight = 0;
-		for_tuples!(
-			#(
-				total_weight = total_weight.saturating_add(Tuple::on_messages_delivered(lane, messages));
-			)*
-		);
-		total_weight
-	}
-}
-
-/// Handler for messages have been accepted
-pub trait OnMessageAccepted {
-	/// Called when a message has been accepted by message pallet.
-	fn on_messages_accepted(lane: &LaneId, message: &MessageNonce) -> Weight;
-}
-
-impl OnMessageAccepted for () {
-	fn on_messages_accepted(_lane: &LaneId, _message: &MessageNonce) -> Weight {
-		0
-	}
-}
-
 /// Structure that may be used in place of `TargetHeaderChain`, `LaneMessageVerifier` and
 /// `MessageDeliveryAndDispatchPayment` on chains, where outbound messages are forbidden.
 pub struct ForbidOutboundMessages;
-
-/// Error message that is used in `ForbidOutboundMessages` implementation.
-const ALL_OUTBOUND_MESSAGES_REJECTED: &str =
-	"This chain is configured to reject all outbound messages";
-
 impl<Payload, AccountId> TargetHeaderChain<Payload, AccountId> for ForbidOutboundMessages {
 	type Error = &'static str;
 	type MessagesDeliveryProof = ();
@@ -257,7 +262,6 @@ impl<Payload, AccountId> TargetHeaderChain<Payload, AccountId> for ForbidOutboun
 		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
 	}
 }
-
 impl<SenderOrigin, Submitter, Payload, Fee>
 	LaneMessageVerifier<SenderOrigin, Submitter, Payload, Fee> for ForbidOutboundMessages
 {
@@ -273,7 +277,6 @@ impl<SenderOrigin, Submitter, Payload, Fee>
 		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
 	}
 }
-
 impl<SenderOrigin, AccountId, Balance>
 	MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> for ForbidOutboundMessages
 {

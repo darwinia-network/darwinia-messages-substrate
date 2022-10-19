@@ -494,23 +494,12 @@ fn test_cancel_enroll_ok_if_order_confirmed() {
 			let _ = send_regular_message(1, default_fee);
 
 			System::set_block_number(3);
-			assert_ok!(Messages::receive_messages_delivery_proof(
-				Origin::signed(5),
-				TestMessagesDeliveryProof(Ok((
-					TEST_LANE_ID,
-					InboundLaneData {
-						relayers: vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)]
-							.into_iter()
-							.collect(),
-						..Default::default()
-					}
-				))),
-				UnrewardedRelayersState {
-					unrewarded_relayer_entries: 1,
-					total_messages: 1,
-					..Default::default()
-				},
-			));
+			receive_messages_delivery_proof(
+				5,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
 			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(2)));
@@ -983,7 +972,12 @@ fn test_market_fee_update_after_order_comfirm() {
 			let _ = send_regular_message(1, default_fee + 30);
 
 			System::set_block_number(3);
-			receive_messages_delivery_proof(1, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				1,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert_market_storage! {
 				"relayers": vec![1, 2, 3, 4],
@@ -1039,7 +1033,7 @@ fn test_order_create_if_market_not_ready() {
 				Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
 				DispatchError::Module(ModuleError {
 					index: 4,
-					error: [2, 0, 0, 0],
+					error: [3, 0, 0, 0],
 					message: Some("MessageRejectedByLaneVerifier")
 				})
 			);
@@ -1168,7 +1162,12 @@ fn test_order_confirm_works() {
 			assert!(FeeMarket::order((&lane, &message_nonce)).is_some());
 
 			System::set_block_number(4);
-			receive_messages_delivery_proof(1, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				1,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 			let order = FeeMarket::order((&lane, &message_nonce)).unwrap();
 			assert_eq!(order.confirm_time, Some(4));
 		});
@@ -1196,7 +1195,12 @@ fn test_order_clean_at_the_end_of_block() {
 			assert!(FeeMarket::order((&lane, &message_nonce)).is_some());
 
 			System::set_block_number(4);
-			receive_messages_delivery_proof(1, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				1,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 			assert!(FeeMarket::order((&lane, &message_nonce)).is_some());
 
 			FeeMarket::on_finalize(4);
@@ -1275,7 +1279,12 @@ fn test_order_confirm_then_order_capacity_increase_by_one() {
 			}
 
 			System::set_block_number(3);
-			receive_messages_delivery_proof(1, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				1,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert_relayer_info! {
 				"account_id": 1,
@@ -1330,7 +1339,12 @@ fn test_payment_cal_rewards_normally_single_message() {
 
 			// Receive delivery message proof
 			System::set_block_number(4); // confirmed at block 4, the first slot
-			receive_messages_delivery_proof(5, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				5,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			// Rewards Analysis:
 			//  1. The order's assigned_relayers: [(1, 30, 2-52),(2, 50, 52-102),(3, 100, 102-152)]
@@ -1393,6 +1407,7 @@ fn test_payment_cal_rewards_normally_multi_message() {
 					unrewarded_relayer(2, 2, TEST_RELAYER_B),
 				],
 				2,
+				2,
 			);
 
 			// Rewards order1 Analysis(The same with order2):
@@ -1436,7 +1451,12 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 			let _ = send_regular_message(1, market_fee);
 
 			System::set_block_number(55); // confirmed at block 55, the second slot
-			receive_messages_delivery_proof(1, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				1,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert_eq!(FeeMarket::relayer_locked_collateral(&5), 240);
 			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 300);
@@ -1482,7 +1502,12 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 			let _ = send_regular_message(1, market_fee);
 
 			System::set_block_number(105); // confirmed at block 55, the third slot
-			receive_messages_delivery_proof(1, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				1,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert_eq!(FeeMarket::relayer_locked_collateral(&5), 240);
 			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 240);
@@ -1524,10 +1549,20 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 
 			// The first time receive delivery message proof
 			System::set_block_number(4);
-			receive_messages_delivery_proof(5, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				5,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			// The second time receive delivery message proof
-			receive_messages_delivery_proof(6, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				6,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			// Rewards Analysis:
 			//  1. The order's assigned_relayers: [(1, 30, 2-52),(2, 50, 52-102),(3, 100, 102-152)]
@@ -1569,7 +1604,12 @@ fn test_payment_with_slash_and_reduce_order_capacity() {
 
 			// Receive delivery message proof
 			System::set_block_number(2000);
-			receive_messages_delivery_proof(5, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				5,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert!(FeeMarket::is_enrolled(&6));
 			assert!(FeeMarket::is_enrolled(&6));
@@ -1606,7 +1646,12 @@ fn test_payment_slash_with_protect() {
 
 			// Receive delivery message proof
 			System::set_block_number(2000);
-			receive_messages_delivery_proof(5, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				5,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			assert!(FeeMarket::is_enrolled(&6));
 			assert!(FeeMarket::is_enrolled(&6));
@@ -1642,7 +1687,12 @@ fn test_payment_slash_event() {
 
 			// Receive delivery message proof
 			System::set_block_number(2000);
-			receive_messages_delivery_proof(5, vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)], 1);
+			receive_messages_delivery_proof(
+				5,
+				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
+				1,
+				1,
+			);
 
 			System::assert_has_event(Event::FeeMarket(crate::Event::FeeMarketSlash(SlashReport {
 				lane: TEST_LANE_ID,
@@ -1705,6 +1755,7 @@ fn test_payment_with_multiple_message_out_of_deadline() {
 					unrewarded_relayer(1, 1, TEST_RELAYER_A),
 					unrewarded_relayer(2, 2, TEST_RELAYER_B),
 				],
+				2,
 				2,
 			);
 

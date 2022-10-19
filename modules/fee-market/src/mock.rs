@@ -154,7 +154,7 @@ pub struct TestPayload {
 	pub extra: Vec<u8>,
 }
 impl Size for TestPayload {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		16 + self.extra.len() as u32
 	}
 }
@@ -169,7 +169,7 @@ pub struct TestMessagesProof {
 	pub result: Result<MessagesByLaneVec, ()>,
 }
 impl Size for TestMessagesProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -178,7 +178,7 @@ impl Size for TestMessagesProof {
 #[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub struct TestMessagesDeliveryProof(pub Result<(LaneId, InboundLaneData<TestRelayer>), ()>);
 impl Size for TestMessagesDeliveryProof {
-	fn size_hint(&self) -> u32 {
+	fn size(&self) -> u32 {
 		0
 	}
 }
@@ -368,7 +368,7 @@ pub struct TestMessageDispatch;
 impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	type DispatchPayload = TestPayload;
 
-	fn dispatch_weight(message: &DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
+	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.declared_weight,
 			Err(_) => 0,
@@ -421,6 +421,7 @@ impl pallet_bridge_messages::Config for Test {
 	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<4096>;
 	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
 	type MessageDispatch = TestMessageDispatch;
 	type OnDeliveryConfirmed = FeeMarketMessageConfirmedHandler<Self, ()>;
@@ -580,6 +581,7 @@ pub(crate) fn receive_messages_delivery_proof(
 	sender: AccountId,
 	unreward_relayers: Vec<UnrewardedRelayer<AccountId>>,
 	total_message: u64,
+	last_delivered_nonce: u64,
 ) {
 	assert_ok!(Messages::receive_messages_delivery_proof(
 		Origin::signed(sender),
@@ -593,6 +595,7 @@ pub(crate) fn receive_messages_delivery_proof(
 		UnrewardedRelayersState {
 			unrewarded_relayer_entries: unreward_relayers.len() as u64,
 			total_messages: total_message,
+			last_delivered_nonce,
 			..Default::default()
 		},
 	));
