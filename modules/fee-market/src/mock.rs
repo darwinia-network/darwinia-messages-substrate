@@ -576,24 +576,23 @@ pub(crate) fn send_regular_message(sender: u64, fee: Balance) -> (LaneId, u64) {
 	(TEST_LANE_ID, message_nonce)
 }
 
-pub(crate) fn receive_messages_delivery_proof() {
+pub(crate) fn receive_messages_delivery_proof(
+	sender: AccountId,
+	unreward_relayers: Vec<UnrewardedRelayer<AccountId>>,
+	total_message: u64,
+) {
 	assert_ok!(Messages::receive_messages_delivery_proof(
-		Origin::signed(1),
+		Origin::signed(sender),
 		TestMessagesDeliveryProof(Ok((
 			TEST_LANE_ID,
 			InboundLaneData {
 				last_confirmed_nonce: 1,
-				relayers: vec![UnrewardedRelayer {
-					relayer: 0,
-					messages: DeliveredMessages::new(1, true),
-				}]
-				.into_iter()
-				.collect(),
+				relayers: unreward_relayers.clone().into_iter().collect(),
 			},
 		))),
 		UnrewardedRelayersState {
-			unrewarded_relayer_entries: 1,
-			total_messages: 1,
+			unrewarded_relayer_entries: unreward_relayers.len() as u64,
+			total_messages: total_message,
 			..Default::default()
 		},
 	));
