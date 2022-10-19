@@ -918,6 +918,81 @@ fn test_market_fee_update_after_adjust_assigned_relayers_number() {
 		});
 }
 
+#[test]
+fn test_market_fee_update_after_order_create() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order * 3),
+			(2, collater_per_order * 3),
+			(3, collater_per_order * 3),
+			(4, collater_per_order * 3),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order * 1, Some(default_fee + 10)),
+			(2, collater_per_order * 2, Some(default_fee + 20)),
+			(3, collater_per_order * 2, Some(default_fee + 30)),
+			(4, collater_per_order * 2, Some(default_fee + 40)),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee + 30),
+			}
+
+			System::set_block_number(2);
+			let _ = send_regular_message(default_fee + 30);
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![2, 3, 4],
+				"market_fee": Some(default_fee + 40),
+			}
+		});
+}
+
+#[test]
+fn test_market_fee_update_after_order_comfirm() {
+	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
+	let default_fee = <Test as Config>::MinimumRelayFee::get();
+	ExtBuilder::default()
+		.with_balances(vec![
+			(1, collater_per_order * 3),
+			(2, collater_per_order * 3),
+			(3, collater_per_order * 3),
+			(4, collater_per_order * 3),
+		])
+		.with_relayers(vec![
+			(1, collater_per_order * 1, Some(default_fee + 10)),
+			(2, collater_per_order * 2, Some(default_fee + 20)),
+			(3, collater_per_order * 2, Some(default_fee + 30)),
+			(4, collater_per_order * 2, Some(default_fee + 40)),
+		])
+		.build()
+		.execute_with(|| {
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee + 30),
+			}
+
+			System::set_block_number(2);
+			let _ = send_regular_message(default_fee + 30);
+
+			System::set_block_number(3);
+			receive_messages_delivery_proof();
+
+			assert_market_storage! {
+				"relayers": vec![1, 2, 3, 4],
+				"assigned_relayers": vec![1, 2, 3],
+				"market_fee": Some(default_fee + 30),
+			}
+		});
+}
+
 // Test Order
 
 #[test]
