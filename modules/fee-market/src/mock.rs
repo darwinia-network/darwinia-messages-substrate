@@ -621,9 +621,18 @@ macro_rules! assert_relayer_info {
 macro_rules! assert_market_storage {
 	(
 		"relayers": $relayers:expr,
+		"assigned_relayers": $assigned_relayers:expr,
 		"market_fee": $fee:expr,
 	) => {
 		assert_eq!(FeeMarket::market_fee(), $fee);
 		assert_eq!(FeeMarket::relayers().unwrap(), $relayers);
+		assert_eq!(
+			FeeMarket::assigned_relayers()
+				.unwrap_or_default()
+				.iter()
+				.map(|r| r.id)
+				.collect::<Vec<u64>>(),
+			$assigned_relayers
+		);
 	};
 }
