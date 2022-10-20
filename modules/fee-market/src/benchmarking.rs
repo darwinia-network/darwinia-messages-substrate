@@ -19,100 +19,96 @@
 //! Benchmarking
 #![cfg(feature = "runtime-benchmarks")]
 
-use super::*;
-use crate::Pallet as FeeMarket;
+// --- paritytech ---
 use frame_benchmarking::{account, benchmarks_instance_pallet};
 use frame_support::assert_ok;
 use frame_system::RawOrigin;
 use sp_runtime::traits::Saturating;
+// --- darwinia-network ---
+use super::*;
+use crate::Pallet as FeeMarket;
 
 const SEED: u32 = 0;
+const INIT_RELAYERS_NUMBER: u32 = 10;
 
-fn fee_market_ready<T: Config<I>, I: 'static>() {
-	let caller0: T::AccountId = account("source", 0, SEED);
-	let caller1: T::AccountId = account("source", 1, SEED);
-	let caller2: T::AccountId = account("source", 2, SEED);
-	let caller3: T::AccountId = account("source", 3, SEED);
-	let collateral = T::CollateralPerOrder::get();
-	T::Currency::make_free_balance_be(&caller0, collateral.saturating_mul(10u32.into()));
-	T::Currency::make_free_balance_be(&caller1, collateral.saturating_mul(10u32.into()));
-	T::Currency::make_free_balance_be(&caller2, collateral.saturating_mul(10u32.into()));
-	T::Currency::make_free_balance_be(&caller3, collateral.saturating_mul(10u32.into()));
-	assert_ne!(caller0, caller1);
-	assert_ne!(caller1, caller2);
+fn init_market<T: Config<I>, I: 'static>() {
+	let collateral_per_order = T::CollateralPerOrder::get();
+	for i in 0..INIT_RELAYERS_NUMBER {
+		let relayer: T::AccountId = account("source", i, SEED);
+		T::Currency::make_free_balance_be(
+			&relayer,
+			collateral_per_order.saturating_mul(10u32.into()),
+		);
 
-	assert_ok!(<FeeMarket<T, I>>::enroll_and_lock_collateral(
-		RawOrigin::Signed(caller0).into(),
-		collateral,
-		None
-	));
-	assert_ok!(<FeeMarket<T, I>>::enroll_and_lock_collateral(
-		RawOrigin::Signed(caller1).into(),
-		collateral,
-		None
-	));
-	assert_ok!(<FeeMarket<T, I>>::enroll_and_lock_collateral(
-		RawOrigin::Signed(caller2).into(),
-		collateral,
-		None
-	));
-	assert_ok!(<FeeMarket<T, I>>::enroll_and_lock_collateral(
-		RawOrigin::Signed(caller3).into(),
-		collateral,
-		None
-	));
+		assert_ok!(<FeeMarket<T, I>>::enroll_and_lock_collateral(
+			RawOrigin::Signed(relayer).into(),
+			collateral_per_order.saturating_mul(2u32.into()),
+			None,
+		));
+	}
 	assert!(<FeeMarket<T, I>>::market_fee().is_some());
-	assert_eq!(<FeeMarket<T, I>>::relayers().unwrap().len(), 4);
 }
 
 benchmarks_instance_pallet! {
 	enroll_and_lock_collateral {
-		fee_market_ready::<T, I>();
+		init_market::<T, I>();
+
+		let collateral_per_order = T::CollateralPerOrder::get();
 		let relayer: T::AccountId = account("source", 100, SEED);
-		T::Currency::make_free_balance_be(&relayer, T::CollateralPerOrder::get().saturating_mul(10u32.into()));
-		let lock_collateral = T::CollateralPerOrder::get().saturating_mul(5u32.into());
-	}: enroll_and_lock_collateral(RawOrigin::Signed(relayer.clone()), lock_collateral, None)
+		T::Currency::make_free_balance_be(&relayer, collateral_per_order.saturating_mul(5u32.into()));
+	}: enroll_and_lock_collateral(RawOrigin::Signed(relayer.clone()), collateral_per_order.saturating_mul(5u32.into()), None)
 	verify {
 		assert!(<FeeMarket<T, I>>::is_enrolled(&relayer));
-		assert_eq!(<FeeMarket<T, I>>::relayers().unwrap().len(), 5);
 	}
 
-	update_locked_collateral {
-		fee_market_ready::<T, I>();
-		let caller3: T::AccountId = account("source", 3, SEED);
-		let new_collateral = T::CollateralPerOrder::get().saturating_mul(5u32.into());
-	}: update_locked_collateral(RawOrigin::Signed(caller3.clone()), new_collateral)
+	increase_locked_collateral {
+		init_market::<T, I>();
+
+		let relayer: T::AccountId = account("source", 1, SEED);
+		let collateral_per_order = T::CollateralPerOrder::get();
+	}: increase_locked_collateral(RawOrigin::Signed(relayer.clone()), collateral_per_order.saturating_mul(5u32.into()))
 	verify {
-		let relayer = <FeeMarket<T, I>>::relayer(&caller3).unwrap();
-		assert_eq!(relayer.collateral,  T::CollateralPerOrder::get().saturating_mul(5u32.into()));
+		let relayer = <FeeMarket<T, I>>::relayer(&relayer).unwrap();
+		assert_eq!(relayer.collateral,  collateral_per_order.saturating_mul(5u32.into()));
+	}
+
+	decrease_locked_collateral {
+		init_market::<T, I>();
+
+		let relayer: T::AccountId = account("source", 1, SEED);
+		let collateral_per_order = T::CollateralPerOrder::get();
+	}: decrease_locked_collateral(RawOrigin::Signed(relayer.clone()), collateral_per_order.saturating_mul(1u32.into()))
+	verify {
+		let relayer = <FeeMarket<T, I>>::relayer(&relayer).unwrap();
+		assert_eq!(relayer.collateral,  collateral_per_order.saturating_mul(1u32.into()));
 	}
 
 	update_relay_fee {
-		fee_market_ready::<T, I>();
-		let caller3: T::AccountId = account("source", 3, SEED);
-		let new_fee = T::CollateralPerOrder::get().saturating_mul(10u32.into());
-	}: update_relay_fee(RawOrigin::Signed(caller3.clone()), new_fee)
+		init_market::<T, I>();
+
+		let relayer: T::AccountId = account("source", 1, SEED);
+	}: update_relay_fee(RawOrigin::Signed(relayer.clone()), T::MinimumRelayFee::get().saturating_mul(2u32.into()))
 	verify {
-		let relayer = <FeeMarket<T, I>>::relayer(&caller3).unwrap();
-		assert_eq!(relayer.fee,  T::CollateralPerOrder::get().saturating_mul(10u32.into()));
+		let relayer = <FeeMarket<T, I>>::relayer(&relayer).unwrap();
+		assert_eq!(relayer.fee,  T::MinimumRelayFee::get().saturating_mul(2u32.into()));
 	}
 
 	cancel_enrollment {
-		fee_market_ready::<T, I>();
-		let caller1: T::AccountId = account("source", 1, SEED);
-	}: cancel_enrollment(RawOrigin::Signed(caller1.clone()))
+		init_market::<T, I>();
+
+		let relayer: T::AccountId = account("source", 1, SEED);
+	}: cancel_enrollment(RawOrigin::Signed(relayer.clone()))
 	verify {
-		assert!(!<FeeMarket<T, I>>::is_enrolled(&caller1));
-		assert_eq!(<FeeMarket<T, I>>::relayers().unwrap().len(), 3);
+		assert!(!<FeeMarket<T, I>>::is_enrolled(&relayer));
 	}
 
 	set_slash_protect {
 	}:set_slash_protect(RawOrigin::Root, T::CollateralPerOrder::get().saturating_mul(1u32.into()))
 
 	set_assigned_relayers_number{
-		fee_market_ready::<T, I>();
-	}: set_assigned_relayers_number(RawOrigin::Root, 1)
+		init_market::<T, I>();
+	}: set_assigned_relayers_number(RawOrigin::Root, 5)
 	verify {
-		assert_eq!(<FeeMarket<T, I>>::assigned_relayers().unwrap().len(), 1);
+		assert_eq!(<FeeMarket<T, I>>::assigned_relayers().unwrap().len(), 5);
 	}
 }

@@ -288,8 +288,8 @@ pub mod pallet {
 			)
 		}
 
-		// TODO: Update the weight info?
-		#[pallet::weight(<T as Config<I>>::WeightInfo::update_locked_collateral())]
+		/// Increase relayer's locked collateral
+		#[pallet::weight(<T as Config<I>>::WeightInfo::increase_locked_collateral())]
 		pub fn increase_locked_collateral(
 			origin: OriginFor<T>,
 			new_collateral: BalanceOf<T, I>,
@@ -325,7 +325,8 @@ pub mod pallet {
 			)
 		}
 
-		#[pallet::weight(<T as Config<I>>::WeightInfo::update_locked_collateral())]
+		/// Decrease relayer's locked collateral
+		#[pallet::weight(<T as Config<I>>::WeightInfo::decrease_locked_collateral())]
 		pub fn decrease_locked_collateral(
 			origin: OriginFor<T>,
 			new_collateral: BalanceOf<T, I>,
