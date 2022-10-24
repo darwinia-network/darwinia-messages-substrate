@@ -1728,14 +1728,14 @@ fn test_payment_slash_with_protect() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
 		.with_balances(vec![
-			(6, collater_per_order * 5),
-			(7, collater_per_order * 5),
-			(8, collater_per_order * 5),
+			(1, collater_per_order * 3),
+			(2, collater_per_order * 3),
+			(3, collater_per_order * 3),
 		])
 		.with_relayers(vec![
-			(6, collater_per_order * 4, Some(30)),
-			(7, collater_per_order * 4, Some(50)),
-			(8, collater_per_order * 4, Some(100)),
+			(1, collater_per_order * 2, Some(30)),
+			(2, collater_per_order * 2, Some(50)),
+			(3, collater_per_order * 2, Some(100)),
 		])
 		.build()
 		.execute_with(|| {
@@ -1748,19 +1748,29 @@ fn test_payment_slash_with_protect() {
 			// Receive delivery message proof
 			System::set_block_number(2000);
 			receive_messages_delivery_proof(
-				5,
+				4,
 				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
 				1,
 				1,
 			);
 
-			assert!(FeeMarket::is_enrolled(&6));
-			assert!(FeeMarket::is_enrolled(&6));
-			assert!(FeeMarket::is_enrolled(&6));
-			assert_eq!(FeeMarket::relayer_locked_collateral(&6), 350);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&7), 350);
-			assert_eq!(FeeMarket::relayer_locked_collateral(&8), 350);
-			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 50));
+			// Rewards order Analysis:
+			//  1. The order's assigned_relayers: [(1, 30, 2-52),(2, 50, 52-102),(3, 100, 102-152)]
+			//  2. The order's fee: 100
+			//  3. he order confirmed out of slot(2000 > 152).
+
+			// delivery_relayer = (order_fee + slash part) *
+			// MessageRelayersRewardRatio = (100 + 50 * 3) * 80% = 200
+
+			// confirm_relayer = (order_fee + slash part) *
+			// MessageRelayersRewardRatio = (100 + 50 * 3) * 20% = 50
+			assert!(FeeMarket::is_enrolled(&1));
+			assert!(FeeMarket::is_enrolled(&2));
+			assert!(FeeMarket::is_enrolled(&3));
+			assert_eq!(FeeMarket::relayer_locked_collateral(&1), collater_per_order * 2 - 50);
+			assert_eq!(FeeMarket::relayer_locked_collateral(&2), collater_per_order * 2 - 50);
+			assert_eq!(FeeMarket::relayer_locked_collateral(&3), collater_per_order * 2 - 50);
+			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(4, 50));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 200));
 		});
 }
@@ -1770,14 +1780,14 @@ fn test_payment_slash_event() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default()
 		.with_balances(vec![
-			(6, collater_per_order * 5),
-			(7, collater_per_order * 5),
-			(8, collater_per_order * 5),
+			(1, collater_per_order * 5),
+			(2, collater_per_order * 5),
+			(3, collater_per_order * 5),
 		])
 		.with_relayers(vec![
-			(6, collater_per_order * 4, Some(30)),
-			(7, collater_per_order * 4, Some(50)),
-			(8, collater_per_order * 4, Some(100)),
+			(1, collater_per_order * 4, Some(30)),
+			(2, collater_per_order * 4, Some(50)),
+			(3, collater_per_order * 4, Some(100)),
 		])
 		.build()
 		.execute_with(|| {
@@ -1789,7 +1799,7 @@ fn test_payment_slash_event() {
 			// Receive delivery message proof
 			System::set_block_number(2000);
 			receive_messages_delivery_proof(
-				5,
+				4,
 				vec![unrewarded_relayer(1, 1, TEST_RELAYER_A)],
 				1,
 				1,
@@ -1801,7 +1811,7 @@ fn test_payment_slash_event() {
 				sent_time: 2,
 				confirm_time: Some(2000),
 				delay_time: Some(1848),
-				account_id: 6,
+				account_id: 1,
 				amount: 50,
 			})));
 			System::assert_has_event(Event::FeeMarket(crate::Event::FeeMarketSlash(SlashReport {
@@ -1810,7 +1820,7 @@ fn test_payment_slash_event() {
 				sent_time: 2,
 				confirm_time: Some(2000),
 				delay_time: Some(1848),
-				account_id: 7,
+				account_id: 2,
 				amount: 50,
 			})));
 			System::assert_has_event(Event::FeeMarket(crate::Event::FeeMarketSlash(SlashReport {
@@ -1819,7 +1829,7 @@ fn test_payment_slash_event() {
 				sent_time: 2,
 				confirm_time: Some(2000),
 				delay_time: Some(1848),
-				account_id: 8,
+				account_id: 3,
 				amount: 50,
 			})));
 		});
