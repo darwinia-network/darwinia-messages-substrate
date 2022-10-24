@@ -40,11 +40,11 @@ After a user sends a cross-chain transaction, the fee market system calculates t
 
     As long as the order is confirmed before the last block of the nth slot, we consider it to be delivered on time, and the calculation of rewards and penalties varies depending on when the message is confirmed.
 
-    Suppose the cross-chain message has n slots, the message is confirmed at the m-th slot, and `Pm` denotes the quote price of m-th slot. At this point, the assigned relayers from 0 to m slots will be penalized, and the penalty will be calculated as `AssignedRelayerSlashRatio * collateral`, while the assigned relayers from m to n slots will receive a reward for ensuring the message is completed on time `(DutyRelayersRewardRatio * (fee - Pm)) / (n - m)`. `Pm` plus the penalties for the other assigned relayers mentioned above will be distributed as new rewards to the message delivery relayer and the message confirm relayer, where the message delivery relayer receive the `MessageRelayersRewardRatio` of this reward, the message confirm relayer gets the `ConfirmRelayersRewardRatio` of this reward. The rest of the fee will be given to treasury.
+    Suppose the cross-chain message has n slots, the message is confirmed at the m-th slot, and `Pm` denotes the quote price of m-th slot. At this point, the assigned relayers from 0 to m slots will be penalized, and the penalty will be calculated as `AssignedRelayerSlashRatio * CollateralPerOrder`, while the assigned relayers from m to n slots will receive a reward for ensuring the message is completed on time `(DutyRelayersRewardRatio * (fee - Pm)) / (n - m)`. `Pm` plus the penalties for the other assigned relayers mentioned above will be distributed as new rewards to the message delivery relayer and the message confirm relayer, where the message delivery relayer receive the `MessageRelayersRewardRatio` of this reward, the message confirm relayer gets the `ConfirmRelayersRewardRatio` of this reward. The rest of the fee will be given to treasury.
 
 - The cross-chain transaction is confirmed after the last block of the n slot.
 
-    We believe that this cross-chain transaction is severely delayed, in which case all assigned relayers will be heavily penalized by deducting the `AssignedRelayerSlashRatio` of the collateral and calculating an additional penalty amount based on the delay time. These penalty amounts, plus the cross-chain fees paid by users, will be distributed as new rewards to the message delivery relayer and the message confirm relayer, where the message delivery relayer receive the `MessageRelayersRewardRatio` of this reward, the message confirm relayer gets the `ConfirmRelayersRewardRatio` of this reward.
+    We believe that this cross-chain transaction is severely delayed, in which case all assigned relayers will be heavily penalized by deducting the `AssignedRelayerSlashRatio` of the `CollateralPerOrder` and calculating an additional penalty amount based on the delay time. These penalty amounts, plus the cross-chain fees paid by users, will be distributed as new rewards to the message delivery relayer and the message confirm relayer, where the message delivery relayer receive the `MessageRelayersRewardRatio` of this reward, the message confirm relayer gets the `ConfirmRelayersRewardRatio` of this reward.
 
 
 The following diagram shows how rewards are distributed:
@@ -67,9 +67,9 @@ message fee -                                                                   
 
 ### An example
 
-1. Assume that relayers `R1`, `R2`, `R3`, `R4` and `R5` have registered with the fee market and are all running relayer clients capable of delivering messages with quote prices of `P1=10`, `P2=20`, `P3=30`, `P4=4`0 and `P5=50` and are registered with a locked asset of `100`. 
+1. Assume that relayers `R1`, `R2`, `R3`, `R4` and `R5` have registered with the fee market and are all running relayer clients capable of delivering messages with quote prices of `P1=10`, `P2=20`, `P3=30`, `P4=4`0 and `P5=50` and are registered with a locked asset of `300`. 
 2. Assume that the total number of assigned relayers specified by the fee market system is `3` (default). In this case, the fee market will generate a cross-chain fee of `30` (10 < 20 < 30 < 40 < 50) and the set of assigned relayers is `R1, R2, R3`.
-3. Assume that the slot value in the fee market runtime is equal to `50` blocks.
+3. Assume that the slot value is equal to `50` blocks and `CollateralPerOrder` is equal to `100` in the fee market runtime.
 
 In this case, suppose the source chain receives a cross-chain message at height `100` and the user pays a cross-chain fee of `30`. After the source chain receives the message, the fee market assigns `R1, R2 and R3` as the assigned relayers for the message, respectively, and their corresponding time slots are `(100, 150)`, `(150, 200)`, `(200, 250)`
 
