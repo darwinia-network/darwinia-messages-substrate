@@ -243,7 +243,10 @@ where
 					_ => {
 						let mut slot_offensive_slash = BalanceOf::<T, I>::zero();
 						for r in order.assigned_relayers_slice() {
-							let mut slash_amount = T::Slasher::calc_amount(
+							// The fixed part
+							let mut total = T::AssignedRelayerSlashRatio::get() * order_collater;
+							// The dynamic part
+							total += T::Slasher::calc_amount(
 								order_collater,
 								order.comfirm_delay().unwrap_or_default(),
 							);
@@ -251,16 +254,16 @@ where
 							// The total_slash_amount can't be greater than the slash_protect.
 							if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect()
 							{
-								slash_amount = slash_amount.min(slash_protect);
+								total = total.min(slash_protect);
 							}
 
-							let amount = slash_assigned_relayer::<T, I>(
+							let actual_amount = slash_assigned_relayer::<T, I>(
 								&order,
 								&r.id,
 								relayer_fund_account,
-								slash_amount,
+								total,
 							);
-							slot_offensive_slash += amount;
+							slot_offensive_slash += actual_amount;
 						}
 
 						(order.fee().saturating_add(slot_offensive_slash), None)
