@@ -328,6 +328,11 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			}
 		}
 
+		println!("bear: > confirm_sum, id: {:?}, amount: {:?}", confirmation_relayer, confirm_sum);
+		println!("bear: > deliver_sum: {:?}", deliver_sum);
+		println!("bear: > assigned_relayers_sum: {:?}", assigned_relayers_sum);
+		println!("bear: > treasury_sum: {:?}", treasury_sum);
+
 		let confimation_key = (b":relayer-reward:", confirmation_relayer, confirm_sum).encode();
 		frame_support::storage::unhashed::put(&confimation_key, &true);
 
@@ -460,7 +465,7 @@ frame_support::parameter_types! {
 
 pub struct TestSlasher;
 impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
-	fn cal_slash_amount(
+	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
 		timeout: T::BlockNumber,
 	) -> BalanceOf<T, I> {

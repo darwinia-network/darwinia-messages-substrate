@@ -169,6 +169,7 @@ where
 			// The order created when message was accepted, so we can always get the order info.
 			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
 				let mut reward_item = RewardItem::new();
+				let order_collater = order.collateral_per_assigned_relayer;
 
 				let (message_reward, treasury_reward) = match order.confirmed_info() {
 					// When the order is confirmed at the first slot, no assigned relayers will be
@@ -219,8 +220,7 @@ where
 								&order,
 								&r,
 								relayer_fund_account,
-								T::AssignedRelayerSlashRatio::get()
-									* Pallet::<T, I>::relayer_locked_collateral(&r),
+								T::AssignedRelayerSlashRatio::get() * order_collater,
 							);
 							slot_offensive_slash += amount;
 						}
@@ -243,27 +243,21 @@ where
 					_ => {
 						let mut slot_offensive_slash = BalanceOf::<T, I>::zero();
 						for r in order.assigned_relayers_slice() {
-							// 1. For the fixed part
-							let mut slash_amount = T::AssignedRelayerSlashRatio::get()
-								* Pallet::<T, I>::relayer_locked_collateral(&r.id);
-
-							// 2. For the dynamic part
-							slash_amount += T::Slasher::cal_slash_amount(
-								order.locked_collateral,
+							let mut slash_amount = T::Slasher::calc_amount(
+								order_collater,
 								order.comfirm_delay().unwrap_or_default(),
 							);
 
 							// The total_slash_amount can't be greater than the slash_protect.
 							if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect()
 							{
-								// slash_amount = sp_std::cmp::min(slash_amount, slash_protect);
 								slash_amount = slash_amount.min(slash_protect);
 							}
 
 							// The total_slash_amount can't be greater than the locked_collateral.
-							let locked_collateral =
-								Pallet::<T, I>::relayer_locked_collateral(&r.id);
-							slash_amount = sp_std::cmp::min(slash_amount, locked_collateral);
+							slash_amount =
+								slash_amount.min(Pallet::<T, I>::relayer_locked_collateral(&r.id));
+							println!("Slash amount: {:?}", slash_amount);
 
 							let amount = slash_assigned_relayer::<T, I>(
 								&order,
