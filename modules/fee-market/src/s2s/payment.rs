@@ -254,11 +254,6 @@ where
 								slash_amount = slash_amount.min(slash_protect);
 							}
 
-							// The total_slash_amount can't be greater than the locked_collateral.
-							slash_amount =
-								slash_amount.min(Pallet::<T, I>::relayer_locked_collateral(&r.id));
-							println!("Slash amount: {:?}", slash_amount);
-
 							let amount = slash_assigned_relayer::<T, I>(
 								&order,
 								&r.id,
@@ -305,33 +300,31 @@ pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 	fund_account: &T::AccountId,
 	amount: BalanceOf<T, I>,
 ) -> BalanceOf<T, I> {
-	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(who);
-	T::Currency::remove_lock(T::LockId::get(), who);
-	debug_assert!(
-		locked_collateral >= amount,
-		"The locked collateral must alway greater than slash max"
-	);
+	let slash_amount = amount.min(order.collateral_per_assigned_relayer);
 
+	T::Currency::remove_lock(T::LockId::get(), who);
 	let pay_result = <T as Config<I>>::Currency::transfer(
 		who,
 		fund_account,
-		amount,
+		slash_amount,
 		ExistenceRequirement::AllowDeath,
 	);
-	let report = SlashReport::new(order, who.clone(), amount);
+
+	let locked_collateral = Pallet::<T, I>::relayer_locked_collateral(who);
+	let report = SlashReport::new(order, who.clone(), slash_amount);
 	match pay_result {
 		Ok(_) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(
 				who,
-				locked_collateral.saturating_sub(amount),
+				locked_collateral.saturating_sub(slash_amount),
 				report,
 			);
-			log::trace!("Slash {:?} amount: {:?}", who, amount);
-			return amount;
+			log::trace!("Slash {:?} slash_amount: {:?}", who, slash_amount);
+			return slash_amount;
 		},
 		Err(e) => {
 			crate::Pallet::<T, I>::update_relayer_after_slash(who, locked_collateral, report);
-			log::error!("Slash {:?} amount {:?}, err {:?}", who, amount, e)
+			log::error!("Slash {:?} amount {:?}, err {:?}", who, slash_amount, e)
 		},
 	}
 

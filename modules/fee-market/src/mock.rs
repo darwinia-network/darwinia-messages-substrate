@@ -328,11 +328,6 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			}
 		}
 
-		println!("bear: > confirm_sum, id: {:?}, amount: {:?}", confirmation_relayer, confirm_sum);
-		println!("bear: > deliver_sum: {:?}", deliver_sum);
-		println!("bear: > assigned_relayers_sum: {:?}", assigned_relayers_sum);
-		println!("bear: > treasury_sum: {:?}", treasury_sum);
-
 		let confimation_key = (b":relayer-reward:", confirmation_relayer, confirm_sum).encode();
 		frame_support::storage::unhashed::put(&confimation_key, &true);
 
