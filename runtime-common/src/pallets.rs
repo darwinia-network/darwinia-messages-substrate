@@ -37,5 +37,7 @@ pub const WITH_PANGOLIN_MESSAGES_PALLET_NAME: &str = "BridgePangolinMessages";
 /// Name of the With-PangolinParachain messages pallet instance that is deployed at bridged chains.
 pub const WITH_PANGOLIN_PARACHAIN_MESSAGES_PALLET_NAME: &str = "BridgePangolinParachainMessages";
 
-/// Name of the With-PangolinParachainAlpha messages pallet instance that is deployed at bridged chains.
-pub const WITH_PANGOLIN_PARACHAIN_ALPHA_MESSAGES_PALLET_NAME: &str = "BridgePangolinParachainAlphaMessages";
+/// Name of the With-PangolinParachainAlpha messages pallet instance that is deployed at bridged
+/// chains.
+pub const WITH_PANGOLIN_PARACHAIN_ALPHA_MESSAGES_PALLET_NAME: &str =
+	"BridgePangolinParachainAlphaMessages";
