@@ -6,32 +6,29 @@ name    = "pallet-bridge-parachains"
 version = "0.1.0"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.3", default-features = false }
-log = { version = "0.4.14", default-features = false }
+# crates.io
+codec      = { package = "parity-scale-codec", version = "2.3", default-features = false }
+log        = { version = "0.4.14", default-features = false }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0.101", optional = true }
-
-# Bridge Dependencies
-
-bp-parachains         = { default-features = false, path = "../../primitives/parachains" }
-bp-polkadot-core = { path = "../../primitives/polkadot-core", default-features = false }
-bp-runtime = { path = "../../primitives/runtime", default-features = false }
+serde      = { version = "1.0.101", optional = true }
+# darwinia-network
+bp-parachains         = { path = "../../primitives/parachains", default-features = false }
+bp-polkadot-core      = { path = "../../primitives/polkadot-core", default-features = false }
+bp-runtime            = { path = "../../primitives/runtime", default-features = false }
 pallet-bridge-grandpa = { path = "../grandpa", default-features = false }
-
-# Substrate Dependencies
-
+# paritytech
 frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-frame-system = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-std = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-trie = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+frame-system  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-std        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-trie       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 
 [dev-dependencies]
 # darwinia-network
 bp-header-chain = { path = "../../primitives/header-chain" }
-bp-test-utils = { path = "../../primitives/test-utils" }
-sp-io = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+bp-test-utils   = { path = "../../primitives/test-utils" }
+sp-io           = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 
 [features]
 default = ["std"]
@@ -48,7 +45,3 @@ std = [
 	"sp-std/std",
 	"sp-trie/std",
 ]
-
-# runtime-benchmarks = [
-# 	"frame-benchmarking/runtime-benchmarks",
-# ]

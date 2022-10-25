@@ -7,26 +7,22 @@ name        = "bp-polkadot-core"
 version     = "0.1.0"
 
 [dependencies]
-# parity-scale-codec = { version = "2.3", default-features = false, features = ["derive"] }
+# crates.io
+codec           = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
 parity-util-mem = { version = "0.10.0", optional = true }
-scale-info = { version = "1.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0", optional = true, features = ["derive"] }
-codec = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
-
-# Bridge Dependencies
-
+scale-info      = { version = "1.0", default-features = false, features = ["derive"] }
+serde           = { version = "1.0", optional = true, features = ["derive"] }
+# darwinia-network
 bp-messages = { path = "../messages", default-features = false }
 bp-runtime = { path = "../runtime", default-features = false }
-
-# Substrate Based Dependencies
-
+# paritytech
 frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-frame-system = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-api = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-std = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-version = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+frame-system  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-api        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-core       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-runtime    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-std        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-version    = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 
 [dev-dependencies]
 hex = "0.4"
