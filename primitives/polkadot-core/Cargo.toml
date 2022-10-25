@@ -34,7 +34,7 @@ hex = "0.4"
 default = ["std"]
 std = [
 	# crates.io
-	"codec/std",
+	# "codec/std",
 	"parity-util-mem",
 	"scale-info/std",
 	"serde",

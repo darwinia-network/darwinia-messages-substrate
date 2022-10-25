@@ -13,7 +13,7 @@ serde = { version = "1.0.101", optional = true }
 
 # Bridge Dependencies
 
-bp-polkadot-core = { path = "../../primitives/polkadot-core", default-features = false }
+# bp-polkadot-core = { path = "../../primitives/polkadot-core", default-features = false }
 bp-runtime = { path = "../../primitives/runtime", default-features = false }
 pallet-bridge-grandpa = { path = "../grandpa", default-features = false }
 
@@ -35,7 +35,7 @@ sp-io = { git = "https://github.com/darwinia-network/substrate", branch = "darwi
 [features]
 default = ["std"]
 std = [
-	"bp-polkadot-core/std",
+	# "bp-polkadot-core/std",
 	"bp-runtime/std",
 	# paritytech
 	"frame-support/std",
@@ -47,6 +47,6 @@ std = [
 	"sp-trie/std",
 ]
 
-runtime-benchmarks = [
-	"frame-benchmarking/runtime-benchmarks",
-]
+# runtime-benchmarks = [
+# 	"frame-benchmarking/runtime-benchmarks",
+# ]

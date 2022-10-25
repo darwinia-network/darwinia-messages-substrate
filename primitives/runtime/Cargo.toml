@@ -34,15 +34,15 @@ std = [
 	"hash-db/std",
 	"num-traits/std",
 	"scale-info/std",
-	"serde",
+	# "serde",
 	# paritytech
 	"frame-support/std",
-	"frame-system/std",
+	# "frame-system/std",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-state-machine/std",
 	"sp-std/std",
 	"sp-trie/std",
-	"trie-db/std",
+	# "trie-db/std",
 ]
