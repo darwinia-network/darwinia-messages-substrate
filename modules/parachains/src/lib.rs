@@ -245,7 +245,7 @@ pub mod pallet {
 			parachains: Vec<(ParaId, ParaHash)>,
 			parachain_heads_proof: ParaHeadsProof,
 		) -> DispatchResultWithPostInfo {
-			/// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
+			// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 			// Self::ensure_not_halted().map_err(Error::<T, I>::BridgeModule)?;
 			ensure!(!Self::is_halted(), Error::<T, I>::Halted);
 

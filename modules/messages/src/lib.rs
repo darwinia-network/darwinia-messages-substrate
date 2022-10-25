@@ -283,13 +283,25 @@ pub mod pallet {
 			)
 		}
 
+		/// Pay additional fee for the message.
+		// TODO: Delete after https://github.com/paritytech/substrate/pull/11381
+		#[pallet::weight(0)]
+		pub fn increase_message_fee(
+			_origin: OriginFor<T>,
+			_lane_id: LaneId,
+			_nonce: MessageNonce,
+			_additional_fee: T::OutboundMessageFee,
+		) -> DispatchResultWithPostInfo {
+			Err(Error::<T, I>::DeprecatedCall.into())
+		}
+
 		/// Receive messages proof from bridged chain.
 		///
 		/// The weight of the call assumes that the transaction always brings outbound lane
 		/// state update. Because of that, the submitter (relayer) has no benefit of not including
 		/// this data in the transaction, so reward confirmations lags should be minimal.
 		#[pallet::weight(T::WeightInfo::receive_messages_proof_weight(proof, *messages_count, *dispatch_weight))]
-		// TODO: FIX ME
+		// TODO: FIX ME https://github.com/paritytech/substrate/pull/11381
 		// #[pallet::call_index(5)]
 		pub fn receive_messages_proof(
 			origin: OriginFor<T>,
@@ -436,7 +448,7 @@ pub mod pallet {
 			relayers_state,
 			T::DbWeight::get(),
 		))]
-		// TODO: FIX ME
+		// TODO: FIX ME https://github.com/paritytech/substrate/pull/11381
 		// #[pallet::call_index(6)]
 		pub fn receive_messages_delivery_proof(
 			origin: OriginFor<T>,
@@ -630,6 +642,7 @@ pub mod pallet {
 		// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 		// BridgeModule(bp_runtime::OwnedBridgeModuleError),
 		Halted,
+		DeprecatedCall,
 	}
 
 	/// Optional pallet owner.

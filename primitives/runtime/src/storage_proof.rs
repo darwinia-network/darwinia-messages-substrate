@@ -22,10 +22,7 @@ use hash_db::{HashDB, Hasher, EMPTY_PREFIX};
 // paritytech
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
-use sp_trie::{
-	read_trie_value, LayoutV1, MemoryDB, Recorder, StorageProof, Trie, TrieConfiguration, TrieDB,
-	TrieError, TrieHash,
-};
+use sp_trie::{read_trie_value, LayoutV1, MemoryDB, StorageProof};
 
 /// Storage proof size requirements.
 ///
