@@ -6,34 +6,29 @@ name    = "pallet-bridge-grandpa"
 version = "0.1.0"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.3", default-features = false }
+# crates.io
+codec            = { version = "2.3", package = "parity-scale-codec", default-features = false }
 finality-grandpa = { version = "0.14", default-features = false }
-log = { version = "0.4.14", default-features = false }
-num-traits = { version = "0.2", default-features = false }
-scale-info = { version = "1.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0", optional = true }
-
-# Bridge Dependencies
-
-bp-runtime = { path = "../../primitives/runtime", default-features = false }
+log              = { version = "0.4.14", default-features = false }
+num-traits       = { version = "0.2", default-features = false }
+scale-info       = { version = "1.0", default-features = false, features = ["derive"] }
+serde            = { version = "1.0", optional = true }
+# darwinia-bridges-substrate
+bp-runtime      = { path = "../../primitives/runtime", default-features = false }
 bp-header-chain = { path = "../../primitives/header-chain", default-features = false }
-
-# Substrate Dependencies
-
-frame-support = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-frame-system = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+bp-test-utils   = { path = "../../primitives/test-utils", default-features = false, optional = true }
+# paritytech
+frame-benchmarking  = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false, optional = true }
+frame-support       = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+frame-system        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 sp-finality-grandpa = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-runtime = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-std = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-sp-trie = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
-
-# Optional Benchmarking Dependencies
-bp-test-utils = { path = "../../primitives/test-utils", default-features = false, optional = true }
-frame-benchmarking = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false, optional = true }
+sp-runtime          = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-std              = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
+sp-trie             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
-sp-io = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+sp-io   = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
 
 [features]
 default = ["std"]

@@ -298,10 +298,11 @@ pub mod pallet {
 			messages_count: u32,
 			dispatch_weight: Weight,
 		) -> DispatchResultWithPostInfo {
-			// TODO: FIX ME
+			// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 			// Self::ensure_not_halted().map_err(Error::<T, I>::BridgeModule)?;
-			let relayer_id_at_this_chain = ensure_signed(origin)?;
+			ensure!(!Self::is_halted(), Error::<T, I>::Halted);
 
+			let relayer_id_at_this_chain = ensure_signed(origin)?;
 			// reject transactions that are declaring too many messages
 			ensure!(
 				MessageNonce::from(messages_count) <= T::MaxUnconfirmedMessagesAtInboundLane::get(),
@@ -442,8 +443,9 @@ pub mod pallet {
 			proof: MessagesDeliveryProofOf<T, I>,
 			relayers_state: UnrewardedRelayersState,
 		) -> DispatchResultWithPostInfo {
-			// TODO: FIX ME
+			// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 			// Self::ensure_not_halted().map_err(Error::<T, I>::BridgeModule)?;
+			ensure!(!Self::is_halted(), Error::<T, I>::Halted);
 
 			// why do we need to know the weight of this (`receive_messages_delivery_proof`) call?
 			// Because we may want to return some funds for messages that are not processed by the
@@ -625,8 +627,9 @@ pub mod pallet {
 		/// The number of actually confirmed messages is going to be larger than the number of
 		/// messages in the proof. This may mean that this or bridged chain storage is corrupted.
 		TryingToConfirmMoreMessagesThanExpected,
-		// TODO: FIX ME
+		// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 		// BridgeModule(bp_runtime::OwnedBridgeModuleError),
+		Halted,
 	}
 
 	/// Optional pallet owner.
@@ -1249,7 +1252,9 @@ mod tests {
 					1,
 					REGULAR_PAYLOAD.declared_weight,
 				),
-				Error::<TestRuntime, ()>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted),
+				// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
+				// Error::<TestRuntime>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted)
+				Error::<TestRuntime>::Halted
 			);
 
 			assert_noop!(
@@ -1271,7 +1276,9 @@ mod tests {
 						last_delivered_nonce: 1,
 					},
 				),
-				Error::<TestRuntime, ()>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted),
+				// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
+				// Error::<TestRuntime>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted)
+				Error::<TestRuntime>::Halted
 			);
 		});
 	}
