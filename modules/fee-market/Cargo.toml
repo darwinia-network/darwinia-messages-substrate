@@ -25,11 +25,11 @@ sp-std             = { git = "https://github.com/paritytech/substrate", branch =
 # darwinia-bridges-substrate
 bp-messages            = { default-features = false, path = "../../primitives/messages" }
 bp-runtime             = { default-features = false, path = "../../primitives/runtime" }
-pallet-bridge-messages = { default-features = false, path = "../messages" }
 
 [dev-dependencies]
-bitvec          = { version = "1" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "master" }
+bitvec                 = { version = "1" }
+pallet-bridge-messages = { path = "../messages" }
+pallet-balances        = { git = "https://github.com/paritytech/substrate", branch = "master" }
 
 [features]
 default = ["std"]
@@ -49,7 +49,6 @@ std = [
 	# darwinia-bridges-substrate
 	"bp-messages/std",
 	"bp-runtime/std",
-	"pallet-bridge-messages/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking"]
