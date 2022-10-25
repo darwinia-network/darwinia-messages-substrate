@@ -7,10 +7,11 @@ name        = "bp-polkadot-core"
 version     = "0.1.0"
 
 [dependencies]
-parity-scale-codec = { version = "2.3", default-features = false, features = ["derive"] }
+# parity-scale-codec = { version = "2.3", default-features = false, features = ["derive"] }
 parity-util-mem = { version = "0.10.0", optional = true }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0", optional = true, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
 
 # Bridge Dependencies
 
@@ -34,7 +35,7 @@ hex = "0.4"
 default = ["std"]
 std = [
 	# crates.io
-	# "codec/std",
+	"codec/std",
 	"parity-util-mem",
 	"scale-info/std",
 	"serde",

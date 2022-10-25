@@ -26,10 +26,10 @@ sp-std             = { git = "https://github.com/darwinia-network/substrate", br
 # darwinia-bridges-substrate
 bp-messages            = { default-features = false, path = "../../primitives/messages" }
 bp-runtime             = { default-features = false, path = "../../primitives/runtime"  }
-pallet-bridge-messages = { default-features = false, path = "../messages" }
 
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
+pallet-bridge-messages = { path = "../messages" }
 
 [features]
 default = ["std"]
@@ -50,7 +50,8 @@ std = [
 	# darwinia-bridges-substrate
 	"bp-messages/std",
 	"bp-runtime/std",
-	"pallet-bridge-messages/std",
+	# TODO: FIX ME
+	# "pallet-bridge-messages/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking"]

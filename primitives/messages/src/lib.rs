@@ -50,7 +50,9 @@ pub type BridgeMessageId = (LaneId, MessageNonce);
 pub type MessagePayload = Vec<u8>;
 
 /// Bit vector of message dispatch results.
-pub type DispatchResultsBitVec = BitVec<u8, Msb0>;
+// TODO: FIX ME
+// pub type DispatchResultsBitVec = BitVec<u8, Msb0>;
+pub type DispatchResultsBitVec = BitVec<Msb0, u8>;
 
 /// Messages pallet parameter.
 pub trait Parameter: frame_support::Parameter {
