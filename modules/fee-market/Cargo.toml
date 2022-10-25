@@ -28,8 +28,8 @@ bp-runtime             = { default-features = false, path = "../../primitives/ru
 
 [dev-dependencies]
 bitvec                 = { version = "1" }
-pallet-bridge-messages = { path = "../messages" }
 pallet-balances        = { git = "https://github.com/paritytech/substrate", branch = "master" }
+pallet-bridge-messages = { path = "../messages" }
 
 [features]
 default = ["std"]
