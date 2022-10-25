@@ -150,8 +150,10 @@ pub mod pallet {
 			finality_target: Box<BridgedHeader<T, I>>,
 			justification: GrandpaJustification<BridgedHeader<T, I>>,
 		) -> DispatchResultWithPostInfo {
-			// TODO: FIX ME
+			// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 			// Self::ensure_not_halted().map_err(Error::<T, I>::BridgeModule)?;
+			ensure!(!Self::is_halted(), Error::<T, I>::Halted);
+
 			let _ = ensure_signed(origin)?;
 
 			ensure!(Self::request_count() < T::MaxRequests::get(), <Error<T, I>>::TooManyRequests);
@@ -369,7 +371,9 @@ pub mod pallet {
 		AlreadyInitialized,
 		/// The storage proof doesn't contains storage root. So it is invalid for given header.
 		StorageRootMismatch,
+		// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 		// BridgeModule(bp_runtime::OwnedBridgeModuleError),
+		Halted,
 	}
 
 	/// Check the given header for a GRANDPA scheduled authority set change. If a change
@@ -731,7 +735,9 @@ mod tests {
 			));
 			assert_noop!(
 				submit_finality_proof(1),
-				Error::<TestRuntime>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted)
+				// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
+				// Error::<TestRuntime>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted)
+				Error::<TestRuntime>::Halted
 			);
 
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(

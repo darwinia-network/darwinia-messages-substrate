@@ -24,8 +24,8 @@ sp-io              = { git = "https://github.com/darwinia-network/substrate", br
 sp-runtime         = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 sp-std             = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5", default-features = false }
 # darwinia-bridges-substrate
-bp-messages            = { default-features = false, path = "../../primitives/messages" }
-bp-runtime             = { default-features = false, path = "../../primitives/runtime"  }
+bp-messages = { default-features = false, path = "../../primitives/messages" }
+bp-runtime  = { default-features = false, path = "../../primitives/runtime"  }
 
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.12.5" }
@@ -50,8 +50,6 @@ std = [
 	# darwinia-bridges-substrate
 	"bp-messages/std",
 	"bp-runtime/std",
-	# TODO: FIX ME
-	# "pallet-bridge-messages/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking"]
