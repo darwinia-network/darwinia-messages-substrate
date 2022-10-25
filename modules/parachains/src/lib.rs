@@ -112,8 +112,9 @@ pub mod pallet {
 		StorageRootMismatch,
 		/// Failed to extract state root from given parachain head.
 		FailedToExtractStateRoot,
-		// TODO: FIX ME
+		// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 		// BridgeModule(bp_runtime::OwnedBridgeModuleError),
+		Halted,
 	}
 
 	#[pallet::config]
@@ -244,8 +245,10 @@ pub mod pallet {
 			parachains: Vec<(ParaId, ParaHash)>,
 			parachain_heads_proof: ParaHeadsProof,
 		) -> DispatchResultWithPostInfo {
-			// TODO: FIX ME
+			/// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 			// Self::ensure_not_halted().map_err(Error::<T, I>::BridgeModule)?;
+			ensure!(!Self::is_halted(), Error::<T, I>::Halted);
+
 			// we'll need relay chain header to verify that parachains heads are always increasing.
 			let (relay_block_number, relay_block_hash) = at_relay_block;
 			let relay_block = pallet_bridge_grandpa::ImportedHeaders::<
@@ -586,8 +589,8 @@ mod tests {
 	};
 	use bp_parachains::{BestParaHeadHash, ImportedParaHeadsKeyProvider, ParasInfoKeyProvider};
 	use bp_runtime::{
-		record_all_trie_keys, BasicOperatingMode, OwnedBridgeModuleError,
-		StorageDoubleMapKeyProvider, StorageMapKeyProvider,
+		BasicOperatingMode, OwnedBridgeModuleError, StorageDoubleMapKeyProvider,
+		StorageMapKeyProvider,
 	};
 	use bp_test_utils::{
 		authority_list, generate_owned_bridge_module_tests, make_default_justification,
@@ -599,16 +602,18 @@ mod tests {
 		storage::generator::{StorageDoubleMap, StorageMap},
 		traits::{Get, OnInitialize},
 		weights::Weight,
+		Twox64Concat,
 	};
 	use frame_system::{EventRecord, Pallet as System, Phase};
+	use sp_core::storage::StorageKey;
 	use sp_runtime::DispatchError;
-	use sp_trie::{trie_types::TrieDBMutBuilderV1, LayoutV1, MemoryDB, Recorder, TrieMut};
+	use sp_trie::{
+		record_all_keys, trie_types::TrieDBMutV1, LayoutV1, MemoryDB, Recorder, TrieMut,
+	};
 
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
 	type WeightInfo = <TestRuntime as Config>::WeightInfo;
 	type DbWeight = <TestRuntime as frame_system::Config>::DbWeight;
-
-	const PARAS_PALLET_NAME: &str = "Paras";
 
 	fn parachain_head_storage_key_at_source(
 		paras_pallet_name: &str,
@@ -657,7 +662,7 @@ mod tests {
 		let mut root = Default::default();
 		let mut mdb = MemoryDB::default();
 		{
-			let mut trie = TrieDBMutBuilderV1::<RelayBlockHasher>::new(&mut mdb, &mut root).build();
+			let mut trie = TrieDBMutV1::<RelayBlockHasher>::new(&mut mdb, &mut root);
 			for (parachain, head) in heads {
 				let storage_key =
 					parachain_head_storage_key_at_source(PARAS_PALLET_NAME, ParaId(parachain));
@@ -669,10 +674,10 @@ mod tests {
 		}
 
 		// generate storage proof to be delivered to This chain
-		let mut proof_recorder = Recorder::<LayoutV1<RelayBlockHasher>>::new();
-		record_all_trie_keys::<LayoutV1<RelayBlockHasher>, _>(&mdb, &root, &mut proof_recorder)
-			.map_err(|_| "record_all_trie_keys has failed")
-			.expect("record_all_trie_keys should not fail in benchmarks");
+		let mut proof_recorder = Recorder::<RelayBlockHash>::new();
+		record_all_keys::<LayoutV1<RelayBlockHasher>, _>(&mdb, &root, &mut proof_recorder)
+			.map_err(|_| "record_all_keys has failed")
+			.expect("record_all_keys should not fail in benchmarks");
 		let storage_proof = proof_recorder.drain().into_iter().map(|n| n.data.to_vec()).collect();
 
 		(root, ParaHeadsProof(storage_proof), parachains)
@@ -737,7 +742,9 @@ mod tests {
 					parachains.clone(),
 					proof.clone(),
 				),
-				Error::<TestRuntime>::BridgeModule(OwnedBridgeModuleError::Halted)
+				// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
+				// Error::<TestRuntime>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted)
+				Error::<TestRuntime>::Halted
 			);
 
 			// `submit_parachain_heads()` should succeed now that the pallet is resumed.
