@@ -417,8 +417,8 @@ pub mod source {
 
 /// Sub-module that is declaring types required for processing Bridged -> This chain messages.
 pub mod target {
-	use frame_support::log;
 	use super::*;
+	use frame_support::log;
 
 	pub type FromBridgedChainMessagePayload = Vec<u8>;
 
@@ -484,7 +484,7 @@ pub mod target {
 				Balance = BalanceOf<ThisChain<B>>,
 			>,
 		ThisCurrency: Currency<AccountIdOf<ThisChain<B>>, Balance = BalanceOf<ThisChain<B>>>,
-		pallet_bridge_dispatch::Pallet<ThisRuntime, ThisDispatchInstance>:
+		pallet_bridge_dispatch::Pallet<ThisRuntime, ThisDispatchInstance>:,
 	{
 		type DispatchPayload = FromBridgedChainMessagePayload;
 
