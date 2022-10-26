@@ -642,6 +642,7 @@ pub mod pallet {
 		// TODO: FIX ME https://github.com/paritytech/substrate/pull/10242
 		// BridgeModule(bp_runtime::OwnedBridgeModuleError),
 		Halted,
+		// TODO: FIX ME https://github.com/paritytech/substrate/pull/11381
 		DeprecatedCall,
 	}
 
