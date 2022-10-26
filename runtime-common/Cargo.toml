@@ -10,16 +10,15 @@ version    = "0.1.0"
 # crates.io
 codec             = { package = "parity-scale-codec", version = "3.1", default-features = false, features = ["derive"] }
 hash-db           = { version = "0.15", default-features = false }
+log               = { version = "0.4.14", default-features = false }
 num-traits        = { version = "0.2", default-features = false }
 scale-info        = { version = "2.1", default-features = false, features = ["derive"] }
 static_assertions = { version = "1.1", optional = true }
 # darwinia-network
-bp-message-dispatch      = { default-features = false, path = "../primitives/message-dispatch" }
 bp-messages              = { default-features = false, path = "../primitives/messages" }
 bp-parachains            = { default-features = false, path = "../primitives/parachains" }
 bp-polkadot-core         = { default-features = false, path = "../primitives/polkadot-core" }
 bp-runtime               = { default-features = false, path = "../primitives/runtime" }
-pallet-bridge-dispatch    = { default-features = false, path = "../modules/dispatch" }
 pallet-bridge-grandpa    = { default-features = false, path = "../modules/grandpa" }
 pallet-bridge-messages   = { default-features = false, path = "../modules/messages" }
 pallet-bridge-parachains = { default-features = false, path = "../modules/parachains" }
@@ -42,12 +41,10 @@ sp-version                 = { optional = true, default-features = false, git = 
 default = ["std"]
 std = [
 	# darwinia-network
-	"bp-message-dispatch/std",
 	"bp-messages/std",
 	"bp-parachains/std",
 	"bp-polkadot-core/std",
 	"bp-runtime/std",
-	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
 	"pallet-bridge-messages/std",
 	"pallet-bridge-parachains/std",
@@ -55,6 +52,7 @@ std = [
 	# crates.io
 	"codec/std",
 	"hash-db/std",
+	"log/std",
 	"num-traits/std",
 	"scale-info/std",
 	# paritytech

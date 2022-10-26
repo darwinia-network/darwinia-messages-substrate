@@ -27,7 +27,6 @@ use codec::{Decode, DecodeLimit, Encode, MaxEncodedLen};
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 // darwinia-network
-use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
 	source_chain::LaneMessageVerifier,
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
@@ -36,13 +35,9 @@ use bp_messages::{
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 // paritytech
-use frame_support::{
-	traits::{Currency, ExistenceRequirement},
-	weights::{Weight, WeightToFee},
-	RuntimeDebug,
-};
+use frame_support::{traits::Currency, weights::Weight, RuntimeDebug};
 use sp_runtime::{
-	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
+	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating},
 	FixedPointNumber, FixedPointOperand,
 };
 use sp_std::prelude::*;
@@ -151,13 +146,7 @@ pub mod source {
 	/// Encoded Call of the Bridged chain. We never try to decode it on This chain.
 	pub type BridgedChainOpaqueCall = Vec<u8>;
 
-	/// Message payload for This -> Bridged chain messages.
-	pub type FromThisChainMessagePayload<B> = bp_message_dispatch::MessagePayload<
-		AccountIdOf<ThisChain<B>>,
-		SignerOf<BridgedChain<B>>,
-		SignatureOf<BridgedChain<B>>,
-		BridgedChainOpaqueCall,
-	>;
+	pub type FromThisChainMessagePayload = Vec<u8>;
 
 	/// Messages delivery proof from bridged chain:
 	///
@@ -192,7 +181,6 @@ pub mod source {
 	/// This verifier assumes following:
 	///
 	/// - all message lanes are equivalent, so all checks are the same;
-	/// - messages are being dispatched using `pallet-bridge-dispatch` pallet on the target chain.
 	///
 	/// Following checks are made:
 	///
@@ -220,7 +208,7 @@ pub mod source {
 		LaneMessageVerifier<
 			OriginOf<ThisChain<B>>,
 			AccountIdOf<ThisChain<B>>,
-			FromThisChainMessagePayload<B>,
+			FromThisChainMessagePayload,
 			BalanceOf<ThisChain<B>>,
 		> for FromThisChainMessageVerifier<B, F, I>
 	where
@@ -242,7 +230,7 @@ pub mod source {
 			delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
 			lane: &LaneId,
 			lane_outbound_data: &OutboundLaneData,
-			payload: &FromThisChainMessagePayload<B>,
+			payload: &FromThisChainMessagePayload,
 		) -> Result<(), Self::Error> {
 			// reject message if lane is blocked
 			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
@@ -265,9 +253,9 @@ pub mod source {
 				OriginOf<ThisChain<B>>,
 			> = submitter.clone().into();
 			if let Ok(raw_origin) = raw_origin_or_err {
-				pallet_bridge_dispatch::verify_message_origin(&raw_origin, payload)
-					.map(drop)
-					.map_err(|_| BAD_ORIGIN)?;
+				// pallet_bridge_dispatch::verify_message_origin(&raw_origin, payload)
+				// 	.map(drop)
+				// 	.map_err(|_| BAD_ORIGIN)?;
 			} else {
 				// so what it means that we've failed to convert origin to the
 				// `frame_system::RawOrigin`? now it means that the custom pallet origin has
@@ -318,11 +306,11 @@ pub mod source {
 	/// may be 'mined' by the target chain. But the lane may have its own checks (e.g. fee
 	/// check) that would reject message (see `FromThisChainMessageVerifier`).
 	pub fn verify_chain_message<B: MessageBridge>(
-		payload: &FromThisChainMessagePayload<B>,
+		payload: &FromThisChainMessagePayload,
 	) -> Result<(), &'static str> {
-		if !BridgedChain::<B>::verify_dispatch_weight(&payload.call, &payload.weight) {
-			return Err("Incorrect message weight declared");
-		}
+		// if !BridgedChain::<B>::verify_dispatch_weight(&payload.call, &payload.weight) {
+		// 	return Err("Incorrect message weight declared");
+		// }
 
 		// The maximal size of extrinsic at Substrate-based chain depends on the
 		// `frame_system::Config::MaximumBlockLength` and
@@ -334,7 +322,7 @@ pub mod source {
 		// is enormously large, it should be several dozens/hundreds of bytes. The delivery
 		// transaction also contains signatures and signed extensions. Because of this, we reserve
 		// 1/3 of the the maximal extrinsic weight for this data.
-		if payload.call.len() > maximal_message_size::<B>() as usize {
+		if payload.len() > maximal_message_size::<B>() as usize {
 			return Err("The message is too large to be sent over the lane");
 		}
 
@@ -429,22 +417,10 @@ pub mod source {
 
 /// Sub-module that is declaring types required for processing Bridged -> This chain messages.
 pub mod target {
+	use frame_support::log;
 	use super::*;
 
-	/// Call origin for Bridged -> This chain messages.
-	pub type FromBridgedChainMessageCallOrigin<B> = bp_message_dispatch::CallOrigin<
-		AccountIdOf<BridgedChain<B>>,
-		SignerOf<ThisChain<B>>,
-		SignatureOf<ThisChain<B>>,
-	>;
-
-	/// Decoded Bridged -> This message payload.
-	pub type FromBridgedChainMessagePayload<B> = bp_message_dispatch::MessagePayload<
-		AccountIdOf<BridgedChain<B>>,
-		SignerOf<ThisChain<B>>,
-		SignatureOf<ThisChain<B>>,
-		FromBridgedChainEncodedMessageCall<CallOf<ThisChain<B>>>,
-	>;
+	pub type FromBridgedChainMessagePayload = Vec<u8>;
 
 	/// Messages proof from bridged chain:
 	///
@@ -501,10 +477,7 @@ pub mod target {
 	where
 		BalanceOf<ThisChain<B>>: Saturating + FixedPointOperand,
 		ThisDispatchInstance: 'static,
-		ThisRuntime: pallet_bridge_dispatch::Config<
-				ThisDispatchInstance,
-				BridgeMessageId = (LaneId, MessageNonce),
-			> + pallet_transaction_payment::Config,
+		ThisRuntime: pallet_transaction_payment::Config,
 		<ThisRuntime as pallet_transaction_payment::Config>::OnChargeTransaction:
 			pallet_transaction_payment::OnChargeTransaction<
 				ThisRuntime,
@@ -512,18 +485,14 @@ pub mod target {
 			>,
 		ThisCurrency: Currency<AccountIdOf<ThisChain<B>>, Balance = BalanceOf<ThisChain<B>>>,
 		pallet_bridge_dispatch::Pallet<ThisRuntime, ThisDispatchInstance>:
-			bp_message_dispatch::MessageDispatch<
-				AccountIdOf<ThisChain<B>>,
-				(LaneId, MessageNonce),
-				Message = FromBridgedChainMessagePayload<B>,
-			>,
 	{
-		type DispatchPayload = FromBridgedChainMessagePayload<B>;
+		type DispatchPayload = FromBridgedChainMessagePayload;
 
 		fn dispatch_weight(
-			message: &mut DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+			_message: &mut DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> frame_support::weights::Weight {
-			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
+			// message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
+			0
 		}
 
 		fn pre_dispatch(
@@ -541,32 +510,12 @@ pub mod target {
 			message: DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> MessageDispatchResult {
 			let message_id = (message.key.lane_id, message.key.nonce);
-			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::dispatch(
-				B::BRIDGED_CHAIN_ID,
-				B::THIS_CHAIN_ID,
-				relayer_account,
-				message_id,
-				message.data.payload.map_err(drop),
-				|dispatch_origin, dispatch_weight| {
-					let unadjusted_weight_fee =
-						ThisRuntime::WeightToFee::weight_to_fee(&dispatch_weight);
-					let fee_multiplier =
-						pallet_transaction_payment::Pallet::<ThisRuntime>::next_fee_multiplier();
-					let adjusted_weight_fee =
-						fee_multiplier.saturating_mul_int(unadjusted_weight_fee);
-					if !adjusted_weight_fee.is_zero() {
-						ThisCurrency::transfer(
-							dispatch_origin,
-							relayer_account,
-							adjusted_weight_fee,
-							ExistenceRequirement::AllowDeath,
-						)
-						.map_err(drop)
-					} else {
-						Ok(())
-					}
-				},
-			)
+			log::trace!(target: "runtime::bridge-dispatch", "Incoming message {:?}: {:?}", message_id, message.data.payload);
+			MessageDispatchResult {
+				dispatch_result: true,
+				unspent_weight: 0,
+				dispatch_fee_paid_during_dispatch: false,
+			}
 		}
 	}
 
@@ -1045,49 +994,42 @@ mod tests {
 	// 	OutboundLaneData::default()
 	// }
 
-	// fn regular_outbound_message_payload() ->
-	// source::FromThisChainMessagePayload<OnThisChainBridge> {
-	// 	source::FromThisChainMessagePayload::<OnBridgedChainBridge> {
-	// 		spec_version: 1,
-	// 		weight: 100,
-	// 		origin: bp_message_dispatch::CallOrigin::SourceRoot,
-	// 		dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
-	// 		call: ThisChainCall::Transfer.encode(),
-	// 	}
-	// }
+	fn regular_outbound_message_payload() -> source::FromThisChainMessagePayload {
+		vec![42]
+	}
 
 	#[test]
 	fn message_from_bridged_chain_is_decoded() {
-		// the message is encoded on the bridged chain
-		let message_on_bridged_chain =
-			source::FromThisChainMessagePayload::<OnBridgedChainBridge> {
-				spec_version: 1,
-				weight: 100,
-				origin: bp_message_dispatch::CallOrigin::SourceRoot,
-				dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
-				call: ThisChainCall::Transfer.encode(),
-			}
-			.encode();
-
-		// and sent to this chain where it is decoded
-		let message_on_this_chain =
-			target::FromBridgedChainMessagePayload::<OnThisChainBridge>::decode(
-				&mut &message_on_bridged_chain[..],
-			)
-			.unwrap();
-		assert_eq!(
-			message_on_this_chain,
-			target::FromBridgedChainMessagePayload::<OnThisChainBridge> {
-				spec_version: 1,
-				weight: 100,
-				origin: bp_message_dispatch::CallOrigin::SourceRoot,
-				dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
-				call: target::FromBridgedChainEncodedMessageCall::<ThisChainCall>::new(
-					ThisChainCall::Transfer.encode(),
-				),
-			}
-		);
-		assert_eq!(Ok(ThisChainCall::Transfer), message_on_this_chain.call.into());
+		// // the message is encoded on the bridged chain
+		// let message_on_bridged_chain = source::FromThisChainMessagePayload {
+		// 	spec_version: 1,
+		// 	weight: 100,
+		// 	origin: bp_message_dispatch::CallOrigin::SourceRoot,
+		// 	dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+		// 	call: ThisChainCall::Transfer.encode(),
+		// }
+		// .encode();
+		//
+		// // and sent to this chain where it is decoded
+		// let message_on_this_chain =
+		// 	target::FromBridgedChainMessagePayload::<OnThisChainBridge>::decode(
+		// 		&mut &message_on_bridged_chain[..],
+		// 	)
+		// 	.unwrap();
+		// assert_eq!(
+		// 	message_on_this_chain,
+		// 	target::FromBridgedChainMessagePayload::<OnThisChainBridge> {
+		// 		spec_version: 1,
+		// 		weight: 100,
+		// 		origin: bp_message_dispatch::CallOrigin::SourceRoot,
+		// 		dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+		// 		call: target::FromBridgedChainEncodedMessageCall::<ThisChainCall>::new(
+		// 			ThisChainCall::Transfer.encode(),
+		// 		),
+		// 	}
+		// );
+		// assert_eq!(Ok(ThisChainCall::Transfer), message_on_this_chain.call.into());
+		unimplemented!("TODO")
 	}
 
 	// #[test]
@@ -1152,298 +1094,288 @@ mod tests {
 
 	#[test]
 	fn verify_chain_message_rejects_message_with_too_small_declared_weight() {
-		assert!(source::verify_chain_message::<OnThisChainBridge>(
-			&source::FromThisChainMessagePayload::<OnThisChainBridge> {
-				spec_version: 1,
-				weight: 5,
-				origin: bp_message_dispatch::CallOrigin::SourceRoot,
-				dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-				call: vec![1, 2, 3, 4, 5, 6],
-			},
-		)
-		.is_err());
+		// assert!(source::verify_chain_message::<OnThisChainBridge>(
+		// 	&source::FromThisChainMessagePayload::<OnThisChainBridge> {
+		// 		spec_version: 1,
+		// 		weight: 5,
+		// 		origin: bp_message_dispatch::CallOrigin::SourceRoot,
+		// 		dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
+		// 		call: vec![1, 2, 3, 4, 5, 6],
+		// 	},
+		// )
+		// .is_err());
+		unimplemented!("TODO")
 	}
 
 	#[test]
 	fn verify_chain_message_rejects_message_with_too_large_declared_weight() {
-		assert!(source::verify_chain_message::<OnThisChainBridge>(
-			&source::FromThisChainMessagePayload::<OnThisChainBridge> {
-				spec_version: 1,
-				weight: BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT + 1,
-				origin: bp_message_dispatch::CallOrigin::SourceRoot,
-				dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-				call: vec![1, 2, 3, 4, 5, 6],
-			},
-		)
-		.is_err());
+		// assert!(source::verify_chain_message::<OnThisChainBridge>(
+		// 	&source::FromThisChainMessagePayload::<OnThisChainBridge> {
+		// 		spec_version: 1,
+		// 		weight: BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT + 1,
+		// 		origin: bp_message_dispatch::CallOrigin::SourceRoot,
+		// 		dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
+		// 		call: vec![1, 2, 3, 4, 5, 6],
+		// 	},
+		// )
+		// .is_err());
+		unimplemented!("TODO")
 	}
 
-	#[test]
-	fn verify_chain_message_rejects_message_too_large_message() {
-		assert!(source::verify_chain_message::<OnThisChainBridge>(
-			&source::FromThisChainMessagePayload::<OnThisChainBridge> {
-				spec_version: 1,
-				weight: BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT,
-				origin: bp_message_dispatch::CallOrigin::SourceRoot,
-				dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-				call: vec![0; source::maximal_message_size::<OnThisChainBridge>() as usize + 1],
-			},
-		)
-		.is_err());
-	}
-
-	#[test]
-	fn verify_chain_message_accepts_maximal_message() {
-		assert_eq!(
-			source::verify_chain_message::<OnThisChainBridge>(
-				&source::FromThisChainMessagePayload::<OnThisChainBridge> {
-					spec_version: 1,
-					weight: BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT,
-					origin: bp_message_dispatch::CallOrigin::SourceRoot,
-					dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-					call: vec![0; source::maximal_message_size::<OnThisChainBridge>() as _],
-				},
-			),
-			Ok(()),
-		);
-	}
-
-	#[derive(Debug)]
-	struct TestMessageProofParser {
-		failing: bool,
-		messages: RangeInclusive<MessageNonce>,
-		outbound_lane_data: Option<OutboundLaneData>,
-	}
-
-	impl target::MessageProofParser for TestMessageProofParser {
-		fn read_raw_outbound_lane_data(&self, _lane_id: &LaneId) -> Option<Vec<u8>> {
-			if self.failing {
-				Some(vec![])
-			} else {
-				self.outbound_lane_data.clone().map(|data| data.encode())
-			}
-		}
-
-		fn read_raw_message(&self, message_key: &MessageKey) -> Option<Vec<u8>> {
-			if self.failing {
-				Some(vec![])
-			} else if self.messages.contains(&message_key.nonce) {
-				Some(
-					MessageData::<BridgedChainBalance> {
-						payload: message_key.nonce.encode(),
-						fee: BridgedChainBalance(0),
-					}
-					.encode(),
-				)
-			} else {
-				None
-			}
-		}
-	}
-
-	#[allow(clippy::reversed_empty_ranges)]
-	fn no_messages_range() -> RangeInclusive<MessageNonce> {
-		1..=0
-	}
-
-	fn messages_proof(nonces_end: MessageNonce) -> target::FromBridgedChainMessagesProof<()> {
-		target::FromBridgedChainMessagesProof {
-			bridged_header_hash: (),
-			storage_proof: vec![],
-			lane: Default::default(),
-			nonces_start: 1,
-			nonces_end,
-		}
-	}
-
-	#[test]
-	fn messages_proof_is_rejected_if_declared_less_than_actual_number_of_messages() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
-				messages_proof(10),
-				5,
-				|_, _| unreachable!(),
-			),
-			Err(target::MessageProofError::MessagesCountMismatch),
-		);
-	}
-
-	#[test]
-	fn messages_proof_is_rejected_if_declared_more_than_actual_number_of_messages() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
-				messages_proof(10),
-				15,
-				|_, _| unreachable!(),
-			),
-			Err(target::MessageProofError::MessagesCountMismatch),
-		);
-	}
-
-	#[test]
-	fn message_proof_is_rejected_if_build_parser_fails() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
-				messages_proof(10),
-				10,
-				|_, _| Err(target::MessageProofError::Custom("test")),
-			),
-			Err(target::MessageProofError::Custom("test")),
-		);
-	}
-
-	#[test]
-	fn message_proof_is_rejected_if_required_message_is_missing() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(10),
-				10,
-				|_, _| Ok(TestMessageProofParser {
-					failing: false,
-					messages: 1..=5,
-					outbound_lane_data: None,
-				}),
-			),
-			Err(target::MessageProofError::MissingRequiredMessage),
-		);
-	}
-
-	#[test]
-	fn message_proof_is_rejected_if_message_decode_fails() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(10),
-				10,
-				|_, _| Ok(TestMessageProofParser {
-					failing: true,
-					messages: 1..=10,
-					outbound_lane_data: None,
-				}),
-			),
-			Err(target::MessageProofError::FailedToDecodeMessage),
-		);
-	}
-
-	#[test]
-	fn message_proof_is_rejected_if_outbound_lane_state_decode_fails() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(0),
-				0,
-				|_, _| Ok(TestMessageProofParser {
-					failing: true,
-					messages: no_messages_range(),
-					outbound_lane_data: Some(OutboundLaneData {
-						oldest_unpruned_nonce: 1,
-						latest_received_nonce: 1,
-						latest_generated_nonce: 1,
-					}),
-				}),
-			),
-			Err(target::MessageProofError::FailedToDecodeOutboundLaneState),
-		);
-	}
-
-	#[test]
-	fn message_proof_is_rejected_if_it_is_empty() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(0),
-				0,
-				|_, _| Ok(TestMessageProofParser {
-					failing: false,
-					messages: no_messages_range(),
-					outbound_lane_data: None,
-				}),
-			),
-			Err(target::MessageProofError::Empty),
-		);
-	}
-
-	#[test]
-	fn non_empty_message_proof_without_messages_is_accepted() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(0),
-				0,
-				|_, _| Ok(TestMessageProofParser {
-					failing: false,
-					messages: no_messages_range(),
-					outbound_lane_data: Some(OutboundLaneData {
-						oldest_unpruned_nonce: 1,
-						latest_received_nonce: 1,
-						latest_generated_nonce: 1,
-					}),
-				}),
-			),
-			Ok(vec![(
-				Default::default(),
-				ProvedLaneMessages {
-					lane_state: Some(OutboundLaneData {
-						oldest_unpruned_nonce: 1,
-						latest_received_nonce: 1,
-						latest_generated_nonce: 1,
-					}),
-					messages: Vec::new(),
-				},
-			)]
-			.into_iter()
-			.collect()),
-		);
-	}
-
-	#[test]
-	fn non_empty_message_proof_is_accepted() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(1),
-				1,
-				|_, _| Ok(TestMessageProofParser {
-					failing: false,
-					messages: 1..=1,
-					outbound_lane_data: Some(OutboundLaneData {
-						oldest_unpruned_nonce: 1,
-						latest_received_nonce: 1,
-						latest_generated_nonce: 1,
-					}),
-				}),
-			),
-			Ok(vec![(
-				Default::default(),
-				ProvedLaneMessages {
-					lane_state: Some(OutboundLaneData {
-						oldest_unpruned_nonce: 1,
-						latest_received_nonce: 1,
-						latest_generated_nonce: 1,
-					}),
-					messages: vec![Message {
-						key: MessageKey { lane_id: Default::default(), nonce: 1 },
-						data: MessageData { payload: 1u64.encode(), fee: BridgedChainBalance(0) },
-					}],
-				},
-			)]
-			.into_iter()
-			.collect()),
-		);
-	}
-
-	#[test]
-	fn verify_messages_proof_with_parser_does_not_panic_if_messages_count_mismatches() {
-		assert_eq!(
-			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
-				messages_proof(u64::MAX),
-				0,
-				|_, _| Ok(TestMessageProofParser {
-					failing: false,
-					messages: 0..=u64::MAX,
-					outbound_lane_data: Some(OutboundLaneData {
-						oldest_unpruned_nonce: 1,
-						latest_received_nonce: 1,
-						latest_generated_nonce: 1,
-					}),
-				}),
-			),
-			Err(target::MessageProofError::MessagesCountMismatch),
-		);
-	}
+	// #[test]
+	// fn verify_chain_message_rejects_message_too_large_message() {
+	// 	assert!(source::verify_chain_message::<OnThisChainBridge>(
+	// 		vec![0; source::maximal_message_size::<OnThisChainBridge>() as usize + 1],
+	// 	)
+	// 	.is_err());
+	// }
+	//
+	// #[test]
+	// fn verify_chain_message_accepts_maximal_message() {
+	// 	assert_eq!(
+	// 		source::verify_chain_message::<OnThisChainBridge>(
+	// 			vec![0; source::maximal_message_size::<OnThisChainBridge>() as _],
+	// 		),
+	// 		Ok(()),
+	// 	);
+	// }
+	//
+	// #[derive(Debug)]
+	// struct TestMessageProofParser {
+	// 	failing: bool,
+	// 	messages: RangeInclusive<MessageNonce>,
+	// 	outbound_lane_data: Option<OutboundLaneData>,
+	// }
+	//
+	// impl target::MessageProofParser for TestMessageProofParser {
+	// 	fn read_raw_outbound_lane_data(&self, _lane_id: &LaneId) -> Option<Vec<u8>> {
+	// 		if self.failing {
+	// 			Some(vec![])
+	// 		} else {
+	// 			self.outbound_lane_data.clone().map(|data| data.encode())
+	// 		}
+	// 	}
+	//
+	// 	fn read_raw_message(&self, message_key: &MessageKey) -> Option<Vec<u8>> {
+	// 		if self.failing {
+	// 			Some(vec![])
+	// 		} else if self.messages.contains(&message_key.nonce) {
+	// 			Some(
+	// 				MessageData::<BridgedChainBalance> {
+	// 					payload: message_key.nonce.encode(),
+	// 					fee: BridgedChainBalance(0),
+	// 				}
+	// 				.encode(),
+	// 			)
+	// 		} else {
+	// 			None
+	// 		}
+	// 	}
+	// }
+	//
+	// #[allow(clippy::reversed_empty_ranges)]
+	// fn no_messages_range() -> RangeInclusive<MessageNonce> {
+	// 	1..=0
+	// }
+	//
+	// fn messages_proof(nonces_end: MessageNonce) -> target::FromBridgedChainMessagesProof<()> {
+	// 	target::FromBridgedChainMessagesProof {
+	// 		bridged_header_hash: (),
+	// 		storage_proof: vec![],
+	// 		lane: Default::default(),
+	// 		nonces_start: 1,
+	// 		nonces_end,
+	// 	}
+	// }
+	//
+	// #[test]
+	// fn messages_proof_is_rejected_if_declared_less_than_actual_number_of_messages() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
+	// 			messages_proof(10),
+	// 			5,
+	// 			|_, _| unreachable!(),
+	// 		),
+	// 		Err(target::MessageProofError::MessagesCountMismatch),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn messages_proof_is_rejected_if_declared_more_than_actual_number_of_messages() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
+	// 			messages_proof(10),
+	// 			15,
+	// 			|_, _| unreachable!(),
+	// 		),
+	// 		Err(target::MessageProofError::MessagesCountMismatch),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn message_proof_is_rejected_if_build_parser_fails() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
+	// 			messages_proof(10),
+	// 			10,
+	// 			|_, _| Err(target::MessageProofError::Custom("test")),
+	// 		),
+	// 		Err(target::MessageProofError::Custom("test")),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn message_proof_is_rejected_if_required_message_is_missing() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(10),
+	// 			10,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: false,
+	// 				messages: 1..=5,
+	// 				outbound_lane_data: None,
+	// 			}),
+	// 		),
+	// 		Err(target::MessageProofError::MissingRequiredMessage),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn message_proof_is_rejected_if_message_decode_fails() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(10),
+	// 			10,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: true,
+	// 				messages: 1..=10,
+	// 				outbound_lane_data: None,
+	// 			}),
+	// 		),
+	// 		Err(target::MessageProofError::FailedToDecodeMessage),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn message_proof_is_rejected_if_outbound_lane_state_decode_fails() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(0),
+	// 			0,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: true,
+	// 				messages: no_messages_range(),
+	// 				outbound_lane_data: Some(OutboundLaneData {
+	// 					oldest_unpruned_nonce: 1,
+	// 					latest_received_nonce: 1,
+	// 					latest_generated_nonce: 1,
+	// 				}),
+	// 			}),
+	// 		),
+	// 		Err(target::MessageProofError::FailedToDecodeOutboundLaneState),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn message_proof_is_rejected_if_it_is_empty() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(0),
+	// 			0,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: false,
+	// 				messages: no_messages_range(),
+	// 				outbound_lane_data: None,
+	// 			}),
+	// 		),
+	// 		Err(target::MessageProofError::Empty),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn non_empty_message_proof_without_messages_is_accepted() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(0),
+	// 			0,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: false,
+	// 				messages: no_messages_range(),
+	// 				outbound_lane_data: Some(OutboundLaneData {
+	// 					oldest_unpruned_nonce: 1,
+	// 					latest_received_nonce: 1,
+	// 					latest_generated_nonce: 1,
+	// 				}),
+	// 			}),
+	// 		),
+	// 		Ok(vec![(
+	// 			Default::default(),
+	// 			ProvedLaneMessages {
+	// 				lane_state: Some(OutboundLaneData {
+	// 					oldest_unpruned_nonce: 1,
+	// 					latest_received_nonce: 1,
+	// 					latest_generated_nonce: 1,
+	// 				}),
+	// 				messages: Vec::new(),
+	// 			},
+	// 		)]
+	// 		.into_iter()
+	// 		.collect()),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn non_empty_message_proof_is_accepted() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(1),
+	// 			1,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: false,
+	// 				messages: 1..=1,
+	// 				outbound_lane_data: Some(OutboundLaneData {
+	// 					oldest_unpruned_nonce: 1,
+	// 					latest_received_nonce: 1,
+	// 					latest_generated_nonce: 1,
+	// 				}),
+	// 			}),
+	// 		),
+	// 		Ok(vec![(
+	// 			Default::default(),
+	// 			ProvedLaneMessages {
+	// 				lane_state: Some(OutboundLaneData {
+	// 					oldest_unpruned_nonce: 1,
+	// 					latest_received_nonce: 1,
+	// 					latest_generated_nonce: 1,
+	// 				}),
+	// 				messages: vec![Message {
+	// 					key: MessageKey { lane_id: Default::default(), nonce: 1 },
+	// 					data: MessageData { payload: 1u64.encode(), fee: BridgedChainBalance(0) },
+	// 				}],
+	// 			},
+	// 		)]
+	// 		.into_iter()
+	// 		.collect()),
+	// 	);
+	// }
+	//
+	// #[test]
+	// fn verify_messages_proof_with_parser_does_not_panic_if_messages_count_mismatches() {
+	// 	assert_eq!(
+	// 		target::verify_messages_proof_with_parser::<OnThisChainBridge, _, _>(
+	// 			messages_proof(u64::MAX),
+	// 			0,
+	// 			|_, _| Ok(TestMessageProofParser {
+	// 				failing: false,
+	// 				messages: 0..=u64::MAX,
+	// 				outbound_lane_data: Some(OutboundLaneData {
+	// 					oldest_unpruned_nonce: 1,
+	// 					latest_received_nonce: 1,
+	// 					latest_generated_nonce: 1,
+	// 				}),
+	// 			}),
+	// 		),
+	// 		Err(target::MessageProofError::MessagesCountMismatch),
+	// 	);
+	// }
 }

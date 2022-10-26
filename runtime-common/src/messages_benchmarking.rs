@@ -43,21 +43,12 @@ use sp_trie::{trie_types::TrieDBMutBuilderV1, LayoutV1, MemoryDB, Recorder, Trie
 /// Prepare outbound message for the `send_message` call.
 pub fn prepare_outbound_message<B>(
 	params: MessageParams<AccountIdOf<ThisChain<B>>>,
-) -> FromThisChainMessagePayload<B>
+) -> FromThisChainMessagePayload
 where
 	B: MessageBridge,
 	BalanceOf<ThisChain<B>>: From<u64>,
 {
-	let message_payload = vec![0; params.size as usize];
-	let dispatch_origin = bp_message_dispatch::CallOrigin::SourceAccount(params.sender_account);
-
-	FromThisChainMessagePayload::<B> {
-		spec_version: 0,
-		weight: params.size as _,
-		origin: dispatch_origin,
-		call: message_payload,
-		dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-	}
+	vec![0; params.size as usize]
 }
 
 /// Prepare proof of messages for the `receive_messages_proof` call.
@@ -87,10 +78,7 @@ where
 		+ From<sp_core::ed25519::Public>
 		+ IdentifyAccount<AccountId = AccountIdOf<ThisChain<B>>>,
 {
-	let message_payload = match params.size {
-		StorageProofSize::Minimal(ref size) => vec![0u8; *size as _],
-		_ => vec![],
-	};
+	let message_payload = call.encode();
 
 	// finally - prepare storage proof and update environment
 	let (state_root, storage_proof) =
