@@ -37,6 +37,7 @@ sp-std                     = { default-features = false, git = "https://github.c
 sp-trie                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-version                 = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 # polkadot
+pallet-xcm   = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
 xcm          = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
 xcm-builder  = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
 xcm-executor = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
@@ -71,6 +72,7 @@ std = [
 	"sp-std/std",
 	"sp-trie/std",
 	# polkadot
+	"pallet-xcm/std",
 	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
