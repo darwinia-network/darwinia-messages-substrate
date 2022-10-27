@@ -81,6 +81,9 @@ pub const PANGOLIN_PARACHAIN_ALPHA_CHAIN_ID: ChainId = *b"pgpa";
 /// Bridge-with-CrabParachain instance id.
 pub const CRAB_PARACHAIN_CHAIN_ID: ChainId = *b"crap";
 
+/// Bridge-with-DarwiniaParachain instance id.
+pub const CRAB_PARACHAIN_CHAIN_ID: ChainId = *b"darp";
+
 /// Call-dispatch module prefix.
 pub const CALL_DISPATCH_MODULE_PREFIX: &[u8] = b"pallet-bridge/dispatch";
 
