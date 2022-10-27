@@ -62,8 +62,8 @@ pub fn ensure_weights_are_correct<W: WeightInfoExt>(
 		Weight::from_ref_time(0),
 	);
 	assert!(
-		actual_single_regular_message_delivery_tx_weight.ref_time() <=
-			expected_default_message_delivery_tx_weight.ref_time(),
+		actual_single_regular_message_delivery_tx_weight.ref_time()
+			<= expected_default_message_delivery_tx_weight.ref_time(),
 		"Default message delivery transaction weight {} is larger than expected weight {}",
 		actual_single_regular_message_delivery_tx_weight,
 		expected_default_message_delivery_tx_weight,
@@ -72,8 +72,8 @@ pub fn ensure_weights_are_correct<W: WeightInfoExt>(
 	// verify that hardcoded value covers additional byte length of `receive_messages_proof` weight
 	let actual_additional_byte_delivery_weight = W::storage_proof_size_overhead(1);
 	assert!(
-		actual_additional_byte_delivery_weight.ref_time() <=
-			expected_additional_byte_delivery_weight.ref_time(),
+		actual_additional_byte_delivery_weight.ref_time()
+			<= expected_additional_byte_delivery_weight.ref_time(),
 		"Single additional byte delivery weight {} is larger than expected weight {}",
 		actual_additional_byte_delivery_weight,
 		expected_additional_byte_delivery_weight,
@@ -98,8 +98,8 @@ pub fn ensure_weights_are_correct<W: WeightInfoExt>(
 		db_weight,
 	);
 	assert!(
-		actual_messages_delivery_confirmation_tx_weight.ref_time() <=
-			expected_messages_delivery_confirmation_tx_weight.ref_time(),
+		actual_messages_delivery_confirmation_tx_weight.ref_time()
+			<= expected_messages_delivery_confirmation_tx_weight.ref_time(),
 		"Messages delivery confirmation transaction weight {} is larger than expected weight {}",
 		actual_messages_delivery_confirmation_tx_weight,
 		expected_messages_delivery_confirmation_tx_weight,

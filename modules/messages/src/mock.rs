@@ -142,9 +142,7 @@ impl frame_system::Config for TestRuntime {
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
-	type RuntimeCall = RuntimeCall;
 	type DbWeight = DbWeight;
-	type RuntimeEvent = RuntimeEvent;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = SubstrateHeader;
@@ -154,8 +152,10 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type RuntimeOrigin = RuntimeOrigin;
 	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
 	type Version = ();
@@ -168,11 +168,11 @@ impl pallet_balances::Config for TestRuntime {
 	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type RuntimeEvent = RuntimeEvent;
 	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
 
@@ -198,7 +198,6 @@ parameter_types! {
 impl Config for TestRuntime {
 	type AccountIdConverter = AccountIdConverter;
 	type BridgedChainId = TestBridgedChainId;
-	type RuntimeEvent = RuntimeEvent;
 	type InboundMessageFee = TestMessageFee;
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
@@ -214,6 +213,7 @@ impl Config for TestRuntime {
 	type OutboundMessageFee = TestMessageFee;
 	type OutboundPayload = TestPayload;
 	type Parameter = TestMessagesParameter;
+	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = TestSourceHeaderChain;
 	type TargetHeaderChain = TestTargetHeaderChain;
 	type WeightInfo = ();
@@ -327,7 +327,8 @@ impl TestMessageDeliveryAndDispatchPayment {
 
 	/// Returns true if given fee has been paid by given submitter.
 	pub fn is_fee_paid(submitter: AccountId, fee: TestMessageFee) -> bool {
-		let raw_origin: Result<frame_system::RawOrigin<_>, _> = RuntimeOrigin::signed(submitter).into();
+		let raw_origin: Result<frame_system::RawOrigin<_>, _> =
+			RuntimeOrigin::signed(submitter).into();
 		frame_support::storage::unhashed::get(b":message-fee:") == Some((raw_origin.unwrap(), fee))
 	}
 

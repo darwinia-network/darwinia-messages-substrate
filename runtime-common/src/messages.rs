@@ -1213,8 +1213,8 @@ mod tests {
 		type Signer = ThisChainSigner;
 	}
 	impl ThisChainWithMessages for ThisChain {
-		type RuntimeOrigin = ThisChainOrigin;
 		type RuntimeCall = ThisChainCall;
+		type RuntimeOrigin = ThisChainOrigin;
 
 		fn is_message_accepted(_send_origin: &Self::RuntimeOrigin, lane: &LaneId) -> bool {
 			lane == TEST_LANE_ID
@@ -1243,8 +1243,8 @@ mod tests {
 		type Signer = BridgedChainSigner;
 	}
 	impl ThisChainWithMessages for BridgedChain {
-		type RuntimeOrigin = BridgedChainOrigin;
 		type RuntimeCall = BridgedChainCall;
+		type RuntimeOrigin = BridgedChainOrigin;
 
 		fn is_message_accepted(_send_origin: &Self::RuntimeOrigin, _lane: &LaneId) -> bool {
 			unreachable!()

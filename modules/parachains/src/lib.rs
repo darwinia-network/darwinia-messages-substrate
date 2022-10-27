@@ -123,7 +123,7 @@ pub mod pallet {
 	{
 		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self, I>>
-		+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
+			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Benchmarks results from runtime we're plugged into.
 		type WeightInfo: WeightInfoExt;
 
@@ -581,8 +581,8 @@ mod tests {
 	// darwinia-network
 	use super::*;
 	use crate::mock::{
-		run_test, test_relay_header, RuntimeEvent as TestEvent, RuntimeOrigin, TestRuntime, PARAS_PALLET_NAME,
-		UNTRACKED_PARACHAIN_ID,
+		run_test, test_relay_header, RuntimeEvent as TestEvent, RuntimeOrigin, TestRuntime,
+		PARAS_PALLET_NAME, UNTRACKED_PARACHAIN_ID,
 	};
 	use bp_parachains::{BestParaHeadHash, ImportedParaHeadsKeyProvider, ParasInfoKeyProvider};
 	use bp_runtime::{

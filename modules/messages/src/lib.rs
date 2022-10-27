@@ -702,8 +702,11 @@ pub fn relayer_fund_account_id<AccountId, AccountIdConverter: Convert<H256, Acco
 }
 
 impl<T, I>
-	bp_messages::source_chain::MessagesBridge<T::RuntimeOrigin, T::OutboundMessageFee, T::OutboundPayload>
-	for Pallet<T, I>
+	bp_messages::source_chain::MessagesBridge<
+		T::RuntimeOrigin,
+		T::OutboundMessageFee,
+		T::OutboundPayload,
+	> for Pallet<T, I>
 where
 	T: Config<I>,
 	I: 'static,
@@ -1491,7 +1494,7 @@ mod tests {
 				TEST_RELAYER_A,
 				Ok(vec![message(1, REGULAR_PAYLOAD)]).into(),
 				1,
-								declared_weight,
+				declared_weight,
 			));
 			assert_eq!(InboundLanes::<TestRuntime>::get(TEST_LANE_ID).last_delivered_nonce(), 0);
 		});
@@ -1716,7 +1719,7 @@ mod tests {
 				TEST_RELAYER_A,
 				Ok(vec![invalid_message]).into(),
 				1,
-								Weight::from_ref_time(0), /* weight may be zero in this case (all messages are
+				Weight::from_ref_time(0), /* weight may be zero in this case (all messages are
 				                           * improperly encoded) */
 			),);
 
@@ -1827,8 +1830,8 @@ mod tests {
 			let (pre, post) = submit_with_unspent_weight(5, 1, true);
 			assert_eq!(
 				post.ref_time(),
-				pre.ref_time() -
-					1 - <TestRuntime as Config>::WeightInfo::pay_inbound_dispatch_fee_overhead()
+				pre.ref_time()
+					- 1 - <TestRuntime as Config>::WeightInfo::pay_inbound_dispatch_fee_overhead()
 					.ref_time()
 			);
 		});
