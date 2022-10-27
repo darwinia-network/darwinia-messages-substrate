@@ -146,8 +146,8 @@ pub type RawStorageProof = Vec<Vec<u8>>;
 
 /// Sub-module that is declaring types required for processing This -> Bridged chain messages.
 pub mod source {
-	use frame_support::log;
 	use super::*;
+	use frame_support::log;
 
 	/// Encoded Call of the Bridged chain. We never try to decode it on This chain.
 	pub type BridgedChainOpaqueCall = Vec<u8>;
@@ -424,9 +424,9 @@ pub mod source {
 	pub struct XcmBridgeAdapter<T>(PhantomData<T>);
 
 	impl<T: XcmBridge> SendXcm for XcmBridgeAdapter<T>
-		where
-			BalanceOf<ThisChain<T::MessageBridge>>: Into<Fungibility>,
-			OriginOf<ThisChain<T::MessageBridge>>: From<pallet_xcm::Origin>,
+	where
+		BalanceOf<ThisChain<T::MessageBridge>>: Into<Fungibility>,
+		OriginOf<ThisChain<T::MessageBridge>>: From<pallet_xcm::Origin>,
 	{
 		type Ticket = (BalanceOf<ThisChain<T::MessageBridge>>, FromThisChainMessagePayload);
 
@@ -437,7 +437,7 @@ pub mod source {
 			let d = dest.take().ok_or(SendError::MissingArgument)?;
 			if !T::verify_destination(&d) {
 				*dest = Some(d);
-				return Err(SendError::NotApplicable)
+				return Err(SendError::NotApplicable);
 			}
 
 			let route = T::build_destination();
@@ -458,7 +458,7 @@ pub mod source {
 						e,
 					);
 					*dest = Some(d);
-					return Err(SendError::Transport(e))
+					return Err(SendError::Transport(e));
 				},
 			};
 			let fee_assets = MultiAssets::from((Here, fee));
