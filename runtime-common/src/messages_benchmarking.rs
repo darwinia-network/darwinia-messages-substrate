@@ -93,7 +93,7 @@ where
 			nonces_start: *params.message_nonces.start(),
 			nonces_end: *params.message_nonces.end(),
 		},
-		Weight::from_ref_time(0),
+		Weight::zero(),
 	)
 }
 

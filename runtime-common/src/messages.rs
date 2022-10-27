@@ -638,7 +638,7 @@ pub mod target {
 					payload.weight = Some(weight);
 					weight
 				},
-				_ => Weight::from_ref_time(0),
+				_ => Weight::zero(),
 			}
 		}
 
@@ -674,17 +674,22 @@ pub mod target {
 					location,
 					xcm,
 					hash,
-					weight_limit.unwrap_or(Weight::from_ref_time(0)).ref_time(),
+					weight_limit.unwrap_or_else(Weight::zero).ref_time(),
 					weight_credit.ref_time(),
 				);
 				Ok(xcm_outcome)
 			};
 
 			let xcm_outcome = do_dispatch();
-			log::trace!(target: "runtime::bridge-dispatch", "Incoming message {:?} dispatched with result: {:?}", message_id, xcm_outcome);
+			log::trace!(
+				target: "runtime::bridge-dispatch",
+				"Incoming message {:?} dispatched with result: {:?}",
+				message_id,
+				xcm_outcome,
+			);
 			MessageDispatchResult {
 				dispatch_result: true,
-				unspent_weight: Weight::from_ref_time(0),
+				unspent_weight: Weight::zero(),
 				dispatch_fee_paid_during_dispatch: false,
 			}
 		}
