@@ -34,7 +34,7 @@ use pallet_bridge_messages::benchmarking::{
 	MessageDeliveryProofParams, MessageParams, MessageProofParams,
 };
 // paritytech
-use frame_support::weights::{GetDispatchInfo, Weight};
+use frame_support::{dispatch::GetDispatchInfo, weights::Weight};
 use sp_core::Hasher;
 use sp_runtime::traits::{Header, IdentifyAccount, MaybeSerializeDeserialize, Zero};
 use sp_std::{fmt::Debug, prelude::*};
@@ -93,7 +93,7 @@ where
 			nonces_start: *params.message_nonces.start(),
 			nonces_end: *params.message_nonces.end(),
 		},
-		0,
+		Weight::from_ref_time(0),
 	)
 }
 

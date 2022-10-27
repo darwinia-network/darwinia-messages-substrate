@@ -118,7 +118,7 @@ pub mod pallet {
 		fn on_initialize(_n: T::BlockNumber) -> frame_support::weights::Weight {
 			<RequestCount<T, I>>::mutate(|count| *count = count.saturating_sub(1));
 
-			(0_u64)
+			Weight::from_ref_time(0)
 				.saturating_add(T::DbWeight::get().reads(1))
 				.saturating_add(T::DbWeight::get().writes(1))
 		}
@@ -602,7 +602,7 @@ pub fn initialize_for_benchmarks<T: Config<I>, I: 'static>(header: BridgedHeader
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::mock::{run_test, test_header, Origin, TestHeader, TestNumber, TestRuntime};
+	use crate::mock::{run_test, test_header, RuntimeOrigin, TestHeader, TestNumber, TestRuntime};
 	use bp_runtime::BasicOperatingMode;
 	use bp_test_utils::{
 		authority_list, generate_owned_bridge_module_tests, make_default_justification,
@@ -610,17 +610,17 @@ mod tests {
 	};
 	use codec::Encode;
 	use frame_support::{
-		assert_err, assert_noop, assert_ok, storage::generator::StorageValue,
-		weights::PostDispatchInfo,
+		assert_err, assert_noop, assert_ok, dispatch::PostDispatchInfo,
+		storage::generator::StorageValue,
 	};
 	use sp_runtime::{Digest, DigestItem, DispatchError};
 
 	fn initialize_substrate_bridge() {
-		assert_ok!(init_with_origin(Origin::root()));
+		assert_ok!(init_with_origin(RuntimeOrigin::root()));
 	}
 
 	fn init_with_origin(
-		origin: Origin,
+		origin: RuntimeOrigin,
 	) -> Result<
 		InitializationData<TestHeader>,
 		sp_runtime::DispatchErrorWithPostInfo<PostDispatchInfo>,
@@ -642,7 +642,7 @@ mod tests {
 		let justification = make_default_justification(&header);
 
 		Pallet::<TestRuntime>::submit_finality_proof(
-			Origin::signed(1),
+			RuntimeOrigin::signed(1),
 			Box::new(header),
 			justification,
 		)
@@ -681,13 +681,13 @@ mod tests {
 	#[test]
 	fn init_root_or_owner_origin_can_initialize_pallet() {
 		run_test(|| {
-			assert_noop!(init_with_origin(Origin::signed(1)), DispatchError::BadOrigin);
-			assert_ok!(init_with_origin(Origin::root()));
+			assert_noop!(init_with_origin(RuntimeOrigin::signed(1)), DispatchError::BadOrigin);
+			assert_ok!(init_with_origin(RuntimeOrigin::root()));
 
 			// Reset storage so we can initialize the pallet again
 			BestFinalized::<TestRuntime>::kill();
 			PalletOwner::<TestRuntime>::put(2);
-			assert_ok!(init_with_origin(Origin::signed(2)));
+			assert_ok!(init_with_origin(RuntimeOrigin::signed(2)));
 		})
 	}
 
@@ -697,7 +697,7 @@ mod tests {
 			assert_eq!(BestFinalized::<TestRuntime>::get(), None,);
 			assert_eq!(Pallet::<TestRuntime>::best_finalized(), None);
 
-			let init_data = init_with_origin(Origin::root()).unwrap();
+			let init_data = init_with_origin(RuntimeOrigin::root()).unwrap();
 
 			assert!(<ImportedHeaders<TestRuntime>>::contains_key(init_data.header.hash()));
 			assert_eq!(BestFinalized::<TestRuntime>::get().unwrap().1, init_data.header.hash());
@@ -714,7 +714,7 @@ mod tests {
 		run_test(|| {
 			initialize_substrate_bridge();
 			assert_noop!(
-				init_with_origin(Origin::root()),
+				init_with_origin(RuntimeOrigin::root()),
 				<Error<TestRuntime>>::AlreadyInitialized
 			);
 		})
@@ -757,7 +757,7 @@ mod tests {
 				submit_finality_proof(1),
 				PostDispatchInfo {
 					actual_weight: None,
-					pays_fee: frame_support::weights::Pays::Yes,
+					pays_fee: frame_support::dispatch::Pays::Yes,
 				},
 			);
 
@@ -822,7 +822,7 @@ mod tests {
 				operating_mode: BasicOperatingMode::Normal,
 			};
 
-			assert_ok!(Pallet::<TestRuntime>::initialize(Origin::root(), init_data));
+			assert_ok!(Pallet::<TestRuntime>::initialize(RuntimeOrigin::root(), init_data));
 
 			let header = test_header(1);
 			let justification = make_default_justification(&header);
@@ -874,7 +874,7 @@ mod tests {
 				),
 				PostDispatchInfo {
 					actual_weight: None,
-					pays_fee: frame_support::weights::Pays::No,
+					pays_fee: frame_support::dispatch::Pays::No,
 				},
 			);
 
@@ -993,7 +993,7 @@ mod tests {
 				invalid_justification.round = 42;
 
 				Pallet::<TestRuntime>::submit_finality_proof(
-					Origin::signed(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					invalid_justification,
 				)

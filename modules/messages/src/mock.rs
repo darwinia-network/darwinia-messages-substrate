@@ -129,7 +129,7 @@ frame_support::construct_runtime! {
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
@@ -142,9 +142,9 @@ impl frame_system::Config for TestRuntime {
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	type DbWeight = DbWeight;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = SubstrateHeader;
@@ -154,7 +154,7 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	type PalletInfo = PalletInfo;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
@@ -168,7 +168,7 @@ impl pallet_balances::Config for TestRuntime {
 	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = ();
 	type MaxReserves = ();
@@ -198,7 +198,7 @@ parameter_types! {
 impl Config for TestRuntime {
 	type AccountIdConverter = AccountIdConverter;
 	type BridgedChainId = TestBridgedChainId;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type InboundMessageFee = TestMessageFee;
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
@@ -219,7 +219,7 @@ impl Config for TestRuntime {
 	type WeightInfo = ();
 }
 
-impl SenderOrigin<AccountId> for Origin {
+impl SenderOrigin<AccountId> for RuntimeOrigin {
 	fn linked_account(&self) -> Option<AccountId> {
 		match self.caller {
 			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
@@ -296,13 +296,13 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 /// Lane message verifier that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
-impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
+impl LaneMessageVerifier<RuntimeOrigin, AccountId, TestPayload, TestMessageFee>
 	for TestLaneMessageVerifier
 {
 	type Error = &'static str;
 
 	fn verify_message(
-		_submitter: &Origin,
+		_submitter: &RuntimeOrigin,
 		delivery_and_dispatch_fee: &TestMessageFee,
 		_lane: &LaneId,
 		_lane_outbound_data: &OutboundLaneData,
@@ -327,7 +327,7 @@ impl TestMessageDeliveryAndDispatchPayment {
 
 	/// Returns true if given fee has been paid by given submitter.
 	pub fn is_fee_paid(submitter: AccountId, fee: TestMessageFee) -> bool {
-		let raw_origin: Result<frame_system::RawOrigin<_>, _> = Origin::signed(submitter).into();
+		let raw_origin: Result<frame_system::RawOrigin<_>, _> = RuntimeOrigin::signed(submitter).into();
 		frame_support::storage::unhashed::get(b":message-fee:") == Some((raw_origin.unwrap(), fee))
 	}
 
@@ -338,13 +338,13 @@ impl TestMessageDeliveryAndDispatchPayment {
 		frame_support::storage::unhashed::take::<bool>(&key).is_some()
 	}
 }
-impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
+impl MessageDeliveryAndDispatchPayment<RuntimeOrigin, AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &Origin,
+		submitter: &RuntimeOrigin,
 		fee: &TestMessageFee,
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
@@ -491,7 +491,7 @@ impl OnDeliveryConfirmed for TestOnDeliveryConfirmed2 {
 	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
 		let key = (b"TestOnDeliveryConfirmed2", lane, messages).encode();
 		frame_support::storage::unhashed::put(&key, &true);
-		0
+		Weight::from_ref_time(0)
 	}
 }
 
@@ -519,7 +519,7 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.declared_weight,
-			Err(_) => 0,
+			Err(_) => Weight::from_ref_time(0),
 		}
 	}
 
@@ -547,8 +547,13 @@ pub fn message(nonce: MessageNonce, payload: TestPayload) -> Message<TestMessage
 }
 
 /// Constructs message payload using given arguments and zero unspent weight.
-pub const fn message_payload(id: u64, declared_weight: Weight) -> TestPayload {
-	TestPayload { id, declared_weight, dispatch_result: dispatch_result(0), extra: Vec::new() }
+pub const fn message_payload(id: u64, declared_weight: u64) -> TestPayload {
+	TestPayload {
+		id,
+		declared_weight: Weight::from_ref_time(declared_weight),
+		dispatch_result: dispatch_result(0),
+		extra: Vec::new(),
+	}
 }
 
 /// Return message data with valid fee for given payload.
@@ -557,10 +562,10 @@ pub fn message_data(payload: TestPayload) -> MessageData<TestMessageFee> {
 }
 
 /// Returns message dispatch result with given unspent weight.
-pub const fn dispatch_result(unspent_weight: Weight) -> MessageDispatchResult {
+pub const fn dispatch_result(unspent_weight: u64) -> MessageDispatchResult {
 	MessageDispatchResult {
 		dispatch_result: true,
-		unspent_weight,
+		unspent_weight: Weight::from_ref_time(unspent_weight),
 		dispatch_fee_paid_during_dispatch: true,
 	}
 }

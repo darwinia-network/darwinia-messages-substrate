@@ -55,7 +55,7 @@ frame_support::construct_runtime! {
 
 frame_support::parameter_types! {
 	pub const BlockHashCount: TestNumber = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -67,9 +67,9 @@ impl frame_system::Config for TestRuntime {
 	type BlockLength = ();
 	type BlockNumber = TestNumber;
 	type BlockWeights = ();
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	type DbWeight = ();
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -79,7 +79,7 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	type PalletInfo = PalletInfo;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
@@ -113,7 +113,7 @@ frame_support::parameter_types! {
 }
 impl pallet_bridge_parachains::Config for TestRuntime {
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type HeadsToKeep = HeadsToKeep;
 	type ParasPalletName = ParasPalletName;
 	type TrackedParachains = IsInVec<GetTenFirstParachains>;
