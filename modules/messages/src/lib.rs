@@ -703,12 +703,8 @@ pub fn relayer_fund_account_id<AccountId, AccountIdConverter: Convert<H256, Acco
 }
 
 impl<T, I>
-	bp_messages::source_chain::MessagesBridge<
-		T::Origin,
-		T::AccountId,
-		T::OutboundMessageFee,
-		T::OutboundPayload,
-	> for Pallet<T, I>
+	bp_messages::source_chain::MessagesBridge<T::Origin, T::OutboundMessageFee, T::OutboundPayload>
+	for Pallet<T, I>
 where
 	T: Config<I>,
 	I: 'static,

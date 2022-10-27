@@ -420,6 +420,27 @@ pub mod source {
 		Ok((lane, inbound_lane_data))
 	}
 
+	/// XCM bridge.
+	pub trait XcmBridge {
+		/// Runtime message bridge configuration.
+		type MessageBridge: MessageBridge;
+		/// Runtime message sender adapter.
+		type MessageSender: bp_messages::source_chain::MessagesBridge<
+			OriginOf<ThisChain<Self::MessageBridge>>,
+			BalanceOf<ThisChain<Self::MessageBridge>>,
+			FromThisChainMessagePayload,
+		>;
+
+		/// Our location within the Consensus Universe.
+		fn universal_location() -> InteriorMultiLocation;
+		/// Verify that the adapter is responsible for handling given XCM destination.
+		fn verify_destination(dest: &MultiLocation) -> bool;
+		/// Build route from this chain to the XCM destination.
+		fn build_destination() -> MultiLocation;
+		/// Return message lane used to deliver XCM messages.
+		fn xcm_lane() -> LaneId;
+	}
+
 	/// XCM bridge adapter for `bridge-messages` pallet.
 	pub struct XcmBridgeAdapter<T>(PhantomData<T>);
 
