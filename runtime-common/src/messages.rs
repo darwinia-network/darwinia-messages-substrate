@@ -38,7 +38,7 @@ use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChe
 use frame_support::{traits::Currency, weights::Weight, RuntimeDebug};
 use sp_runtime::{
 	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating},
-	FixedPointNumber, FixedPointOperand,
+	FixedPointOperand,
 };
 use sp_std::prelude::*;
 use sp_trie::StorageProof;
@@ -230,7 +230,7 @@ pub mod source {
 			delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
 			lane: &LaneId,
 			lane_outbound_data: &OutboundLaneData,
-			payload: &FromThisChainMessagePayload,
+			_payload: &FromThisChainMessagePayload,
 		) -> Result<(), Self::Error> {
 			// reject message if lane is blocked
 			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
@@ -252,7 +252,7 @@ pub mod source {
 				frame_system::RawOrigin<AccountIdOf<ThisChain<B>>>,
 				OriginOf<ThisChain<B>>,
 			> = submitter.clone().into();
-			if let Ok(raw_origin) = raw_origin_or_err {
+			if let Ok(_raw_origin) = raw_origin_or_err {
 				// pallet_bridge_dispatch::verify_message_origin(&raw_origin, payload)
 				// 	.map(drop)
 				// 	.map_err(|_| BAD_ORIGIN)?;
@@ -484,7 +484,6 @@ pub mod target {
 				Balance = BalanceOf<ThisChain<B>>,
 			>,
 		ThisCurrency: Currency<AccountIdOf<ThisChain<B>>, Balance = BalanceOf<ThisChain<B>>>,
-		pallet_bridge_dispatch::Pallet<ThisRuntime, ThisDispatchInstance>:,
 	{
 		type DispatchPayload = FromBridgedChainMessagePayload;
 
@@ -496,17 +495,14 @@ pub mod target {
 		}
 
 		fn pre_dispatch(
-			relayer_account: &AccountIdOf<ThisChain<B>>,
-			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+			_relayer_account: &AccountIdOf<ThisChain<B>>,
+			_message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> Result<(), &'static str> {
-			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
-				relayer_account,
-				message.data.payload.as_ref().map_err(drop),
-			)
+			unimplemented!("TODO")
 		}
 
 		fn dispatch(
-			relayer_account: &AccountIdOf<ThisChain<B>>,
+			_relayer_account: &AccountIdOf<ThisChain<B>>,
 			message: DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> MessageDispatchResult {
 			let message_id = (message.key.lane_id, message.key.nonce);
