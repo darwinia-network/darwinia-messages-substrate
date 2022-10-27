@@ -35,7 +35,11 @@ use bp_messages::{
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 // paritytech
-use frame_support::{traits::{Currency, Get}, weights::Weight, RuntimeDebug};
+use frame_support::{
+	traits::{Currency, Get},
+	weights::Weight,
+	RuntimeDebug,
+};
 use sp_runtime::{
 	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT},
 	FixedPointOperand,
@@ -444,7 +448,7 @@ pub mod target {
 	}
 
 	impl<Call> From<(xcm::v3::MultiLocation, xcm::v3::Xcm<Call>)>
-	for FromBridgedChainMessagePayload<Call>
+		for FromBridgedChainMessagePayload<Call>
 	{
 		fn from(xcm: (xcm::v3::MultiLocation, xcm::v3::Xcm<Call>)) -> Self {
 			FromBridgedChainMessagePayload { xcm, weight: None }
@@ -876,7 +880,7 @@ pub mod xcm_copy {
 
 	pub struct BridgeBlobDispatcher<Router, OurPlace>(PhantomData<(Router, OurPlace)>);
 	impl<Router: SendXcm, OurPlace: Get<InteriorMultiLocation>> DispatchBlob
-	for BridgeBlobDispatcher<Router, OurPlace>
+		for BridgeBlobDispatcher<Router, OurPlace>
 	{
 		fn dispatch_blob(blob: Vec<u8>) -> Result<(), DispatchBlobError> {
 			let our_universal = OurPlace::get();
@@ -905,7 +909,7 @@ pub mod xcm_copy {
 		PhantomData<(Bridge, BridgedNetwork, Price)>,
 	);
 	impl<Bridge: HaulBlob, BridgedNetwork: Get<NetworkId>, Price: Get<MultiAssets>> ExportXcm
-	for HaulBlobExporter<Bridge, BridgedNetwork, Price>
+		for HaulBlobExporter<Bridge, BridgedNetwork, Price>
 	{
 		type Ticket = (Vec<u8>, XcmHash);
 
@@ -923,7 +927,7 @@ pub mod xcm_copy {
 				Ok(d) => d.into(),
 				Err((dest, _)) => {
 					*destination = Some(dest);
-					return Err(SendError::NotApplicable)
+					return Err(SendError::NotApplicable);
 				},
 			};
 			let message = VersionedXcm::from(message.take().ok_or(SendError::MissingArgument)?);
