@@ -36,6 +36,10 @@ sp-state-machine           = { optional = true, default-features = false, git = 
 sp-std                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-trie                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 sp-version                 = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+# polkadot
+xcm          = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
+xcm-builder  = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
+xcm-executor = { git = "https://github.com/paritytech/polkadot", branch = "gav-xcm-v3", default-features = false }
 
 [features]
 default = ["std"]
@@ -66,6 +70,10 @@ std = [
 	"sp-state-machine/std",
 	"sp-std/std",
 	"sp-trie/std",
+	# polkadot
+	"xcm/std",
+	"xcm-builder/std",
+	"xcm-executor/std",
 ]
 
 integrity-test = [
@@ -78,4 +86,5 @@ runtime-benchmarks = [
 	"pallet-bridge-messages/runtime-benchmarks",
 	"sp-state-machine",
 	"sp-version",
+	"xcm-builder/runtime-benchmarks",
 ]
