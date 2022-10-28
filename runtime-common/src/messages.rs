@@ -35,15 +35,8 @@ use bp_messages::{
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 // paritytech
-use frame_support::{
-	traits::{Currency, Get},
-	weights::Weight,
-	RuntimeDebug,
-};
-use sp_runtime::{
-	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT},
-	FixedPointOperand,
-};
+use frame_support::{traits::Get, weights::Weight, RuntimeDebug};
+use sp_runtime::traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT};
 use sp_std::prelude::*;
 use sp_trie::StorageProof;
 use xcm::latest::prelude::*;
@@ -288,7 +281,7 @@ pub mod source {
 			_delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
 			_lane: &LaneId,
 			_lane_outbound_data: &OutboundLaneData,
-			_payload: &FromThisChainMessagePayload<B>,
+			_payload: &FromThisChainMessagePayload,
 		) -> Result<(), Self::Error> {
 			Ok(())
 		}
@@ -445,39 +438,40 @@ pub mod source {
 		type Ticket = (BalanceOf<ThisChain<T::MessageBridge>>, FromThisChainMessagePayload);
 
 		fn validate(
-			dest: &mut Option<MultiLocation>,
-			msg: &mut Option<Xcm<()>>,
+			_dest: &mut Option<MultiLocation>,
+			_msg: &mut Option<Xcm<()>>,
 		) -> SendResult<Self::Ticket> {
-			let d = dest.take().ok_or(SendError::MissingArgument)?;
-			if !T::verify_destination(&d) {
-				*dest = Some(d);
-				return Err(SendError::NotApplicable);
-			}
-
-			let route = T::build_destination();
-			let msg = (route, msg.take().ok_or(SendError::MissingArgument)?).encode();
-
-			let fee = estimate_message_dispatch_and_delivery_fee::<T::MessageBridge>(
-				&msg,
-				T::MessageBridge::RELAYER_FEE_PERCENT,
-				None,
-			);
-			let fee = match fee {
-				Ok(fee) => fee,
-				Err(e) => {
-					log::trace!(
-						target: "runtime::bridge",
-						"Failed to comupte fee for XCM message to {:?}: {:?}",
-						T::MessageBridge::BRIDGED_CHAIN_ID,
-						e,
-					);
-					*dest = Some(d);
-					return Err(SendError::Transport(e));
-				},
-			};
-			let fee_assets = MultiAssets::from((Here, fee));
-
-			Ok(((fee, msg), fee_assets))
+			unimplemented!("TODO");
+			// let d = dest.take().ok_or(SendError::MissingArgument)?;
+			// if !T::verify_destination(&d) {
+			// 	*dest = Some(d);
+			// 	return Err(SendError::NotApplicable);
+			// }
+			//
+			// let route = T::build_destination();
+			// let msg = (route, msg.take().ok_or(SendError::MissingArgument)?).encode();
+			//
+			// let fee = estimate_message_dispatch_and_delivery_fee::<T::MessageBridge>(
+			// 	&msg,
+			// 	T::MessageBridge::RELAYER_FEE_PERCENT,
+			// 	None,
+			// );
+			// let fee = match fee {
+			// 	Ok(fee) => fee,
+			// 	Err(e) => {
+			// 		log::trace!(
+			// 			target: "runtime::bridge",
+			// 			"Failed to comupte fee for XCM message to {:?}: {:?}",
+			// 			T::MessageBridge::BRIDGED_CHAIN_ID,
+			// 			e,
+			// 		);
+			// 		*dest = Some(d);
+			// 		return Err(SendError::Transport(e));
+			// 	},
+			// };
+			// let fee_assets = MultiAssets::from((Here, fee));
+			//
+			// Ok(((fee, msg), fee_assets))
 		}
 
 		fn deliver(ticket: Self::Ticket) -> Result<XcmHash, SendError> {

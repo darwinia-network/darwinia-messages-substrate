@@ -143,7 +143,8 @@ impl WeightInfo for () {
 	}
 
 	fn set_slash_protect() -> Weight {
-		Weight::from_ref_time(17_332_000 as u64).saturating_add(RocksDbWeight::get().writes(1 as u64))
+		Weight::from_ref_time(17_332_000 as u64)
+			.saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
 
 	fn set_assigned_relayers_number() -> Weight {

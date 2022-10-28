@@ -90,9 +90,8 @@ pub const LOG_TARGET: &str = "runtime::bridge-messages";
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::log;
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::{log, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::config]

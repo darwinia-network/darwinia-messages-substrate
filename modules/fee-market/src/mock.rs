@@ -76,9 +76,7 @@ impl frame_system::Config for Test {
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
-	type Call = Call;
 	type DbWeight = DbWeight;
-	type Event = Event;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -88,8 +86,10 @@ impl frame_system::Config for Test {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type Origin = Origin;
 	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
 	type Version = ();
@@ -102,11 +102,11 @@ impl pallet_balances::Config for Test {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
 
@@ -221,13 +221,13 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 /// Lane message verifier that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
-impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
+impl LaneMessageVerifier<RuntimeOrigin, AccountId, TestPayload, TestMessageFee>
 	for TestLaneMessageVerifier
 {
 	type Error = &'static str;
 
 	fn verify_message(
-		_submitter: &Origin,
+		_submitter: &RuntimeOrigin,
 		delivery_and_dispatch_fee: &TestMessageFee,
 		_lane: &LaneId,
 		_lane_outbound_data: &OutboundLaneData,
@@ -255,7 +255,8 @@ impl TestMessageDeliveryAndDispatchPayment {
 
 	/// Returns true if given fee has been paid by given submitter.
 	pub fn is_fee_paid(submitter: AccountId, fee: TestMessageFee) -> bool {
-		let raw_origin: Result<frame_system::RawOrigin<_>, _> = Origin::signed(submitter).into();
+		let raw_origin: Result<frame_system::RawOrigin<_>, _> =
+			RuntimeOrigin::signed(submitter).into();
 		frame_support::storage::unhashed::get(b":message-fee:") == Some((raw_origin.unwrap(), fee))
 	}
 
@@ -266,13 +267,13 @@ impl TestMessageDeliveryAndDispatchPayment {
 		frame_support::storage::unhashed::take::<bool>(&key).is_some()
 	}
 }
-impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
+impl MessageDeliveryAndDispatchPayment<RuntimeOrigin, AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &Origin,
+		submitter: &RuntimeOrigin,
 		fee: &TestMessageFee,
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
@@ -413,7 +414,6 @@ frame_support::parameter_types! {
 impl pallet_bridge_messages::Config for Test {
 	type AccountIdConverter = AccountIdConverter;
 	type BridgedChainId = TestBridgedChainId;
-	type Event = Event;
 	type InboundMessageFee = TestMessageFee;
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
@@ -429,12 +429,13 @@ impl pallet_bridge_messages::Config for Test {
 	type OutboundMessageFee = TestMessageFee;
 	type OutboundPayload = TestPayload;
 	type Parameter = TestMessagesParameter;
+	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = TestSourceHeaderChain;
 	type TargetHeaderChain = TestTargetHeaderChain;
 	type WeightInfo = ();
 }
 
-impl SenderOrigin<AccountId> for Origin {
+impl SenderOrigin<AccountId> for RuntimeOrigin {
 	fn linked_account(&self) -> Option<AccountId> {
 		match self.caller {
 			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
@@ -478,10 +479,10 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
-	type RuntimeEvent = Event;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
+	type RuntimeEvent = RuntimeEvent;
 	type Slasher = TestSlasher;
 	type Slot = Slot;
 	type TreasuryPalletId = TreasuryPalletId;

@@ -44,7 +44,8 @@ pub struct FeeMarketPayment<T, I, Currency> {
 	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
 }
 
-impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::RuntimeOrigin, T::AccountId, BalanceOf<T, I>>
+impl<T, I, Currency>
+	MessageDeliveryAndDispatchPayment<T::RuntimeOrigin, T::AccountId, BalanceOf<T, I>>
 	for FeeMarketPayment<T, I, Currency>
 where
 	T: frame_system::Config + Config<I>,
