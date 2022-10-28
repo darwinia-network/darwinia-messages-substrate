@@ -43,7 +43,7 @@ pub type ParaHash = crate::Hash;
 pub type ParaHasher = crate::Hasher;
 
 // Name of the parachains pallet at the Polkadot or Westend runtime.
-pub const PARAS_PALLET_NA
+pub const PARAS_PALLET_NAME: &str = "Paras";
 
 /// Parachain id.
 ///
