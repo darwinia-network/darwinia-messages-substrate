@@ -42,7 +42,7 @@ pub type ParaHash = crate::Hash;
 /// Parachain head hasher.
 pub type ParaHasher = crate::Hasher;
 
-// Name of the parachains pallet at the Polkadot-like runtime.
+// Name of the parachains pallet at the Polkadot-like runtimes.
 pub const PARAS_PALLET_NAME: &str = "Paras";
 
 /// Parachain id.
