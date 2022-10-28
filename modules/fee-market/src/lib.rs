@@ -94,7 +94,7 @@ pub mod pallet {
 		type Slasher: Slasher<Self, I>;
 
 		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
-		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type WeightInfo: WeightInfo;
 	}
 

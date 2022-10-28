@@ -478,7 +478,7 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
-	type Event = Event;
+	type RuntimeEvent = Event;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;

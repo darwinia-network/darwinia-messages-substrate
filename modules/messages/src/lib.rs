@@ -80,7 +80,7 @@ use bp_messages::{
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
-use frame_support::{dispatch::PostDispatchInfo, ensure, fail, traits::Get};
+use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get};
 use sp_core::H256;
 use sp_runtime::traits::Convert;
 use sp_std::{cell::RefCell, marker::PhantomData, prelude::*};
@@ -90,6 +90,7 @@ pub const LOG_TARGET: &str = "runtime::bridge-messages";
 
 #[frame_support::pallet]
 pub mod pallet {
+	use frame_support::log;
 	use super::*;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
@@ -99,7 +100,8 @@ pub mod pallet {
 		// General types
 
 		/// The overarching event type.
-		type RuntimeEvent: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self, I>>
+			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Benchmarks results from runtime we're plugged into.
 		type WeightInfo: WeightInfoExt;
 

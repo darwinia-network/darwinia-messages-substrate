@@ -44,18 +44,18 @@ pub struct FeeMarketPayment<T, I, Currency> {
 	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
 }
 
-impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::Origin, T::AccountId, BalanceOf<T, I>>
+impl<T, I, Currency> MessageDeliveryAndDispatchPayment<T::RuntimeOrigin, T::AccountId, BalanceOf<T, I>>
 	for FeeMarketPayment<T, I, Currency>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
-	T::Origin: SenderOrigin<T::AccountId>,
+	T::RuntimeOrigin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId>,
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &T::Origin,
+		submitter: &T::RuntimeOrigin,
 		fee: &BalanceOf<T, I>,
 		relayer_fund_account: &T::AccountId,
 	) -> Result<(), Self::Error> {
