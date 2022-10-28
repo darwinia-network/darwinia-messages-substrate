@@ -29,6 +29,23 @@ use sp_std::{collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
 const ALL_OUTBOUND_MESSAGES_REJECTED: &str =
 	"This chain is configured to reject all outbound messages";
 
+/// The sender of the message on the source chain.
+pub trait SenderOrigin<AccountId> {
+	/// Return id of the account that is sending this message.
+	///
+	/// In regular messages configuration, when regular message is sent you'll always get `Some(_)`
+	/// from this call. This is the account that is paying send costs. However, there are some
+	/// examples when `None` may be returned from the call:
+	///
+	/// - if the send-message call origin is either `frame_system::RawOrigin::Root` or
+	///   `frame_system::RawOrigin::None` and your configuration forbids such messages;
+	/// - if your configuration allows 'unpaid' messages sent by pallets. Then the pallet may just
+	///   use its own defined origin (not linked to any account) and the message will be accepted.
+	///   This may be useful for pallets that are sending important system-wide information (like
+	///   update of runtime version).
+	fn linked_account(&self) -> Option<AccountId>;
+}
+
 /// Target chain API. Used by source chain to verify target chain proofs.
 ///
 /// All implementations of this trait should only work with finalized data that
