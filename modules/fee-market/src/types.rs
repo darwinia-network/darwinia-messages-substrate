@@ -33,11 +33,13 @@ pub struct Relayer<AccountId, Balance> {
 	pub collateral: Balance,
 	pub fee: Balance,
 }
+
 impl<AccountId, Balance> Relayer<AccountId, Balance> {
 	pub fn new(id: AccountId, collateral: Balance, fee: Balance) -> Relayer<AccountId, Balance> {
 		Relayer { id, collateral, fee }
 	}
 }
+
 impl<AccountId, Balance> PartialOrd for Relayer<AccountId, Balance>
 where
 	AccountId: PartialEq,
@@ -53,6 +55,7 @@ where
 		})
 	}
 }
+
 impl<AccountId, Balance> Ord for Relayer<AccountId, Balance>
 where
 	AccountId: Eq,
@@ -76,7 +79,7 @@ pub struct Order<AccountId, BlockNumber, Balance> {
 	pub message: MessageNonce,
 	pub sent_time: BlockNumber,
 	pub confirm_time: Option<BlockNumber>,
-	pub locked_collateral: Balance,
+	pub collateral_per_assigned_relayer: Balance,
 	pub assigned_relayers: Vec<AssignedRelayer<AccountId, BlockNumber, Balance>>,
 }
 impl<AccountId, BlockNumber, Balance> Order<AccountId, BlockNumber, Balance>
@@ -89,7 +92,7 @@ where
 		lane: LaneId,
 		message: MessageNonce,
 		sent_time: BlockNumber,
-		locked_collateral: Balance,
+		collateral_per_assigned_relayer: Balance,
 		relayers: Vec<Relayer<AccountId, Balance>>,
 		slot: BlockNumber,
 	) -> Self {
@@ -107,7 +110,14 @@ where
 			}
 		}
 
-		Self { lane, message, sent_time, confirm_time: None, locked_collateral, assigned_relayers }
+		Self {
+			lane,
+			message,
+			sent_time,
+			confirm_time: None,
+			collateral_per_assigned_relayer,
+			assigned_relayers,
+		}
 	}
 
 	pub fn set_confirm_time(&mut self, confirm_time: Option<BlockNumber>) {
@@ -200,6 +210,7 @@ pub struct SlashReport<AccountId, BlockNumber, Balance> {
 	pub account_id: AccountId,
 	pub amount: Balance,
 }
+
 impl<AccountId, BlockNumber, Balance> SlashReport<AccountId, BlockNumber, Balance>
 where
 	AccountId: Clone,
