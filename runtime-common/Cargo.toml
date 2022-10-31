@@ -8,10 +8,10 @@ version    = "0.1.0"
 
 [dependencies]
 # crates.io
-codec             = { package = "parity-scale-codec", version = "3.1", default-features = false, features = ["derive"] }
+codec             = { package = "parity-scale-codec", version = "2.3", default-features = false, features = ["derive"] }
 hash-db           = { version = "0.15", default-features = false }
 num-traits        = { version = "0.2", default-features = false }
-scale-info        = { version = "2.1", default-features = false, features = ["derive"] }
+scale-info        = { version = "1.0", default-features = false, features = ["derive"] }
 static_assertions = { version = "1.1", optional = true }
 # darwinia-network
 bp-message-dispatch      = { default-features = false, path = "../primitives/message-dispatch" }
@@ -25,18 +25,18 @@ pallet-bridge-messages   = { default-features = false, path = "../modules/messag
 pallet-bridge-parachains = { default-features = false, path = "../modules/parachains" }
 pallet-fee-market        = { default-features = false, path = "../modules/fee-market" }
 # paritytech
-frame-support              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-frame-system               = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-pallet-balances            = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-api                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-core                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-io                      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-state-machine           = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-std                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-trie                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-version                 = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-support              = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+frame-system               = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+pallet-balances            = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-api                     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-core                    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-io                      = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-runtime                 = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-state-machine           = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-std                     = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-trie                    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-version                 = { optional = true, default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
 
 [features]
 default = ["std"]

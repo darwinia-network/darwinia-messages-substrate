@@ -8,20 +8,20 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", version = "3.1", default-features = false }
-scale-info = { version = "2.1", default-features = false, features = ["derive"] }
+codec      = { package = "parity-scale-codec", version = "2.3", default-features = false }
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 # darwinia-network
 bp-message-dispatch = { default-features = false, path = "../../primitives/message-dispatch" }
 bp-runtime          = { default-features = false, path = "../../primitives/runtime" }
 # paritytech
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+frame-system  = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-core       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-runtime    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-std        = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
 
 [dev-dependencies]
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-io = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
 
 [features]
 default = ["std"]

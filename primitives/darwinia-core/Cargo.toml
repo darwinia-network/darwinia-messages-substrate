@@ -8,16 +8,16 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-parity-scale-codec = { version = "3.0.0", default-features = false, features = ["derive"] }
-scale-info         = { version = "2.0.1", default-features = false, features = ["derive"] }
+parity-scale-codec = { version = "2.3", default-features = false, features = ["derive"] }
+scale-info         = { version = "1.0", default-features = false, features = ["derive"] }
 # paritytech
 bp-messages   = { default-features = false, path = "../messages" }
 bp-runtime    = { default-features = false, path = "../runtime" }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+frame-system  = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-core       = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-runtime    = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
+sp-std        = { default-features = false, git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
 
 [features]
 default = ["std"]
