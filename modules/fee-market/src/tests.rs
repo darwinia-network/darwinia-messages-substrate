@@ -20,7 +20,7 @@
 use std::collections::BTreeMap;
 // --- paritytech ---
 use frame_support::{assert_err, assert_ok, traits::OnFinalize};
-use sp_runtime::{traits::AccountIdConversion, DispatchError, ModuleError};
+use sp_runtime::{traits::AccountIdConversion, DispatchError};
 // --- darwinia-network ---
 use crate::{
 	assert_market_storage, assert_relayer_info,
@@ -1030,11 +1030,11 @@ fn test_order_create_if_market_not_ready() {
 			System::set_block_number(2);
 			assert_err!(
 				Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
-				DispatchError::Module(ModuleError {
+				DispatchError::Module {
 					index: 4,
-					error: [3, 0, 0, 0],
+					error: 3,
 					message: Some("MessageRejectedByLaneVerifier")
-				})
+				}
 			);
 		});
 }
@@ -1354,7 +1354,7 @@ fn test_payment_cal_rewards_normally_single_message() {
 			// confirm_relayer = slot_price * ConfirmRelayersRewardRatio = 30 * 20% = 6
 			// relayers = (fee - slot_price) * DutyRelayersRewardRatio / 3 = (100 -30) * 20% / 3 = 4
 			// treasury = fee - slot_price - duty_relayers = 100 - (24 + 6) - (4 * 3) = 58
-			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 58));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 4));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 4));
@@ -1419,7 +1419,7 @@ fn test_payment_cal_rewards_normally_multi_message() {
 			// confirm_relayer = slot_price * ConfirmRelayersRewardRatio = 30 * 20% = 6
 			// relayers = (fee - slot_price) * DutyRelayersRewardRatio / 3 = (100 -30) * 20% / 3 = 4
 			// treasury = fee - slot_price - duty_relayers = 100 - (24 + 6) - (4 * 3) = 58
-			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 116));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 8));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 8));
@@ -1479,7 +1479,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_second_slot() {
 			// 2 = 5
 
 			// treasury = fee - slot_price - duty_relayers = 100 - 50 - 5 * 2 = 40
-			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 40));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 5));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(3, 5));
@@ -1536,7 +1536,7 @@ fn test_payment_cal_rewards_when_order_confirmed_in_third_slot() {
 			// / 1 = 0
 
 			// treasury = fee - slot_price - duty_relayers = 100 - 100 - 0 = 0
-			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 0));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(3, 0));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 28));
@@ -1644,7 +1644,7 @@ fn test_payment_cal_reward_with_duplicated_delivery_proof() {
 			// / 3 = 4
 
 			// treasury = fee - slot_price - duty_relayers = 100 - 100 - 0 = 0
-			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account_truncating();
+			let t: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(t, 58));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(1, 4));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(2, 4));

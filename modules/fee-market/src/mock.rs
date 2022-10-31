@@ -341,8 +341,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 			frame_support::storage::unhashed::put(&key, &true);
 		}
 
-		let treasury_account: AccountId =
-			<Test as Config>::TreasuryPalletId::get().into_account_truncating();
+		let treasury_account: AccountId = <Test as Config>::TreasuryPalletId::get().into_account();
 		let treasury_key = (b":relayer-reward:", &treasury_account, treasury_sum).encode();
 		frame_support::storage::unhashed::put(&treasury_key, &true);
 	}
@@ -562,7 +561,7 @@ pub(crate) fn unrewarded_relayer(
 			begin,
 			end,
 			dispatch_results: if end >= begin {
-				bitvec![u8, Msb0; 1; (end - begin + 1) as _]
+				bitvec![Msb0, u8; 1; (end - begin + 1) as _]
 			} else {
 				Default::default()
 			},

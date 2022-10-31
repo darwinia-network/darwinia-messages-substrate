@@ -9,7 +9,7 @@ version = "0.1.0"
 # crates.io
 codec            = { package = "parity-scale-codec", version = "2.3", default-features = false }
 ed25519-dalek    = { version = "1.0", default-features = false, features = ["u64_backend"] }
-finality-grandpa = { version = "0.16", default-features = false }
+finality-grandpa = { version = "0.14", default-features = false }
 # darwinia-network
 bp-header-chain = { default-features = false, path = "../header-chain" }
 # paritytech

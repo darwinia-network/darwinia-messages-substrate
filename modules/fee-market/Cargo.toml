@@ -27,7 +27,7 @@ bp-messages            = { default-features = false, path = "../../primitives/me
 bp-runtime             = { default-features = false, path = "../../primitives/runtime" }
 
 [dev-dependencies]
-bitvec                 = { version = "1" }
+bitvec                 = { version = "0.20" }
 pallet-balances        = { git = "https://github.com/darwinia-network/substrate", branch = "darwinia-v0.13.0" }
 pallet-bridge-messages = { path = "../messages" }
 

@@ -50,7 +50,7 @@ pub type BridgeMessageId = (LaneId, MessageNonce);
 pub type MessagePayload = Vec<u8>;
 
 /// Bit vector of message dispatch results.
-pub type DispatchResultsBitVec = BitVec<u8, Msb0>;
+pub type DispatchResultsBitVec = BitVec<Msb0, u8>;
 
 /// Messages pallet parameter.
 pub trait Parameter: frame_support::Parameter {
@@ -365,7 +365,7 @@ mod tests {
 							messages: DeliveredMessages::new(i as _, true),
 						};
 						entry.messages.dispatch_results = bitvec![
-							u8, Msb0;
+							Msb0, u8;
 							1;
 							(messages_count / relayer_entries) as _
 						];
@@ -391,7 +391,7 @@ mod tests {
 	#[test]
 	fn message_dispatch_result_works() {
 		let delivered_messages =
-			DeliveredMessages { begin: 100, end: 150, dispatch_results: bitvec![u8, Msb0; 1; 151] };
+			DeliveredMessages { begin: 100, end: 150, dispatch_results: bitvec![Msb0, u8; 1; 151] };
 
 		assert!(!delivered_messages.contains_message(99));
 		assert!(delivered_messages.contains_message(100));
