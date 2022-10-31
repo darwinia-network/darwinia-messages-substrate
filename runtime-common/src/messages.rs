@@ -37,7 +37,7 @@ use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
 // paritytech
 use frame_support::{
-	traits::{Currency, ExistenceRequirement},
+	traits::{Currency, ExistenceRequirement, Get},
 	weights::{Weight, WeightToFee},
 	RuntimeDebug,
 };
@@ -158,6 +158,15 @@ pub mod source {
 		SignatureOf<BridgedChain<B>>,
 		BridgedChainOpaqueCall,
 	>;
+
+	/// Maximal size of outbound message payload.
+	pub struct FromThisChainMaximalOutboundPayloadSize<B>(PhantomData<B>);
+
+	impl<B: MessageBridge> Get<u32> for FromThisChainMaximalOutboundPayloadSize<B> {
+		fn get() -> u32 {
+			maximal_message_size::<B>()
+		}
+	}
 
 	/// Messages delivery proof from bridged chain:
 	///

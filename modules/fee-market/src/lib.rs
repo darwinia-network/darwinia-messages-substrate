@@ -543,7 +543,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			{
 				count += 1;
 				orders_locked_collateral =
-					orders_locked_collateral.saturating_add(order.locked_collateral);
+					orders_locked_collateral.saturating_add(order.collateral_per_assigned_relayer);
 			}
 		}
 
@@ -578,7 +578,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 /// The assigned relayers slash trait
 pub trait Slasher<T: Config<I>, I: 'static> {
-	fn cal_slash_amount(
+	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
 		timeout: T::BlockNumber,
 	) -> BalanceOf<T, I>;
