@@ -42,6 +42,9 @@ pub type ParaHash = crate::Hash;
 /// Parachain head hasher.
 pub type ParaHasher = crate::Hasher;
 
+// Name of the parachains pallet at the Polkadot-like runtimes.
+pub const PARAS_PALLET_NAME: &str = "Paras";
+
 /// Parachain id.
 ///
 /// This is an equivalent of the `polkadot_parachain::Id`, which is a compact-encoded `u32`.
