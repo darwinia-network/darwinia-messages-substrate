@@ -39,10 +39,12 @@ use s2s::RewardItem;
 use types::{Order, Relayer, SlashReport};
 // paritytech
 use bp_messages::{LaneId, MessageNonce};
+#[cfg(feature = "std")]
+use frame_support::traits::GenesisBuild;
 use frame_support::{
 	ensure,
 	pallet_prelude::*,
-	traits::{Currency, GenesisBuild, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
+	traits::{Currency, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
 	PalletId,
 };
 use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
