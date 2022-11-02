@@ -288,6 +288,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bp-darwinia-parachain"
+version = "0.1.0"
+dependencies = [
+ "bp-darwinia-core",
+ "bp-messages",
+ "bp-runtime",
+ "frame-support",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "sp-version",
+]
+
+[[package]]
 name = "bp-header-chain"
 version = "0.1.0"
 dependencies = [
