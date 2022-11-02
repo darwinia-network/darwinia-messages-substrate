@@ -63,6 +63,9 @@ pub const WOCOCO_CHAIN_ID: ChainId = *b"woco";
 /// Bridge-with-Darwinia instance id.
 pub const DARWINIA_CHAIN_ID: ChainId = *b"darw";
 
+/// Bridge-with-DarwiniaParachain instance id.
+pub const DARWINIA_PARACHAIN_CHAIN_ID: ChainId = *b"darp";
+
 /// Bridge-with-Crab instance id.
 pub const CRAB_CHAIN_ID: ChainId = *b"crab";
 
