@@ -3,6 +3,9 @@ use bp_messages::LaneId;
 /// Identifier of bridge between Darwinia and Crab.
 pub const DARWINIA_CRAB_LANE: LaneId = [0; 4];
 
+/// Identifier of bridge between Darwinia and Darwinia Parachain.
+pub const DARWINIA_DARWINIA_PARACHAIN_LANE: LaneId = [0, 0, 0, 1];
+
 // Identifier of bridge between Pangoro and Pangolin.
 pub const PANGORO_PANGOLIN_LANE: LaneId = *b"roli";
 

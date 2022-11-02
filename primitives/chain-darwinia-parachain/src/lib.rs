@@ -32,3 +32,6 @@ pub use bp_darwinia_core::*;
 
 /// DarwiniaParachain Chain.
 pub type DarwiniaParachain = DarwiniaLike;
+
+/// Name of the With-DarwiniaParachain messages pallet instance that is deployed at bridged chains.
+pub const WITH_DARWINIA_PARACHAIN_MESSAGES_PALLET_NAME: &str = "BridgeDarwiniaParachainMessages";
