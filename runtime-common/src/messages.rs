@@ -135,10 +135,17 @@ pub mod source {
 	use super::*;
 	use frame_support::log;
 
-	/// Encoded Call of the Bridged chain. We never try to decode it on This chain.
-	pub type BridgedChainOpaqueCall = Vec<u8>;
-
+	/// Maximal size of outbound message payload.
 	pub type FromThisChainMessagePayload = Vec<u8>;
+
+	/// Maximal size of outbound message payload.
+	pub struct FromThisChainMaximalOutboundPayloadSize<B>(PhantomData<B>);
+
+	impl<B: MessageBridge> Get<u32> for FromThisChainMaximalOutboundPayloadSize<B> {
+		fn get() -> u32 {
+			maximal_message_size::<B>()
+		}
+	}
 
 	/// Messages delivery proof from bridged chain:
 	///
