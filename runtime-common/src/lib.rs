@@ -104,19 +104,32 @@ pub fn migrate_message_pallet_operation_mode(module: &[u8]) {
 	}
 }
 
-pub fn migrate_best_finalized<BlockNumber, Hash>(module: &[u8], best_finalized: (BlockNumber, Hash))
+pub fn migrate_best_finalized<T, I>(module: &[u8])
 where
-	BlockNumber: codec::FullCodec,
-	Hash: codec::FullCodec,
+	T: pallet_bridge_grandpa::Config<I>,
+	I: 'static,
 {
 	// paritytech
-	use frame_support::migration;
+	use codec::Encode;
+	use frame_support::{migration, Identity, StorageHasher};
+	use pallet_bridge_grandpa::{BridgedBlockHash, BridgedHeader};
+	use sp_api::HeaderT;
 
 	let item = b"BestFinalized";
 	let hash = &[];
-
-	migration::take_storage_value::<Hash>(module, item, hash);
-	migration::put_storage_value(module, item, hash, best_finalized);
+	if let Some(block_hash) =
+		migration::take_storage_value::<BridgedBlockHash<T, I>>(module, item, hash)
+	{
+		let imported_header_item = b"ImportedHeaders";
+		let imported_header_hash = Identity::hash(&block_hash.encode());
+		if let Some(header) = migration::get_storage_value::<BridgedHeader<T, I>>(
+			module,
+			imported_header_item,
+			&imported_header_hash,
+		) {
+			migration::put_storage_value(module, item, hash, (header.number(), header.hash()));
+		}
+	}
 }
 
 /// Declares a runtime-specific `BridgeRejectObsoleteHeadersAndMessages` signed extension.
