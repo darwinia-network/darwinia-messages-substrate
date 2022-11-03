@@ -26,6 +26,7 @@ pub mod messages_benchmarking;
 pub mod messages_extension;
 pub mod pallets;
 
+use bp_parachains::BestParaHeadHash;
 // darwinia-network
 use bp_runtime::FilterCall;
 // paritytech
@@ -106,14 +107,15 @@ pub fn migrate_message_pallet_operation_mode(module: &[u8]) {
 
 pub fn migrate_best_finalized<T, I>(module: &[u8])
 where
-	T: pallet_bridge_grandpa::Config<I>,
 	I: 'static,
+	T: pallet_bridge_grandpa::Config<I>,
 {
 	// paritytech
 	use codec::Encode;
 	use frame_support::{migration, Identity, StorageHasher};
-	use pallet_bridge_grandpa::{BridgedBlockHash, BridgedHeader};
 	use sp_api::HeaderT;
+	// darwinia-network
+	use pallet_bridge_grandpa::{BridgedBlockHash, BridgedHeader};
 
 	let item = b"BestFinalized";
 	let hash = &[];
@@ -129,6 +131,46 @@ where
 		) {
 			migration::put_storage_value(module, item, hash, (header.number(), header.hash()));
 		}
+	}
+}
+
+pub fn migrate_best_para_heads(module: &[u8]) {
+	// paritytech
+	use codec::{Decode, Encode};
+	use frame_support::{
+		migration, storage::migration::storage_key_iter, Blake2_128Concat, StorageHasher,
+	};
+	// darwinia-network
+	use bp_parachains::ParaInfo;
+	use bp_polkadot_core::parachains::{ParaHash, ParaId};
+	use pallet_bridge_parachains::RelayBlockNumber;
+
+	#[derive(Decode, Encode, PartialEq)]
+	pub struct BestParaHead {
+		pub at_relay_block_number: RelayBlockNumber,
+		pub head_hash: ParaHash,
+		pub next_imported_hash_position: u32,
+	}
+
+	let old_item = b"BestParaHeads";
+	let new_item = b"ParasInfo";
+	for (para_id, best_para_head) in
+		storage_key_iter::<ParaId, BestParaHead, Blake2_128Concat>(module, old_item).drain()
+	{
+		let para_info = ParaInfo {
+			best_head_hash: BestParaHeadHash {
+				at_relay_block_number: best_para_head.at_relay_block_number,
+				head_hash: best_para_head.head_hash,
+			},
+			next_imported_hash_position: best_para_head.next_imported_hash_position,
+		};
+
+		migration::put_storage_value(
+			module,
+			new_item,
+			&Blake2_128Concat::hash(&para_id.encode()),
+			para_info,
+		);
 	}
 }
 
