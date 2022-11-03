@@ -105,7 +105,7 @@ pub trait BridgedChainWithMessages: ChainWithMessages {
 
 	/// Returns `true` if message dispatch weight is withing expected limits. `false` means
 	/// that the message is too heavy to be sent over the bridge and shall be rejected.
-	fn verify_dispatch_weight(message_payload: &[u8], payload_weight: &Weight) -> bool;
+	fn verify_dispatch_weight(message_payload: &[u8]) -> bool;
 }
 
 /// This chain in context of message bridge.
@@ -950,7 +950,7 @@ mod tests {
 	// const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: u32 = 2;
 	// const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: u32 = 4;
 	// const BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE: u32 = 6;
-	// const BRIDGED_CHAIN_MIN_EXTRINSIC_WEIGHT: usize = 5;
+	const BRIDGED_CHAIN_MIN_EXTRINSIC_WEIGHT: usize = 5;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: usize = 2048;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE: u32 = 1024;
 
@@ -1121,7 +1121,7 @@ mod tests {
 			unreachable!()
 		}
 
-		fn verify_dispatch_weight(_message_payload: &[u8], _payload_weight: &Weight) -> bool {
+		fn verify_dispatch_weight(_message_payload: &[u8]) -> bool {
 			unreachable!()
 		}
 	}
@@ -1151,10 +1151,9 @@ mod tests {
 			BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE
 		}
 
-		fn verify_dispatch_weight(message_payload: &[u8], payload_weight: &Weight) -> bool {
-			let begin =
-				std::cmp::min(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT, message_payload.len() as Weight);
-			(begin..=BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT).contains(payload_weight)
+		fn verify_dispatch_weight(message_payload: &[u8]) -> bool {
+			message_payload.len() >= BRIDGED_CHAIN_MIN_EXTRINSIC_WEIGHT &&
+				message_payload.len() <= BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT
 		}
 	}
 
