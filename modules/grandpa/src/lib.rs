@@ -53,14 +53,16 @@ mod storage_types;
 use finality_grandpa::voter_set::VoterSet;
 // darwinia-network
 use bp_header_chain::{justification::GrandpaJustification, InitializationData};
-use bp_runtime::{BlockNumberOf, Chain, HashOf, HasherOf, HeaderOf, OwnedBridgeModule};
+use bp_runtime::{
+	BlockNumberOf, BoundedStorageValue, Chain, HashOf, HasherOf, HeaderOf, OwnedBridgeModule,
+};
+use storage_types::StoredAuthoritySet;
 // paritytech
 use frame_support::{ensure, fail, log};
 use frame_system::ensure_signed;
 use sp_finality_grandpa::{ConsensusLog, GRANDPA_ENGINE_ID};
 use sp_runtime::traits::{Header as HeaderT, Zero};
 use sp_std::{boxed::Box, convert::TryInto};
-use storage_types::{StoredAuthoritySet, StoredBridgedHeader};
 
 /// The target that will be used when publishing logs related to this pallet.
 pub const LOG_TARGET: &str = "runtime::bridge-grandpa";
@@ -73,6 +75,9 @@ pub type BridgedBlockHash<T, I> = HashOf<<T as Config<I>>::BridgedChain>;
 pub type BridgedBlockHasher<T, I> = HasherOf<<T as Config<I>>::BridgedChain>;
 /// Header of the bridged chain.
 pub type BridgedHeader<T, I> = HeaderOf<<T as Config<I>>::BridgedChain>;
+/// Stored header of the bridged chain.
+pub type StoredBridgedHeader<T, I> =
+	BoundedStorageValue<<T as Config<I>>::MaxBridgedHeaderSize, BridgedHeader<T, I>>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -202,8 +207,18 @@ pub mod pallet {
 
 			let is_authorities_change_enacted =
 				try_enact_authority_change::<T, I>(&finality_target, set_id)?;
-			let finality_target =
-				StoredBridgedHeader::<T, I>::try_from_bridged_header(*finality_target)?;
+			let finality_target = StoredBridgedHeader::<T, I>::try_from_inner(*finality_target)
+				.map_err(|e| {
+					log::error!(
+						target: LOG_TARGET,
+						"Size of header {:?} ({}) is larger that the configured value {}",
+						hash,
+						e.value_size,
+						e.maximal_size,
+					);
+
+					Error::<T, I>::TooLargeHeader
+				})?;
 			<RequestCount<T, I>>::mutate(|count| *count += 1);
 			insert_header::<T, I>(finality_target, hash);
 			log::info!(
@@ -507,7 +522,8 @@ pub mod pallet {
 			init_params;
 		let authority_set = StoredAuthoritySet::<T, I>::try_new(authority_list, set_id)
 			.map_err(|_| Error::TooManyAuthoritiesInSet)?;
-		let header = StoredBridgedHeader::<T, I>::try_from_bridged_header(*header)?;
+		let header = StoredBridgedHeader::<T, I>::try_from_inner(*header)
+			.map_err(|_| Error::<T, I>::TooLargeHeader)?;
 
 		let initial_hash = header.hash();
 		<InitialHash<T, I>>::put(initial_hash);
@@ -540,7 +556,7 @@ pub mod pallet {
 			);
 			let hash = header.hash();
 			insert_header::<T, I>(
-				StoredBridgedHeader::try_from_bridged_header(header)
+				StoredBridgedHeader::<T, I>::try_from_inner(header)
 					.expect("only used from benchmarks; benchmarks are correct; qed"),
 				hash,
 			);
@@ -556,7 +572,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// if the pallet has not been initialized yet.
 	pub fn best_finalized() -> Option<BridgedHeader<T, I>> {
 		let (_, hash) = <BestFinalized<T, I>>::get()?;
-		<ImportedHeaders<T, I>>::get(hash).map(|h| h.0)
+		<ImportedHeaders<T, I>>::get(hash).map(|h| h.into_inner())
 	}
 
 	/// Check if a particular header is known to the bridge pallet.
@@ -1106,7 +1122,7 @@ mod tests {
 			<BestFinalized<TestRuntime>>::put((2, hash));
 			<ImportedHeaders<TestRuntime>>::insert(
 				hash,
-				StoredBridgedHeader::try_from_bridged_header(header).unwrap(),
+				StoredBridgedHeader::<TestRuntime, ()>::try_from_inner(header).unwrap(),
 			);
 
 			assert_ok!(

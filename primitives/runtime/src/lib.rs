@@ -22,6 +22,7 @@ pub mod messages;
 
 mod chain;
 mod storage_proof;
+mod storage_types;
 
 pub use chain::{
 	AccountIdOf, AccountPublicOf, BalanceOf, BlockNumberOf, Chain, EncodedOrDecodedCall, HashOf,
@@ -34,6 +35,7 @@ pub use storage_proof::{
 	record_all_keys as record_all_trie_keys, Error as StorageProofError,
 	ProofSize as StorageProofSize, StorageProofChecker,
 };
+pub use storage_types::BoundedStorageValue;
 // Re-export macro to avoid include paste dependency everywhere
 pub use sp_runtime::paste;
 
