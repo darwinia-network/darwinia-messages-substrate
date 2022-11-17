@@ -33,7 +33,7 @@ use sp_runtime::transaction_validity::TransactionValidityError;
 use sp_std::prelude::*;
 
 /// Message dispatch weight.
-pub type Weight = u64;
+pub type Weight = frame_support::weights::Weight;
 
 /// Spec version type.
 pub type SpecVersion = u32;

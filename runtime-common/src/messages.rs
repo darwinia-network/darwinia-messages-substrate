@@ -221,7 +221,6 @@ pub mod source {
 	impl<B, F, I>
 		LaneMessageVerifier<
 			OriginOf<ThisChain<B>>,
-			AccountIdOf<ThisChain<B>>,
 			FromThisChainMessagePayload<B>,
 			BalanceOf<ThisChain<B>>,
 		> for FromThisChainMessageVerifier<B, F, I>
@@ -525,7 +524,12 @@ pub mod target {
 		fn dispatch_weight(
 			message: &mut DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> frame_support::weights::Weight {
-			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(0)
+			message
+				.data
+				.payload
+				.as_ref()
+				.map(|payload| payload.weight)
+				.unwrap_or(Weight::from_ref_time(0))
 		}
 
 		fn pre_dispatch(

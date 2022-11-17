@@ -38,11 +38,10 @@ use bp_runtime::{
 };
 // paritytech
 use frame_support::{
-	dispatch::{DispatchInfo, DispatchResultWithPostInfo, Dispatchable, Weight},
+	dispatch::{DispatchInfo, DispatchResultWithPostInfo, Dispatchable, GetDispatchInfo, Weight},
 	ensure, log,
 	pallet_prelude::Pays,
 	traits::Get,
-	weights::GetDispatchInfo,
 };
 use frame_system::RawOrigin;
 use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify, Zero};
@@ -59,7 +58,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config<I: 'static = ()>: frame_system::Config {
 		/// The overarching event type.
-		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self, I>>
+			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Id of the message. Whenever message is passed to the dispatch module, it emits
 		/// event with this id + dispatch result. Could be e.g. (LaneId, MessageNonce) if
 		/// it comes from the messages module.
@@ -77,24 +77,31 @@ pub mod pallet {
 		/// owner of `TargetChainAccountPublic`.
 		type TargetChainSignature: Parameter + Verify<Signer = Self::TargetChainAccountPublic>;
 		/// The overarching dispatch call type.
-		type Call: Parameter
+		type RuntimeCall: Parameter
 			+ GetDispatchInfo
 			+ Dispatchable<
-				Origin = <Self as frame_system::Config>::Origin,
+				RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin,
 				PostInfo = frame_support::dispatch::PostDispatchInfo,
 			>;
 		/// Pre-dispatch validation for incoming calls.
 		///
 		/// The pallet will validate all incoming calls right before they're dispatched. If this
 		/// validator rejects the call, special event (`Event::MessageCallRejected`) is emitted.
-		type CallValidator: CallValidate<Self::AccountId, Self::Origin, <Self as Config<I>>::Call>;
+		type CallValidator: CallValidate<
+			Self::AccountId,
+			Self::RuntimeOrigin,
+			<Self as Config<I>>::RuntimeCall,
+		>;
 		/// The type that is used to wrap the `Self::Call` when it is moved over bridge.
 		///
 		/// The idea behind this is to avoid `Call` conversion/decoding until we'll be sure
 		/// that all other stuff (like `spec_version`) is ok. If we would try to decode
 		/// `Call` which has been encoded using previous `spec_version`, then we might end
 		/// up with decoding error, instead of `MessageVersionSpecMismatch`.
-		type EncodedCall: Decode + Encode + Into<Result<<Self as Config<I>>::Call, ()>> + Clone;
+		type EncodedCall: Decode
+			+ Encode
+			+ Into<Result<<Self as Config<I>>::RuntimeCall, ()>>
+			+ Clone;
 		/// A type which can be turned into an AccountId from a 256-bit hash.
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
@@ -102,8 +109,8 @@ pub mod pallet {
 		/// The type is used to customize the dispatch call origin.
 		type IntoDispatchOrigin: IntoDispatchOrigin<
 			Self::AccountId,
-			<Self as Config<I>>::Call,
-			Self::Origin,
+			<Self as Config<I>>::RuntimeCall,
+			Self::RuntimeOrigin,
 		>;
 	}
 
@@ -207,7 +214,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				Self::deposit_event(Event::MessageRejected(source_chain, id));
 				return MessageDispatchResult {
 					dispatch_result: false,
-					unspent_weight: 0,
+					unspent_weight: Weight::from_ref_time(0),
 					dispatch_fee_paid_during_dispatch: false,
 				};
 			},
@@ -319,7 +326,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		// because otherwise Calls may be dispatched at lower price)
 		let dispatch_info = call.get_dispatch_info();
 		let expected_weight = dispatch_info.weight;
-		if message.weight < expected_weight {
+		if message.weight.all_lt(expected_weight) {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Message {:?}/{:?}: passed weight is too low. Expected at least {:?}, got {:?}",

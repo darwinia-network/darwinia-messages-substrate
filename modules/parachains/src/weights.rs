@@ -62,12 +62,8 @@ impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 		Weight::from_ref_time(0 as u64)
 			.saturating_add(Weight::from_ref_time(18_706_000 as u64).saturating_mul(p as u64))
 			.saturating_add(T::DbWeight::get().reads(2 as u64))
-			.saturating_add(
-				T::DbWeight::get().reads(Weight::from_ref_time(2 as u64).saturating_mul(p as u64)),
-			)
-			.saturating_add(
-				T::DbWeight::get().writes(Weight::from_ref_time(3 as u64).saturating_mul(p as u64)),
-			)
+			.saturating_add(T::DbWeight::get().reads(2 as u64).saturating_mul(p as u64))
+			.saturating_add(T::DbWeight::get().writes(3 as u64).saturating_mul(p as u64))
 	}
 
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
@@ -89,14 +85,8 @@ impl WeightInfo for () {
 		Weight::from_ref_time(0 as u64)
 			.saturating_add(Weight::from_ref_time(18_706_000 as u64).saturating_mul(p as u64))
 			.saturating_add(RocksDbWeight::get().reads(2 as u64))
-			.saturating_add(
-				RocksDbWeight::get()
-					.reads(Weight::from_ref_time(2 as u64).saturating_mul(p as u64)),
-			)
-			.saturating_add(
-				RocksDbWeight::get()
-					.writes(Weight::from_ref_time(3 as u64).saturating_mul(p as u64)),
-			)
+			.saturating_add(RocksDbWeight::get().reads(2 as u64).saturating_mul(p as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64).saturating_mul(p as u64))
 	}
 
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
