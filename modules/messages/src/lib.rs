@@ -1071,7 +1071,7 @@ mod tests {
 		// check that fee has been withdrawn from submitter
 		assert!(TestMessageDeliveryAndDispatchPayment::is_fee_paid(
 			1,
-			REGULAR_PAYLOAD.declared_weight
+			REGULAR_PAYLOAD.declared_weight.ref_time()
 		));
 
 		weight
@@ -1238,7 +1238,7 @@ mod tests {
 					TEST_RELAYER_A,
 					Ok(vec![message(2, REGULAR_PAYLOAD)]).into(),
 					1,
-					REGULAR_PAYLOAD.declared_weight.ref_time(),
+					REGULAR_PAYLOAD.declared_weight
 				),
 				Error::<TestRuntime, ()>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted),
 			);
@@ -1292,7 +1292,7 @@ mod tests {
 				TEST_RELAYER_A,
 				Ok(vec![message(1, REGULAR_PAYLOAD)]).into(),
 				1,
-				REGULAR_PAYLOAD.declared_weight.ref_time(),
+				REGULAR_PAYLOAD.declared_weight
 			),);
 
 			assert_ok!(Pallet::<TestRuntime>::receive_messages_delivery_proof(
@@ -1363,7 +1363,7 @@ mod tests {
 					RuntimeOrigin::signed(1),
 					TEST_LANE_ID,
 					PAYLOAD_REJECTED_BY_TARGET_CHAIN,
-					PAYLOAD_REJECTED_BY_TARGET_CHAIN.declared_weight
+					PAYLOAD_REJECTED_BY_TARGET_CHAIN.declared_weight.ref_time()
 				),
 				Error::<TestRuntime, ()>::MessageRejectedByChainVerifier,
 			);
@@ -1395,7 +1395,7 @@ mod tests {
 					RuntimeOrigin::signed(1),
 					TEST_LANE_ID,
 					REGULAR_PAYLOAD,
-					REGULAR_PAYLOAD.declared_weight
+					REGULAR_PAYLOAD.declared_weight.ref_time()
 				),
 				Error::<TestRuntime, ()>::FailedToWithdrawMessageFee,
 			);
@@ -1410,7 +1410,7 @@ mod tests {
 				TEST_RELAYER_A,
 				Ok(vec![message(1, REGULAR_PAYLOAD)]).into(),
 				1,
-				REGULAR_PAYLOAD.declared_weight.ref_time(),
+				REGULAR_PAYLOAD.declared_weight,
 			));
 
 			assert_eq!(InboundLanes::<TestRuntime>::get(TEST_LANE_ID).0.last_delivered_nonce(), 1);
@@ -1454,7 +1454,7 @@ mod tests {
 				TEST_RELAYER_A,
 				message_proof,
 				1,
-				REGULAR_PAYLOAD.declared_weight.ref_time(),
+				REGULAR_PAYLOAD.declared_weight,
 			));
 
 			assert_eq!(
@@ -1738,7 +1738,7 @@ mod tests {
 				)
 				.into(),
 				3,
-				REGULAR_PAYLOAD.declared_weight + REGULAR_PAYLOAD.declared_weight.ref_time(),
+				REGULAR_PAYLOAD.declared_weight + REGULAR_PAYLOAD.declared_weight,
 			),);
 
 			assert_eq!(InboundLanes::<TestRuntime>::get(TEST_LANE_ID).last_delivered_nonce(), 3,);
@@ -1781,14 +1781,14 @@ mod tests {
 					<TestRuntime as Config>::WeightInfo::receive_messages_proof_weight(
 						&proof,
 						messages_count,
-						REGULAR_PAYLOAD.declared_weight.ref_time(),
+						REGULAR_PAYLOAD.declared_weight,
 					);
 				let post_dispatch_weight = Pallet::<TestRuntime>::receive_messages_proof(
 					RuntimeOrigin::signed(1),
 					TEST_RELAYER_A,
 					proof,
 					messages_count,
-					REGULAR_PAYLOAD.declared_weight.ref_time(),
+					REGULAR_PAYLOAD.declared_weight,
 				)
 				.expect("delivery has failed")
 				.actual_weight

@@ -764,13 +764,13 @@ mod tests {
 	#[test]
 	fn init_root_or_owner_origin_can_initialize_pallet() {
 		run_test(|| {
-			assert_noop!(init_with_origin(RuntimeOriginsigned(1)), DispatchError::BadOrigin);
-			assert_ok!(init_with_origin(RuntimeOriginroot()));
+			assert_noop!(init_with_origin(RuntimeOrigin::signed(1)), DispatchError::BadOrigin);
+			assert_ok!(init_with_origin(RuntimeOrigin::root()));
 
 			// Reset storage so we can initialize the pallet again
 			BestFinalized::<TestRuntime>::kill();
 			PalletOwner::<TestRuntime>::put(2);
-			assert_ok!(init_with_origin(RuntimeOriginsigned(2)));
+			assert_ok!(init_with_origin(RuntimeOrigin::signed(2)));
 		})
 	}
 
@@ -780,7 +780,7 @@ mod tests {
 			assert_eq!(BestFinalized::<TestRuntime>::get(), None,);
 			assert_eq!(Pallet::<TestRuntime>::best_finalized(), None);
 
-			let init_data = init_with_origin(RuntimeOriginroot()).unwrap();
+			let init_data = init_with_origin(RuntimeOrigin::root()).unwrap();
 
 			assert!(<ImportedHeaders<TestRuntime>>::contains_key(init_data.header.hash()));
 			assert_eq!(BestFinalized::<TestRuntime>::get().unwrap().1, init_data.header.hash());
@@ -797,7 +797,7 @@ mod tests {
 		run_test(|| {
 			initialize_substrate_bridge();
 			assert_noop!(
-				init_with_origin(RuntimeOriginroot()),
+				init_with_origin(RuntimeOrigin::root()),
 				<Error<TestRuntime>>::AlreadyInitialized
 			);
 		})
@@ -817,7 +817,7 @@ mod tests {
 			};
 
 			assert_noop!(
-				Pallet::<TestRuntime>::initialize(RuntimeOriginroot(), init_data),
+				Pallet::<TestRuntime>::initialize(RuntimeOrigin::root(), init_data),
 				Error::<TestRuntime>::TooManyAuthoritiesInSet,
 			);
 		});
@@ -836,7 +836,7 @@ mod tests {
 			};
 
 			assert_noop!(
-				Pallet::<TestRuntime>::initialize(RuntimeOriginroot(), init_data),
+				Pallet::<TestRuntime>::initialize(RuntimeOrigin::root(), init_data),
 				Error::<TestRuntime>::TooLargeHeader,
 			);
 		});
@@ -848,7 +848,7 @@ mod tests {
 			initialize_substrate_bridge();
 
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
-				RuntimeOriginroot(),
+				RuntimeOrigin::root(),
 				BasicOperatingMode::Halted
 			));
 			assert_noop!(
@@ -857,7 +857,7 @@ mod tests {
 			);
 
 			assert_ok!(Pallet::<TestRuntime>::set_operating_mode(
-				RuntimeOriginroot(),
+				RuntimeOrigin::root(),
 				BasicOperatingMode::Normal
 			));
 			assert_ok!(submit_finality_proof(1));
@@ -902,7 +902,7 @@ mod tests {
 
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification,
 				),
@@ -922,7 +922,7 @@ mod tests {
 
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification,
 				),
@@ -944,14 +944,14 @@ mod tests {
 				operating_mode: BasicOperatingMode::Normal,
 			};
 
-			assert_ok!(Pallet::<TestRuntime>::initialize(RuntimeOriginroot(), init_data));
+			assert_ok!(Pallet::<TestRuntime>::initialize(RuntimeOrigin::root(), init_data));
 
 			let header = test_header(1);
 			let justification = make_default_justification(&header);
 
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification,
 				),
@@ -990,7 +990,7 @@ mod tests {
 			// Let's import our test header
 			assert_ok!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header.clone()),
 					justification
 				),
@@ -1029,7 +1029,7 @@ mod tests {
 			// Should not be allowed to import this header
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification
 				),
@@ -1054,7 +1054,7 @@ mod tests {
 			// Should not be allowed to import this header
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification
 				),
@@ -1079,7 +1079,7 @@ mod tests {
 			// Should not be allowed to import this header
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification
 				),
@@ -1104,7 +1104,7 @@ mod tests {
 			// Should not be allowed to import this header
 			assert_err!(
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					justification
 				),
@@ -1169,7 +1169,7 @@ mod tests {
 				invalid_justification.round = 42;
 
 				Pallet::<TestRuntime>::submit_finality_proof(
-					RuntimeOriginsigned(1),
+					RuntimeOrigin::signed(1),
 					Box::new(header),
 					invalid_justification,
 				)

@@ -76,9 +76,7 @@ impl frame_system::Config for Test {
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
-	type Call = Call;
 	type DbWeight = DbWeight;
-	type Event = Event;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -88,8 +86,10 @@ impl frame_system::Config for Test {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type Origin = Origin;
 	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
 	type Version = ();
@@ -102,11 +102,11 @@ impl pallet_balances::Config for Test {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
 
@@ -133,9 +133,10 @@ pub const TEST_RELAYER_A: AccountId = 100;
 /// Account id of additional test relayer - B.
 pub const TEST_RELAYER_B: AccountId = 101;
 /// Payload that is rejected by `TestTargetHeaderChain`.
-pub const PAYLOAD_REJECTED_BY_TARGET_CHAIN: TestPayload = message_payload(1, 50);
+pub const PAYLOAD_REJECTED_BY_TARGET_CHAIN: TestPayload =
+	message_payload(1, Weight::from_ref_time(50));
 /// Regular message payload.
-pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, 50);
+pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, Weight::from_ref_time(50));
 /// Vec of proved messages, grouped by lane.
 pub type MessagesByLaneVec = Vec<(LaneId, ProvedLaneMessages<Message<TestMessageFee>>)>;
 
@@ -160,7 +161,12 @@ impl Size for TestPayload {
 }
 /// Constructs message payload using given arguments and zero unspent weight.
 pub const fn message_payload(id: u64, declared_weight: Weight) -> TestPayload {
-	TestPayload { id, declared_weight, dispatch_result: dispatch_result(0), extra: Vec::new() }
+	TestPayload {
+		id,
+		declared_weight,
+		dispatch_result: dispatch_result(Weight::zero()),
+		extra: Vec::new(),
+	}
 }
 
 /// Test messages proof.
@@ -253,7 +259,8 @@ impl TestMessageDeliveryAndDispatchPayment {
 
 	/// Returns true if given fee has been paid by given submitter.
 	pub fn is_fee_paid(submitter: AccountId, fee: TestMessageFee) -> bool {
-		let raw_origin: Result<frame_system::RawOrigin<_>, _> = Origin::signed(submitter).into();
+		let raw_origin: Result<frame_system::RawOrigin<_>, _> =
+			RuntimeOrigin::signed(submitter).into();
 		frame_support::storage::unhashed::get(b":message-fee:") == Some((raw_origin.unwrap(), fee))
 	}
 
@@ -264,13 +271,13 @@ impl TestMessageDeliveryAndDispatchPayment {
 		frame_support::storage::unhashed::take::<bool>(&key).is_some()
 	}
 }
-impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
+impl MessageDeliveryAndDispatchPayment<RuntimeOrigin, AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
 	type Error = &'static str;
 
 	fn pay_delivery_and_dispatch_fee(
-		submitter: &Origin,
+		submitter: &RuntimeOrigin,
 		fee: &TestMessageFee,
 		_relayer_fund_account: &AccountId,
 	) -> Result<(), Self::Error> {
@@ -369,7 +376,7 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.declared_weight,
-			Err(_) => 0,
+			Err(_) => Weight::zero(),
 		}
 	}
 
@@ -386,7 +393,7 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	) -> MessageDispatchResult {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.dispatch_result.clone(),
-			Err(_) => dispatch_result(0),
+			Err(_) => dispatch_result(Weight::zero()),
 		}
 	}
 }
@@ -411,7 +418,6 @@ frame_support::parameter_types! {
 impl pallet_bridge_messages::Config for Test {
 	type AccountIdConverter = AccountIdConverter;
 	type BridgedChainId = TestBridgedChainId;
-	type Event = Event;
 	type InboundMessageFee = TestMessageFee;
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
@@ -427,12 +433,13 @@ impl pallet_bridge_messages::Config for Test {
 	type OutboundMessageFee = TestMessageFee;
 	type OutboundPayload = TestPayload;
 	type Parameter = TestMessagesParameter;
+	type RuntimeEvent = RuntimeEvent;
 	type SourceHeaderChain = TestSourceHeaderChain;
 	type TargetHeaderChain = TestTargetHeaderChain;
 	type WeightInfo = ();
 }
 
-impl SenderOrigin<AccountId> for Origin {
+impl SenderOrigin<AccountId> for RuntimeOrigin {
 	fn linked_account(&self) -> Option<AccountId> {
 		match self.caller {
 			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
@@ -476,10 +483,10 @@ impl Config for Test {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
-	type Event = Event;
 	type LockId = FeeMarketLockId;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = MinimumRelayFee;
+	type RuntimeEvent = RuntimeEvent;
 	type Slasher = TestSlasher;
 	type Slot = Slot;
 	type TreasuryPalletId = TreasuryPalletId;
@@ -570,7 +577,12 @@ pub(crate) fn unrewarded_relayer(
 
 pub(crate) fn send_regular_message(sender: u64, fee: Balance) -> (LaneId, u64) {
 	let message_nonce = outbound_lane::<Test, ()>(TEST_LANE_ID).data().latest_generated_nonce + 1;
-	assert_ok!(Messages::send_message(Origin::signed(sender), TEST_LANE_ID, REGULAR_PAYLOAD, fee));
+	assert_ok!(Messages::send_message(
+		RuntimeOrigin::signed(sender),
+		TEST_LANE_ID,
+		REGULAR_PAYLOAD,
+		fee
+	));
 
 	(TEST_LANE_ID, message_nonce)
 }
@@ -582,7 +594,7 @@ pub(crate) fn receive_messages_delivery_proof(
 	last_delivered_nonce: u64,
 ) {
 	assert_ok!(Messages::receive_messages_delivery_proof(
-		Origin::signed(sender),
+		RuntimeOrigin::signed(sender),
 		TestMessagesDeliveryProof(Ok((
 			TEST_LANE_ID,
 			InboundLaneData {

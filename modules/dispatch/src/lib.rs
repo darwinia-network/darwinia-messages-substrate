@@ -507,7 +507,7 @@ mod tests {
 	const TARGET_CHAIN_ID: ChainId = *b"trgt";
 
 	const TEST_SPEC_VERSION: SpecVersion = 0;
-	const TEST_WEIGHT: Weight = 1_000_000_000;
+	const TEST_WEIGHT: Weight = Weight::from_ref_time(1_000_000_000);
 
 	#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
 	pub struct TestAccountPublic(AccountId);
@@ -549,7 +549,7 @@ mod tests {
 
 	parameter_types! {
 		pub const BlockHashCount: u64 = 250;
-		pub const MaximumBlockWeight: Weight = 1024;
+		pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 		pub const MaximumBlockLength: u32 = 2 * 1024;
 		pub const AvailableBlockRatio: Perbill = Perbill::one();
 	}
@@ -562,9 +562,7 @@ mod tests {
 		type BlockLength = ();
 		type BlockNumber = u64;
 		type BlockWeights = ();
-		type Call = Call;
 		type DbWeight = ();
-		type Event = Event;
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
 		type Header = Header;
@@ -574,8 +572,10 @@ mod tests {
 		type OnKilledAccount = ();
 		type OnNewAccount = ();
 		type OnSetCode = ();
-		type Origin = Origin;
 		type PalletInfo = PalletInfo;
+		type RuntimeCall = RuntimeCall;
+		type RuntimeEvent = RuntimeEvent;
+		type RuntimeOrigin = RuntimeOrigin;
 		type SS58Prefix = ();
 		type SystemWeightInfo = ();
 		type Version = ();
@@ -584,11 +584,11 @@ mod tests {
 	impl Config for TestRuntime {
 		type AccountIdConverter = AccountIdConverter;
 		type BridgeMessageId = BridgeMessageId;
-		type Call = Call;
 		type CallValidator = CallValidator;
 		type EncodedCall = EncodedCall;
-		type Event = Event;
 		type IntoDispatchOrigin = TestIntoDispatchOrigin;
+		type RuntimeCall = RuntimeCall;
+		type RuntimeEvent = RuntimeEvent;
 		type SourceChainAccountId = AccountId;
 		type TargetChainAccountPublic = TestAccountPublic;
 		type TargetChainSignature = TestSignature;
@@ -597,28 +597,28 @@ mod tests {
 	#[derive(Decode, Encode, Clone)]
 	pub struct EncodedCall(Vec<u8>);
 
-	impl From<EncodedCall> for Result<Call, ()> {
-		fn from(call: EncodedCall) -> Result<Call, ()> {
-			Call::decode(&mut &call.0[..]).map_err(drop)
+	impl From<EncodedCall> for Result<RuntimeCall, ()> {
+		fn from(call: EncodedCall) -> Result<RuntimeCall, ()> {
+			RuntimeCall::decode(&mut &call.0[..]).map_err(drop)
 		}
 	}
 
 	pub struct CallValidator;
-	impl CallValidate<AccountId, Origin, Call> for CallValidator {
+	impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for CallValidator {
 		fn check_receiving_before_dispatch(
 			_relayer_account: &AccountId,
-			_call: &Call,
+			_call: &RuntimeCall,
 		) -> Result<(), &'static str> {
 			Ok(())
 		}
 
 		fn call_validate(
 			_relayer_account: &AccountId,
-			_origin: &Origin,
-			call: &Call,
+			_origin: &RuntimeOrigin,
+			call: &RuntimeCall,
 		) -> Result<(), TransactionValidityError> {
 			match call {
-				Call::System(frame_system::Call::fill_block { .. }) =>
+				RuntimeCall::System(frame_system::Call::fill_block { .. }) =>
 					Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
 				_ => Ok(()),
 			}
@@ -626,8 +626,8 @@ mod tests {
 	}
 
 	pub struct TestIntoDispatchOrigin;
-	impl IntoDispatchOrigin<AccountId, Call, Origin> for TestIntoDispatchOrigin {
-		fn into_dispatch_origin(id: &AccountId, _call: &Call) -> Origin {
+	impl IntoDispatchOrigin<AccountId, RuntimeCall, RuntimeOrigin> for TestIntoDispatchOrigin {
+		fn into_dispatch_origin(id: &AccountId, _call: &RuntimeCall) -> RuntimeOrigin {
 			frame_system::RawOrigin::Signed(*id).into()
 		}
 	}
@@ -639,7 +639,7 @@ mod tests {
 
 	fn prepare_message(
 		origin: CallOrigin<AccountId, TestAccountPublic, TestSignature>,
-		call: Call,
+		call: RuntimeCall,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
 		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
@@ -654,7 +654,7 @@ mod tests {
 	}
 
 	fn prepare_root_message(
-		call: Call,
+		call: RuntimeCall,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
 		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
@@ -663,7 +663,7 @@ mod tests {
 	}
 
 	fn prepare_target_message(
-		call: Call,
+		call: RuntimeCall,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
 		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
@@ -673,7 +673,7 @@ mod tests {
 	}
 
 	fn prepare_source_message(
-		call: Call,
+		call: RuntimeCall,
 	) -> <Pallet<TestRuntime> as MessageDispatch<
 		AccountId,
 		<TestRuntime as Config>::BridgeMessageId,
@@ -689,9 +689,10 @@ mod tests {
 			let relayer_account = 1;
 
 			const BAD_SPEC_VERSION: SpecVersion = 99;
-			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
-				remark: vec![1, 2, 3],
-			}));
+			let mut message =
+				prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
+					remark: vec![1, 2, 3],
+				}));
 			let weight = message.weight;
 			message.spec_version = BAD_SPEC_VERSION;
 
@@ -711,7 +712,7 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(
+					event: RuntimeEvent::Dispatch(
 						call_dispatch::Event::<TestRuntime>::MessageVersionSpecMismatch(
 							SOURCE_CHAIN_ID,
 							id,
@@ -730,11 +731,14 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
 			let relayer_account = 1;
-			let call = Call::System(frame_system::Call::set_heap_pages { pages: 42 });
+			let call = RuntimeCall::System(frame_system::Call::set_heap_pages { pages: 42 });
 			let call_weight = call.get_dispatch_info().weight;
 			let mut message = prepare_root_message(call);
-			message.weight = 7;
-			assert!(call_weight > 7, "needed for test to actually trigger a weight mismatch");
+			message.weight = Weight::from_ref_time(7);
+			assert!(
+				call_weight.all_gt(Weight::from_ref_time(7)),
+				"needed for test to actually trigger a weight mismatch"
+			);
 
 			System::set_block_number(1);
 			let result = Dispatch::dispatch(
@@ -745,19 +749,19 @@ mod tests {
 				Ok(message),
 				|_, _| unreachable!(),
 			);
-			assert_eq!(result.unspent_weight, 7);
+			assert_eq!(result.unspent_weight, Weight::from_ref_time(7));
 			assert!(!result.dispatch_result);
 
 			assert_eq!(
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(
+					event: RuntimeEvent::Dispatch(
 						call_dispatch::Event::<TestRuntime>::MessageWeightMismatch(
 							SOURCE_CHAIN_ID,
 							id,
 							call_weight,
-							7,
+							Weight::from_ref_time(7),
 						)
 					),
 					topics: vec![],
@@ -775,7 +779,7 @@ mod tests {
 			let call_origin = CallOrigin::TargetAccount(1, TestAccountPublic(1), TestSignature(99));
 			let message = prepare_message(
 				call_origin,
-				Call::System(frame_system::Call::remark { remark: vec![1, 2, 3] }),
+				RuntimeCall::System(frame_system::Call::remark { remark: vec![1, 2, 3] }),
 			);
 			let weight = message.weight;
 
@@ -795,7 +799,7 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(
+					event: RuntimeEvent::Dispatch(
 						call_dispatch::Event::<TestRuntime>::MessageSignatureMismatch(
 							SOURCE_CHAIN_ID,
 							id
@@ -827,10 +831,9 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(call_dispatch::Event::<TestRuntime>::MessageRejected(
-						SOURCE_CHAIN_ID,
-						id
-					)),
+					event: RuntimeEvent::Dispatch(
+						call_dispatch::Event::<TestRuntime>::MessageRejected(SOURCE_CHAIN_ID, id)
+					),
 					topics: vec![],
 				}],
 			);
@@ -843,9 +846,10 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
-				remark: vec![1, 2, 3],
-			}));
+			let mut message =
+				prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
+					remark: vec![1, 2, 3],
+				}));
 			let weight = message.weight;
 			message.call.0 = vec![];
 
@@ -865,7 +869,7 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(
+					event: RuntimeEvent::Dispatch(
 						call_dispatch::Event::<TestRuntime>::MessageCallDecodeFailed(
 							SOURCE_CHAIN_ID,
 							id
@@ -883,8 +887,9 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let call =
-				Call::System(frame_system::Call::fill_block { ratio: Perbill::from_percent(75) });
+			let call = RuntimeCall::System(frame_system::Call::fill_block {
+				ratio: Perbill::from_percent(75),
+			});
 			let weight = call.get_dispatch_info().weight;
 			let mut message = prepare_root_message(call);
 			message.weight = weight;
@@ -905,7 +910,7 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(
+					event: RuntimeEvent::Dispatch(
 						call_dispatch::Event::<TestRuntime>::MessageCallValidateFailed(
 							SOURCE_CHAIN_ID,
 							id,
@@ -924,9 +929,10 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
-				remark: vec![1, 2, 3],
-			}));
+			let mut message =
+				prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
+					remark: vec![1, 2, 3],
+				}));
 			let weight = message.weight;
 			message.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
 
@@ -946,7 +952,7 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(
+					event: RuntimeEvent::Dispatch(
 						call_dispatch::Event::<TestRuntime>::MessageDispatchPaymentFailed(
 							SOURCE_CHAIN_ID,
 							id,
@@ -969,9 +975,10 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let mut message = prepare_root_message(Call::System(frame_system::Call::remark {
-				remark: vec![1, 2, 3],
-			}));
+			let mut message =
+				prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
+					remark: vec![1, 2, 3],
+				}));
 			message.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
 
 			System::set_block_number(1);
@@ -990,11 +997,13 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(call_dispatch::Event::<TestRuntime>::MessageDispatched(
-						SOURCE_CHAIN_ID,
-						id,
-						Ok(())
-					)),
+					event: RuntimeEvent::Dispatch(
+						call_dispatch::Event::<TestRuntime>::MessageDispatched(
+							SOURCE_CHAIN_ID,
+							id,
+							Ok(())
+						)
+					),
 					topics: vec![],
 				}],
 			);
@@ -1007,7 +1016,7 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let call = Call::System(frame_system::Call::set_heap_pages { pages: 1 });
+			let call = RuntimeCall::System(frame_system::Call::set_heap_pages { pages: 1 });
 			let message = prepare_target_message(call);
 
 			System::set_block_number(1);
@@ -1026,11 +1035,13 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(call_dispatch::Event::<TestRuntime>::MessageDispatched(
-						SOURCE_CHAIN_ID,
-						id,
-						Err(sp_runtime::DispatchError::BadOrigin)
-					)),
+					event: RuntimeEvent::Dispatch(
+						call_dispatch::Event::<TestRuntime>::MessageDispatched(
+							SOURCE_CHAIN_ID,
+							id,
+							Err(sp_runtime::DispatchError::BadOrigin)
+						)
+					),
 					topics: vec![],
 				}],
 			);
@@ -1042,7 +1053,7 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			let id = [0; 4];
 			let relayer_account = 1;
-			let message = prepare_root_message(Call::System(frame_system::Call::remark {
+			let message = prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
 				remark: vec![1, 2, 3],
 			}));
 
@@ -1062,11 +1073,13 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(call_dispatch::Event::<TestRuntime>::MessageDispatched(
-						SOURCE_CHAIN_ID,
-						id,
-						Ok(())
-					)),
+					event: RuntimeEvent::Dispatch(
+						call_dispatch::Event::<TestRuntime>::MessageDispatched(
+							SOURCE_CHAIN_ID,
+							id,
+							Ok(())
+						)
+					),
 					topics: vec![],
 				}],
 			);
@@ -1079,7 +1092,7 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let call = Call::System(frame_system::Call::remark { remark: vec![] });
+			let call = RuntimeCall::System(frame_system::Call::remark { remark: vec![] });
 			let message = prepare_target_message(call);
 
 			System::set_block_number(1);
@@ -1098,11 +1111,13 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(call_dispatch::Event::<TestRuntime>::MessageDispatched(
-						SOURCE_CHAIN_ID,
-						id,
-						Ok(())
-					)),
+					event: RuntimeEvent::Dispatch(
+						call_dispatch::Event::<TestRuntime>::MessageDispatched(
+							SOURCE_CHAIN_ID,
+							id,
+							Ok(())
+						)
+					),
 					topics: vec![],
 				}],
 			);
@@ -1115,7 +1130,7 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let call = Call::System(frame_system::Call::remark { remark: vec![] });
+			let call = RuntimeCall::System(frame_system::Call::remark { remark: vec![] });
 			let message = prepare_source_message(call);
 
 			System::set_block_number(1);
@@ -1134,11 +1149,13 @@ mod tests {
 				System::events(),
 				vec![EventRecord {
 					phase: Phase::Initialization,
-					event: Event::Dispatch(call_dispatch::Event::<TestRuntime>::MessageDispatched(
-						SOURCE_CHAIN_ID,
-						id,
-						Ok(())
-					)),
+					event: RuntimeEvent::Dispatch(
+						call_dispatch::Event::<TestRuntime>::MessageDispatched(
+							SOURCE_CHAIN_ID,
+							id,
+							Ok(())
+						)
+					),
 					topics: vec![],
 				}],
 			);
@@ -1147,7 +1164,7 @@ mod tests {
 
 	#[test]
 	fn origin_is_checked_when_verifying_sending_message_using_source_root_account() {
-		let call = Call::System(frame_system::Call::remark { remark: vec![] });
+		let call = RuntimeCall::System(frame_system::Call::remark { remark: vec![] });
 		let message = prepare_root_message(call);
 
 		// When message is sent by Root, CallOrigin::SourceRoot is allowed
@@ -1159,7 +1176,7 @@ mod tests {
 
 	#[test]
 	fn origin_is_checked_when_verifying_sending_message_using_target_account() {
-		let call = Call::System(frame_system::Call::remark { remark: vec![] });
+		let call = RuntimeCall::System(frame_system::Call::remark { remark: vec![] });
 		let message = prepare_target_message(call);
 
 		// When message is sent by Root, CallOrigin::TargetAccount is not allowed
@@ -1175,7 +1192,7 @@ mod tests {
 
 	#[test]
 	fn origin_is_checked_when_verifying_sending_message_using_source_account() {
-		let call = Call::System(frame_system::Call::remark { remark: vec![] });
+		let call = RuntimeCall::System(frame_system::Call::remark { remark: vec![] });
 		let message = prepare_source_message(call);
 
 		// Sending a message from the expected origin account works
