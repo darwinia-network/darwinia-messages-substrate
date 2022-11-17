@@ -1036,7 +1036,7 @@ mod tests {
 
 		fn verify_dispatch_weight(message_payload: &[u8], payload_weight: &Weight) -> bool {
 			let begin =
-				std::cmp::min(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT, message_payload.len() as Weight);
+				std::cmp::min(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT, message_payload.len() as u64);
 			(begin..=BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT).contains(payload_weight)
 		}
 	}

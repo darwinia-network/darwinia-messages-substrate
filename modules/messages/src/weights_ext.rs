@@ -306,7 +306,7 @@ pub trait WeightInfoExt: WeightInfo {
 		let weight_of_single_message_and_single_tx_overhead = Self::receive_single_message_proof();
 		weight_of_two_messages_and_single_tx_overhead
 			.saturating_sub(weight_of_single_message_and_single_tx_overhead)
-			.saturating_mul(messages as Weight)
+			.saturating_mul(messages as u64)
 	}
 
 	/// Returns weight that needs to be accounted when message delivery transaction
@@ -337,7 +337,7 @@ pub trait WeightInfoExt: WeightInfo {
 		let weight_of_single_message = Self::receive_delivery_proof_for_single_message();
 		weight_of_two_messages
 			.saturating_sub(weight_of_single_message)
-			.saturating_mul(messages as Weight)
+			.saturating_mul(messages as u64)
 	}
 
 	/// Returns weight that needs to be accounted when receiving confirmations for given a number of
@@ -349,7 +349,7 @@ pub trait WeightInfoExt: WeightInfo {
 			Self::receive_delivery_proof_for_two_messages_by_single_relayer();
 		weight_of_two_messages_by_two_relayers
 			.saturating_sub(weight_of_two_messages_by_single_relayer)
-			.saturating_mul(relayers as Weight)
+			.saturating_mul(relayers as u64)
 	}
 
 	/// Returns weight that needs to be accounted when storage proof of given size is received
@@ -361,7 +361,7 @@ pub trait WeightInfoExt: WeightInfo {
 	/// relayer must pay when it relays proof of given size (even if cost based on other parameters
 	/// is less than that cost).
 	fn storage_proof_size_overhead(proof_size: u32) -> Weight {
-		let proof_size_in_bytes = proof_size as Weight;
+		let proof_size_in_bytes = proof_size as u64;
 		let byte_weight = (Self::receive_single_message_proof_16_kb()
 			- Self::receive_single_message_proof_1_kb())
 			/ (15 * 1024);

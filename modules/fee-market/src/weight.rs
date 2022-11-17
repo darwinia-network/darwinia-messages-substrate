@@ -67,88 +67,88 @@ pub trait WeightInfo {
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	fn enroll_and_lock_collateral() -> Weight {
-		(196_247_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(25 as Weight))
-			.saturating_add(T::DbWeight::get().writes(5 as Weight))
+		Weight::from_ref_time(196_247_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(25 as u64))
+			.saturating_add(T::DbWeight::get().writes(5 as u64))
 	}
 
 	fn increase_locked_collateral() -> Weight {
-		(192_480_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(25 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(192_480_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(25 as u64))
+			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
 
 	fn decrease_locked_collateral() -> Weight {
-		(200_415_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(25 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+		Weight::from_ref_time(200_415_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(25 as u64))
+			.saturating_add(T::DbWeight::get().writes(4 as u64))
 	}
 
 	// Storage: PangoroFeeMarket Relayers (r:1 w:0) Storage: PangoroFeeMarket RelayersMap (r:20 w:1)
 	// Storage: PangoroFeeMarket Orders (r:1 w:0) Storage: PangoroFeeMarket AssignedRelayersNumber
 	// (r:1 w:0) Storage: PangoroFeeMarket AssignedRelayers (r:0 w:1)
 	fn update_relay_fee() -> Weight {
-		(178_163_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(23 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(178_163_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(23 as u64))
+			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
 
 	fn cancel_enrollment() -> Weight {
-		(192_109_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(25 as Weight))
-			.saturating_add(T::DbWeight::get().writes(5 as Weight))
+		Weight::from_ref_time(192_109_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(25 as u64))
+			.saturating_add(T::DbWeight::get().writes(5 as u64))
 	}
 
 	fn set_slash_protect() -> Weight {
-		(17_332_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(17_332_000 as u64).saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
 
 	fn set_assigned_relayers_number() -> Weight {
-		(170_128_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(22 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(170_128_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(22 as u64))
+			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
 	fn enroll_and_lock_collateral() -> Weight {
-		(196_247_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(25 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
+		Weight::from_ref_time(196_247_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(25 as u64))
+			.saturating_add(RocksDbWeight::get().writes(5 as u64))
 	}
 
 	fn increase_locked_collateral() -> Weight {
-		(192_480_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(25 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(192_480_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(25 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
 
 	fn decrease_locked_collateral() -> Weight {
-		(200_415_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(25 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+		Weight::from_ref_time(200_415_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(25 as u64))
+			.saturating_add(RocksDbWeight::get().writes(4 as u64))
 	}
 
 	fn update_relay_fee() -> Weight {
-		(178_163_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(23 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(178_163_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(23 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
 
 	fn cancel_enrollment() -> Weight {
-		(192_109_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(25 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
+		Weight::from_ref_time(192_109_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(25 as u64))
+			.saturating_add(RocksDbWeight::get().writes(5 as u64))
 	}
 
 	fn set_slash_protect() -> Weight {
-		(17_332_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(17_332_000 as u64).saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
 
 	fn set_assigned_relayers_number() -> Weight {
-		(170_128_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(22 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(170_128_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(22 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
 }

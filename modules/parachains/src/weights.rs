@@ -59,45 +59,45 @@ pub trait WeightInfo {
 pub struct BridgeWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 	fn submit_parachain_heads_with_n_parachains(p: u32) -> Weight {
-		(0 as Weight)
-			.saturating_add((18_706_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(p as Weight)))
-			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(p as Weight)))
+		Weight::from_ref_time(0 as u64)
+			.saturating_add(Weight::from_ref_time(18_706_000 as u64).saturating_mul(p as u64))
+			.saturating_add(T::DbWeight::get().reads(2 as u64))
+			.saturating_add(T::DbWeight::get().reads(Weight::from_ref_time(2 as u64).saturating_mul(p as u64)))
+			.saturating_add(T::DbWeight::get().writes(Weight::from_ref_time(3 as u64).saturating_mul(p as u64)))
 	}
 
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
-		(27_549_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(27_549_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(4 as u64))
+			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
 
 	fn submit_parachain_heads_with_16kb_proof() -> Weight {
-		(80_792_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(80_792_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(4 as u64))
+			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
 	fn submit_parachain_heads_with_n_parachains(p: u32) -> Weight {
-		(0 as Weight)
-			.saturating_add((18_706_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().reads((2 as Weight).saturating_mul(p as Weight)))
-			.saturating_add(RocksDbWeight::get().writes((3 as Weight).saturating_mul(p as Weight)))
+		Weight::from_ref_time(0 as u64)
+			.saturating_add(Weight::from_ref_time(18_706_000 as u64).saturating_mul(p as u64))
+			.saturating_add(RocksDbWeight::get().reads(2 as u64))
+			.saturating_add(RocksDbWeight::get().reads(Weight::from_ref_time(2 as u64).saturating_mul(p as u64)))
+			.saturating_add(RocksDbWeight::get().writes(Weight::from_ref_time(3 as u64).saturating_mul(p as u64)))
 	}
 
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
-		(27_549_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(27_549_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(4 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
 
 	fn submit_parachain_heads_with_16kb_proof() -> Weight {
-		(80_792_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(80_792_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(4 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
 }
