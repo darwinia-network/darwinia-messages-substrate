@@ -490,7 +490,7 @@ impl OnDeliveryConfirmed for TestOnDeliveryConfirmed2 {
 	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
 		let key = (b"TestOnDeliveryConfirmed2", lane, messages).encode();
 		frame_support::storage::unhashed::put(&key, &true);
-		Weight::from_ref_time(0)
+		Weight::zero()
 	}
 }
 
@@ -518,7 +518,7 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.declared_weight,
-			Err(_) => Weight::from_ref_time(0),
+			Err(_) => Weight::zero(),
 		}
 	}
 

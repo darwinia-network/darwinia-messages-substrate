@@ -214,7 +214,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 				Self::deposit_event(Event::MessageRejected(source_chain, id));
 				return MessageDispatchResult {
 					dispatch_result: false,
-					unspent_weight: Weight::from_ref_time(0),
+					unspent_weight: Weight::zero(),
 					dispatch_fee_paid_during_dispatch: false,
 				};
 			},

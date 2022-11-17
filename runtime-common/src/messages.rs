@@ -524,12 +524,7 @@ pub mod target {
 		fn dispatch_weight(
 			message: &mut DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
 		) -> frame_support::weights::Weight {
-			message
-				.data
-				.payload
-				.as_ref()
-				.map(|payload| payload.weight)
-				.unwrap_or(Weight::from_ref_time(0))
+			message.data.payload.as_ref().map(|payload| payload.weight).unwrap_or(Weight::zero())
 		}
 
 		fn pre_dispatch(
