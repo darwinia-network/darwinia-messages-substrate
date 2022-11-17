@@ -56,8 +56,8 @@ pub trait WeightInfo {
 }
 
 /// Weights for `pallet_bridge_parachains` using the Millau node and recommended hardware.
-pub struct MillauWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for MillauWeight<T> {
+pub struct BridgeWeight<T>(PhantomData<T>);
+impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 	fn submit_parachain_heads_with_n_parachains(p: u32) -> Weight {
 		(0 as Weight)
 			.saturating_add((18_706_000 as Weight).saturating_mul(p as Weight))

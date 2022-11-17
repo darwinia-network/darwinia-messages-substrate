@@ -54,8 +54,8 @@ pub trait WeightInfo {
 }
 
 /// Weights for `pallet_bridge_grandpa` using the Millau node and recommended hardware.
-pub struct MillauWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for MillauWeight<T> {
+pub struct BridgeWeight<T>(PhantomData<T>);
+impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 	fn submit_finality_proof(p: u32, v: u32) -> Weight {
 		(55_070_000 as Weight)
 			.saturating_add((39_678_000 as Weight).saturating_mul(p as Weight))

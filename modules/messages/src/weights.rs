@@ -64,8 +64,8 @@ pub trait WeightInfo {
 }
 
 /// Weights for `pallet_bridge_messages` using the Millau node and recommended hardware.
-pub struct MillauWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for MillauWeight<T> {
+pub struct BridgeWeight<T>(PhantomData<T>);
+impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 	fn send_minimal_message_worst_case() -> Weight {
 		(117_480_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(7 as Weight))
