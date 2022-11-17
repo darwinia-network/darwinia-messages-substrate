@@ -95,6 +95,8 @@ frame_support::parameter_types! {
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
+	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
@@ -102,6 +104,8 @@ impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRun
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance2> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
+	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
