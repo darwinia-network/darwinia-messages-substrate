@@ -16,7 +16,7 @@
 
 //! Wrappers for public types that are implementing `MaxEncodedLen`
 
-use crate::{BridgedHeader, Config, Error};
+use crate::Config;
 
 use bp_header_chain::AuthoritySet;
 use codec::{Decode, Encode, MaxEncodedLen};

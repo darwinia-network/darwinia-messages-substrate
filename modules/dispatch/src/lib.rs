@@ -44,7 +44,7 @@ use frame_support::{
 	traits::Get,
 };
 use frame_system::RawOrigin;
-use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify, Zero};
+use sp_runtime::traits::{BadOrigin, Convert, IdentifyAccount, MaybeDisplay, Verify};
 use sp_std::{fmt::Debug, prelude::*};
 
 #[frame_support::pallet]

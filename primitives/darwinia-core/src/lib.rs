@@ -20,9 +20,12 @@
 
 mod copy_paste_from_darwinia {
 	// paritytech
-	use frame_support::weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
-		DispatchClass, Weight,
+	use frame_support::{
+		dispatch::DispatchClass,
+		weights::{
+			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+			Weight,
+		},
 	};
 	use frame_system::limits::{BlockLength, BlockWeights};
 	use sp_core::H256;
@@ -98,8 +101,9 @@ use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
 // paritytech
 use frame_support::{
+	dispatch::DispatchClass,
 	unsigned::{TransactionValidityError, UnknownTransaction},
-	weights::{DispatchClass, Weight},
+	weights::Weight,
 };
 use sp_core::H256;
 use sp_runtime::{
