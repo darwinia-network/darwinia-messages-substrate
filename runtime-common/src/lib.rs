@@ -198,8 +198,8 @@ mod tests {
 	impl sp_runtime::traits::Dispatchable for MockCall {
 		type Config = ();
 		type Info = ();
-		type RuntimeOrigin = ();
 		type PostInfo = ();
+		type RuntimeOrigin = ();
 
 		fn dispatch(
 			self,

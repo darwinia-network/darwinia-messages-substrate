@@ -68,9 +68,7 @@ impl frame_system::Config for TestRuntime {
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
-	type RuntimeCall = RuntimeCall;
 	type DbWeight = ();
-	type RuntimeEvent = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -80,8 +78,10 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type RuntimeOrigin = RuntimeOrigin;
 	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = ();
+	type RuntimeOrigin = RuntimeOrigin;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
 	type Version = ();
