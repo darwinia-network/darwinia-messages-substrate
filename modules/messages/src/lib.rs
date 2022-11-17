@@ -179,7 +179,6 @@ pub mod pallet {
 		/// Message payload verifier.
 		type LaneMessageVerifier: LaneMessageVerifier<
 			Self::Origin,
-			Self::AccountId,
 			Self::OutboundPayload,
 			Self::OutboundMessageFee,
 		>;

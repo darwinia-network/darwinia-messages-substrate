@@ -296,9 +296,7 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 /// Lane message verifier that is used in tests.
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
-impl LaneMessageVerifier<Origin, AccountId, TestPayload, TestMessageFee>
-	for TestLaneMessageVerifier
-{
+impl LaneMessageVerifier<Origin, TestPayload, TestMessageFee> for TestLaneMessageVerifier {
 	type Error = &'static str;
 
 	fn verify_message(
