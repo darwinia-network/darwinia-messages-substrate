@@ -78,11 +78,6 @@ pub trait ChainWithMessages {
 	type Signer: Encode + Decode;
 	/// Signature type used on the chain.
 	type Signature: Encode + Decode;
-	/// Type of weight that is used on the chain. This would almost always be a regular
-	/// `frame_support::weight::Weight`. But since the meaning of weight on different chains
-	/// may be different, the `WeightOf<>` construct is used to avoid confusion between
-	/// different weights.
-	type Weight: From<frame_support::weights::Weight> + PartialOrd;
 	/// Type of balances that is used on the chain.
 	type Balance: Encode
 		+ Decode
@@ -97,12 +92,12 @@ pub trait ChainWithMessages {
 /// This chain that has `pallet-bridge-messages` and `dispatch` modules.
 pub trait ThisChainWithMessages: ChainWithMessages {
 	/// Call origin on the chain.
-	type Origin;
+	type RuntimeOrigin;
 	/// Call type on the chain.
-	type Call: Encode + Decode;
+	type RuntimeCall: Encode + Decode;
 
 	/// Do we accept message sent by given origin to given lane?
-	fn is_message_accepted(origin: &Self::Origin, lane: &LaneId) -> bool;
+	fn is_message_accepted(origin: &Self::RuntimeOrigin, lane: &LaneId) -> bool;
 
 	/// Maximal number of pending (not yet delivered) messages at This chain.
 	///
@@ -132,14 +127,12 @@ pub type AccountIdOf<C> = <C as ChainWithMessages>::AccountId;
 pub type SignerOf<C> = <C as ChainWithMessages>::Signer;
 /// Signature type used on the chain.
 pub type SignatureOf<C> = <C as ChainWithMessages>::Signature;
-/// Type of weight that used on the chain.
-pub type WeightOf<C> = <C as ChainWithMessages>::Weight;
 /// Type of balances that is used on the chain.
 pub type BalanceOf<C> = <C as ChainWithMessages>::Balance;
 /// Type of origin that is used on the chain.
-pub type OriginOf<C> = <C as ThisChainWithMessages>::Origin;
+pub type OriginOf<C> = <C as ThisChainWithMessages>::RuntimeOrigin;
 /// Type of call that is used on this chain.
-pub type CallOf<C> = <C as ThisChainWithMessages>::Call;
+pub type CallOf<C> = <C as ThisChainWithMessages>::RuntimeCall;
 
 /// Raw storage proof type (just raw trie nodes).
 pub type RawStorageProof = Vec<Vec<u8>>;
@@ -835,13 +828,13 @@ mod tests {
 	// paritytech
 	use frame_support::weights::Weight;
 
-	// const DELIVERY_TRANSACTION_WEIGHT: Weight = 100;
-	// const DELIVERY_CONFIRMATION_TRANSACTION_WEIGHT: Weight = 100;
-	// const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 2;
-	// const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: Weight = 4;
+	// const DELIVERY_TRANSACTION_WEIGHT: Weight = Weight::from_ref_time(100);;
+	// const DELIVERY_CONFIRMATION_TRANSACTION_WEIGHT: u64 = 100;
+	// const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: u32 = 2;
+	// const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: u32 = 4;
 	// const BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE: u32 = 6;
 	// const BRIDGED_CHAIN_MIN_EXTRINSIC_WEIGHT: usize = 5;
-	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: Weight = 2048;
+	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: usize = 2048;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE: u32 = 1024;
 
 	const TEST_LANE_ID: &LaneId = b"test";
@@ -993,13 +986,12 @@ mod tests {
 		type Hash = ();
 		type Signature = ThisChainSignature;
 		type Signer = ThisChainSigner;
-		type Weight = frame_support::weights::Weight;
 	}
 	impl ThisChainWithMessages for ThisChain {
-		type Call = ThisChainCall;
-		type Origin = ThisChainOrigin;
+		type RuntimeCall = ThisChainCall;
+		type RuntimeOrigin = ThisChainOrigin;
 
-		fn is_message_accepted(_send_origin: &Self::Origin, lane: &LaneId) -> bool {
+		fn is_message_accepted(_send_origin: &Self::RuntimeOrigin, lane: &LaneId) -> bool {
 			lane == TEST_LANE_ID
 		}
 
@@ -1024,13 +1016,12 @@ mod tests {
 		type Hash = ();
 		type Signature = BridgedChainSignature;
 		type Signer = BridgedChainSigner;
-		type Weight = frame_support::weights::Weight;
 	}
 	impl ThisChainWithMessages for BridgedChain {
-		type Call = BridgedChainCall;
-		type Origin = BridgedChainOrigin;
+		type RuntimeCall = BridgedChainCall;
+		type RuntimeOrigin = BridgedChainOrigin;
 
-		fn is_message_accepted(_send_origin: &Self::Origin, _lane: &LaneId) -> bool {
+		fn is_message_accepted(_send_origin: &Self::RuntimeOrigin, _lane: &LaneId) -> bool {
 			unreachable!()
 		}
 
