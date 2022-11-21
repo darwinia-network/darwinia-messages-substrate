@@ -198,12 +198,12 @@ mod tests {
 	impl sp_runtime::traits::Dispatchable for MockCall {
 		type Config = ();
 		type Info = ();
-		type Origin = ();
 		type PostInfo = ();
+		type RuntimeOrigin = ();
 
 		fn dispatch(
 			self,
-			_origin: Self::Origin,
+			_origin: Self::RuntimeOrigin,
 		) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
 			unimplemented!()
 		}

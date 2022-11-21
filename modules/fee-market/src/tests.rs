@@ -26,7 +26,7 @@ use crate::{
 	assert_market_storage, assert_relayer_info,
 	mock::{
 		receive_messages_delivery_proof, send_regular_message, unrewarded_relayer, AccountId,
-		Balances, Event, ExtBuilder, FeeMarket, Messages, Origin, System, Test,
+		Balances, ExtBuilder, FeeMarket, Messages, RuntimeEvent, RuntimeOrigin, System, Test,
 		TestMessageDeliveryAndDispatchPayment, REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A,
 		TEST_RELAYER_B,
 	},
@@ -40,7 +40,11 @@ fn test_enroll_failed_with_insuffience_balance() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order + 1, None),
+			FeeMarket::enroll_and_lock_collateral(
+				RuntimeOrigin::signed(1),
+				collater_per_order + 1,
+				None
+			),
 			<Error<Test>>::InsufficientBalance
 		);
 	});
@@ -51,7 +55,11 @@ fn test_enroll_failed_if_collateral_too_low() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_err!(
-			FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order - 1, None),
+			FeeMarket::enroll_and_lock_collateral(
+				RuntimeOrigin::signed(1),
+				collater_per_order - 1,
+				None
+			),
 			<Error<Test>>::CollateralTooLow
 		);
 	});
@@ -62,7 +70,7 @@ fn test_enroll_with_default_quota() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_ok!(FeeMarket::enroll_and_lock_collateral(
-			Origin::signed(1),
+			RuntimeOrigin::signed(1),
 			collater_per_order,
 			None
 		));
@@ -76,7 +84,7 @@ fn test_enroll_failed_if_quota_too_low() {
 	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_err!(
 			FeeMarket::enroll_and_lock_collateral(
-				Origin::signed(1),
+				RuntimeOrigin::signed(1),
 				collater_per_order,
 				Some(<Test as Config>::MinimumRelayFee::get() - 1),
 			),
@@ -95,7 +103,11 @@ fn test_enroll_with_correct_balance_changes() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order, None),
+				FeeMarket::enroll_and_lock_collateral(
+					RuntimeOrigin::signed(1),
+					collater_per_order,
+					None
+				),
 				<Error<Test>>::AlreadyEnrolled
 			);
 
@@ -125,7 +137,11 @@ fn test_enroll_again_failed() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::enroll_and_lock_collateral(Origin::signed(1), collater_per_order, None),
+				FeeMarket::enroll_and_lock_collateral(
+					RuntimeOrigin::signed(1),
+					collater_per_order,
+					None
+				),
 				<Error<Test>>::AlreadyEnrolled
 			);
 		});
@@ -142,7 +158,10 @@ fn test_increase_collateral_with_insuffience_balance() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::increase_locked_collateral(Origin::signed(1), collater_per_order + 1),
+				FeeMarket::increase_locked_collateral(
+					RuntimeOrigin::signed(1),
+					collater_per_order + 1
+				),
 				<Error<Test>>::InsufficientBalance
 			);
 		});
@@ -153,7 +172,7 @@ fn test_increase_collateral_not_enrolled() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_err!(
-			FeeMarket::increase_locked_collateral(Origin::signed(1), collater_per_order),
+			FeeMarket::increase_locked_collateral(RuntimeOrigin::signed(1), collater_per_order),
 			<Error<Test>>::NotEnrolled
 		);
 	});
@@ -168,7 +187,10 @@ fn test_increase_collateral_new_collateral_less_than_before() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::increase_locked_collateral(Origin::signed(1), collater_per_order - 1),
+				FeeMarket::increase_locked_collateral(
+					RuntimeOrigin::signed(1),
+					collater_per_order - 1
+				),
 				<Error<Test>>::NewCollateralShouldLargerThanBefore
 			);
 		});
@@ -199,7 +221,7 @@ fn test_increase_collateral_relayer_balance_update_correctly() {
 			}
 
 			assert_ok!(FeeMarket::increase_locked_collateral(
-				Origin::signed(1),
+				RuntimeOrigin::signed(1),
 				collater_per_order + 10
 			));
 			assert_relayer_info! {
@@ -224,7 +246,10 @@ fn test_decrease_collateral_with_insuffience_balance() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order + 1),
+				FeeMarket::decrease_locked_collateral(
+					RuntimeOrigin::signed(1),
+					collater_per_order + 1
+				),
 				<Error<Test>>::InsufficientBalance
 			);
 		});
@@ -235,7 +260,7 @@ fn test_decrease_collateral_not_enrolled() {
 	let collater_per_order = <Test as Config>::CollateralPerOrder::get();
 	ExtBuilder::default().with_balances(vec![(1, collater_per_order)]).build().execute_with(|| {
 		assert_err!(
-			FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order),
+			FeeMarket::decrease_locked_collateral(RuntimeOrigin::signed(1), collater_per_order),
 			<Error<Test>>::NotEnrolled
 		);
 	});
@@ -250,7 +275,10 @@ fn test_decrease_collateral_new_collateral_more_than_before() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::decrease_locked_collateral(Origin::signed(1), collater_per_order + 1),
+				FeeMarket::decrease_locked_collateral(
+					RuntimeOrigin::signed(1),
+					collater_per_order + 1
+				),
 				<Error<Test>>::NewCollateralShouldLessThanBefore
 			);
 		});
@@ -308,7 +336,7 @@ fn test_decrease_collateral_are_not_allowed_when_occupied() {
 
 			assert_err!(
 				FeeMarket::decrease_locked_collateral(
-					Origin::signed(1),
+					RuntimeOrigin::signed(1),
 					collater_per_order * 2 - 1
 				),
 				<Error<Test>>::StillHasOrdersNotConfirmed
@@ -359,7 +387,7 @@ fn test_decrease_collateral_without_occuiped() {
 			}
 
 			assert_ok!(FeeMarket::decrease_locked_collateral(
-				Origin::signed(1),
+				RuntimeOrigin::signed(1),
 				collater_per_order - 10
 			));
 
@@ -385,7 +413,7 @@ fn test_update_relayer_fee_failed_if_not_enroll() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::update_relay_fee(Origin::signed(1), 1),
+				FeeMarket::update_relay_fee(RuntimeOrigin::signed(1), 1),
 				<Error<Test>>::NotEnrolled
 			);
 		});
@@ -401,7 +429,7 @@ fn test_update_relayer_fee_failed_if_new_fee_too_low() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::update_relay_fee(Origin::signed(1), default_fee - 1),
+				FeeMarket::update_relay_fee(RuntimeOrigin::signed(1), default_fee - 1),
 				<Error<Test>>::RelayFeeTooLow
 			);
 		});
@@ -416,7 +444,7 @@ fn test_update_relayer_fee_works() {
 		.with_relayers(vec![(1, collater_per_order, None)])
 		.build()
 		.execute_with(|| {
-			assert_ok!(FeeMarket::update_relay_fee(Origin::signed(1), default_fee + 10),);
+			assert_ok!(FeeMarket::update_relay_fee(RuntimeOrigin::signed(1), default_fee + 10),);
 			assert_eq!(FeeMarket::relayer(&1).unwrap().fee, default_fee + 10);
 		});
 }
@@ -432,7 +460,7 @@ fn test_cancel_enroll_failed_if_not_enroll() {
 		.build()
 		.execute_with(|| {
 			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(1)),
+				FeeMarket::cancel_enrollment(RuntimeOrigin::signed(1)),
 				<Error<Test>>::NotEnrolled
 			);
 		});
@@ -458,15 +486,15 @@ fn test_cancel_enroll_failed_if_not_occuipied() {
 			let _ = send_regular_message(1, default_fee);
 
 			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(1)),
+				FeeMarket::cancel_enrollment(RuntimeOrigin::signed(1)),
 				<Error<Test>>::OccupiedRelayer
 			);
 			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(2)),
+				FeeMarket::cancel_enrollment(RuntimeOrigin::signed(2)),
 				<Error<Test>>::OccupiedRelayer
 			);
 			assert_err!(
-				FeeMarket::cancel_enrollment(Origin::signed(3)),
+				FeeMarket::cancel_enrollment(RuntimeOrigin::signed(3)),
 				<Error<Test>>::OccupiedRelayer
 			);
 		});
@@ -500,9 +528,9 @@ fn test_cancel_enroll_ok_if_order_confirmed() {
 				1,
 			);
 
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(2)));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(3)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(1)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(2)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(3)));
 		});
 }
 
@@ -529,9 +557,9 @@ fn test_cancel_enroll_relayers_market_update_correctly() {
 				"market_fee": Some(default_fee),
 			}
 
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(2)));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(3)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(1)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(2)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(3)));
 
 			assert_market_storage! {
 				"relayers": Vec::<u64>::new(),
@@ -557,9 +585,9 @@ fn test_cancel_enroll_relayers_balances_update_correctly() {
 		])
 		.build()
 		.execute_with(|| {
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(2)));
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(3)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(1)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(2)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(3)));
 
 			assert_relayer_info! {
 				"account_id": 1,
@@ -718,7 +746,7 @@ fn test_market_fee_update_after_new_relayer_enroll() {
 			}
 
 			let _ = FeeMarket::enroll_and_lock_collateral(
-				Origin::signed(4),
+				RuntimeOrigin::signed(4),
 				collater_per_order,
 				Some(default_fee + 25),
 			);
@@ -755,7 +783,7 @@ fn test_market_fee_update_after_increase_collateral() {
 			}
 
 			assert_ok!(FeeMarket::increase_locked_collateral(
-				Origin::signed(2),
+				RuntimeOrigin::signed(2),
 				collater_per_order + 1,
 			));
 
@@ -791,7 +819,7 @@ fn test_market_fee_update_after_decrease_collateral() {
 			}
 
 			assert_ok!(FeeMarket::decrease_locked_collateral(
-				Origin::signed(2),
+				RuntimeOrigin::signed(2),
 				collater_per_order * 2 - 1,
 			));
 
@@ -828,7 +856,7 @@ fn test_market_fee_update_after_update_fee() {
 				"market_fee": Some(default_fee + 30),
 			}
 
-			assert_ok!(FeeMarket::update_relay_fee(Origin::signed(4), default_fee + 25,));
+			assert_ok!(FeeMarket::update_relay_fee(RuntimeOrigin::signed(4), default_fee + 25,));
 
 			assert_market_storage! {
 				"relayers": vec![1, 2, 3, 4],
@@ -863,7 +891,7 @@ fn test_market_fee_update_after_cancel_enroll() {
 				"market_fee": Some(default_fee),
 			}
 
-			assert_ok!(FeeMarket::cancel_enrollment(Origin::signed(1)));
+			assert_ok!(FeeMarket::cancel_enrollment(RuntimeOrigin::signed(1)));
 
 			assert_market_storage! {
 				"relayers": vec![2, 3, 4],
@@ -896,7 +924,7 @@ fn test_market_fee_update_after_adjust_assigned_relayers_number() {
 				"market_fee": Some(default_fee),
 			}
 
-			assert_ok!(FeeMarket::set_assigned_relayers_number(Origin::root(), 2));
+			assert_ok!(FeeMarket::set_assigned_relayers_number(RuntimeOrigin::root(), 2));
 
 			assert_market_storage! {
 				"relayers": vec![1, 2, 3],
@@ -1009,7 +1037,7 @@ fn test_order_create_if_market_ready() {
 			let (lane, message_nonce) = send_regular_message(1, default_fee);
 			let order = FeeMarket::order((&lane, &message_nonce)).unwrap();
 			let relayers = order.assigned_relayers_slice();
-			System::assert_has_event(Event::FeeMarket(crate::Event::OrderCreated(
+			System::assert_has_event(RuntimeEvent::FeeMarket(crate::Event::OrderCreated(
 				lane,
 				message_nonce,
 				order.fee(),
@@ -1029,7 +1057,12 @@ fn test_order_create_if_market_not_ready() {
 		.execute_with(|| {
 			System::set_block_number(2);
 			assert_err!(
-				Messages::send_message(Origin::signed(1), TEST_LANE_ID, REGULAR_PAYLOAD, 200),
+				Messages::send_message(
+					RuntimeOrigin::signed(1),
+					TEST_LANE_ID,
+					REGULAR_PAYLOAD,
+					200
+				),
 				DispatchError::Module(ModuleError {
 					index: 4,
 					error: [3, 0, 0, 0],
@@ -1361,7 +1394,7 @@ fn test_payment_cal_rewards_normally_single_message() {
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(3, 4));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(5, 6));
 			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 24));
-			System::assert_has_event(Event::FeeMarket(crate::Event::OrderReward(
+			System::assert_has_event(RuntimeEvent::FeeMarket(crate::Event::OrderReward(
 				lane,
 				message_nonce,
 				RewardItem {
@@ -1743,7 +1776,7 @@ fn test_payment_slash_with_protect() {
 			System::set_block_number(2);
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let _ = send_regular_message(1, market_fee);
-			assert_ok!(FeeMarket::set_slash_protect(Origin::root(), 50));
+			assert_ok!(FeeMarket::set_slash_protect(RuntimeOrigin::root(), 50));
 
 			// Receive delivery message proof
 			System::set_block_number(2000);
@@ -1794,7 +1827,7 @@ fn test_payment_slash_event() {
 			System::set_block_number(2);
 			let market_fee = FeeMarket::market_fee().unwrap();
 			let (_, _) = send_regular_message(1, market_fee);
-			assert_ok!(FeeMarket::set_slash_protect(Origin::root(), 50));
+			assert_ok!(FeeMarket::set_slash_protect(RuntimeOrigin::root(), 50));
 
 			// Receive delivery message proof
 			System::set_block_number(2000);
@@ -1805,32 +1838,38 @@ fn test_payment_slash_event() {
 				1,
 			);
 
-			System::assert_has_event(Event::FeeMarket(crate::Event::FeeMarketSlash(SlashReport {
-				lane: TEST_LANE_ID,
-				message: 1,
-				sent_time: 2,
-				confirm_time: Some(2000),
-				delay_time: Some(1848),
-				account_id: 1,
-				amount: 50,
-			})));
-			System::assert_has_event(Event::FeeMarket(crate::Event::FeeMarketSlash(SlashReport {
-				lane: TEST_LANE_ID,
-				message: 1,
-				sent_time: 2,
-				confirm_time: Some(2000),
-				delay_time: Some(1848),
-				account_id: 2,
-				amount: 50,
-			})));
-			System::assert_has_event(Event::FeeMarket(crate::Event::FeeMarketSlash(SlashReport {
-				lane: TEST_LANE_ID,
-				message: 1,
-				sent_time: 2,
-				confirm_time: Some(2000),
-				delay_time: Some(1848),
-				account_id: 3,
-				amount: 50,
-			})));
+			System::assert_has_event(RuntimeEvent::FeeMarket(crate::Event::FeeMarketSlash(
+				SlashReport {
+					lane: TEST_LANE_ID,
+					message: 1,
+					sent_time: 2,
+					confirm_time: Some(2000),
+					delay_time: Some(1848),
+					account_id: 1,
+					amount: 50,
+				},
+			)));
+			System::assert_has_event(RuntimeEvent::FeeMarket(crate::Event::FeeMarketSlash(
+				SlashReport {
+					lane: TEST_LANE_ID,
+					message: 1,
+					sent_time: 2,
+					confirm_time: Some(2000),
+					delay_time: Some(1848),
+					account_id: 2,
+					amount: 50,
+				},
+			)));
+			System::assert_has_event(RuntimeEvent::FeeMarket(crate::Event::FeeMarketSlash(
+				SlashReport {
+					lane: TEST_LANE_ID,
+					message: 1,
+					sent_time: 2,
+					confirm_time: Some(2000),
+					delay_time: Some(1848),
+					account_id: 3,
+					amount: 50,
+				},
+			)));
 		});
 }

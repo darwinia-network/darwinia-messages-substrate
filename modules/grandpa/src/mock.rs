@@ -40,6 +40,9 @@ pub type TestNumber = crate::BridgedBlockNumber<TestRuntime, ()>;
 type Block = MockBlock<TestRuntime>;
 type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
+pub const MAX_BRIDGED_AUTHORITIES: u32 = 2048;
+pub const MAX_HEADER_SIZE: u32 = 65536;
+
 frame_support::construct_runtime! {
 	pub enum TestRuntime where
 		Block = Block,
@@ -53,7 +56,7 @@ frame_support::construct_runtime! {
 
 frame_support::parameter_types! {
 	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -65,9 +68,7 @@ impl frame_system::Config for TestRuntime {
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
-	type Call = Call;
 	type DbWeight = ();
-	type Event = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -77,8 +78,10 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type Origin = Origin;
 	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = ();
+	type RuntimeOrigin = RuntimeOrigin;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
 	type Version = ();
@@ -93,6 +96,8 @@ frame_support::parameter_types! {
 impl grandpa::Config for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxBridgedAuthorities = frame_support::traits::ConstU32<MAX_BRIDGED_AUTHORITIES>;
+	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<MAX_HEADER_SIZE>;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
