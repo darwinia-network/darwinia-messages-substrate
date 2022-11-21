@@ -86,7 +86,7 @@ pub trait TargetHeaderChain<Payload, AccountId> {
 /// Lane3 until some block, ...), then it may be built using this verifier.
 ///
 /// Any fee requirements should also be enforced here.
-pub trait LaneMessageVerifier<SenderOrigin, Submitter, Payload, Fee> {
+pub trait LaneMessageVerifier<SenderOrigin, Payload, Fee> {
 	/// Error type.
 	type Error: Debug + Into<&'static str>;
 
@@ -180,7 +180,7 @@ pub trait OnDeliveryConfirmed {
 #[impl_trait_for_tuples::impl_for_tuples(30)]
 impl OnDeliveryConfirmed for Tuple {
 	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
-		let mut total_weight: Weight = 0;
+		let mut total_weight = Weight::zero();
 		for_tuples!(
 			#(
 				total_weight = total_weight.saturating_add(Tuple::on_messages_delivered(lane, messages));
@@ -197,7 +197,7 @@ pub trait OnMessageAccepted {
 }
 impl OnMessageAccepted for () {
 	fn on_messages_accepted(_lane: &LaneId, _message: &MessageNonce) -> Weight {
-		0
+		Weight::zero()
 	}
 }
 
@@ -211,7 +211,7 @@ pub struct SendMessageArtifacts {
 }
 
 /// Messages bridge API to be used from other pallets.
-pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
+pub trait MessagesBridge<SenderOrigin, Balance, Payload> {
 	/// Error type.
 	type Error: Debug;
 
@@ -230,8 +230,8 @@ pub trait MessagesBridge<SenderOrigin, AccountId, Balance, Payload> {
 #[derive(Eq, PartialEq, RuntimeDebug)]
 pub struct NoopMessagesBridge;
 
-impl<SenderOrigin, AccountId, Balance, Payload>
-	MessagesBridge<SenderOrigin, AccountId, Balance, Payload> for NoopMessagesBridge
+impl<SenderOrigin, Balance, Payload> MessagesBridge<SenderOrigin, Balance, Payload>
+	for NoopMessagesBridge
 {
 	type Error = &'static str;
 
@@ -241,7 +241,7 @@ impl<SenderOrigin, AccountId, Balance, Payload>
 		_message: Payload,
 		_delivery_and_dispatch_fee: Balance,
 	) -> Result<SendMessageArtifacts, Self::Error> {
-		Ok(SendMessageArtifacts { nonce: 0, weight: 0 })
+		Ok(SendMessageArtifacts { nonce: 0, weight: Weight::zero() })
 	}
 }
 
@@ -262,8 +262,8 @@ impl<Payload, AccountId> TargetHeaderChain<Payload, AccountId> for ForbidOutboun
 		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
 	}
 }
-impl<SenderOrigin, Submitter, Payload, Fee>
-	LaneMessageVerifier<SenderOrigin, Submitter, Payload, Fee> for ForbidOutboundMessages
+impl<SenderOrigin, Payload, Fee> LaneMessageVerifier<SenderOrigin, Payload, Fee>
+	for ForbidOutboundMessages
 {
 	type Error = &'static str;
 

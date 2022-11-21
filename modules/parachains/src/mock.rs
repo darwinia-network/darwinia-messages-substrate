@@ -39,6 +39,7 @@ type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 pub const PARAS_PALLET_NAME: &str = "Paras";
 pub const UNTRACKED_PARACHAIN_ID: u32 = 10;
+pub const MAXIMAL_PARACHAIN_HEAD_SIZE: u32 = 512;
 
 frame_support::construct_runtime! {
 	pub enum TestRuntime where
@@ -55,7 +56,7 @@ frame_support::construct_runtime! {
 
 frame_support::parameter_types! {
 	pub const BlockHashCount: TestNumber = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -67,9 +68,7 @@ impl frame_system::Config for TestRuntime {
 	type BlockLength = ();
 	type BlockNumber = TestNumber;
 	type BlockWeights = ();
-	type Call = Call;
 	type DbWeight = ();
-	type Event = Event;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type Header = Header;
@@ -79,8 +78,10 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
-	type Origin = Origin;
 	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
 	type SS58Prefix = ();
 	type SystemWeightInfo = ();
 	type Version = ();
@@ -95,6 +96,8 @@ frame_support::parameter_types! {
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
+	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
@@ -102,6 +105,8 @@ impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRun
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance2> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
+	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
+	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
@@ -113,9 +118,10 @@ frame_support::parameter_types! {
 }
 impl pallet_bridge_parachains::Config for TestRuntime {
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
-	type Event = Event;
 	type HeadsToKeep = HeadsToKeep;
+	type MaxParaHeadSize = frame_support::traits::ConstU32<MAXIMAL_PARACHAIN_HEAD_SIZE>;
 	type ParasPalletName = ParasPalletName;
+	type RuntimeEvent = RuntimeEvent;
 	type TrackedParachains = IsInVec<GetTenFirstParachains>;
 	type WeightInfo = ();
 }

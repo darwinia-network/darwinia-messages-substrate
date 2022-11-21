@@ -20,9 +20,12 @@
 
 mod copy_paste_from_darwinia {
 	// paritytech
-	use frame_support::weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
-		DispatchClass, Weight,
+	use frame_support::{
+		dispatch::DispatchClass,
+		weights::{
+			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+			Weight,
+		},
 	};
 	use frame_system::limits::{BlockLength, BlockWeights};
 	use sp_core::H256;
@@ -46,7 +49,8 @@ mod copy_paste_from_darwinia {
 
 	pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 	pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-	pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+	// TODO: https://github.com/paritytech/parity-bridges-common/issues/1543 - remove `set_proof_size`
+	pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_mul(2);
 
 	frame_support::parameter_types! {
 		pub RuntimeBlockLength: BlockLength =
@@ -97,8 +101,9 @@ use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
 // paritytech
 use frame_support::{
+	dispatch::DispatchClass,
 	unsigned::{TransactionValidityError, UnknownTransaction},
-	weights::{DispatchClass, Weight},
+	weights::Weight,
 };
 use sp_core::H256;
 use sp_runtime::{

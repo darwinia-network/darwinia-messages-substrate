@@ -19,7 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 // crates.io
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 // darwinia-network
 use bp_polkadot_core::{
@@ -32,7 +32,7 @@ use frame_support::{Blake2_128Concat, RuntimeDebug, Twox64Concat};
 use sp_core::storage::StorageKey;
 
 /// Best known parachain head hash.
-#[derive(Clone, PartialEq, Decode, Encode, RuntimeDebug, TypeInfo)]
+#[derive(Clone, PartialEq, Decode, Encode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub struct BestParaHeadHash {
 	/// Number of relay block where this head has been read.
 	///
@@ -48,7 +48,7 @@ pub struct BestParaHeadHash {
 }
 
 /// Best known parachain head as it is stored in the runtime storage.
-#[derive(PartialEq, Decode, Encode, RuntimeDebug, TypeInfo)]
+#[derive(PartialEq, Decode, Encode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub struct ParaInfo {
 	/// Best known parachain head hash.
 	pub best_head_hash: BestParaHeadHash,
