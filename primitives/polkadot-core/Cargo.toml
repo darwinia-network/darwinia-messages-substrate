@@ -16,13 +16,13 @@ serde           = { version = "1.0", optional = true, features = ["derive"] }
 bp-messages = { default-features = false, path = "../messages" }
 bp-runtime  = { default-features = false, path = "../runtime" }
 # paritytech
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-api        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
-sp-version    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-api        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-version    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "master" }
 
 [features]
 default = ["std"]
