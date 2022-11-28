@@ -19,6 +19,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod copy_paste_from_darwinia {
+	// moonbeam
+	use account::EthereumSignature;
 	// paritytech
 	use frame_support::{
 		dispatch::DispatchClass,
@@ -32,16 +34,16 @@ mod copy_paste_from_darwinia {
 	use sp_runtime::{
 		generic,
 		traits::{BlakeTwo256, IdentifyAccount, Verify},
-		MultiAddress, MultiSignature, OpaqueExtrinsic, Perbill,
+		OpaqueExtrinsic, Perbill,
 	};
 
 	pub type BlockNumber = u32;
 	pub type Hashing = BlakeTwo256;
 	pub type Hash = H256;
-	pub type Signature = MultiSignature;
+	pub type Signature = EthereumSignature;
 	pub type AccountPublic = <Signature as Verify>::Signer;
 	pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
-	pub type Address = MultiAddress<AccountId, ()>;
+	pub type Address = AccountId;
 	pub type Nonce = u32;
 	pub type Balance = u128;
 	pub type Header = generic::Header<BlockNumber, Hashing>;
@@ -105,7 +107,7 @@ use frame_support::{
 	unsigned::{TransactionValidityError, UnknownTransaction},
 	weights::Weight,
 };
-use sp_core::H256;
+use sp_core::H160;
 use sp_runtime::{
 	generic,
 	generic::Era,
@@ -259,10 +261,10 @@ impl Chain for DarwiniaLike {
 	}
 }
 
-/// Convert a 256-bit hash into an AccountId.
+/// Convert a 160-bit hash into an AccountId.
 pub struct AccountIdConverter;
-impl Convert<H256, AccountId> for AccountIdConverter {
-	fn convert(hash: H256) -> AccountId {
+impl Convert<H160, AccountId> for AccountIdConverter {
+	fn convert(hash: H160) -> AccountId {
 		hash.to_fixed_bytes().into()
 	}
 }
