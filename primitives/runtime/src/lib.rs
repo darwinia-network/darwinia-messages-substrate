@@ -48,7 +48,7 @@ use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
-use sp_core::{hash::H256, storage::StorageKey};
+use sp_core::{storage::StorageKey, H160};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
@@ -395,15 +395,15 @@ impl Size for PreComputedSize {
 /// Note: If the same `bridge_id` is used across different chains (for example, if one source chain
 /// is bridged to multiple target chains), then all the derived accounts would be the same across
 /// the different chains. This could negatively impact users' privacy across chains.
-pub fn derive_account_id<AccountId>(bridge_id: ChainId, id: SourceAccount<AccountId>) -> H256
+pub fn derive_account_id<AccountId>(bridge_id: ChainId, id: SourceAccount<AccountId>) -> H160
 where
 	AccountId: Encode,
 {
 	match id {
 		SourceAccount::Root =>
-			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
+			H160::from_slice(&(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256)),
 		SourceAccount::Account(id) =>
-			(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256),
+			H160::from_slice(&(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256)),
 	}
 	.into()
 }
@@ -414,8 +414,8 @@ where
 ///
 /// The account ID can be the same across different instances of `pallet-bridge-messages` if the
 /// same `bridge_id` is used.
-pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H256 {
-	("relayer-fund-account", bridge_id).using_encoded(blake2_256).into()
+pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H160 {
+	H160::from_slice(&("relayer-fund-account", bridge_id).using_encoded(blake2_256))
 }
 
 /// This is a copy of the

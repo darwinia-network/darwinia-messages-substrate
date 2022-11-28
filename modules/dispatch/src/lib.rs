@@ -105,7 +105,7 @@ pub mod pallet {
 		/// A type which can be turned into an AccountId from a 256-bit hash.
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
-		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
+		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H160, Self::AccountId>;
 		/// The type is used to customize the dispatch call origin.
 		type IntoDispatchOrigin: IntoDispatchOrigin<
 			Self::AccountId,
