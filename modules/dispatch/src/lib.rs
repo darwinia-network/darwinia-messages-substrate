@@ -105,7 +105,7 @@ pub mod pallet {
 		/// A type which can be turned into an AccountId from a 256-bit hash.
 		///
 		/// Used when deriving target chain AccountIds from source chain AccountIds.
-		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H160, Self::AccountId>;
+		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
 		/// The type is used to customize the dispatch call origin.
 		type IntoDispatchOrigin: IntoDispatchOrigin<
 			Self::AccountId,
@@ -489,7 +489,7 @@ mod tests {
 	use frame_support::{parameter_types, weights::Weight};
 	use frame_system::{mocking::*, EventRecord, Phase};
 	use scale_info::TypeInfo;
-	use sp_core::{H160, H256};
+	use sp_core::H256;
 	use sp_runtime::{
 		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
@@ -530,8 +530,8 @@ mod tests {
 	}
 
 	pub struct AccountIdConverter;
-	impl sp_runtime::traits::Convert<H160, AccountId> for AccountIdConverter {
-		fn convert(hash: H160) -> AccountId {
+	impl sp_runtime::traits::Convert<H256, AccountId> for AccountIdConverter {
+		fn convert(hash: H256) -> AccountId {
 			hash.to_low_u64_ne()
 		}
 	}

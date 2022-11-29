@@ -107,7 +107,7 @@ use frame_support::{
 	unsigned::{TransactionValidityError, UnknownTransaction},
 	weights::Weight,
 };
-use sp_core::H160;
+use sp_core::{H160, H256};
 use sp_runtime::{
 	generic,
 	generic::Era,
@@ -261,10 +261,10 @@ impl Chain for DarwiniaLike {
 	}
 }
 
-/// Convert a 160-bit hash into an AccountId.
+/// Convert a 256-bit hash into an AccountId.
 pub struct AccountIdConverter;
-impl Convert<H160, AccountId> for AccountIdConverter {
-	fn convert(hash: H160) -> AccountId {
-		hash.to_fixed_bytes().into()
+impl Convert<H256, AccountId> for AccountIdConverter {
+	fn convert(hash: H256) -> AccountId {
+		H160::from_slice(&hash.to_fixed_bytes()[0..20]).into()
 	}
 }
