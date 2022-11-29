@@ -926,7 +926,6 @@ mod tests {
 	#[test]
 	fn should_emit_event_for_unpaid_calls() {
 		new_test_ext().execute_with(|| {
-			println!("111");
 			let id = [0; 4];
 			let relayer_account = 1;
 
@@ -939,7 +938,6 @@ mod tests {
 			message.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
 
 			System::set_block_number(1);
-			println!("222");
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
@@ -948,7 +946,6 @@ mod tests {
 				Ok(message),
 				|_, _| Err(()),
 			);
-			println!("333");
 			assert_eq!(result.unspent_weight, weight);
 			assert!(!result.dispatch_result);
 
