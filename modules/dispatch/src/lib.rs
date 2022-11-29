@@ -489,7 +489,7 @@ mod tests {
 	use frame_support::{parameter_types, weights::Weight};
 	use frame_system::{mocking::*, EventRecord, Phase};
 	use scale_info::TypeInfo;
-	use sp_core::H256;
+	use sp_core::{H160, H256};
 	use sp_runtime::{
 		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
@@ -530,8 +530,8 @@ mod tests {
 	}
 
 	pub struct AccountIdConverter;
-	impl sp_runtime::traits::Convert<H256, AccountId> for AccountIdConverter {
-		fn convert(hash: H256) -> AccountId {
+	impl sp_runtime::traits::Convert<H160, AccountId> for AccountIdConverter {
+		fn convert(hash: H160) -> AccountId {
 			hash.to_low_u64_ne()
 		}
 	}
@@ -926,6 +926,7 @@ mod tests {
 	#[test]
 	fn should_emit_event_for_unpaid_calls() {
 		new_test_ext().execute_with(|| {
+			println!("111");
 			let id = [0; 4];
 			let relayer_account = 1;
 
@@ -933,10 +934,12 @@ mod tests {
 				prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
 					remark: vec![1, 2, 3],
 				}));
+
 			let weight = message.weight;
 			message.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
 
 			System::set_block_number(1);
+			println!("222");
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
@@ -945,6 +948,7 @@ mod tests {
 				Ok(message),
 				|_, _| Err(()),
 			);
+			println!("333");
 			assert_eq!(result.unspent_weight, weight);
 			assert!(!result.dispatch_result);
 

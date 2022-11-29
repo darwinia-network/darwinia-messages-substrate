@@ -400,10 +400,12 @@ where
 	AccountId: Encode,
 {
 	match id {
-		SourceAccount::Root =>
-			H160::from_slice(&(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256)),
-		SourceAccount::Account(id) =>
-			H160::from_slice(&(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256)),
+		SourceAccount::Root => H160::from_slice(
+			&(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256)[0..20],
+		),
+		SourceAccount::Account(id) => H160::from_slice(
+			&(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256)[0..20],
+		),
 	}
 	.into()
 }
@@ -415,7 +417,7 @@ where
 /// The account ID can be the same across different instances of `pallet-bridge-messages` if the
 /// same `bridge_id` is used.
 pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H160 {
-	H160::from_slice(&("relayer-fund-account", bridge_id).using_encoded(blake2_256))
+	H160::from_slice(&("relayer-fund-account", bridge_id).using_encoded(blake2_256)[0..20])
 }
 
 /// This is a copy of the
