@@ -933,6 +933,7 @@ mod tests {
 				prepare_root_message(RuntimeCall::System(frame_system::Call::remark {
 					remark: vec![1, 2, 3],
 				}));
+
 			let weight = message.weight;
 			message.dispatch_fee_payment = DispatchFeePayment::AtTargetChain;
 
