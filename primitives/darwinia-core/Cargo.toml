@@ -10,6 +10,8 @@ version     = "0.1.0"
 # crates.io
 parity-scale-codec = { version = "3.0.0", default-features = false, features = ["derive"] }
 scale-info         = { version = "2.0.1", default-features = false, features = ["derive"] }
+# moonbeam
+account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.30" }
 # paritytech
 bp-messages   = { default-features = false, path = "../messages" }
 bp-runtime    = { default-features = false, path = "../runtime" }
@@ -25,6 +27,8 @@ std = [
 	# crates.io
 	"parity-scale-codec/std",
 	"scale-info/std",
+	# moonbeam
+	"account/std",
 	# paritytech
 	"bp-messages/std",
 	"bp-runtime/std",

@@ -48,7 +48,7 @@ use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
-use sp_core::{hash::H256, storage::StorageKey};
+use sp_core::{storage::StorageKey, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
