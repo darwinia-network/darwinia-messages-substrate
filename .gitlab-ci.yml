@@ -242,7 +242,7 @@ build-nightly:
   variables:                       &image-variables
     GIT_STRATEGY:                  none
     DOCKERFILE:                    ci.Dockerfile
-    IMAGE_NAME:                    docker.io/paritytech/$CI_JOB_NAME
+    IMAGE_NAME:                    docker.io/paritytech/bridges-common-relay
   needs:
     - job:                         build
       artifacts:                   true
