@@ -48,7 +48,7 @@ use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
-use sp_core::{storage::StorageKey, H256, H160};
+use sp_core::{storage::StorageKey, H160, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
@@ -395,28 +395,26 @@ impl Size for PreComputedSize {
 /// Note: If the same `bridge_id` is used across different chains (for example, if one source chain
 /// is bridged to multiple target chains), then all the derived accounts would be the same across
 /// the different chains. This could negatively impact users' privacy across chains.
-pub fn derive_account_id<AccountId>(bridge_id: ChainId, id: SourceAccount<AccountId>) -> H160
+pub fn derive_account_id<AccountId>(bridge_id: ChainId, id: SourceAccount<AccountId>) -> H256
 where
 	AccountId: Encode,
 {
 	match id {
-		SourceAccount::Root => {
-			let h256 = (ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256);
-			H160::from_slice(&h256[0..20])
-		},
+		SourceAccount::Root =>
+			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
 		SourceAccount::Account(id) => {
-			// convert id to h160
 			let source_h160 = H160::from_slice(&id.encode()[0..20]);
-
-			// derive target h160
-			to_target_h160(bridge_id, &source_h160)
-		}
+			let h256_dvm = to_h256_starting_with_dvm(&source_h160);
+			(ACCOUNT_DERIVATION_PREFIX, bridge_id, h256_dvm).using_encoded(blake2_256)
+		},
 	}
+	.into()
 }
 
 fn to_target_h160(source_chain_id: ChainId, source_h160: &H160) -> H160 {
 	let h256_dvm = to_h256_starting_with_dvm(source_h160);
-	let h256_derived = (ACCOUNT_DERIVATION_PREFIX, source_chain_id, h256_dvm).using_encoded(blake2_256);
+	let h256_derived =
+		(ACCOUNT_DERIVATION_PREFIX, source_chain_id, h256_dvm).using_encoded(blake2_256);
 	return H160::from_slice(&h256_derived[0..20]);
 }
 
@@ -434,9 +432,8 @@ fn to_h256_starting_with_dvm(address: &H160) -> H256 {
 ///
 /// The account ID can be the same across different instances of `pallet-bridge-messages` if the
 /// same `bridge_id` is used.
-pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H160 {
-	let h256 = ("relayer-fund-account", bridge_id).using_encoded(blake2_256);
-	H160::from_slice(&h256[0..20])
+pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H256 {
+	("relayer-fund-account", bridge_id).using_encoded(blake2_256).into()
 }
 
 /// This is a copy of the
@@ -518,16 +515,18 @@ mod tests {
 	#[test]
 	fn deriving_from_source_h160_to_target_h160_works() {
 		let source_chain_id: [u8; 4] = [0, 0, 0, 0];
-        let source_sender = H160::from_str("0x61dC46385a09E7ed7688aBE6f66Bf3d8653618fD").unwrap();
-        let target_sender = to_target_h160(source_chain_id, &source_sender);
+		let source_sender = H160::from_str("0x61dC46385a09E7ed7688aBE6f66Bf3d8653618fD").unwrap();
+		let target_sender = to_target_h160(source_chain_id, &source_sender);
 
 		let expect = H160::from_str("0x95804eb66d1944a85d73FbA99465cB33C715D516").unwrap();
-        assert_eq!(target_sender, expect);
+		assert_eq!(target_sender, expect);
 	}
 
 	#[test]
 	fn compare_two_ways_of_converting_from_h256_to_h160() {
-		let h256: H256 = H256::from_str("0x64766d3a0000000000000061dc46385a09e7ed7688abe6f66bf3d8653618fd6c").unwrap();
+		let h256: H256 =
+			H256::from_str("0x64766d3a0000000000000061dc46385a09e7ed7688abe6f66bf3d8653618fd6c")
+				.unwrap();
 
 		let h160_1: H160 = h256.into(); // this is the wrong way
 		let h160_2: H160 = H160::from_slice(&h256[0..20]);

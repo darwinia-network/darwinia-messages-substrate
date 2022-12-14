@@ -81,7 +81,7 @@ use bp_messages::{
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
 use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get};
-use sp_core::H160;
+use sp_core::{H160, H256};
 use sp_runtime::traits::Convert;
 use sp_std::{cell::RefCell, marker::PhantomData, prelude::*};
 
@@ -167,7 +167,7 @@ pub mod pallet {
 		/// A type which can be turned into an AccountId from a 256-bit hash.
 		///
 		/// Used when deriving the shared relayer fund account.
-		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H160, Self::AccountId>;
+		type AccountIdConverter: sp_runtime::traits::Convert<sp_core::hash::H256, Self::AccountId>;
 
 		// Types that are used by outbound_lane (on source chain).
 
@@ -692,7 +692,7 @@ pub use pallet::*;
 /// This account is passed to `MessageDeliveryAndDispatchPayment` trait, and depending
 /// on the implementation it can be used to store relayers rewards.
 /// See [`InstantCurrencyPayments`] for a concrete implementation.
-pub fn relayer_fund_account_id<AccountId, AccountIdConverter: Convert<H160, AccountId>>(
+pub fn relayer_fund_account_id<AccountId, AccountIdConverter: Convert<H256, AccountId>>(
 ) -> AccountId {
 	let encoded_id = bp_runtime::derive_relayer_fund_account_id(bp_runtime::NO_INSTANCE_ID);
 	AccountIdConverter::convert(encoded_id)

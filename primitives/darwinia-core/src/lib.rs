@@ -107,10 +107,11 @@ use frame_support::{
 	unsigned::{TransactionValidityError, UnknownTransaction},
 	weights::Weight,
 };
+use sp_core::{H160, H256};
 use sp_runtime::{
 	generic,
 	generic::Era,
-	traits::{DispatchInfoOf, Dispatchable, SignedExtension as SignedExtensionT},
+	traits::{Convert, DispatchInfoOf, Dispatchable, SignedExtension as SignedExtensionT},
 	RuntimeDebug,
 };
 use sp_std::prelude::*;
@@ -260,11 +261,11 @@ impl Chain for DarwiniaLike {
 	}
 }
 
-// Convert a 256-bit hash into an AccountId.
-// pub struct AccountIdConverter;
-// impl Convert<H256, AccountId> for AccountIdConverter {
-// 	fn convert(hash: H256) -> AccountId {
-// 		let evm_address: H160 = hash.into();
-// 		evm_address.into()
-// 	}
-// }
+/// Convert a 256-bit hash into an AccountId.
+pub struct AccountIdConverter;
+impl Convert<H256, AccountId> for AccountIdConverter {
+	fn convert(hash: H256) -> AccountId {
+		let evm_address: H160 = hash.into();
+		evm_address.into()
+	}
+}
