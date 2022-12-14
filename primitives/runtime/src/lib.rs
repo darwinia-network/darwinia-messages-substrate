@@ -48,7 +48,7 @@ use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
-use sp_core::{storage::StorageKey, H256};
+use sp_core::{storage::StorageKey, H256, H160};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
@@ -395,17 +395,41 @@ impl Size for PreComputedSize {
 /// Note: If the same `bridge_id` is used across different chains (for example, if one source chain
 /// is bridged to multiple target chains), then all the derived accounts would be the same across
 /// the different chains. This could negatively impact users' privacy across chains.
-pub fn derive_account_id<AccountId>(bridge_id: ChainId, id: SourceAccount<AccountId>) -> H256
+pub fn derive_account_id<AccountId>(bridge_id: ChainId, id: SourceAccount<AccountId>) -> H160
 where
 	AccountId: Encode,
 {
 	match id {
-		SourceAccount::Root =>
-			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
-		SourceAccount::Account(id) =>
-			(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256),
+		SourceAccount::Root => {
+			let h256 = (ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256);
+			H160::from_slice(&h256[0..20])
+		},
+		SourceAccount::Account(id) => {
+			// convert id to h160
+			let source_h160 = H160::from_slice(&id.encode()[0..20]);
+
+			// derive target h160
+			to_target_h160(bridge_id, &source_h160)
+		}
 	}
-	.into()
+}
+
+fn to_h256_starting_with_dvm(address: &H160) -> H256 {
+	let mut raw_account = [0u8; 32];
+	raw_account[0..4].copy_from_slice(b"dvm:");
+	raw_account[11..31].copy_from_slice(&address[..]);
+	raw_account[31] = checksum_of(&raw_account);
+	raw_account.into()
+}
+
+fn checksum_of(account_id: &[u8; 32]) -> u8 {
+	account_id[1..31].iter().fold(account_id[0], |sum, &byte| sum ^ byte)
+}
+
+fn to_target_h160(source_chain_id: ChainId, source_h160: &H160) -> H160 {
+	let h256_dvm = to_h256_starting_with_dvm(source_h160);
+	let h256_derived = (ACCOUNT_DERIVATION_PREFIX, source_chain_id, h256_dvm).using_encoded(blake2_256);
+	return H160::from_slice(&h256_derived[0..20]);
 }
 
 /// Derive the account ID of the shared relayer fund account.
@@ -414,8 +438,9 @@ where
 ///
 /// The account ID can be the same across different instances of `pallet-bridge-messages` if the
 /// same `bridge_id` is used.
-pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H256 {
-	("relayer-fund-account", bridge_id).using_encoded(blake2_256).into()
+pub fn derive_relayer_fund_account_id(bridge_id: ChainId) -> H160 {
+	let h256 = ("relayer-fund-account", bridge_id).using_encoded(blake2_256);
+	H160::from_slice(&h256[0..20])
 }
 
 /// This is a copy of the
