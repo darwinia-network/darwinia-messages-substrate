@@ -403,7 +403,7 @@ where
 		SourceAccount::Root =>
 			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
 		SourceAccount::Account(id) => {
-			let to_darwinia_old_account_id = |address: &[u8]| -> H256 {
+			let to_darwinia_old_account_id = |address| -> H256 {
 				let mut result = [0u8; 32];
 				result[0..4].copy_from_slice(b"dvm:");
 				result[11..31].copy_from_slice(address);
@@ -488,8 +488,6 @@ pub fn storage_value_key(pallet_prefix: &str, value_name: &str) -> StorageKey {
 
 #[cfg(test)]
 mod tests {
-	use core::str::FromStr;
-
 	use super::*;
 
 	#[test]
