@@ -493,6 +493,8 @@ pub fn storage_value_key(pallet_prefix: &str, value_name: &str) -> StorageKey {
 
 #[cfg(test)]
 mod tests {
+	use core::str::FromStr;
+
 	use super::*;
 
 	#[test]
@@ -511,5 +513,24 @@ mod tests {
 				"f0e954dfcca51a255ab12c60c789256a3f2edf3bdf381debe331ab7446addfdc"
 			)),
 		);
+	}
+
+	#[test]
+	fn deriving_from_source_h160_to_target_h160_works() {
+		let source_chain_id: [u8; 4] = [0, 0, 0, 0];
+        let source_sender = H160::from_str("0x61dC46385a09E7ed7688aBE6f66Bf3d8653618fD").unwrap();
+        let target_sender = to_target_h160(source_chain_id, &source_sender);
+
+		let expect = H160::from_str("0x95804eb66d1944a85d73FbA99465cB33C715D516").unwrap();
+        assert_eq!(target_sender, expect);
+	}
+
+	#[test]
+	fn compare_two_ways_of_converting_from_h256_to_h160() {
+		let h256: H256 = H256::from_str("0x64766d3a0000000000000061dc46385a09e7ed7688abe6f66bf3d8653618fd6c").unwrap();
+
+		let h160_1: H160 = h256.into(); // this is the wrong way
+		let h160_2: H160 = H160::from_slice(&h256[0..20]);
+		assert_ne!(h160_1, h160_2);
 	}
 }
