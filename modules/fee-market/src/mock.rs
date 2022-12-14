@@ -399,8 +399,8 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 }
 
 pub struct AccountIdConverter;
-impl sp_runtime::traits::Convert<H160, AccountId> for AccountIdConverter {
-	fn convert(hash: H160) -> AccountId {
+impl sp_runtime::traits::Convert<H256, AccountId> for AccountIdConverter {
+	fn convert(hash: H256) -> AccountId {
 		hash.to_low_u64_ne()
 	}
 }

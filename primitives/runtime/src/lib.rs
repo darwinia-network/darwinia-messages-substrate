@@ -403,27 +403,23 @@ where
 		SourceAccount::Root =>
 			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
 		SourceAccount::Account(id) => {
-			let source_h160 = H160::from_slice(&id.encode()[0..20]);
-			let h256_dvm = to_h256_starting_with_dvm(&source_h160);
-			(ACCOUNT_DERIVATION_PREFIX, bridge_id, h256_dvm).using_encoded(blake2_256)
+			let to_darwinia_old_account_id = |address: &[u8]| -> H256 {
+				let mut result = [0u8; 32];
+				result[0..4].copy_from_slice(b"dvm:");
+				result[11..31].copy_from_slice(address);
+				result[31] = result[1..31].iter().fold(result[0], |sum, &byte| sum ^ byte);
+				result.into()
+			};
+
+			if id.encode().len() == 20 {
+				let account_id = to_darwinia_old_account_id(&id.encode());
+				(ACCOUNT_DERIVATION_PREFIX, bridge_id, account_id).using_encoded(blake2_256)
+			} else {
+				(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256)
+			}
 		},
 	}
 	.into()
-}
-
-fn to_target_h160(source_chain_id: ChainId, source_h160: &H160) -> H160 {
-	let h256_dvm = to_h256_starting_with_dvm(source_h160);
-	let h256_derived =
-		(ACCOUNT_DERIVATION_PREFIX, source_chain_id, h256_dvm).using_encoded(blake2_256);
-	return H160::from_slice(&h256_derived[0..20]);
-}
-
-fn to_h256_starting_with_dvm(address: &H160) -> H256 {
-	let mut result = [0u8; 32];
-	result[0..4].copy_from_slice(b"dvm:");
-	result[11..31].copy_from_slice(&address[..]);
-	result[31] = result[1..31].iter().fold(result[0], |sum, &byte| sum ^ byte);
-	result.into()
 }
 
 /// Derive the account ID of the shared relayer fund account.
@@ -512,24 +508,24 @@ mod tests {
 		);
 	}
 
-	#[test]
-	fn deriving_from_source_h160_to_target_h160_works() {
-		let source_chain_id: [u8; 4] = [0, 0, 0, 0];
-		let source_sender = H160::from_str("0x61dC46385a09E7ed7688aBE6f66Bf3d8653618fD").unwrap();
-		let target_sender = to_target_h160(source_chain_id, &source_sender);
+	// #[test]
+	// fn deriving_from_source_h160_to_target_h160_works() {
+	// 	let source_chain_id: [u8; 4] = [0, 0, 0, 0];
+	// 	let source_sender = H160::from_str("0x61dC46385a09E7ed7688aBE6f66Bf3d8653618fD").unwrap();
+	// 	let target_sender = to_target_h160(source_chain_id, &source_sender);
 
-		let expect = H160::from_str("0x95804eb66d1944a85d73FbA99465cB33C715D516").unwrap();
-		assert_eq!(target_sender, expect);
-	}
+	// 	let expect = H160::from_str("0x95804eb66d1944a85d73FbA99465cB33C715D516").unwrap();
+	// 	assert_eq!(target_sender, expect);
+	// }
 
-	#[test]
-	fn compare_two_ways_of_converting_from_h256_to_h160() {
-		let h256: H256 =
-			H256::from_str("0x64766d3a0000000000000061dc46385a09e7ed7688abe6f66bf3d8653618fd6c")
-				.unwrap();
+	// #[test]
+	// fn compare_two_ways_of_converting_from_h256_to_h160() {
+	// 	let h256: H256 =
+	// 		H256::from_str("0x64766d3a0000000000000061dc46385a09e7ed7688abe6f66bf3d8653618fd6c")
+	// 			.unwrap();
 
-		let h160_1: H160 = h256.into(); // this is the wrong way
-		let h160_2: H160 = H160::from_slice(&h256[0..20]);
-		assert_ne!(h160_1, h160_2);
-	}
+	// 	let h160_1: H160 = h256.into(); // this is the wrong way
+	// 	let h160_2: H160 = H160::from_slice(&h256[0..20]);
+	// 	assert_ne!(h160_1, h160_2);
+	// }
 }
