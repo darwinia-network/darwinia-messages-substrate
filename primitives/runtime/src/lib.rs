@@ -414,22 +414,18 @@ where
 	}
 }
 
-fn to_h256_starting_with_dvm(address: &H160) -> H256 {
-	let mut raw_account = [0u8; 32];
-	raw_account[0..4].copy_from_slice(b"dvm:");
-	raw_account[11..31].copy_from_slice(&address[..]);
-	raw_account[31] = checksum_of(&raw_account);
-	raw_account.into()
-}
-
-fn checksum_of(account_id: &[u8; 32]) -> u8 {
-	account_id[1..31].iter().fold(account_id[0], |sum, &byte| sum ^ byte)
-}
-
 fn to_target_h160(source_chain_id: ChainId, source_h160: &H160) -> H160 {
 	let h256_dvm = to_h256_starting_with_dvm(source_h160);
 	let h256_derived = (ACCOUNT_DERIVATION_PREFIX, source_chain_id, h256_dvm).using_encoded(blake2_256);
 	return H160::from_slice(&h256_derived[0..20]);
+}
+
+fn to_h256_starting_with_dvm(address: &H160) -> H256 {
+	let mut result = [0u8; 32];
+	result[0..4].copy_from_slice(b"dvm:");
+	result[11..31].copy_from_slice(&address[..]);
+	result[31] = result[1..31].iter().fold(result[0], |sum, &byte| sum ^ byte);
+	result.into()
 }
 
 /// Derive the account ID of the shared relayer fund account.
