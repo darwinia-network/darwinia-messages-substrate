@@ -265,7 +265,8 @@ impl Chain for DarwiniaLike {
 pub struct AccountIdConverter;
 impl Convert<H256, AccountId> for AccountIdConverter {
 	fn convert(hash: H256) -> AccountId {
-		let evm_address: H160 = hash.into();
+		// This way keep compatible with darwinia 1.0 substrate to evm account rule.
+		let evm_address = H160::from_slice(&hash.as_bytes()[0..20]);
 		evm_address.into()
 	}
 }

@@ -81,7 +81,7 @@ use bp_messages::{
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
 use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get};
-use sp_core::{H160, H256};
+use sp_core::H256;
 use sp_runtime::traits::Convert;
 use sp_std::{cell::RefCell, marker::PhantomData, prelude::*};
 

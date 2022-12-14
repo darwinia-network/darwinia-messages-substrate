@@ -44,7 +44,7 @@ use frame_support::{
 };
 use frame_system::mocking::*;
 use pallet_bridge_messages::outbound_lane;
-use sp_core::{H160, H256};
+use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup, UniqueSaturatedInto},

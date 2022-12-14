@@ -48,7 +48,7 @@ use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
-use sp_core::{storage::StorageKey, H160, H256};
+use sp_core::{storage::StorageKey, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
@@ -411,6 +411,8 @@ where
 				result.into()
 			};
 
+			// The aim is to keep the accounts derived from the evm account compatible with the
+			// darwinia 1.0 account id.
 			if id.encode().len() == 20 {
 				let account_id = to_darwinia_old_account_id(&id.encode());
 				(ACCOUNT_DERIVATION_PREFIX, bridge_id, account_id).using_encoded(blake2_256)
@@ -507,25 +509,4 @@ mod tests {
 			)),
 		);
 	}
-
-	// #[test]
-	// fn deriving_from_source_h160_to_target_h160_works() {
-	// 	let source_chain_id: [u8; 4] = [0, 0, 0, 0];
-	// 	let source_sender = H160::from_str("0x61dC46385a09E7ed7688aBE6f66Bf3d8653618fD").unwrap();
-	// 	let target_sender = to_target_h160(source_chain_id, &source_sender);
-
-	// 	let expect = H160::from_str("0x95804eb66d1944a85d73FbA99465cB33C715D516").unwrap();
-	// 	assert_eq!(target_sender, expect);
-	// }
-
-	// #[test]
-	// fn compare_two_ways_of_converting_from_h256_to_h160() {
-	// 	let h256: H256 =
-	// 		H256::from_str("0x64766d3a0000000000000061dc46385a09e7ed7688abe6f66bf3d8653618fd6c")
-	// 			.unwrap();
-
-	// 	let h160_1: H160 = h256.into(); // this is the wrong way
-	// 	let h160_2: H160 = H160::from_slice(&h256[0..20]);
-	// 	assert_ne!(h160_1, h160_2);
-	// }
 }
