@@ -402,8 +402,24 @@ where
 	match id {
 		SourceAccount::Root =>
 			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
-		SourceAccount::Account(id) =>
-			(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256),
+		SourceAccount::Account(id) => {
+			let to_darwinia_old_account_id = |address| -> H256 {
+				let mut result = [0u8; 32];
+				result[0..4].copy_from_slice(b"dvm:");
+				result[11..31].copy_from_slice(address);
+				result[31] = result[1..31].iter().fold(result[0], |sum, &byte| sum ^ byte);
+				result.into()
+			};
+
+			// The aim is to keep the accounts derived from the evm account compatible with the
+			// darwinia 1.0 account id.
+			if id.encode().len() == 20 {
+				let account_id = to_darwinia_old_account_id(&id.encode());
+				(ACCOUNT_DERIVATION_PREFIX, bridge_id, account_id).using_encoded(blake2_256)
+			} else {
+				(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256)
+			}
+		},
 	}
 	.into()
 }
