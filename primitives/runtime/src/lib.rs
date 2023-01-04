@@ -22,6 +22,7 @@ pub mod messages;
 
 mod chain;
 mod storage_proof;
+mod storage_types;
 
 pub use chain::{
 	AccountIdOf, AccountPublicOf, BalanceOf, BlockNumberOf, Chain, EncodedOrDecodedCall, HashOf,
@@ -34,6 +35,7 @@ pub use storage_proof::{
 	record_all_keys as record_all_trie_keys, Error as StorageProofError,
 	ProofSize as StorageProofSize, StorageProofChecker,
 };
+pub use storage_types::BoundedStorageValue;
 // Re-export macro to avoid include paste dependency everywhere
 pub use sp_runtime::paste;
 
@@ -46,7 +48,7 @@ use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
-use sp_core::{hash::H256, storage::StorageKey};
+use sp_core::{storage::StorageKey, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
@@ -227,7 +229,7 @@ pub trait OwnedBridgeModule<T: frame_system::Config> {
 	}
 
 	/// Ensure that the origin is either root, or `PalletOwner`.
-	fn ensure_owner_or_root(origin: T::Origin) -> Result<(), BadOrigin> {
+	fn ensure_owner_or_root(origin: T::RuntimeOrigin) -> Result<(), BadOrigin> {
 		match origin.into() {
 			Ok(RawOrigin::Root) => Ok(()),
 			Ok(RawOrigin::Signed(ref signer))
@@ -246,7 +248,7 @@ pub trait OwnedBridgeModule<T: frame_system::Config> {
 	}
 
 	/// Change the owner of the module.
-	fn set_owner(origin: T::Origin, maybe_owner: Option<T::AccountId>) -> DispatchResult {
+	fn set_owner(origin: T::RuntimeOrigin, maybe_owner: Option<T::AccountId>) -> DispatchResult {
 		Self::ensure_owner_or_root(origin)?;
 		match maybe_owner {
 			Some(owner) => {
@@ -264,7 +266,7 @@ pub trait OwnedBridgeModule<T: frame_system::Config> {
 
 	/// Halt or resume all/some module operations.
 	fn set_operating_mode(
-		origin: T::Origin,
+		origin: T::RuntimeOrigin,
 		operating_mode: Self::OperatingMode,
 	) -> DispatchResult {
 		Self::ensure_owner_or_root(origin)?;
@@ -400,8 +402,24 @@ where
 	match id {
 		SourceAccount::Root =>
 			(ROOT_ACCOUNT_DERIVATION_PREFIX, bridge_id).using_encoded(blake2_256),
-		SourceAccount::Account(id) =>
-			(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256),
+		SourceAccount::Account(id) => {
+			let to_darwinia_old_account_id = |address| -> H256 {
+				let mut result = [0u8; 32];
+				result[0..4].copy_from_slice(b"dvm:");
+				result[11..31].copy_from_slice(address);
+				result[31] = result[1..31].iter().fold(result[0], |sum, &byte| sum ^ byte);
+				result.into()
+			};
+
+			// The aim is to keep the accounts derived from the evm account compatible with the
+			// darwinia 1.0 account id.
+			if id.encode().len() == 20 {
+				let account_id = to_darwinia_old_account_id(&id.encode());
+				(ACCOUNT_DERIVATION_PREFIX, bridge_id, account_id).using_encoded(blake2_256)
+			} else {
+				(ACCOUNT_DERIVATION_PREFIX, bridge_id, id).using_encoded(blake2_256)
+			}
+		},
 	}
 	.into()
 }

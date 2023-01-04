@@ -19,26 +19,31 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod copy_paste_from_darwinia {
+	// moonbeam
+	use account::EthereumSignature;
 	// paritytech
-	use frame_support::weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
-		DispatchClass, Weight,
+	use frame_support::{
+		dispatch::DispatchClass,
+		weights::{
+			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+			Weight,
+		},
 	};
 	use frame_system::limits::{BlockLength, BlockWeights};
 	use sp_core::H256;
 	use sp_runtime::{
 		generic,
 		traits::{BlakeTwo256, IdentifyAccount, Verify},
-		MultiAddress, MultiSignature, OpaqueExtrinsic, Perbill,
+		OpaqueExtrinsic, Perbill,
 	};
 
 	pub type BlockNumber = u32;
 	pub type Hashing = BlakeTwo256;
 	pub type Hash = H256;
-	pub type Signature = MultiSignature;
+	pub type Signature = EthereumSignature;
 	pub type AccountPublic = <Signature as Verify>::Signer;
 	pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
-	pub type Address = MultiAddress<AccountId, ()>;
+	pub type Address = AccountId;
 	pub type Nonce = u32;
 	pub type Balance = u128;
 	pub type Header = generic::Header<BlockNumber, Hashing>;
@@ -46,7 +51,8 @@ mod copy_paste_from_darwinia {
 
 	pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 	pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-	pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+	// TODO: https://github.com/paritytech/parity-bridges-common/issues/1543 - remove `set_proof_size`
+	pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_mul(2);
 
 	frame_support::parameter_types! {
 		pub RuntimeBlockLength: BlockLength =
@@ -97,10 +103,11 @@ use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
 // paritytech
 use frame_support::{
+	dispatch::DispatchClass,
 	unsigned::{TransactionValidityError, UnknownTransaction},
-	weights::{DispatchClass, Weight},
+	weights::Weight,
 };
-use sp_core::H256;
+use sp_core::{H160, H256};
 use sp_runtime::{
 	generic,
 	generic::Era,
@@ -258,6 +265,8 @@ impl Chain for DarwiniaLike {
 pub struct AccountIdConverter;
 impl Convert<H256, AccountId> for AccountIdConverter {
 	fn convert(hash: H256) -> AccountId {
-		hash.to_fixed_bytes().into()
+		// This way keep compatible with darwinia 1.0 substrate to evm account rule.
+		let evm_address = H160::from_slice(&hash.as_bytes()[0..20]);
+		evm_address.into()
 	}
 }

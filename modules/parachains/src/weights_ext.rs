@@ -17,7 +17,7 @@
 //! Weight-related utilities.
 
 // darwinia-network
-use crate::weights::{MillauWeight, WeightInfo};
+use crate::weights::{BridgeWeight, WeightInfo};
 use bp_runtime::Size;
 // paritytech
 use frame_support::weights::{RuntimeDbWeight, Weight};
@@ -63,8 +63,8 @@ pub trait WeightInfoExt: WeightInfo {
 		);
 
 		// potential pruning weight (refunded if hasn't happened)
-		let pruning_weight = (parachains_count as Weight)
-			.saturating_mul(Self::parachain_head_pruning_weight(db_weight));
+		let pruning_weight =
+			Self::parachain_head_pruning_weight(db_weight).saturating_mul(parachains_count as u64);
 
 		base_weight.saturating_add(proof_size_overhead).saturating_add(pruning_weight)
 	}
@@ -88,11 +88,10 @@ pub trait WeightInfoExt: WeightInfo {
 
 	/// Returns weight that needs to be accounted when storage proof of given size is received.
 	fn storage_proof_size_overhead(extra_proof_bytes: u32) -> Weight {
-		let extra_proof_bytes_in_bytes = extra_proof_bytes as Weight;
 		let extra_byte_weight = (Self::submit_parachain_heads_with_16kb_proof()
 			- Self::submit_parachain_heads_with_1kb_proof())
 			/ (15 * 1024);
-		extra_proof_bytes_in_bytes.saturating_mul(extra_byte_weight)
+		extra_byte_weight.saturating_mul(extra_proof_bytes as u64)
 	}
 }
 
@@ -102,7 +101,7 @@ impl WeightInfoExt for () {
 	}
 }
 
-impl<T: frame_system::Config> WeightInfoExt for MillauWeight<T> {
+impl<T: frame_system::Config> WeightInfoExt for BridgeWeight<T> {
 	fn expected_extra_storage_proof_size() -> u32 {
 		EXTRA_STORAGE_PROOF_SIZE
 	}
