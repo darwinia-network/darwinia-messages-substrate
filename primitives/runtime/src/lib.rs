@@ -26,7 +26,7 @@ mod storage_types;
 
 pub use chain::{
 	AccountIdOf, AccountPublicOf, BalanceOf, BlockNumberOf, Chain, EncodedOrDecodedCall, HashOf,
-	HasherOf, HeaderOf, IndexOf, SignatureOf, TransactionEraOf,
+	HasherOf, HeaderOf, IndexOf, Parachain, SignatureOf, TransactionEraOf,
 };
 pub use frame_support::storage::storage_prefix as storage_value_final_key;
 #[cfg(feature = "std")]

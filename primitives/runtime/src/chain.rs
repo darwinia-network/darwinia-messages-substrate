@@ -30,6 +30,12 @@ use sp_std::{fmt::Debug, hash::Hash, prelude::*, str::FromStr};
 // darwinia-network
 use crate::HeaderIdProvider;
 
+/// Minimal parachain representation that may be used from no_std environment.
+pub trait Parachain: Chain {
+	/// Parachain identifier.
+	const PARACHAIN_ID: u32;
+}
+
 /// Block number used by the chain.
 pub type BlockNumberOf<C> = <C as Chain>::BlockNumber;
 
