@@ -246,6 +246,8 @@ pub enum ReceivalResult {
 	TooManyUnrewardedRelayers,
 	/// There are too many unconfirmed messages at the lane.
 	TooManyUnconfirmedMessages,
+	/// Pre-dispatch validation failed before message dispatch.
+	PreDispatchValidateFailed,
 }
 
 /// Delivered messages with their dispatch result.

@@ -187,8 +187,9 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			key: MessageKey { lane_id: self.storage.id(), nonce },
 			data: message_data,
 		};
+		
 		// if there are some extra pre-dispatch validation errors, reject this message.
-		if P::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
+		if Dispatch::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
 			return ReceivalResult::PreDispatchValidateFailed;
 		}
 

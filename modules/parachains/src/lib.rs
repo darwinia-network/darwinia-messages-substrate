@@ -37,6 +37,8 @@ pub use weights_ext::WeightInfoExt;
 
 mod extension;
 
+// core
+use core::marker::PhantomData;
 // crates.io
 use codec::Decode;
 // darwinia-network

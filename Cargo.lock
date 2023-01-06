@@ -407,6 +407,7 @@ dependencies = [
 name = "bridge-runtime-common"
 version = "0.1.0"
 dependencies = [
+ "bp-header-chain",
  "bp-message-dispatch",
  "bp-messages",
  "bp-parachains",
