@@ -38,7 +38,7 @@ pub enum DispatchFeePayment {
 
 /// Message dispatch result.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct MessageDispatchResult {
+pub struct MessageDispatchResult<DispatchLevelResult> {
 	/// Dispatch result flag. This flag is relayed back to the source chain and, generally
 	/// speaking, may bring any (that fits in single bit) information from the dispatcher at
 	/// the target chain to the message submitter at the source chain. If you're using immediate
@@ -56,4 +56,6 @@ pub struct MessageDispatchResult {
 	/// configuration supports pay-dispatch-fee-at-target-chain option and message sender has
 	/// enabled this option.
 	pub dispatch_fee_paid_during_dispatch: bool,
+	/// Fine-grained result of single message dispatch (for better diagnostic purposes)
+	pub dispatch_level_result: DispatchLevelResult,
 }

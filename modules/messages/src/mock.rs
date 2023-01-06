@@ -59,6 +59,7 @@ pub type Balance = u64;
 
 pub type TestMessageFee = u64;
 pub type TestRelayer = u64;
+pub type TestDispatchLevelResult = ();
 
 type Block = MockBlock<TestRuntime>;
 type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
@@ -103,7 +104,7 @@ pub struct TestPayload {
 	///
 	/// Note: in correct code `dispatch_result.unspent_weight` will always be <= `declared_weight`,
 	/// but for test purposes we'll be making it larger than `declared_weight` sometimes.
-	pub dispatch_result: MessageDispatchResult,
+	pub dispatch_result: MessageDispatchResult<TestDispatchLevelResult>,
 	/// Extra bytes that affect payload size.
 	pub extra: Vec<u8>,
 }
@@ -514,6 +515,7 @@ impl SourceHeaderChain<TestMessageFee> for TestSourceHeaderChain {
 pub struct TestMessageDispatch;
 impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	type DispatchPayload = TestPayload;
+	type DispatchLevelResult = TestDispatchLevelResult;
 
 	fn dispatch_weight(message: &mut DispatchMessage<TestPayload, TestMessageFee>) -> Weight {
 		match message.data.payload.as_ref() {
@@ -532,7 +534,7 @@ impl MessageDispatch<AccountId, TestMessageFee> for TestMessageDispatch {
 	fn dispatch(
 		_relayer_account: &AccountId,
 		message: DispatchMessage<TestPayload, TestMessageFee>,
-	) -> MessageDispatchResult {
+	) -> MessageDispatchResult<TestDispatchLevelResult> {
 		match message.data.payload.as_ref() {
 			Ok(payload) => payload.dispatch_result.clone(),
 			Err(_) => dispatch_result(0),
@@ -561,11 +563,14 @@ pub fn message_data(payload: TestPayload) -> MessageData<TestMessageFee> {
 }
 
 /// Returns message dispatch result with given unspent weight.
-pub const fn dispatch_result(unspent_weight: u64) -> MessageDispatchResult {
+pub const fn dispatch_result(
+	unspent_weight: u64,
+) -> MessageDispatchResult<TestDispatchLevelResult> {
 	MessageDispatchResult {
 		dispatch_result: true,
 		unspent_weight: Weight::from_ref_time(unspent_weight),
 		dispatch_fee_paid_during_dispatch: true,
+		dispatch_level_result: (),
 	}
 }
 
