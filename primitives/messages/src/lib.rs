@@ -34,8 +34,8 @@ use bp_runtime::{BasicOperatingMode, OperatingMode};
 use frame_support::RuntimeDebug;
 use sp_std::{collections::vec_deque::VecDeque, prelude::*};
 
-use bp_runtime::messages::MessageDispatchResult;
 // Weight is reexported to avoid additional frame-support dependencies in related crates.
+use bp_runtime::messages::MessageDispatchResult;
 pub use frame_support::weights::Weight;
 
 /// Lane identifier.
@@ -209,22 +209,21 @@ pub struct UnrewardedRelayer<RelayerId> {
 
 /// Received messages with their dispatch result.
 #[derive(Clone, Default, Encode, Decode, RuntimeDebug, PartialEq, Eq, TypeInfo)]
-pub struct ReceivedMessages<DispatchLevelResult> {
+pub struct ReceivedMessages<Result> {
 	/// Id of the lane which is receiving messages.
 	pub lane: LaneId,
 	/// Result of messages which we tried to dispatch
-	pub receive_results: Vec<(MessageNonce, ReceivalResult<DispatchLevelResult>)>,
+	pub receive_results: Vec<(MessageNonce, Result)>,
 	/// Messages which were skipped and never dispatched
 	pub skipped_for_not_enough_weight: Vec<MessageNonce>,
 }
 
-impl<DispatchLevelResult> ReceivedMessages<DispatchLevelResult> {
-	pub fn new(
-		lane: LaneId,
-		receive_results: Vec<(MessageNonce, ReceivalResult<DispatchLevelResult>)>,
-	) -> Self {
+impl<Result> ReceivedMessages<Result> {
+	pub fn new(lane: LaneId, receive_results: Vec<(MessageNonce, Result)>) -> Self {
+		ReceivedMessages { lane, receive_results, skipped_for_not_enough_weight: Vec::new() }
+	}
 
-	pub fn push(&mut self, message: MessageNonce, result: ReceivalResult<DispatchLevelResult>) {
+	pub fn push(&mut self, message: MessageNonce, result: Result) {
 		self.receive_results.push((message, result));
 	}
 
@@ -235,12 +234,12 @@ impl<DispatchLevelResult> ReceivedMessages<DispatchLevelResult> {
 
 /// Result of single message receival.
 #[derive(RuntimeDebug, Encode, Decode, PartialEq, Eq, Clone, TypeInfo)]
-pub enum ReceivalResult<DispatchLevelResult> {
+pub enum ReceivalResult {
 	/// Message has been received and dispatched. Note that we don't care whether dispatch has
 	/// been successful or not - in both case message falls into this category.
 	///
 	/// The message dispatch result is also returned.
-	Dispatched(MessageDispatchResult<DispatchLevelResult>),
+	Dispatched(MessageDispatchResult),
 	/// Message has invalid nonce and lane has rejected to accept this message.
 	InvalidNonce,
 	/// There are too many unrewarded relayer entries at the lane.

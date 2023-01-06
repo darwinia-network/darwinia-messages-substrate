@@ -607,13 +607,7 @@ pub mod pallet {
 		/// Message has been accepted and is waiting to be delivered.
 		MessageAccepted { lane_id: LaneId, nonce: MessageNonce },
 		/// Messages have been received from the bridged chain.
-		MessagesReceived(
-			Vec<
-				ReceivedMessages<
-					<T::MessageDispatch as MessageDispatch<T::AccountId>>::DispatchLevelResult,
-				>,
-			>,
-		),
+		MessagesReceived(Vec<ReceivedMessages<ReceivalResult>>),
 		/// Messages in the inclusive range have been delivered to the bridged chain.
 		MessagesDelivered { lane_id: LaneId, messages: DeliveredMessages },
 	}
