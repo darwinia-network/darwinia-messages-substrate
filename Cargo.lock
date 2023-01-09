@@ -305,7 +305,6 @@ dependencies = [
  "sp-finality-grandpa",
  "sp-runtime",
  "sp-std",
- "sp-trie",
 ]
 
 [[package]]

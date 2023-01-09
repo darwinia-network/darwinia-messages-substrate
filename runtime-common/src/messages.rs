@@ -27,7 +27,6 @@ use codec::{Decode, DecodeLimit, Encode, MaxEncodedLen};
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 // darwinia-network
-use bp_header_chain::HeaderChain;
 use bp_message_dispatch::MessageDispatch as _;
 use bp_messages::{
 	source_chain::LaneMessageVerifier,
