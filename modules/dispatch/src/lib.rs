@@ -736,7 +736,7 @@ mod tests {
 			let mut message = prepare_root_message(call);
 			message.weight = Weight::from_ref_time(7);
 			assert!(
-				call_weight.all_gt(Weight::from_ref_time(7)),
+				call_weight.ref_time() > message.weight.ref_time(),
 				"needed for test to actually trigger a weight mismatch"
 			);
 

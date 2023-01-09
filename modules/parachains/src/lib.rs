@@ -39,8 +39,6 @@ mod extension;
 
 // core
 use core::marker::PhantomData;
-// crates.io
-use codec::Decode;
 // darwinia-network
 use bp_parachains::{parachain_head_storage_key_at_source, ParaInfo};
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaHead, ParaHeadsProof, ParaId};
