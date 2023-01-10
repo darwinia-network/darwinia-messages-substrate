@@ -240,7 +240,6 @@ where
 }
 
 /// Darwinia-like chain.
-#[derive(RuntimeDebug)]
 pub struct DarwiniaLike;
 impl Chain for DarwiniaLike {
 	type AccountId = AccountId;
