@@ -32,8 +32,8 @@ use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::BasicOperatingMode;
 // paritytech
-use sp_finality_grandpa::{AuthorityList, ConsensusLog, SetId, GRANDPA_ENGINE_ID};
-use sp_runtime::{generic::OpaqueDigestItemId, traits::Header as HeaderT, RuntimeDebug};
+use sp_finality_grandpa::{AuthorityList, SetId};
+use sp_runtime::{traits::Header as HeaderT, RuntimeDebug};
 use sp_std::boxed::Box;
 
 /// A type that can be used as a parameter in a dispatchable function.
@@ -78,20 +78,4 @@ pub struct InitializationData<H: HeaderT> {
 	pub set_id: SetId,
 	/// Pallet operating mode.
 	pub operating_mode: BasicOperatingMode,
-}
-
-/// Find header digest that schedules next GRANDPA authorities set.
-pub fn find_grandpa_authorities_scheduled_change<H: HeaderT>(
-	header: &H,
-) -> Option<sp_finality_grandpa::ScheduledChange<H::Number>> {
-	let id = OpaqueDigestItemId::Consensus(&GRANDPA_ENGINE_ID);
-
-	let filter_log = |log: ConsensusLog<H::Number>| match log {
-		ConsensusLog::ScheduledChange(change) => Some(change),
-		_ => None,
-	};
-
-	// find the first consensus digest with the right ID which converts to
-	// the right kind of consensus log.
-	header.digest().convert_first(|l| l.try_to(id).and_then(filter_log))
 }
