@@ -586,12 +586,12 @@ pub trait Slasher<T: Config<I>, I: 'static> {
 	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
 		timeout: T::BlockNumber,
-	) -> Option<BalanceOf<T, I>>;
+	) -> BalanceOf<T, I>;
 }
 
 /// No penalties, more for testing purposes.
 impl<T: Config<I>, I: 'static> Slasher<T, I> for () {
-	fn calc_amount(_: BalanceOf<T, I>, _: T::BlockNumber) -> Option<BalanceOf<T, I>> {
-		None
+	fn calc_amount(_: BalanceOf<T, I>, _: T::BlockNumber) -> BalanceOf<T, I> {
+		BalanceOf::<T, I>::zero()
 	}
 }

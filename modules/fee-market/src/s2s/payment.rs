@@ -250,8 +250,7 @@ where
 							total += T::Slasher::calc_amount(
 								order_collater,
 								order.comfirm_delay().unwrap_or_default(),
-							)
-							.unwrap_or_default();
+							);
 
 							// The total_slash_amount can't be greater than the slash_protect.
 							if let Some(slash_protect) = Pallet::<T, I>::collateral_slash_protect()

@@ -468,12 +468,12 @@ impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
 		timeout: T::BlockNumber,
-	) -> Option<BalanceOf<T, I>> {
+	) -> BalanceOf<T, I> {
 		let slash_each_block = 2;
 		let slash_value = UniqueSaturatedInto::<u128>::unique_saturated_into(timeout)
 			.saturating_mul(UniqueSaturatedInto::<u128>::unique_saturated_into(slash_each_block))
 			.unique_saturated_into();
-		Some(sp_std::cmp::min(collateral_per_order, slash_value))
+		sp_std::cmp::min(collateral_per_order, slash_value)
 	}
 }
 
