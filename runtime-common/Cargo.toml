@@ -43,7 +43,7 @@ sp-version                 = { optional = true, default-features = false, git = 
 default = ["std"]
 std = [
 	# darwinia-network
-    "bp-header-chain/std",
+	"bp-header-chain/std",
 	"bp-message-dispatch/std",
 	"bp-messages/std",
 	"bp-parachains/std",
