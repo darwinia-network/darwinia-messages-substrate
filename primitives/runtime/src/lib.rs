@@ -487,24 +487,6 @@ pub fn storage_value_key(pallet_prefix: &str, value_name: &str) -> StorageKey {
 	StorageKey(final_key)
 }
 
-/// All extra operations with weights that we need in bridges.
-pub trait WeightExtraOps {
-	/// Checked division of individual components of two weights.
-	///
-	/// Divides components and returns minimal division result. Returns `None` if one
-	/// of `other` weight components is zero.
-	fn min_components_checked_div(&self, other: Weight) -> Option<u64>;
-}
-
-impl WeightExtraOps for Weight {
-	fn min_components_checked_div(&self, other: Weight) -> Option<u64> {
-		Some(sp_std::cmp::min(
-			self.ref_time().checked_div(other.ref_time())?,
-			self.proof_size().checked_div(other.proof_size())?,
-		))
-	}
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
