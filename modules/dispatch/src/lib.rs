@@ -326,7 +326,7 @@ impl<T: Config<I>, I: 'static> MessageDispatch<T::AccountId, T::BridgeMessageId>
 		// because otherwise Calls may be dispatched at lower price)
 		let dispatch_info = call.get_dispatch_info();
 		let expected_weight = dispatch_info.weight;
-		if message.weight.all_lt(expected_weight) {
+		if message.weight.ref_time() < expected_weight.ref_time() {
 			log::trace!(
 				target: "runtime::bridge-dispatch",
 				"Message {:?}/{:?}: passed weight is too low. Expected at least {:?}, got {:?}",
@@ -736,7 +736,7 @@ mod tests {
 			let mut message = prepare_root_message(call);
 			message.weight = Weight::from_ref_time(7);
 			assert!(
-				call_weight.all_gt(Weight::from_ref_time(7)),
+				call_weight.ref_time() > message.weight.ref_time(),
 				"needed for test to actually trigger a weight mismatch"
 			);
 
