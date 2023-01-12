@@ -45,7 +45,7 @@ use num_traits::{CheckedSub, One};
 use scale_info::TypeInfo;
 // paritytech
 use frame_support::{
-	log, pallet_prelude::DispatchResult, weights::Weight, PalletError, RuntimeDebug, StorageHasher,
+	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher,
 	StorageValue,
 };
 use frame_system::RawOrigin;

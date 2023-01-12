@@ -32,8 +32,8 @@ use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::BasicOperatingMode;
 // paritytech
-use sp_finality_grandpa::{AuthorityList, ConsensusLog, SetId, GRANDPA_ENGINE_ID};
-use sp_runtime::{traits::Header as HeaderT, Digest, RuntimeDebug};
+use sp_finality_grandpa::{AuthorityList, SetId};
+use sp_runtime::{traits::Header as HeaderT, RuntimeDebug};
 use sp_std::boxed::Box;
 
 /// A type that can be used as a parameter in a dispatchable function.
