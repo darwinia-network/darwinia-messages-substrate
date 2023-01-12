@@ -579,10 +579,19 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 }
 
-/// The assigned relayers slash trait
+/// This is used to define the rules for calculating the slash of an assigned relayer after the
+/// order has timed out.
 pub trait Slasher<T: Config<I>, I: 'static> {
+	/// Calculate the concrete slash amount
 	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
 		timeout: T::BlockNumber,
 	) -> BalanceOf<T, I>;
+}
+
+/// No penalties, more for testing purposes.
+impl<T: Config<I>, I: 'static> Slasher<T, I> for () {
+	fn calc_amount(_: BalanceOf<T, I>, _: T::BlockNumber) -> BalanceOf<T, I> {
+		BalanceOf::<T, I>::zero()
+	}
 }
