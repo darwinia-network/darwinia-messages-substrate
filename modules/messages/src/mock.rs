@@ -47,7 +47,7 @@ use frame_support::{
 	weights::{RuntimeDbWeight, Weight},
 };
 use frame_system::mocking::*;
-use sp_core::H256;
+use sp_core::{H256, ConstU64};
 use sp_runtime::{
 	testing::Header as SubstrateHeader,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -128,7 +128,6 @@ frame_support::construct_runtime! {
 }
 
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
@@ -138,7 +137,7 @@ impl frame_system::Config for TestRuntime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
-	type BlockHashCount = BlockHashCount;
+	type BlockHashCount = ConstU64<250>;
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
@@ -161,14 +160,11 @@ impl frame_system::Config for TestRuntime {
 	type Version = ();
 }
 
-parameter_types! {
-	pub const ExistentialDeposit: u64 = 1;
-}
 impl pallet_balances::Config for TestRuntime {
 	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
+	type ExistentialDeposit = ConstU64<1>;
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();

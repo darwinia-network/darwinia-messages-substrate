@@ -55,7 +55,6 @@ frame_support::construct_runtime! {
 }
 
 frame_support::parameter_types! {
-	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
@@ -64,7 +63,7 @@ impl frame_system::Config for TestRuntime {
 	type AccountData = ();
 	type AccountId = AccountId;
 	type BaseCallFilter = Everything;
-	type BlockHashCount = BlockHashCount;
+	type BlockHashCount = ConstU64<250>;
 	type BlockLength = ();
 	type BlockNumber = u64;
 	type BlockWeights = ();
