@@ -24,9 +24,8 @@ use crate::Config;
 use bp_messages::{
 	target_chain::{DispatchMessage, DispatchMessageData, MessageDispatch},
 	DeliveredMessages, InboundLaneData, LaneId, MessageKey, MessageNonce, OutboundLaneData,
-	UnrewardedRelayer,
+	ReceivalResult, UnrewardedRelayer,
 };
-use bp_runtime::messages::MessageDispatchResult;
 // paritytech
 use frame_support::{traits::Get, RuntimeDebug};
 
@@ -104,24 +103,6 @@ impl<T: Config<I>, I: 'static> MaxEncodedLen for StoredInboundLaneData<T, I> {
 	}
 }
 
-/// Result of single message receival.
-#[derive(RuntimeDebug, PartialEq, Eq)]
-pub enum ReceivalResult {
-	/// Message has been received and dispatched. Note that we don't care whether dispatch has
-	/// been successful or not - in both case message falls into this category.
-	///
-	/// The message dispatch result is also returned.
-	Dispatched(MessageDispatchResult),
-	/// Message has invalid nonce and lane has rejected to accept this message.
-	InvalidNonce,
-	/// There are too many unrewarded relayer entries at the lane.
-	TooManyUnrewardedRelayers,
-	/// There are too many unconfirmed messages at the lane.
-	TooManyUnconfirmedMessages,
-	/// Pre-dispatch validation failed before message dispatch.
-	PreDispatchValidateFailed,
-}
-
 /// Inbound messages lane.
 pub struct InboundLane<S> {
 	storage: S,
@@ -178,12 +159,12 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 	}
 
 	/// Receive new message.
-	pub fn receive_message<P: MessageDispatch<AccountId, S::MessageFee>, AccountId>(
+	pub fn receive_message<Dispatch: MessageDispatch<AccountId, S::MessageFee>, AccountId>(
 		&mut self,
 		relayer_at_bridged_chain: &S::Relayer,
 		relayer_at_this_chain: &AccountId,
 		nonce: MessageNonce,
-		message_data: DispatchMessageData<P::DispatchPayload, S::MessageFee>,
+		message_data: DispatchMessageData<Dispatch::DispatchPayload, S::MessageFee>,
 	) -> ReceivalResult {
 		let mut data = self.storage.data();
 		let is_correct_message = nonce == data.last_delivered_nonce() + 1;
@@ -206,13 +187,14 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 			key: MessageKey { lane_id: self.storage.id(), nonce },
 			data: message_data,
 		};
+
 		// if there are some extra pre-dispatch validation errors, reject this message.
-		if P::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
+		if Dispatch::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
 			return ReceivalResult::PreDispatchValidateFailed;
 		}
 
 		// then, dispatch message
-		let dispatch_result = P::dispatch(relayer_at_this_chain, dispatch_message);
+		let dispatch_result = Dispatch::dispatch(relayer_at_this_chain, dispatch_message);
 
 		// now let's update inbound lane storage
 		let push_new = match data.relayers.back_mut() {
