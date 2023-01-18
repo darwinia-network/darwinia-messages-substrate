@@ -52,6 +52,8 @@ std = [
 	"sp-trie/std",
 ]
 
+try-runtime = ["frame-support/try-runtime"]
+
 runtime-benchmarks = [
 	"bp-test-utils",
 	"frame-benchmarking/runtime-benchmarks",
