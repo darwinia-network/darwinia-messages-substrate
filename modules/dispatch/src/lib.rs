@@ -584,7 +584,6 @@ mod tests {
 		type Version = ();
 	}
 
-
 	impl Config for TestRuntime {
 		type AccountIdConverter = AccountIdConverter;
 		type BridgeMessageId = BridgeMessageId;

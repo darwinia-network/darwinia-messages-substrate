@@ -47,7 +47,7 @@ use frame_support::{
 	weights::{RuntimeDbWeight, Weight},
 };
 use frame_system::mocking::*;
-use sp_core::{H256, ConstU64};
+use sp_core::{ConstU64, H256};
 use sp_runtime::{
 	testing::Header as SubstrateHeader,
 	traits::{BlakeTwo256, IdentityLookup},
