@@ -20,6 +20,7 @@ use bp_runtime::Chain;
 // paritytech
 use frame_support::{traits::IsInVec, weights::Weight};
 use frame_system::mocking::*;
+use sp_core::ConstU32;
 use sp_runtime::{
 	testing::{Header, H256},
 	traits::{BlakeTwo256, Header as HeaderT, IdentityLookup},

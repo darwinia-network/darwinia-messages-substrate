@@ -1746,6 +1746,7 @@ dependencies = [
  "bp-runtime",
  "frame-support",
  "frame-system",
+ "pallet-root-testing",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -1836,6 +1837,21 @@ dependencies = [
  "pallet-balances",
  "pallet-bridge-messages",
  "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-root-testing"
+version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.36#cb4f2491b00af7d7817f3a54209c26b20faa1f51"
+dependencies = [
+ "frame-support",
+ "frame-system",
  "parity-scale-codec",
  "scale-info",
  "sp-core",

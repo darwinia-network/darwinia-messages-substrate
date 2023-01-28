@@ -26,7 +26,7 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::mocking::*;
-use sp_core::sr25519::Signature;
+use sp_core::{sr25519::Signature, ConstU64};
 use sp_runtime::{
 	testing::{Header, H256},
 	traits::{BlakeTwo256, IdentityLookup},

@@ -542,6 +542,7 @@ mod tests {
 			NodeBlock = Block,
 			UncheckedExtrinsic = UncheckedExtrinsic,
 		{
+			RootTesting: pallet_root_testing,
 			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 			Dispatch: call_dispatch::{Pallet, Call, Event<T>},
 		}
@@ -553,6 +554,8 @@ mod tests {
 		pub const MaximumBlockLength: u32 = 2 * 1024;
 		pub const AvailableBlockRatio: Perbill = Perbill::one();
 	}
+
+	impl pallet_root_testing::Config for TestRuntime {}
 
 	impl frame_system::Config for TestRuntime {
 		type AccountData = ();
@@ -580,6 +583,7 @@ mod tests {
 		type SystemWeightInfo = ();
 		type Version = ();
 	}
+
 
 	impl Config for TestRuntime {
 		type AccountIdConverter = AccountIdConverter;
@@ -618,7 +622,7 @@ mod tests {
 			call: &RuntimeCall,
 		) -> Result<(), TransactionValidityError> {
 			match call {
-				RuntimeCall::System(frame_system::Call::fill_block { .. }) =>
+				RuntimeCall::RootTesting(pallet_root_testing::Call::fill_block { .. }) =>
 					Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
 				_ => Ok(()),
 			}
@@ -887,7 +891,7 @@ mod tests {
 			let id = [0; 4];
 			let relayer_account = 1;
 
-			let call = RuntimeCall::System(frame_system::Call::fill_block {
+			let call = RuntimeCall::RootTesting(pallet_root_testing::Call::fill_block {
 				ratio: Perbill::from_percent(75),
 			});
 			let weight = call.get_dispatch_info().weight;
