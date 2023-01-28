@@ -231,6 +231,7 @@ pub mod pallet {
 		/// Change `PalletOwner`.
 		///
 		/// May only be called either by root, or by `PalletOwner`.
+		#[pallet::call_index(0)]
 		#[pallet::weight((T::DbWeight::get().reads_writes(1, 1), DispatchClass::Operational))]
 		pub fn set_owner(origin: OriginFor<T>, new_owner: Option<T::AccountId>) -> DispatchResult {
 			<Self as OwnedBridgeModule<_>>::set_owner(origin, new_owner)
@@ -239,6 +240,7 @@ pub mod pallet {
 		/// Halt or resume all/some pallet operations.
 		///
 		/// May only be called either by root, or by `PalletOwner`.
+		#[pallet::call_index(1)]
 		#[pallet::weight((T::DbWeight::get().reads_writes(1, 1), DispatchClass::Operational))]
 		pub fn set_operating_mode(
 			origin: OriginFor<T>,
@@ -253,6 +255,7 @@ pub mod pallet {
 		///
 		/// The weight is: single read for permissions check + 2 writes for parameter value and
 		/// event.
+		#[pallet::call_index(2)]
 		#[pallet::weight((T::DbWeight::get().reads_writes(1, 2), DispatchClass::Operational))]
 		pub fn update_pallet_parameter(
 			origin: OriginFor<T>,
@@ -265,6 +268,7 @@ pub mod pallet {
 		}
 
 		/// Send message over lane.
+		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::send_message_weight(payload, T::DbWeight::get()))]
 		pub fn send_message(
 			origin: OriginFor<T>,
