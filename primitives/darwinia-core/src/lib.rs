@@ -25,7 +25,7 @@ mod copy_paste_from_darwinia {
 	use frame_support::{
 		dispatch::DispatchClass,
 		weights::{
-			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
 			Weight,
 		},
 	};
@@ -52,7 +52,9 @@ mod copy_paste_from_darwinia {
 	pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 	pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 	// TODO: https://github.com/paritytech/parity-bridges-common/issues/1543 - remove `set_proof_size`
-	pub const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_mul(2);
+	pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_ref_time(WEIGHT_REF_TIME_PER_SECOND)
+	.set_proof_size(1_000)
+	.saturating_mul(2);
 
 	frame_support::parameter_types! {
 		pub RuntimeBlockLength: BlockLength =
