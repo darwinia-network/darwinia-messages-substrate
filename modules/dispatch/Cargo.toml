@@ -21,7 +21,7 @@ sp-runtime    = { default-features = false, git = "https://github.com/paritytech
 sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [dev-dependencies]
-pallet-root-testing = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+pallet-root-testing = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 sp-io               = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
 
 [features]
@@ -36,7 +36,6 @@ std = [
 	# paritytech
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-root-testing/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
