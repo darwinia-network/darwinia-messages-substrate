@@ -290,7 +290,7 @@ pub mod pallet {
 		/// state update. Because of that, the submitter (relayer) has no benefit of not including
 		/// this data in the transaction, so reward confirmations lags should be minimal.
 		#[pallet::weight(T::WeightInfo::receive_messages_proof_weight(proof, *messages_count, *dispatch_weight))]
-		#[pallet::call_index(5)]
+		#[pallet::call_index(4)]
 		pub fn receive_messages_proof(
 			origin: OriginFor<T>,
 			relayer_id_at_bridged_chain: T::InboundRelayer,
@@ -452,7 +452,7 @@ pub mod pallet {
 			relayers_state,
 			T::DbWeight::get(),
 		))]
-		#[pallet::call_index(6)]
+		#[pallet::call_index(5)]
 		pub fn receive_messages_delivery_proof(
 			origin: OriginFor<T>,
 			proof: MessagesDeliveryProofOf<T, I>,
