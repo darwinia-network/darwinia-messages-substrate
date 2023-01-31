@@ -248,6 +248,7 @@ pub mod pallet {
 		/// Any accounts can enroll to be a relayer by lock collateral. The relay fee is optional,
 		/// the default value is MinimumRelayFee in runtime. (Update market needed)
 		/// Note: One account can enroll only once.
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::enroll_and_lock_collateral())]
 		pub fn enroll_and_lock_collateral(
 			origin: OriginFor<T>,
@@ -292,6 +293,7 @@ pub mod pallet {
 		}
 
 		/// Increase relayer's locked collateral
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::increase_locked_collateral())]
 		pub fn increase_locked_collateral(
 			origin: OriginFor<T>,
@@ -329,6 +331,7 @@ pub mod pallet {
 		}
 
 		/// Decrease relayer's locked collateral
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::decrease_locked_collateral())]
 		pub fn decrease_locked_collateral(
 			origin: OriginFor<T>,
@@ -373,6 +376,7 @@ pub mod pallet {
 		}
 
 		/// Update relay fee for enrolled relayer. (Update market needed)
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::update_relay_fee())]
 		pub fn update_relay_fee(origin: OriginFor<T>, new_fee: BalanceOf<T, I>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -393,6 +397,7 @@ pub mod pallet {
 		}
 
 		/// Cancel enrolled relayer(Update market needed)
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::cancel_enrollment())]
 		pub fn cancel_enrollment(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
@@ -420,6 +425,7 @@ pub mod pallet {
 			)
 		}
 
+		#[pallet::call_index(5)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_slash_protect())]
 		pub fn set_slash_protect(
 			origin: OriginFor<T>,
@@ -431,6 +437,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+		#[pallet::call_index(6)]
 		#[pallet::weight(<T as Config<I>>::WeightInfo::set_assigned_relayers_number())]
 		pub fn set_assigned_relayers_number(origin: OriginFor<T>, number: u32) -> DispatchResult {
 			ensure_root(origin)?;

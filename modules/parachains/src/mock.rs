@@ -20,6 +20,7 @@ use bp_runtime::Chain;
 // paritytech
 use frame_support::{traits::IsInVec, weights::Weight};
 use frame_system::mocking::*;
+use sp_core::ConstU32;
 use sp_runtime::{
 	testing::{Header, H256},
 	traits::{BlakeTwo256, Header as HeaderT, IdentityLookup},
@@ -88,17 +89,16 @@ impl frame_system::Config for TestRuntime {
 }
 
 frame_support::parameter_types! {
-	pub const MaxRequests: u32 = 2;
-	pub const HeadersToKeep: u32 = 5;
 	pub const SessionLength: u64 = 5;
 	pub const NumValidators: u32 = 5;
+	pub const HeadersToKeep: u32 = 5;
 }
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
 	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
-	type MaxRequests = MaxRequests;
+	type MaxRequests = ConstU32<2>;
 	type WeightInfo = ();
 }
 
@@ -107,7 +107,7 @@ impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance2> for TestRun
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
 	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
-	type MaxRequests = MaxRequests;
+	type MaxRequests = ConstU32<2>;
 	type WeightInfo = ();
 }
 

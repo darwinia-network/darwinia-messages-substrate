@@ -45,8 +45,7 @@ use num_traits::{CheckedSub, One};
 use scale_info::TypeInfo;
 // paritytech
 use frame_support::{
-	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher,
-	StorageValue,
+	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };
 use frame_system::RawOrigin;
 use sp_core::{storage::StorageKey, H256};
