@@ -289,8 +289,11 @@ pub mod pallet {
 		/// The weight of the call assumes that the transaction always brings outbound lane
 		/// state update. Because of that, the submitter (relayer) has no benefit of not including
 		/// this data in the transaction, so reward confirmations lags should be minimal.
+		///
+		/// Note: To maintain compatibility, the call index is 5 instead of 4 because the
+		/// call(increase_message_fee) with index 4 has been removed. https://github.com/darwinia-network/darwinia-messages-substrate/pull/207
 		#[pallet::weight(T::WeightInfo::receive_messages_proof_weight(proof, *messages_count, *dispatch_weight))]
-		#[pallet::call_index(4)]
+		#[pallet::call_index(5)]
 		pub fn receive_messages_proof(
 			origin: OriginFor<T>,
 			relayer_id_at_bridged_chain: T::InboundRelayer,
@@ -452,7 +455,7 @@ pub mod pallet {
 			relayers_state,
 			T::DbWeight::get(),
 		))]
-		#[pallet::call_index(5)]
+		#[pallet::call_index(6)]
 		pub fn receive_messages_delivery_proof(
 			origin: OriginFor<T>,
 			proof: MessagesDeliveryProofOf<T, I>,
