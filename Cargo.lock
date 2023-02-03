@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.36#dee535191703eecd6039e182f861f61aced6611f"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.36#f5c98d5612bdb7b6311005f41fc873400d5e1481"
 dependencies = [
  "blake2-rfc",
  "hex",
