@@ -24,8 +24,6 @@
 
 // crates.io
 use codec::{CompactAs, Decode, Encode, MaxEncodedLen};
-#[cfg(feature = "std")]
-use parity_util_mem::MallocSizeOf;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -81,7 +79,7 @@ impl From<u32> for ParaId {
 #[derive(
 	Clone, Default, PartialEq, Eq, PartialOrd, Ord, Encode, Decode, RuntimeDebug, TypeInfo,
 )]
-#[cfg_attr(feature = "std", derive(Hash, Serialize, Deserialize, MallocSizeOf))]
+#[cfg_attr(feature = "std", derive(Hash, Serialize, Deserialize))]
 pub struct ParaHead(pub Vec<u8>);
 impl ParaHead {
 	/// Returns the hash of this head data.
