@@ -77,9 +77,7 @@ integrity-test = [
 ]
 
 runtime-benchmarks = [
-	"pallet-balances",
+	"pallet-balances/runtime-benchmarks",
 	"pallet-bridge-grandpa/runtime-benchmarks",
 	"pallet-bridge-messages/runtime-benchmarks",
-	"sp-state-machine",
-	"sp-version",
 ]
