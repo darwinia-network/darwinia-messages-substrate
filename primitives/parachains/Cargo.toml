@@ -14,8 +14,8 @@ scale-info = { version = "2.1", default-features = false, features = ["derive"] 
 bp-polkadot-core = { default-features = false, path = "../polkadot-core" }
 bp-runtime       = { default-features = false, path = "../runtime" }
 # paritytech
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.36" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
 
 [features]
 default = ["std"]
