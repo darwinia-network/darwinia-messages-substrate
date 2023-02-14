@@ -19,13 +19,13 @@
 use crate::{
 	inbound_lane::InboundLaneStorage, inbound_lane_storage, outbound_lane,
 	outbound_lane::ReceivalConfirmationResult, weights_ext::EXPECTED_DEFAULT_MESSAGE_LENGTH, Call,
-	OutboundLanes, OutboundMessages,
+	OutboundLanes,
 };
 
 use bp_messages::{
 	source_chain::TargetHeaderChain, target_chain::SourceHeaderChain, DeliveredMessages,
-	InboundLaneData, LaneId, MessageData, MessageKey, MessageNonce, OutboundLaneData,
-	UnrewardedRelayer, UnrewardedRelayersState,
+	InboundLaneData, LaneId, MessageData, MessageNonce, OutboundLaneData, UnrewardedRelayer,
+	UnrewardedRelayersState,
 };
 use bp_runtime::{messages::DispatchFeePayment, StorageProofSize};
 use frame_benchmarking::{account, benchmarks_instance_pallet};
