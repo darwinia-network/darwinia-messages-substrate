@@ -23,3 +23,5 @@ jobs:
         uses: actions/checkout@v3
       - name: Cargo test
         run: cargo test --all --locked
+      - name: Cargo check
+        run: cargo check --all --features runtime-benchmarks,try-runtime
