@@ -108,6 +108,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a913633b0c922e6b745072795f50d90ebea78ba31a57e2ac8c2fc7b50950949"
 
 [[package]]
+name = "array-bytes"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22f72e9d6fac4bc80778ea470b20197b88d28c292bb7d60c3fb099280003cd19"
+
+[[package]]
 name = "arrayref"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,7 +307,7 @@ dependencies = [
 name = "bp-header-chain"
 version = "0.1.0"
 dependencies = [
- "array-bytes",
+ "array-bytes 6.0.0",
  "assert_matches",
  "bp-runtime",
  "bp-test-utils",
@@ -332,7 +338,7 @@ dependencies = [
 name = "bp-messages"
 version = "0.1.0"
 dependencies = [
- "array-bytes",
+ "array-bytes 6.0.0",
  "bitvec",
  "bp-runtime",
  "frame-support",
@@ -379,7 +385,7 @@ dependencies = [
 name = "bp-runtime"
 version = "0.1.0"
 dependencies = [
- "array-bytes",
+ "array-bytes 6.0.0",
  "frame-support",
  "frame-system",
  "hash-db",
@@ -2487,7 +2493,7 @@ name = "sp-core"
 version = "7.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.37#f38bd6671d460293c93062cc1e4fe9e9e490cb29"
 dependencies = [
- "array-bytes",
+ "array-bytes 4.1.0",
  "base58",
  "bitflags",
  "blake2",

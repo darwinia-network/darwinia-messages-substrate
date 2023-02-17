@@ -11,15 +11,15 @@ codec            = { package = "parity-scale-codec", workspace = true }
 finality-grandpa = { workspace = true }
 num-traits       = { workspace = true }
 scale-info       = { workspace = true }
-serde            = { optional = true, workspace = true }
+serde            = { workspace = true, optional = true }
 
 # darwinia-network
 bp-header-chain = { workspace = true }
 bp-runtime      = { workspace = true }
-bp-test-utils   = { optional = true, workspace = true }
+bp-test-utils   = { workspace = true, optional = true }
 
 # paritytech
-frame-benchmarking  = { optional = true, workspace = true }
+frame-benchmarking  = { workspace = true, optional = true }
 frame-support       = { workspace = true }
 frame-system        = { workspace = true }
 sp-finality-grandpa = { workspace = true }

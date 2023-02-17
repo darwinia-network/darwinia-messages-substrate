@@ -14,7 +14,7 @@ scale-info       = { workspace = true }
 serde            = { workspace = true, optional = true }
 
 # darwinia-network
-bp-runtime = {workspace = true }
+bp-runtime = { workspace = true }
 
 # paritytech
 frame-support       = { workspace = true }
