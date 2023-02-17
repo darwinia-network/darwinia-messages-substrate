@@ -8,27 +8,31 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-parity-scale-codec = { version = "3.0.0", default-features = false, features = ["derive"] }
-scale-info         = { version = "2.0.1", default-features = false, features = ["derive"] }
+codec      = { workspace = true, package = "parity-scale-codec" }
+scale-info = { workspace = true }
+
 # moonbeam
-account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.37" }
+account = { workspace = true }
+
 # paritytech
-bp-messages   = { default-features = false, path = "../messages" }
-bp-runtime    = { default-features = false, path = "../runtime" }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-runtime    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+bp-messages   = { workspace = true }
+bp-runtime    = { workspace = true }
+frame-support = { workspace = true }
+frame-system  = { workspace = true }
+sp-core       = { workspace = true }
+sp-runtime    = { workspace = true }
+sp-std        = { workspace = true }
 
 [features]
 default = ["std"]
 std = [
 	# crates.io
-	"parity-scale-codec/std",
+	"codec/std",
 	"scale-info/std",
+
 	# moonbeam
 	"account/std",
+	
 	# paritytech
 	"bp-messages/std",
 	"bp-runtime/std",

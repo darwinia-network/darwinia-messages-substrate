@@ -10,7 +10,7 @@ version     = "0.1.0"
 # crates.io
 bitvec     = { version = "1", default-features = false, features = ["alloc"] }
 codec      = { package = "parity-scale-codec", workspace = true }
-num-traits = { version = "0.2", default-features = false }
+num-traits = { workspace = true }
 scale-info = { workspace = true }
 serde      = { workspace = true, optional = true, features = ["derive"] }
 

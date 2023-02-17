@@ -7,17 +7,18 @@ version = "0.1.0"
 
 [dependencies]
 # crates.io
-codec            = { package = "parity-scale-codec", version = "3.1", default-features = false }
+codec            = { package = "parity-scale-codec", workspace = true }
 ed25519-dalek    = { version = "1.0", default-features = false, features = ["u64_backend"] }
-finality-grandpa = { version = "0.16", default-features = false }
-# darwinia-network
-bp-header-chain = { default-features = false, path = "../header-chain" }
-# paritytech
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-finality-grandpa   = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-runtime            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-std                = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+finality-grandpa = { workspace = true }
 
+# darwinia-network
+bp-header-chain = { workspace = true }
+
+# paritytech
+sp-application-crypto = { workspace = true }
+sp-finality-grandpa   = { workspace = true }
+sp-runtime            = { workspace = true }
+sp-std                = { workspace = true }
 
 # paritytech
 [features]
@@ -27,8 +28,10 @@ std = [
 	"codec/std",
 	"ed25519-dalek/std",
 	"finality-grandpa/std",
+
 	# darwinia-network
 	"bp-header-chain/std",
+	
 	# paritytech
 	"sp-application-crypto/std",
 	"sp-finality-grandpa/std",

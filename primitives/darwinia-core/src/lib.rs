@@ -97,7 +97,7 @@ pub use copy_paste_from_darwinia::*;
 // core
 use core::{fmt::Debug, marker::PhantomData};
 // crates.io
-use parity_scale_codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input};
+use codec::{Codec, Compact, Decode, Encode, Error as CodecError, Input};
 use scale_info::{StaticTypeInfo, TypeInfo};
 // darwinia-network
 use bp_messages::MessageNonce;

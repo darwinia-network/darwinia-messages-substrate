@@ -29,7 +29,7 @@ bp-messages            = { workspace = true }
 bp-runtime             = { workspace = true }
 
 [dev-dependencies]
-bitvec                 = { version = "1" }
+bitvec                 = { workspace = true }
 pallet-balances        = { workspace = true, features = ["std"] }
 pallet-bridge-messages = { workspace = true }
 
