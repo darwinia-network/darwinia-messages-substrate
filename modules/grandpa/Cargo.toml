@@ -7,28 +7,30 @@ version = "0.1.0"
 
 [dependencies]
 # crates.io
-codec            = { package = "parity-scale-codec", version = "3.1", default-features = false }
+codec            = { package = "parity-scale-codec", workspace = true }
 finality-grandpa = { version = "0.16", default-features = false }
 num-traits       = { version = "0.2", default-features = false }
-scale-info       = { version = "2.1", default-features = false, features = ["derive"] }
-serde            = { version = "1.0", optional = true }
+scale-info       = { workspace = true }
+serde            = { optional = true, workspace = true }
+
 # darwinia-network
-bp-header-chain = { default-features = false, path = "../../primitives/header-chain" }
-bp-runtime      = { default-features = false, path = "../../primitives/runtime" }
-bp-test-utils   = { optional = true, default-features = false, path = "../../primitives/test-utils" }
+bp-header-chain = { workspace = true }
+bp-runtime      = { workspace = true }
+bp-test-utils   = { optional = true, workspace = true }
+
 # paritytech
-frame-benchmarking  = { optional = true, default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-frame-support       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-frame-system        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-finality-grandpa = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-runtime          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-std              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-trie             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+frame-benchmarking  = { optional = true, workspace = true }
+frame-support       = { workspace = true }
+frame-system        = { workspace = true }
+sp-finality-grandpa = { workspace = true }
+sp-runtime          = { workspace = true }
+sp-std              = { workspace = true }
+sp-trie             = { workspace = true }
 
 [dev-dependencies]
 # paritytech
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-io   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+sp-core = { workspace = true }
+sp-io   = { workspace = true }
 
 [features]
 default = ["std"]
@@ -39,10 +41,12 @@ std = [
 	"num-traits/std",
 	"scale-info/std",
 	"serde",
+
 	# darwinia-network
 	"bp-header-chain/std",
 	"bp-runtime/std",
 	"bp-test-utils/std",
+
 	# paritytech
 	"frame-support/std",
 	"frame-system/std",
