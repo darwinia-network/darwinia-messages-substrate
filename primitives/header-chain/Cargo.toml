@@ -8,24 +8,26 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-codec            = { package = "parity-scale-codec", version = "3.1", default-features = false }
-finality-grandpa = { version = "0.16", default-features = false }
-scale-info       = { version = "2.1", default-features = false, features = ["derive"] }
-serde            = { version = "1.0", optional = true }
+codec            = { package = "parity-scale-codec", workspace = true }
+finality-grandpa = { workspace = true }
+scale-info       = { workspace = true }
+serde            = { workspace = true, optional = true }
+
 # darwinia-network
-bp-runtime = { default-features = false, path = "../runtime" }
+bp-runtime = { workspace = true }
+
 # paritytech
-frame-support       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-core             = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-finality-grandpa = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-runtime          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-std              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+frame-support       = { workspace = true }
+sp-core             = { workspace = true }
+sp-finality-grandpa = { workspace = true }
+sp-runtime          = { workspace = true }
+sp-std              = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-array-bytes    = { version = "4.1" }
+array-bytes    = { workspace = true }
 assert_matches = { version = "1.5" }
-bp-test-utils  = { path = "../test-utils" }
+bp-test-utils  = { workspace = true }
 
 [features]
 default = ["std"]
@@ -35,8 +37,10 @@ std = [
 	"finality-grandpa/std",
 	"scale-info/std",
 	"serde/std",
+
 	# darwinia-network
 	"bp-runtime/std",
+	
 	# paritytech
 	"frame-support/std",
 	"sp-core/std",

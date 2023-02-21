@@ -8,21 +8,23 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-bitvec                = { version = "1", default-features = false, features = ["alloc"] }
-codec                 = { package = "parity-scale-codec", version = "3.1", default-features = false, features = ["derive", "bit-vec"] }
+bitvec                = { workspace = true }
+codec                 = { package = "parity-scale-codec", workspace = true, features = ["bit-vec"] }
 impl-trait-for-tuples = { version = "0.2" }
-scale-info            = { version = "2.1", default-features = false, features = ["bit-vec", "derive"] }
-serde                 = { version = "1.0", optional = true, features = ["derive"] }
+scale-info            = { workspace = true, features = ["bit-vec"] }
+serde                 = { workspace = true, optional = true }
+
 # darwinia-network
-bp-runtime = { default-features = false, path = "../runtime" }
+bp-runtime = { workspace = true }
+
 # paritytech
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-frame-system  = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-core       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-std        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+frame-support = { workspace = true }
+frame-system  = { workspace = true }
+sp-core       = { workspace = true }
+sp-std        = { workspace = true }
 
 [dev-dependencies]
-array-bytes = { version = "4.1" }
+array-bytes = { workspace = true }
 
 [features]
 default = ["std"]
@@ -32,8 +34,10 @@ std = [
 	"codec/std",
 	"scale-info/std",
 	"serde",
+
 	# darwinia-network
 	"bp-runtime/std",
+
 	# paritytech
 	"frame-support/std",
 	"frame-system/std",
