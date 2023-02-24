@@ -50,9 +50,6 @@ use sp_trie::StorageProof;
 
 /// Bidirectional message bridge.
 pub trait MessageBridge {
-	/// Relayer interest (in percents).
-	const RELAYER_FEE_PERCENT: u32;
-
 	/// Identifier of this chain.
 	const THIS_CHAIN_ID: ChainId;
 	/// Identifier of the Bridged chain.
@@ -827,13 +824,6 @@ mod tests {
 	// paritytech
 	use frame_support::weights::Weight;
 
-	// const DELIVERY_TRANSACTION_WEIGHT: Weight = Weight::from_ref_time(100);;
-	// const DELIVERY_CONFIRMATION_TRANSACTION_WEIGHT: u64 = 100;
-	// const THIS_CHAIN_WEIGHT_TO_BALANCE_RATE: u32 = 2;
-	// const BRIDGED_CHAIN_WEIGHT_TO_BALANCE_RATE: u32 = 4;
-	// const BRIDGED_CHAIN_TO_THIS_CHAIN_BALANCE_RATE: u32 = 6;
-	// const BRIDGED_CHAIN_MIN_EXTRINSIC_WEIGHT: usize = 5;
-	// TODO This should be `usize`, but for current tests, let it be `u64`
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: u64 = 2048;
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_SIZE: u32 = 1024;
 
@@ -851,7 +841,6 @@ mod tests {
 
 		const BRIDGED_CHAIN_ID: ChainId = *b"brdg";
 		const BRIDGED_MESSAGES_PALLET_NAME: &'static str = "";
-		const RELAYER_FEE_PERCENT: u32 = 10;
 		const THIS_CHAIN_ID: ChainId = *b"this";
 	}
 
@@ -866,7 +855,6 @@ mod tests {
 
 		const BRIDGED_CHAIN_ID: ChainId = *b"this";
 		const BRIDGED_MESSAGES_PALLET_NAME: &'static str = "";
-		const RELAYER_FEE_PERCENT: u32 = 20;
 		const THIS_CHAIN_ID: ChainId = *b"brdg";
 	}
 
