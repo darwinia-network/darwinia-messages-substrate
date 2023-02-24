@@ -8,25 +8,25 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-codec      = { package = "parity-scale-codec", version = "3.1", default-features = false }
+codec      = { package = "parity-scale-codec", workspace = true }
 hash-db    = { version = "0.15", default-features = false }
-num-traits = { version = "0.2", default-features = false }
-scale-info = { version = "2.1", default-features = false, features = ["derive"] }
-serde      = { version = "1.0", optional = true, features = ["derive"] }
+num-traits = { workspace = true }
+scale-info = { workspace = true }
+serde      = { workspace = true, optional = true }
 trie-db    = { version = "0.24", default-features = false }
 # paritytech
-frame-support    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-frame-system     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-core          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-io            = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-runtime       = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-state-machine = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-std           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
-sp-trie          = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.37" }
+frame-support    = { workspace = true }
+frame-system     = { workspace = true }
+sp-core          = { workspace = true }
+sp-io            = { workspace = true }
+sp-runtime       = { workspace = true }
+sp-state-machine = { workspace = true }
+sp-std           = { workspace = true }
+sp-trie          = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-array-bytes = { version = "4.1" }
+array-bytes = { workspace = true }
 
 [features]
 default = ["std"]
