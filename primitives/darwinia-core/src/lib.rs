@@ -25,7 +25,7 @@ mod copy_paste_from_darwinia {
 	use frame_support::{
 		dispatch::DispatchClass,
 		weights::{
-			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
+			constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_MILLIS},
 			Weight,
 		},
 	};
@@ -49,48 +49,80 @@ mod copy_paste_from_darwinia {
 	pub type Header = generic::Header<BlockNumber, Hashing>;
 	pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
 
-	pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
+	/// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
+	/// used to limit the maximal weight of a single extrinsic.
+	pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
+	/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used by
+	/// `Operational` extrinsics.
 	pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-	// TODO: https://github.com/paritytech/parity-bridges-common/issues/1543 - remove `set_proof_size`
-	pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-		Weight::from_ref_time(WEIGHT_REF_TIME_PER_SECOND).set_proof_size(1_000).saturating_mul(2);
+	/// We allow for 0.5 of a second of compute with a 12 second average block time.
+	pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
+	/// Maximum PoV size we support right now.(Copied from the polkadot repo)
+	pub const MAX_POV_SIZE: u32 = 5 * 1024 * 1024;
+	pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+		WEIGHT_REF_TIME_PER_MILLIS * WEIGHT_MILLISECS_PER_BLOCK,
+		MAX_POV_SIZE as u64,
+	);
 
 	frame_support::parameter_types! {
 		pub RuntimeBlockLength: BlockLength =
-			BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
-		pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
-			.base_block(BlockExecutionWeight::get())
-			.for_class(DispatchClass::all(), |weights| {
-				weights.base_extrinsic = ExtrinsicBaseWeight::get();
-			})
-			.for_class(DispatchClass::Normal, |weights| {
-				weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
-			})
-			.for_class(DispatchClass::Operational, |weights| {
-				weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
-				// Operational transactions have some extra reserved space, so that they
-				// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
-				weights.reserved = Some(
-					MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
-				);
-			})
-			.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
-			.build_or_panic();
+		BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+	pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
+		.base_block(BlockExecutionWeight::get())
+		.for_class(DispatchClass::all(), |weights| {
+			weights.base_extrinsic = ExtrinsicBaseWeight::get();
+		})
+		.for_class(DispatchClass::Normal, |weights| {
+			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+		})
+		.for_class(DispatchClass::Operational, |weights| {
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+			// Operational transactions have some extra reserved space, so that they
+			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+			weights.reserved = Some(
+				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+			);
+		})
+		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
+		.build_or_panic();
 	}
 
-	pub const MILLISECS_PER_BLOCK: u64 = 6000;
+	/// This determines the average expected block time that we are targeting.
+	/// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
+	/// `SLOT_DURATION` is picked up by `pallet_timestamp` which is in turn picked
+	/// up by `pallet_aura` to implement `fn slot_duration()`.
+	///
+	/// Change this to adjust the block time.
+	pub const MILLISECS_PER_BLOCK: u64 = 12_000;
+
+	// NOTE: Currently it is not possible to change the slot duration after the chain has started.
+	//       Attempting to do so will brick block production.
+	/// Slot duration.
 	pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 
+	// Time is measured by number of blocks.
+	/// 10 blocks.
 	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-	pub const HOURS: BlockNumber = 60 * MINUTES;
-	pub const DAYS: BlockNumber = 24 * HOURS;
+	/// 600 blocks.
+	pub const HOURS: BlockNumber = MINUTES * 60;
+	/// 14,400 blocks.
+	pub const DAYS: BlockNumber = HOURS * 24;
 
-	pub const NANO: Balance = 1;
-	pub const MICRO: Balance = 1_000 * NANO;
-	pub const MILLI: Balance = 1_000 * MICRO;
-	pub const COIN: Balance = 1_000 * MILLI;
-
-	pub const GWEI: Balance = 1_000_000_000;
+	// Unit = the base number of indivisible units for balances
+	/// 1e18 wei — 1,000,000,000,000,000,000
+	pub const UNIT: Balance = 1_000 * MILLIUNIT;
+	/// 1e15 wei — 1,000,000,000,000,000
+	pub const MILLIUNIT: Balance = 1_000 * MICROUNIT;
+	/// 1e12 wei — 1,000,000,000,000
+	pub const MICROUNIT: Balance = 1_000 * GWEI;
+	/// 1e9 wei — 1,000,000,000
+	pub const GWEI: Balance = 1_000 * MWEI;
+	/// 1e6 wei — 1,000,000
+	pub const MWEI: Balance = 1_000 * KWEI;
+	/// 1e3 wei — 1,000
+	pub const KWEI: Balance = 1_000 * WEI;
+	/// 1 wei — 1
+	pub const WEI: Balance = 1;
 }
 pub use copy_paste_from_darwinia::*;
 
