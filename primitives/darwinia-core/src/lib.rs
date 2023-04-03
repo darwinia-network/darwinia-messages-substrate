@@ -68,11 +68,9 @@ mod copy_paste_from_darwinia {
 	pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 	/// We allow for 0.5 of a second of compute with a 12 second average block time.
 	pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
-	/// Maximum PoV size we support right now.(Copied from the polkadot repo)
-	pub const MAX_POV_SIZE: u32 = 5 * 1024 * 1024;
 	pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
 		WEIGHT_REF_TIME_PER_MILLIS * WEIGHT_MILLISECS_PER_BLOCK,
-		MAX_POV_SIZE as u64,
+		5 * 1024 * 1024,
 	);
 
 	frame_support::parameter_types! {
