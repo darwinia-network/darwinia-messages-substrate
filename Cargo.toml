@@ -30,7 +30,7 @@ pallet-bridge-parachains = { default-features = false, path = "modules/parachain
 pallet-fee-market        = { default-features = false, path = "modules/fee-market" }
 
 # moonbeam
-account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "update-0.9.38" }
+account = { default-features = false, git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.38" }
 
 # substrate
 frame-benchmarking         = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }

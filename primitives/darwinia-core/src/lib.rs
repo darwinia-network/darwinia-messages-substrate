@@ -37,16 +37,27 @@ mod copy_paste_from_darwinia {
 		OpaqueExtrinsic, Perbill,
 	};
 
+	/// An index to a block.
 	pub type BlockNumber = u32;
+	/// Hashing type
 	pub type Hashing = BlakeTwo256;
+	/// A hash of some data used by the chain.
 	pub type Hash = H256;
+	/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 	pub type Signature = EthereumSignature;
+	/// Account public key
 	pub type AccountPublic = <Signature as Verify>::Signer;
+	/// Some way of identifying an account on the chain.
 	pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
+	/// Alias to the AccountId type.
 	pub type Address = AccountId;
+	/// Nonce of an account in the chain.
 	pub type Nonce = u32;
+	/// Balance type.
 	pub type Balance = u128;
+	/// Abstraction over the  darwinia block header.
 	pub type Header = generic::Header<BlockNumber, Hashing>;
+	/// Abstraction over the darwinia block.
 	pub type OpaqueBlock = generic::Block<Header, OpaqueExtrinsic>;
 
 	/// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
@@ -66,25 +77,25 @@ mod copy_paste_from_darwinia {
 
 	frame_support::parameter_types! {
 		pub RuntimeBlockLength: BlockLength =
-		BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
-	pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
-		.base_block(BlockExecutionWeight::get())
-		.for_class(DispatchClass::all(), |weights| {
-			weights.base_extrinsic = ExtrinsicBaseWeight::get();
-		})
-		.for_class(DispatchClass::Normal, |weights| {
-			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
-		})
-		.for_class(DispatchClass::Operational, |weights| {
-			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
-			// Operational transactions have some extra reserved space, so that they
-			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
-			weights.reserved = Some(
-				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
-			);
-		})
-		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
-		.build_or_panic();
+			BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+		pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
+			.base_block(BlockExecutionWeight::get())
+			.for_class(DispatchClass::all(), |weights| {
+				weights.base_extrinsic = ExtrinsicBaseWeight::get();
+			})
+			.for_class(DispatchClass::Normal, |weights| {
+				weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+			})
+			.for_class(DispatchClass::Operational, |weights| {
+				weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+				// Operational transactions have some extra reserved space, so that they
+				// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+				weights.reserved = Some(
+					MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+				);
+			})
+			.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
+			.build_or_panic();
 	}
 
 	/// This determines the average expected block time that we are targeting.
