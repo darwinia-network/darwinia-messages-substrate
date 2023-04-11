@@ -29,12 +29,11 @@ use crate::messages::{
 	SignatureOf, SignerOf, ThisChain,
 };
 use bp_messages::{storage_keys, MessageData, MessageKey, MessagePayload};
-use bp_runtime::{messages::DispatchFeePayment, record_all_trie_keys, StorageProofSize};
 use pallet_bridge_messages::benchmarking::{
 	MessageDeliveryProofParams, MessageParams, MessageProofParams,
 };
 // paritytech
-use frame_support::{dispatch::GetDispatchInfo, weights::Weight};
+use frame_support::weights::{GetDispatchInfo, Weight};
 use sp_core::Hasher;
 use sp_runtime::traits::{Header, IdentifyAccount, MaybeSerializeDeserialize, Zero};
 use sp_std::{fmt::Debug, prelude::*};
@@ -43,21 +42,12 @@ use sp_trie::{trie_types::TrieDBMutBuilderV1, LayoutV1, MemoryDB, Recorder, Trie
 /// Prepare outbound message for the `send_message` call.
 pub fn prepare_outbound_message<B>(
 	params: MessageParams<AccountIdOf<ThisChain<B>>>,
-) -> FromThisChainMessagePayload<B>
+) -> FromThisChainMessagePayload
 where
 	B: MessageBridge,
 	BalanceOf<ThisChain<B>>: From<u64>,
 {
-	let message_payload = vec![0; params.size as usize];
-	let dispatch_origin = bp_message_dispatch::CallOrigin::SourceAccount(params.sender_account);
-
-	FromThisChainMessagePayload::<B> {
-		spec_version: 0,
-		weight: bp_messages::Weight::from_ref_time(params.size.into()),
-		origin: dispatch_origin,
-		call: message_payload,
-		dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
-	}
+	vec![0; params.size as usize]
 }
 
 /// Prepare proof of messages for the `receive_messages_proof` call.

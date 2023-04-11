@@ -433,7 +433,6 @@ name = "bridge-runtime-common"
 version = "0.1.0"
 dependencies = [
  "bp-header-chain",
- "bp-message-dispatch",
  "bp-messages",
  "bp-parachains",
  "bp-polkadot-core",
@@ -441,9 +440,9 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hash-db",
+ "log",
  "num-traits",
  "pallet-balances",
- "pallet-bridge-dispatch",
  "pallet-bridge-grandpa",
  "pallet-bridge-messages",
  "pallet-bridge-parachains",
@@ -1729,23 +1728,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-bridge-dispatch"
-version = "0.1.0"
-dependencies = [
- "bp-message-dispatch",
- "bp-runtime",
- "frame-support",
- "frame-system",
- "pallet-root-testing",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-bridge-grandpa"
 version = "0.1.0"
 dependencies = [
@@ -1773,7 +1755,6 @@ name = "pallet-bridge-messages"
 version = "0.1.0"
 dependencies = [
  "bitvec",
- "bp-message-dispatch",
  "bp-messages",
  "bp-runtime",
  "bp-test-utils",
@@ -1827,21 +1808,6 @@ dependencies = [
  "pallet-balances",
  "pallet-bridge-messages",
  "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-root-testing"
-version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.38#18bb7c7c841b101c19a8d1881b893ae8e37de460"
-dependencies = [
- "frame-support",
- "frame-system",
  "parity-scale-codec",
  "scale-info",
  "sp-core",

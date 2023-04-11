@@ -15,7 +15,6 @@ scale-info = { workspace = true }
 serde      = { workspace = true, optional = true, features = ["derive"] }
 
 # darwinia-network
-bp-message-dispatch = { workspace = true }
 bp-messages         = { workspace = true }
 bp-runtime          = { workspace = true }
 
@@ -44,7 +43,6 @@ std = [
 	"serde",
 
 	# darwinia-network
-	"bp-message-dispatch/std",
 	"bp-messages/std",
 	"bp-runtime/std",
 

@@ -10,18 +10,17 @@ version    = "0.1.0"
 # crates.io
 codec             = { package = "parity-scale-codec", workspace = true }
 hash-db           = { version = "0.15", default-features = false }
+log               = { version = "0.4.14", default-features = false }
 num-traits        = { workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { version = "1.1", optional = true }
 
 # darwinia-network
 bp-header-chain          = { workspace = true }
-bp-message-dispatch      = { workspace = true }
 bp-messages              = { workspace = true }
 bp-parachains            = { workspace = true }
 bp-polkadot-core         = { workspace = true }
 bp-runtime               = { workspace = true }
-pallet-bridge-dispatch   = { workspace = true }
 pallet-bridge-grandpa    = { workspace = true}
 pallet-bridge-messages   = { workspace = true }
 pallet-bridge-parachains = { workspace = true }
@@ -46,12 +45,10 @@ default = ["std"]
 std = [
 	# darwinia-network
 	"bp-header-chain/std",
-	"bp-message-dispatch/std",
 	"bp-messages/std",
 	"bp-parachains/std",
 	"bp-polkadot-core/std",
 	"bp-runtime/std",
-	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
 	"pallet-bridge-messages/std",
 	"pallet-bridge-parachains/std",
@@ -60,6 +57,7 @@ std = [
 	# crates.io
 	"codec/std",
 	"hash-db/std",
+	"log/std",
 	"num-traits/std",
 	"scale-info/std",
 	
