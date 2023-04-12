@@ -23,7 +23,7 @@ use crate::{
 use bp_runtime::Size;
 // paritytech
 use frame_support::{weights::Weight, Parameter, RuntimeDebug};
-use sp_std::{collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
+use sp_std::{collections::btree_map::BTreeMap, collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
 
 /// Error message that is used in `ForbidOutboundMessages` implementation.
 const ALL_OUTBOUND_MESSAGES_REJECTED: &str =
@@ -44,6 +44,18 @@ pub trait SenderOrigin<AccountId> {
 	///   This may be useful for pallets that are sending important system-wide information (like
 	///   update of runtime version).
 	fn linked_account(&self) -> Option<AccountId>;
+}
+
+/// Relayers rewards, grouped by relayer account id.
+pub type RelayersRewards<AccountId, Balance> = BTreeMap<AccountId, RelayerRewards<Balance>>;
+
+/// Single relayer rewards.
+#[derive(RuntimeDebug, Default)]
+pub struct RelayerRewards<Balance> {
+	/// Total rewards that are to be paid to the relayer.
+	pub reward: Balance,
+	/// Total number of messages relayed by this relayer.
+	pub messages: MessageNonce,
 }
 
 /// Target chain API. Used by source chain to verify target chain proofs.
