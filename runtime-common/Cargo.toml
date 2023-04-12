@@ -10,7 +10,7 @@ version    = "0.1.0"
 # crates.io
 codec             = { package = "parity-scale-codec", workspace = true }
 hash-db           = { version = "0.15", default-features = false }
-log               = { version = "0.4.14", default-features = false }
+log               = { version = "0.4", default-features = false }
 num-traits        = { workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { version = "1.1", optional = true }
