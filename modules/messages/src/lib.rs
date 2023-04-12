@@ -74,9 +74,10 @@ use bp_messages::{
 	target_chain::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
 	},
-	total_unrewarded_messages, DeliveredMessages, InboundLaneData, LaneId, MessageData, MessageKey,
-	MessageNonce, MessagesOperatingMode, OutboundLaneData, Parameter as MessagesParameter,
-	UnrewardedRelayer, UnrewardedRelayersState,
+	total_unrewarded_messages, DeliveredMessages, InboundLaneData, InboundMessageDetails, LaneId,
+	MessageData, MessageKey, MessageNonce, MessagePayload, OperatingMode, OutboundLaneData,
+	OutboundMessageDetails, Parameter as MessagesParameter, UnrewardedRelayer,
+	UnrewardedRelayersState,
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
@@ -712,6 +713,32 @@ pub mod pallet {
 			PalletOperatingMode::<T, I>::put(self.operating_mode);
 			if let Some(ref owner) = self.owner {
 				PalletOwner::<T, I>::put(owner);
+			}
+		}
+	}
+
+	impl<T: Config<I>, I: 'static> Pallet<T, I> {
+		/// Get stored data of the outbound message with given nonce.
+		pub fn outbound_message_data(
+			lane: LaneId,
+			nonce: MessageNonce,
+		) -> Option<MessageData<T::OutboundMessageFee>> {
+			OutboundMessages::<T, I>::get(MessageKey { lane_id: lane, nonce })
+		}
+
+		/// Prepare data, related to given inbound message.
+		pub fn inbound_message_data(
+			lane: LaneId,
+			payload: MessagePayload,
+			outbound_details: OutboundMessageDetails<T::InboundMessageFee>,
+		) -> InboundMessageDetails {
+			let mut dispatch_message = DispatchMessage {
+				key: MessageKey { lane_id: lane, nonce: outbound_details.nonce },
+				data: MessageData { payload, fee: outbound_details.delivery_and_dispatch_fee }
+					.into(),
+			};
+			InboundMessageDetails {
+				dispatch_weight: T::MessageDispatch::dispatch_weight(&mut dispatch_message),
 			}
 		}
 	}
@@ -2170,6 +2197,27 @@ mod tests {
 			InboundLanes::<TestRuntime>::storage_map_final_key(TEST_LANE_ID),
 			bp_messages::storage_keys::inbound_lane_data_key("Messages", &TEST_LANE_ID).0,
 		);
+	}
+
+	#[test]
+	fn inbound_message_details_works() {
+		run_test(|| {
+			assert_eq!(
+				Pallet::<TestRuntime>::inbound_message_data(
+					TEST_LANE_ID,
+					REGULAR_PAYLOAD.encode(),
+					OutboundMessageDetails {
+						nonce: 0,
+						dispatch_weight: 0,
+						size: 0,
+						delivery_and_dispatch_fee: 0,
+						dispatch_fee_payment:
+							bp_runtime::messages::DispatchFeePayment::AtTargetChain,
+					},
+				),
+				InboundMessageDetails { dispatch_weight: REGULAR_PAYLOAD.declared_weight },
+			);
+		});
 	}
 
 	generate_owned_bridge_module_tests!(

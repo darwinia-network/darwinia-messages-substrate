@@ -29,7 +29,7 @@ use bitvec::prelude::*;
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 // darwinia-network
-use bp_runtime::{BasicOperatingMode, OperatingMode};
+use bp_runtime::{BasicOperatingMode, OperatingMode, messages::DispatchFeePayment};
 // paritytech
 use frame_support::RuntimeDebug;
 use sp_std::{collections::vec_deque::VecDeque, prelude::*};
@@ -194,6 +194,37 @@ impl<RelayerId> InboundLaneData<RelayerId> {
 		self.relayers.back().map(|entry| entry.messages.end).unwrap_or(self.last_confirmed_nonce)
 	}
 }
+
+/// Outbound message details, returned by runtime APIs.
+#[derive(Clone, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+pub struct OutboundMessageDetails<OutboundMessageFee> {
+	/// Nonce assigned to the message.
+	pub nonce: MessageNonce,
+	/// Message dispatch weight.
+	///
+	/// Depending on messages pallet configuration, it may be declared by the message submitter,
+	/// computed automatically or just be zero if dispatch fee is paid at the target chain.
+	pub dispatch_weight: Weight,
+	/// Size of the encoded message.
+	pub size: u32,
+	/// Delivery+dispatch fee paid by the message submitter at the source chain.
+	pub delivery_and_dispatch_fee: OutboundMessageFee,
+	/// Where the fee for dispatching message is paid?
+	pub dispatch_fee_payment: DispatchFeePayment,
+}
+
+/// Inbound message details, returned by runtime APIs.
+#[derive(Clone, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+pub struct InboundMessageDetails {
+	/// Computed message dispatch weight.
+	///
+	/// Runtime API guarantees that it will match the value, returned by
+	/// `target_chain::MessageDispatch::dispatch_weight`. This means that if the runtime
+	/// has failed to decode the message, it will be zero - that's because `undecodable`
+	/// message cannot be dispatched.
+	pub dispatch_weight: Weight,
+}
+
 
 /// Unrewarded relayer entry stored in the inbound lane data.
 ///
