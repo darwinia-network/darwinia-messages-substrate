@@ -443,7 +443,7 @@ pub mod source {
 			}
 
 			let route = T::build_destination();
-			let msg = (route, msg.take().unwrap()).encode();
+			let msg = (route, msg.take().ok_or(SendError::MissingArgument)?).encode();
 
 			let fee = estimate_message_dispatch_and_delivery_fee::<T::MessageBridge>(
 				&msg,
