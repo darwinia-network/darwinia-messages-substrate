@@ -50,6 +50,7 @@ sp-trie                    = { default-features = false, git = "https://github.c
 sp-version                 = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 
 # polkadot
+pallet-xcm   = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38" }
 xcm          = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38" }
 xcm-builder  = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38" }
 xcm-executor = { default-features = false, git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38" }

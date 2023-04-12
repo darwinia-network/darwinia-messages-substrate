@@ -41,6 +41,7 @@ sp-trie                    = { workspace = true }
 sp-version                 = { workspace = true, optional = true }
 
 # polkadot
+pallet-xcm   = { workspace = true }
 xcm          = { workspace = true }
 xcm-builder  = { workspace = true }
 xcm-executor = { workspace = true }
@@ -79,6 +80,7 @@ std = [
 	"sp-trie/std",
 
 	# polkadot
+	"pallet-xcm/std",
 	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",

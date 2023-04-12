@@ -436,6 +436,7 @@ dependencies = [
  "pallet-bridge-parachains",
  "pallet-fee-market",
  "pallet-transaction-payment",
+ "pallet-xcm",
  "parity-scale-codec",
  "scale-info",
  "sp-api",
@@ -1858,6 +1859,26 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-xcm"
+version = "0.9.38"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#097ffd245c42aeff28cf80f8a3568e1bee2e7da7"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xcm",
+ "xcm-executor",
 ]
 
 [[package]]
