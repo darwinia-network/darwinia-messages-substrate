@@ -22,6 +22,7 @@ sp-core             = { workspace = true }
 sp-finality-grandpa = { workspace = true }
 sp-runtime          = { workspace = true }
 sp-std              = { workspace = true }
+sp-trie             = { workspace = true }
 
 [dev-dependencies]
 # crates.io
@@ -47,4 +48,5 @@ std = [
 	"sp-finality-grandpa/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	"sp-trie/std",
 ]

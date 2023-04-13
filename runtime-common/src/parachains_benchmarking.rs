@@ -21,7 +21,7 @@
 // crates.io
 use codec::Encode;
 // darwinia-network
-use crate::messages_benchmarking::{grow_trie, insert_header_to_grandpa_pallet};
+use crate::messages_benchmarking::{grow_trie, insert_header_to_grandpa_pallet, messages_generation::grow_trie};
 use bp_parachains::parachain_head_storage_key_at_source;
 use bp_polkadot_core::parachains::{ParaHash, ParaHead, ParaHeadsProof, ParaId};
 use bp_runtime::{record_all_trie_keys, StorageProofSize};

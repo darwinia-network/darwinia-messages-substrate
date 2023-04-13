@@ -27,6 +27,8 @@ pub mod parachains_benchmarking;
 pub mod messages_extension;
 pub mod pallets;
 
+mod messages_generation;
+
 // darwinia-network
 use bp_runtime::FilterCall;
 // paritytech

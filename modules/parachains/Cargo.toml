@@ -11,6 +11,7 @@ codec      = { package = "parity-scale-codec", workspace = true }
 scale-info = { workspace = true }
 
 # darwinia-network
+bp-header-chain       = { workspace = true }
 bp-parachains         = { workspace = true }
 bp-polkadot-core      = { workspace = true }
 bp-runtime            = { workspace = true }
@@ -40,6 +41,7 @@ std = [
 	"scale-info/std",
 
 	# darwinia-network
+	"bp-header-chain/std",
 	"bp-parachains/std",
 	"bp-polkadot-core/std",
 	"bp-runtime/std",
