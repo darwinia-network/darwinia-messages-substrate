@@ -9,7 +9,6 @@ version = "0.1.0"
 # crates.io
 codec      = { package = "parity-scale-codec", workspace = true }
 scale-info = { workspace = true }
-serde      = { workspace = true, optional = true }
 
 # darwinia-network
 bp-parachains         = { workspace = true }
@@ -21,7 +20,6 @@ pallet-bridge-grandpa = { workspace = true }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support      = { workspace = true }
 frame-system       = { workspace = true }
-sp-core            = { workspace = true }
 sp-runtime         = { workspace = true }
 sp-std             = { workspace = true }
 sp-trie            = { workspace = true }
@@ -40,7 +38,6 @@ std = [
 	# crates.io
 	"codec/std",
 	"scale-info/std",
-	"serde",
 
 	# darwinia-network
 	"bp-parachains/std",
@@ -50,8 +47,8 @@ std = [
 	# paritytech
 	"frame-support/std",
 	"frame-system/std",
+	"frame-benchmarking/std",
 	"pallet-bridge-grandpa/std",
-	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	"sp-trie/std",

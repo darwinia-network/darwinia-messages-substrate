@@ -11,7 +11,6 @@ version    = "0.1.0"
 codec             = { package = "parity-scale-codec", workspace = true }
 hash-db           = { version = "0.15", default-features = false }
 log               = { version = "0.4", default-features = false }
-num-traits        = { workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { version = "1.1", optional = true }
 
@@ -30,15 +29,12 @@ pallet-fee-market        = { workspace = true }
 frame-support              = { workspace = true }
 frame-system               = { workspace = true }
 pallet-balances            = { workspace = true, optional = true }
-pallet-transaction-payment = { workspace = true }
 sp-api                     = { workspace = true }
 sp-core                    = { workspace = true }
 sp-io                      = { workspace = true }
 sp-runtime                 = { workspace = true }
-sp-state-machine           = { workspace = true, optional = true }
 sp-std                     = { workspace = true }
 sp-trie                    = { workspace = true }
-sp-version                 = { workspace = true, optional = true }
 
 # polkadot
 pallet-xcm   = { workspace = true }
@@ -64,18 +60,15 @@ std = [
 	"codec/std",
 	"hash-db/std",
 	"log/std",
-	"num-traits/std",
 	"scale-info/std",
 	
 	# paritytech
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-transaction-payment/std",
 	"sp-api/std",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",
-	"sp-state-machine/std",
 	"sp-std/std",
 	"sp-trie/std",
 
