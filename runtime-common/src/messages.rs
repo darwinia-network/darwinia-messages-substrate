@@ -23,14 +23,14 @@
 // core
 use core::marker::PhantomData;
 // crates.io
-use codec::{Decode, DecodeLimit, Encode, MaxEncodedLen};
+use codec::{Decode, DecodeLimit, Encode};
 use hash_db::Hasher;
 use scale_info::TypeInfo;
 // darwinia-network
 use bp_messages::{
 	source_chain::LaneMessageVerifier,
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
-	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
+	InboundLaneData, LaneId, Message, MessageKey, MessageNonce, MessagePayload, OutboundLaneData,
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
@@ -39,10 +39,6 @@ use frame_support::{
 	traits::{Currency, Get},
 	weights::Weight,
 	RuntimeDebug,
-};
-use sp_runtime::{
-	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT},
-	FixedPointNumber, FixedPointOperand,
 };
 use sp_std::prelude::*;
 use sp_trie::StorageProof;
@@ -209,12 +205,8 @@ pub mod source {
 	/// The error message returned from LaneMessageVerifier when the message fee is too low.
 	pub const TOO_LOW_FEE: &str = "Provided fee is below minimal threshold required by the lane.";
 
-	impl<B, F, I>
-		LaneMessageVerifier<
-			OriginOf<ThisChain<B>>,
-			FromThisChainMessagePayload,
-			BalanceOf<ThisChain<B>>,
-		> for FromThisChainMessageVerifier<B, F, I>
+	impl<B> LaneMessageVerifier<OriginOf<ThisChain<B>>, FromThisChainMessagePayload>
+		for FromThisChainMessageVerifier<B>
 	where
 		B: MessageBridge,
 		F: pallet_fee_market::Config<I>,
@@ -231,10 +223,9 @@ pub mod source {
 		#[cfg(not(feature = "runtime-benchmarks"))]
 		fn verify_message(
 			submitter: &OriginOf<ThisChain<B>>,
-			delivery_and_dispatch_fee: &BalanceOf<ThisChain<B>>,
 			lane: &LaneId,
 			lane_outbound_data: &OutboundLaneData,
-			payload: &FromThisChainMessagePayload,
+			_payload: &FromThisChainMessagePayload,
 		) -> Result<(), Self::Error> {
 			// reject message if lane is blocked
 			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
@@ -407,7 +398,6 @@ pub mod source {
 		/// Runtime message sender adapter.
 		type MessageSender: bp_messages::source_chain::MessagesBridge<
 			OriginOf<ThisChain<Self::MessageBridge>>,
-			BalanceOf<ThisChain<Self::MessageBridge>>,
 			FromThisChainMessagePayload,
 		>;
 
@@ -429,7 +419,7 @@ pub mod source {
 		BalanceOf<ThisChain<T::MessageBridge>>: Into<Fungibility>,
 		OriginOf<ThisChain<T::MessageBridge>>: From<pallet_xcm::Origin>,
 	{
-		type Ticket = (BalanceOf<ThisChain<T::MessageBridge>>, FromThisChainMessagePayload);
+		type Ticket = FromThisChainMessagePayload;
 
 		fn validate(
 			dest: &mut Option<MultiLocation>,
@@ -444,39 +434,22 @@ pub mod source {
 			let route = T::build_destination();
 			let msg = (route, msg.take().ok_or(SendError::MissingArgument)?).encode();
 
-			let fee = estimate_message_dispatch_and_delivery_fee::<T::MessageBridge>(
-				&msg,
-				T::MessageBridge::RELAYER_FEE_PERCENT,
-				None,
-			);
-			let fee = match fee {
-				Ok(fee) => fee,
-				Err(e) => {
-					log::trace!(
-						target: "runtime::bridge",
-						"Failed to comupte fee for XCM message to {:?}: {:?}",
-						T::MessageBridge::BRIDGED_CHAIN_ID,
-						e,
-					);
-					*dest = Some(d);
-					return Err(SendError::Transport(e))
-				},
-			};
-			let fee_assets = MultiAssets::from((Here, fee));
+			// let's just take fixed (out of thin air) fee per message in our test bridges
+			// (this code won't be used in production anyway)
+			let fee_assets = MultiAssets::from((Here, 1_000_000_u128));
 
-			Ok(((fee, msg), fee_assets))
+			Ok((msg, fee_assets))
 		}
 
 		fn deliver(ticket: Self::Ticket) -> Result<XcmHash, SendError> {
 			use bp_messages::source_chain::MessagesBridge;
 
 			let lane = T::xcm_lane();
-			let (fee, msg) = ticket;
+			let msg = ticket;
 			let result = T::MessageSender::send_message(
 				pallet_xcm::Origin::from(MultiLocation::from(T::universal_location())).into(),
 				lane,
 				msg,
-				fee,
 			);
 			result
 				.map(|artifacts| {
@@ -574,7 +547,7 @@ pub mod target {
 		_marker: PhantomData<(B, XcmExecutor, XcmWeigher, WeightCredit)>,
 	}
 	impl<B: MessageBridge, XcmExecutor, XcmWeigher, WeightCredit>
-		MessageDispatch<AccountIdOf<ThisChain<B>>, BalanceOf<BridgedChain<B>>>
+		MessageDispatch<AccountIdOf<ThisChain<B>>>
 		for FromBridgedChainMessageDispatch<B, XcmExecutor, XcmWeigher, WeightCredit>
 	where
 		XcmExecutor: xcm::v3::ExecuteXcm<CallOf<ThisChain<B>>>,
@@ -584,7 +557,7 @@ pub mod target {
 		type DispatchPayload = FromBridgedChainMessagePayload<CallOf<ThisChain<B>>>;
 
 		fn dispatch_weight(
-			message: &mut DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+			message: &mut DispatchMessage<Self::DispatchPayload>,
 		) -> frame_support::weights::Weight {
 			match message.data.payload {
 				Ok(ref mut payload) => {
@@ -614,7 +587,7 @@ pub mod target {
 
 		fn pre_dispatch(
 			relayer_account: &AccountIdOf<ThisChain<B>>,
-			message: &DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+			message: &DispatchMessage<Self::DispatchPayload>,
 		) -> Result<(), &'static str> {
 			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
 				relayer_account,
@@ -624,7 +597,7 @@ pub mod target {
 
 		fn dispatch(
 			_relayer_account: &AccountIdOf<ThisChain<B>>,
-			message: DispatchMessage<Self::DispatchPayload, BalanceOf<BridgedChain<B>>>,
+			message: DispatchMessage<Self::DispatchPayload>,
 		) -> MessageDispatchResult {
 			let message_id = (message.key.lane_id, message.key.nonce);
 			let do_dispatch = move || -> sp_std::result::Result<Outcome, codec::Error> {
@@ -684,7 +657,7 @@ pub mod target {
 	pub fn verify_messages_proof<B: MessageBridge, ThisRuntime, GrandpaInstance: 'static>(
 		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, &'static str>
+	) -> Result<ProvedMessages<Message>, &'static str>
 	where
 		ThisRuntime: pallet_bridge_grandpa::Config<GrandpaInstance>,
 		HashOf<BridgedChain<B>>: Into<
@@ -824,7 +797,7 @@ pub mod target {
 		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
 		messages_count: u32,
 		build_parser: BuildParser,
-	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, MessageProofError>
+	) -> Result<ProvedMessages<Message>, MessageProofError>
 	where
 		BuildParser:
 			FnOnce(HashOf<BridgedChain<B>>, RawStorageProof) -> Result<Parser, MessageProofError>,
@@ -1112,73 +1085,39 @@ mod tests {
 		}
 	}
 
-	// fn test_lane_outbound_data() -> OutboundLaneData {
-	// 	OutboundLaneData::default()
-	// }
-
 	fn regular_outbound_message_payload() -> source::FromThisChainMessagePayload {
 		vec![42]
 	}
 
 	#[test]
-	fn message_fee_is_checked_by_verifier() {
-		const EXPECTED_MINIMAL_FEE: u32 = 2860;
-
-		// payload of the This -> Bridged chain message
-		let payload = regular_outbound_message_payload();
-
-		// and now check that the verifier checks the fee
+	fn message_is_rejected_when_sent_using_disabled_lane() {
 		assert_eq!(
 			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
 				&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-				&ThisChainBalance(1),
-				TEST_LANE_ID,
+				b"dsbl",
 				&test_lane_outbound_data(),
-				&payload,
+				&regular_outbound_message_payload(),
 			),
-			Err(source::TOO_LOW_FEE)
+			Err(source::MESSAGE_REJECTED_BY_OUTBOUND_LANE)
 		);
-		assert!(source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-			&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-			&ThisChainBalance(1_000_000),
-			TEST_LANE_ID,
-			&test_lane_outbound_data(),
-			&payload,
-		)
-		.is_ok(),);
 	}
 
-	// #[test]
-	// fn message_is_rejected_when_sent_using_disabled_lane() {
-	// 	assert_eq!(
-	// 		source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-	// 			&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-	// 			&ThisChainBalance(1_000_000),
-	// 			b"dsbl",
-	// 			&test_lane_outbound_data(),
-	// 			&regular_outbound_message_payload(),
-	// 		),
-	// 		Err(source::MESSAGE_REJECTED_BY_OUTBOUND_LANE)
-	// 	);
-	// }
-
-	// #[test]
-	// fn message_is_rejected_when_there_are_too_many_pending_messages_at_outbound_lane() {
-	// 	assert_eq!(
-	// 		source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
-	// 			&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
-	// 			&ThisChainBalance(1_000_000),
-	// 			TEST_LANE_ID,
-	// 			&OutboundLaneData {
-	// 				latest_received_nonce: 100,
-	// 				latest_generated_nonce: 100 + MAXIMAL_PENDING_MESSAGES_AT_TEST_LANE + 1,
-	// 				..Default::default()
-	// 			},
-	// 			&regular_outbound_message_payload(),
-	// 		),
-	// 		Err(source::TOO_MANY_PENDING_MESSAGES)
-	// 	);
-	// }
+	#[test]
+	fn message_is_rejected_when_there_are_too_many_pending_messages_at_outbound_lane() {
+		assert_eq!(
+			source::FromThisChainMessageVerifier::<OnThisChainBridge>::verify_message(
+				&ThisChainOrigin(Ok(frame_system::RawOrigin::Root)),
+				TEST_LANE_ID,
+				&OutboundLaneData {
+					latest_received_nonce: 100,
+					latest_generated_nonce: 100 + MAXIMAL_PENDING_MESSAGES_AT_TEST_LANE + 1,
+					..Default::default()
+				},
+				&regular_outbound_message_payload(),
+			),
+			Err(source::TOO_MANY_PENDING_MESSAGES)
+		);
+	}
 
 	#[test]
 	fn verify_chain_message_rejects_message_with_too_small_declared_weight() {

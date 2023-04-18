@@ -50,7 +50,7 @@ mod inbound_lane;
 pub use inbound_lane::StoredInboundLaneData;
 
 mod outbound_lane;
-pub use outbound_lane::StoredMessageData;
+pub use outbound_lane::StoredMessagePayload;
 
 mod weights_ext;
 pub use weights_ext::{
@@ -60,7 +60,7 @@ pub use weights_ext::{
 
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
-use num_traits::{SaturatingAdd, Zero};
+use num_traits::Zero;
 // darwinia-network
 use crate::{
 	inbound_lane::{InboundLane, InboundLaneStorage},
@@ -75,9 +75,8 @@ use bp_messages::{
 		DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages, SourceHeaderChain,
 	},
 	total_unrewarded_messages, DeliveredMessages, InboundLaneData, InboundMessageDetails, LaneId,
-	MessageData, MessageKey, MessageNonce, MessagePayload, OperatingMode, OutboundLaneData,
-	OutboundMessageDetails, Parameter as MessagesParameter, UnrewardedRelayer,
-	UnrewardedRelayersState,
+	MessageKey, MessageNonce, MessagePayload, MessagesOperatingMode, OutboundLaneData,
+	OutboundMessageDetails, UnrewardedRelayer, UnrewardedRelayersState,
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
@@ -85,8 +84,8 @@ use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get};
 use sp_core::H256;
 use sp_runtime::traits::Convert;
 use sp_std::{
-	cell::RefCell, cmp::PartialOrd, collections::vec_deque::VecDeque, marker::PhantomData,
-	ops::RangeInclusive, prelude::*,
+	cell::RefCell, collections::vec_deque::VecDeque, marker::PhantomData, ops::RangeInclusive,
+	prelude::*,
 };
 
 /// The target that will be used when publishing logs related to this pallet.
@@ -112,11 +111,6 @@ pub mod pallet {
 		/// Gets the chain id value from the instance.
 		#[pallet::constant]
 		type BridgedChainId: Get<ChainId>;
-		/// Pallet parameter that is opaque to the pallet itself, but may be used by the runtime
-		/// for integrating the pallet.
-		///
-		/// All pallet parameters may only be updated either by the root, or by the pallet owner.
-		type Parameter: MessagesParameter;
 
 		/// Maximal number of messages that may be pruned during maintenance. Maintenance occurs
 		/// whenever new message is sent. The reason is that if you want to use lane, you should
@@ -146,25 +140,14 @@ pub mod pallet {
 		/// these messages are from different lanes.
 		type MaxUnconfirmedMessagesAtInboundLane: Get<MessageNonce>;
 
-		/// Maximal size of the outbound payload.
+		/// Maximal encoded size of the outbound payload.
 		#[pallet::constant]
 		type MaximalOutboundPayloadSize: Get<u32>;
 		/// Payload type of outbound messages. This payload is dispatched on the bridged chain.
 		type OutboundPayload: Parameter + Size;
-		/// Message fee type of outbound messages. This fee is paid on this chain.
-		type OutboundMessageFee: Default
-			+ From<u64>
-			+ PartialOrd
-			+ Parameter
-			+ SaturatingAdd
-			+ Zero
-			+ Copy
-			+ MaxEncodedLen;
 
 		/// Payload type of inbound messages. This payload is dispatched on this chain.
 		type InboundPayload: Decode;
-		/// Message fee type of inbound messages. This fee is paid on the bridged chain.
-		type InboundMessageFee: Decode + Zero;
 		/// Identifier of relayer that deliver messages to this chain. Relayer reward is paid on the
 		/// bridged chain.
 		type InboundRelayer: Parameter + MaxEncodedLen;
@@ -179,16 +162,11 @@ pub mod pallet {
 		/// Target header chain.
 		type TargetHeaderChain: TargetHeaderChain<Self::OutboundPayload, Self::AccountId>;
 		/// Message payload verifier.
-		type LaneMessageVerifier: LaneMessageVerifier<
-			Self::RuntimeOrigin,
-			Self::OutboundPayload,
-			Self::OutboundMessageFee,
-		>;
+		type LaneMessageVerifier: LaneMessageVerifier<Self::RuntimeOrigin, Self::OutboundPayload>;
 		/// Message delivery payment.
 		type MessageDeliveryAndDispatchPayment: MessageDeliveryAndDispatchPayment<
 			Self::RuntimeOrigin,
 			Self::AccountId,
-			Self::OutboundMessageFee,
 		>;
 		/// Handler for accepted messages.
 		type OnMessageAccepted: OnMessageAccepted;
@@ -198,19 +176,17 @@ pub mod pallet {
 		// Types that are used by inbound_lane (on target chain).
 
 		/// Source header chain, as it is represented on target chain.
-		type SourceHeaderChain: SourceHeaderChain<Self::InboundMessageFee>;
+		type SourceHeaderChain: SourceHeaderChain;
 		/// Message dispatch.
 		type MessageDispatch: MessageDispatch<
 			Self::AccountId,
-			Self::InboundMessageFee,
 			DispatchPayload = Self::InboundPayload,
 		>;
 	}
 
 	/// Shortcut to messages proof type for Config.
-	type MessagesProofOf<T, I> = <<T as Config<I>>::SourceHeaderChain as SourceHeaderChain<
-		<T as Config<I>>::InboundMessageFee,
-	>>::MessagesProof;
+	type MessagesProofOf<T, I> =
+		<<T as Config<I>>::SourceHeaderChain as SourceHeaderChain>::MessagesProof;
 	/// Shortcut to messages delivery proof type for Config.
 	type MessagesDeliveryProofOf<T, I> =
 		<<T as Config<I>>::TargetHeaderChain as TargetHeaderChain<
@@ -251,41 +227,6 @@ pub mod pallet {
 			operating_mode: MessagesOperatingMode,
 		) -> DispatchResult {
 			<Self as OwnedBridgeModule<_>>::set_operating_mode(origin, operating_mode)
-		}
-
-		/// Update pallet parameter.
-		///
-		/// May only be called either by root, or by `PalletOwner`.
-		///
-		/// The weight is: single read for permissions check + 2 writes for parameter value and
-		/// event.
-		#[pallet::call_index(2)]
-		#[pallet::weight((T::DbWeight::get().reads_writes(1, 2), DispatchClass::Operational))]
-		pub fn update_pallet_parameter(
-			origin: OriginFor<T>,
-			parameter: T::Parameter,
-		) -> DispatchResult {
-			Self::ensure_owner_or_root(origin)?;
-			parameter.save();
-			Self::deposit_event(Event::ParameterUpdated { parameter });
-			Ok(())
-		}
-
-		/// Send message over lane.
-		#[pallet::call_index(3)]
-		#[pallet::weight(T::WeightInfo::send_message_weight(payload, T::DbWeight::get()))]
-		pub fn send_message(
-			origin: OriginFor<T>,
-			lane_id: LaneId,
-			payload: T::OutboundPayload,
-			delivery_and_dispatch_fee: T::OutboundMessageFee,
-		) -> DispatchResultWithPostInfo {
-			crate::send_message::<T, I>(origin, lane_id, payload, delivery_and_dispatch_fee).map(
-				|sent_message| PostDispatchInfo {
-					actual_weight: Some(sent_message.weight),
-					pays_fee: Pays::Yes,
-				},
-			)
 		}
 
 		/// Receive messages proof from bridged chain.
@@ -334,7 +275,6 @@ pub mod pallet {
 			// verify messages proof && convert proof into messages
 			let messages = verify_and_decode_messages_proof::<
 				T::SourceHeaderChain,
-				T::InboundMessageFee,
 				T::InboundPayload,
 			>(proof, messages_count)
 			.map_err(|err| {
@@ -613,8 +553,6 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config<I>, I: 'static = ()> {
-		/// Pallet parameter has been updated.
-		ParameterUpdated { parameter: T::Parameter },
 		/// Message has been accepted and is waiting to be delivered.
 		MessageAccepted { lane_id: LaneId, nonce: MessageNonce },
 		/// Messages have been received from the bridged chain.
@@ -684,7 +622,7 @@ pub mod pallet {
 	/// All queued outbound messages.
 	#[pallet::storage]
 	pub type OutboundMessages<T: Config<I>, I: 'static = ()> =
-		StorageMap<_, Blake2_128Concat, MessageKey, StoredMessageData<T, I>>;
+		StorageMap<_, Blake2_128Concat, MessageKey, StoredMessagePayload<T, I>>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
@@ -719,10 +657,7 @@ pub mod pallet {
 
 	impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		/// Get stored data of the outbound message with given nonce.
-		pub fn outbound_message_data(
-			lane: LaneId,
-			nonce: MessageNonce,
-		) -> Option<MessageData<T::OutboundMessageFee>> {
+		pub fn outbound_message_data(lane: LaneId, nonce: MessageNonce) -> Option<MessagePayload> {
 			OutboundMessages::<T, I>::get(MessageKey { lane_id: lane, nonce })
 		}
 
@@ -730,12 +665,11 @@ pub mod pallet {
 		pub fn inbound_message_data(
 			lane: LaneId,
 			payload: MessagePayload,
-			outbound_details: OutboundMessageDetails<T::InboundMessageFee>,
+			outbound_details: OutboundMessageDetails,
 		) -> InboundMessageDetails {
 			let mut dispatch_message = DispatchMessage {
 				key: MessageKey { lane_id: lane, nonce: outbound_details.nonce },
-				data: MessageData { payload, fee: outbound_details.delivery_and_dispatch_fee }
-					.into(),
+				data: payload.into(),
 			};
 			InboundMessageDetails {
 				dispatch_weight: T::MessageDispatch::dispatch_weight(&mut dispatch_message),
@@ -755,8 +689,7 @@ pub fn relayer_fund_account_id<AccountId, AccountIdConverter: Convert<H256, Acco
 	AccountIdConverter::convert(encoded_id)
 }
 
-impl<T, I>
-	bp_messages::source_chain::MessagesBridge<T::RuntimeOrigin, T::OutboundMessageFee, T::OutboundPayload>
+impl<T, I> bp_messages::source_chain::MessagesBridge<T::RuntimeOrigin, T::OutboundPayload>
 	for Pallet<T, I>
 where
 	T: Config<I>,
@@ -768,9 +701,8 @@ where
 		sender: T::RuntimeOrigin,
 		lane: LaneId,
 		message: T::OutboundPayload,
-		delivery_and_dispatch_fee: T::OutboundMessageFee,
 	) -> Result<SendMessageArtifacts, Self::Error> {
-		crate::send_message::<T, I>(sender, lane, message, delivery_and_dispatch_fee)
+		crate::send_message::<T, I>(sender, lane, message)
 	}
 }
 
@@ -780,8 +712,6 @@ pub struct RuntimeOutboundLaneStorage<T, I = ()> {
 	_phantom: PhantomData<(T, I)>,
 }
 impl<T: Config<I>, I: 'static> OutboundLaneStorage for RuntimeOutboundLaneStorage<T, I> {
-	type MessageFee = T::OutboundMessageFee;
-
 	fn id(&self) -> LaneId {
 		self.lane_id
 	}
@@ -795,17 +725,20 @@ impl<T: Config<I>, I: 'static> OutboundLaneStorage for RuntimeOutboundLaneStorag
 	}
 
 	#[cfg(test)]
-	fn message(&self, nonce: &MessageNonce) -> Option<MessageData<T::OutboundMessageFee>> {
+	fn message(&self, nonce: &MessageNonce) -> Option<MessagePayload> {
 		OutboundMessages::<T, I>::get(MessageKey { lane_id: self.lane_id, nonce: *nonce })
 			.map(Into::into)
 	}
 
-	fn save_message(
-		&mut self,
-		nonce: MessageNonce,
-		mesage_data: MessageData<T::OutboundMessageFee>,
-	) {
-		OutboundMessages::<T, I>::insert(MessageKey { lane_id: self.lane_id, nonce }, mesage_data);
+	fn save_message(&mut self, nonce: MessageNonce, message_payload: MessagePayload) {
+		OutboundMessages::<T, I>::insert(
+			MessageKey { lane_id: self.lane_id, nonce },
+			StoredMessagePayload::<T, I>::try_from(message_payload).expect(
+				"save_message is called after all checks in send_message; \
+					send_message checks message size; \
+					qed",
+			),
+		);
 	}
 
 	fn remove_message(&mut self, nonce: &MessageNonce) {
@@ -818,22 +751,14 @@ fn send_message<T: Config<I>, I: 'static>(
 	submitter: T::RuntimeOrigin,
 	lane_id: LaneId,
 	payload: T::OutboundPayload,
-	delivery_and_dispatch_fee: T::OutboundMessageFee,
 ) -> sp_std::result::Result<
 	SendMessageArtifacts,
 	sp_runtime::DispatchErrorWithPostInfo<PostDispatchInfo>,
 > {
 	ensure_normal_operating_mode::<T, I>()?;
 
-	// the most lightweigh check is the message size check
-	ensure!(
-		payload.size() <= T::MaximalOutboundPayloadSize::get(),
-		Error::<T, I>::MessageIsTooLarge,
-	);
-
 	// initially, actual (post-dispatch) weight is equal to pre-dispatch weight
-	let mut actual_weight = T::WeightInfo::send_message_weight(&payload, T::DbWeight::get());
-
+	let mut actual_weight = frame_support::weights::Weight::zero(); // TODO (https://github.com/paritytech/parity-bridges-common/issues/1647): remove this
 	// let's first check if message can be delivered to target chain
 	T::TargetHeaderChain::verify_message(&payload).map_err(|err| {
 		log::trace!(
@@ -848,47 +773,27 @@ fn send_message<T: Config<I>, I: 'static>(
 
 	// now let's enforce any additional lane rules
 	let mut lane = outbound_lane::<T, I>(lane_id);
-	T::LaneMessageVerifier::verify_message(
-		&submitter,
-		&delivery_and_dispatch_fee,
-		&lane_id,
-		&lane.data(),
-		&payload,
-	)
-	.map_err(|err| {
-		log::trace!(
-			target: LOG_TARGET,
-			"Message to lane {:?} is rejected by lane verifier: {:?}",
-			lane_id,
-			err,
-		);
-
-		Error::<T, I>::MessageRejectedByLaneVerifier
-	})?;
-
-	// let's withdraw delivery and dispatch fee from submitter
-	T::MessageDeliveryAndDispatchPayment::pay_delivery_and_dispatch_fee(
-		&submitter,
-		&delivery_and_dispatch_fee,
-		&relayer_fund_account_id::<T::AccountId, T::AccountIdConverter>(),
-	)
-	.map_err(|err| {
-		log::trace!(
-			target: LOG_TARGET,
-			"Message to lane {:?} is rejected because submitter is unable to pay fee {:?}: {:?}",
-			lane_id,
-			delivery_and_dispatch_fee,
-			err,
-		);
-
-		Error::<T, I>::FailedToWithdrawMessageFee
-	})?;
+	T::LaneMessageVerifier::verify_message(&submitter, &lane_id, &lane.data(), &payload).map_err(
+		|err| {
+			log::trace!(
+				target: LOG_TARGET,
+				"Message to lane {:?} is rejected by lane verifier: {:?}",
+				lane_id,
+				err,
+			);
+			Error::<T, I>::MessageRejectedByLaneVerifier
+		},
+	)?;
 
 	// finally, save message in outbound storage and emit event
 	let encoded_payload = payload.encode();
 	let encoded_payload_len = encoded_payload.len();
-	let nonce =
-		lane.send_message(MessageData { payload: encoded_payload, fee: delivery_and_dispatch_fee });
+	ensure!(
+		encoded_payload_len <= T::MaximalOutboundPayloadSize::get() as usize,
+		Error::<T, I>::MessageIsTooLarge
+	);
+	let nonce = lane.send_message(encoded_payload);
+
 	// Guaranteed to be called outside only when the message is accepted.
 	// We assume that the maximum weight call back used is `single_message_callback_overhead`, so do
 	// not perform complex db operation in callback. If you want to, put these magic logic in
@@ -943,31 +848,26 @@ fn send_message<T: Config<I>, I: 'static>(
 	Ok(SendMessageArtifacts { nonce, weight: actual_weight })
 }
 
-/// Calculate the relayers rewards
+/// Calculate the number of messages that the relayers have delivered.
 pub fn calc_relayers_rewards<T, I>(
-	lane_id: LaneId,
 	messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
 	received_range: &RangeInclusive<MessageNonce>,
-) -> RelayersRewards<T::AccountId, T::OutboundMessageFee>
+) -> RelayersRewards<T::AccountId>
 where
 	T: frame_system::Config + crate::Config<I>,
 	I: 'static,
 {
 	// remember to reward relayers that have delivered messages
 	// this loop is bounded by `T::MaxUnrewardedRelayerEntriesAtInboundLane` on the bridged chain
-	let mut relayers_rewards: RelayersRewards<_, T::OutboundMessageFee> = RelayersRewards::new();
+	let mut relayers_rewards = RelayersRewards::new();
 	for entry in messages_relayers {
 		let nonce_begin = sp_std::cmp::max(entry.messages.begin, *received_range.start());
 		let nonce_end = sp_std::cmp::min(entry.messages.end, *received_range.end());
 
 		// loop won't proceed if current entry is ahead of received range (begin > end).
 		// this loop is bound by `T::MaxUnconfirmedMessagesAtInboundLane` on the bridged chain
-		let mut relayer_reward = relayers_rewards.entry(entry.relayer).or_default();
-		for nonce in nonce_begin..=nonce_end {
-			let message_data = OutboundMessages::<T, I>::get(MessageKey { lane_id, nonce })
-				.expect("message was just confirmed; we never prune unconfirmed messages; qed");
-			relayer_reward.reward = relayer_reward.reward.saturating_add(&message_data.fee);
-			relayer_reward.messages += 1;
+		if nonce_end >= nonce_begin {
+			*relayers_rewards.entry(entry.relayer).or_default() += nonce_end - nonce_begin + 1;
 		}
 	}
 	relayers_rewards
@@ -1016,7 +916,6 @@ struct RuntimeInboundLaneStorage<T: Config<I>, I: 'static = ()> {
 	_phantom: PhantomData<I>,
 }
 impl<T: Config<I>, I: 'static> InboundLaneStorage for RuntimeInboundLaneStorage<T, I> {
-	type MessageFee = T::InboundMessageFee;
 	type Relayer = T::InboundRelayer;
 
 	fn id(&self) -> LaneId {
@@ -1056,10 +955,10 @@ impl<T: Config<I>, I: 'static> InboundLaneStorage for RuntimeInboundLaneStorage<
 }
 
 /// Verify messages proof and return proved messages with decoded payload.
-fn verify_and_decode_messages_proof<Chain: SourceHeaderChain<Fee>, Fee, DispatchPayload: Decode>(
+fn verify_and_decode_messages_proof<Chain: SourceHeaderChain, DispatchPayload: Decode>(
 	proof: Chain::MessagesProof,
 	messages_count: u32,
-) -> Result<ProvedMessages<DispatchMessage<DispatchPayload, Fee>>, Chain::Error> {
+) -> Result<ProvedMessages<DispatchMessage<DispatchPayload>>, Chain::Error> {
 	// `receive_messages_proof` weight formula and `MaxUnconfirmedMessagesAtInboundLane` check
 	// guarantees that the `message_count` is sane and Vec<Message> may be allocated.
 	// (tx with too many messages will either be rejected from the pool, or will fail earlier)
@@ -1084,12 +983,12 @@ mod tests {
 	// darwinia-network
 	use super::*;
 	use crate::mock::{
-		message, message_payload, run_test, unrewarded_relayer, Balance, RuntimeEvent as TestEvent,
+		message, message_payload, run_test, unrewarded_relayer, RuntimeEvent as TestEvent,
 		RuntimeOrigin, TestMessageDeliveryAndDispatchPayment, TestMessagesDeliveryProof,
-		TestMessagesParameter, TestMessagesProof, TestOnDeliveryConfirmed1,
-		TestOnDeliveryConfirmed2, TestOnMessageAccepted, TestRuntime, TokenConversionRate,
-		MAX_OUTBOUND_PAYLOAD_SIZE, PAYLOAD_REJECTED_BY_TARGET_CHAIN, REGULAR_PAYLOAD, TEST_LANE_ID,
-		TEST_RELAYER_A, TEST_RELAYER_B,
+		TestMessagesProof, TestOnDeliveryConfirmed1, TestOnDeliveryConfirmed2,
+		TestOnMessageAccepted, TestRuntime, MAX_OUTBOUND_PAYLOAD_SIZE,
+		PAYLOAD_REJECTED_BY_TARGET_CHAIN, REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A,
+		TEST_RELAYER_B,
 	};
 	use bp_messages::{UnrewardedRelayer, UnrewardedRelayersState};
 	use bp_test_utils::generate_owned_bridge_module_tests;
@@ -1129,15 +1028,13 @@ mod tests {
 
 		let message_nonce =
 			outbound_lane::<TestRuntime, ()>(TEST_LANE_ID).data().latest_generated_nonce + 1;
-		let weight = Pallet::<TestRuntime>::send_message(
+		let weight = send_message::<TestRuntime, ()>(
 			RuntimeOrigin::signed(1),
 			TEST_LANE_ID,
 			REGULAR_PAYLOAD,
-			REGULAR_PAYLOAD.declared_weight.ref_time(),
 		)
 		.expect("send_message has failed")
-		.actual_weight
-		.expect("send_message always returns Some");
+		.weight;
 
 		// check event with assigned nonce
 		assert_eq!(
@@ -1151,12 +1048,6 @@ mod tests {
 				topics: vec![],
 			}],
 		);
-
-		// check that fee has been withdrawn from submitter
-		assert!(TestMessageDeliveryAndDispatchPayment::is_fee_paid(
-			1,
-			REGULAR_PAYLOAD.declared_weight.ref_time()
-		));
 
 		weight
 	}
@@ -1201,102 +1092,6 @@ mod tests {
 	}
 
 	#[test]
-	fn pallet_parameter_may_be_updated_by_root() {
-		run_test(|| {
-			get_ready_for_events();
-
-			let parameter = TestMessagesParameter::TokenConversionRate(10.into());
-			assert_ok!(Pallet::<TestRuntime>::update_pallet_parameter(
-				RuntimeOrigin::root(),
-				parameter.clone(),
-			));
-
-			assert_eq!(TokenConversionRate::get(), 10.into());
-			assert_eq!(
-				System::<TestRuntime>::events(),
-				vec![EventRecord {
-					phase: Phase::Initialization,
-					event: TestEvent::Messages(Event::ParameterUpdated { parameter }),
-					topics: vec![],
-				}],
-			);
-		});
-	}
-
-	#[test]
-	fn pallet_parameter_may_be_updated_by_owner() {
-		run_test(|| {
-			PalletOwner::<TestRuntime>::put(2);
-			get_ready_for_events();
-
-			let parameter = TestMessagesParameter::TokenConversionRate(10.into());
-			assert_ok!(Pallet::<TestRuntime>::update_pallet_parameter(
-				RuntimeOrigin::signed(2),
-				parameter.clone(),
-			));
-
-			assert_eq!(TokenConversionRate::get(), 10.into());
-			assert_eq!(
-				System::<TestRuntime>::events(),
-				vec![EventRecord {
-					phase: Phase::Initialization,
-					event: TestEvent::Messages(Event::ParameterUpdated { parameter }),
-					topics: vec![],
-				}],
-			);
-		});
-	}
-
-	#[test]
-	fn pallet_parameter_cant_be_updated_by_arbitrary_submitter() {
-		run_test(|| {
-			assert_noop!(
-				Pallet::<TestRuntime>::update_pallet_parameter(
-					RuntimeOrigin::signed(2),
-					TestMessagesParameter::TokenConversionRate(10.into()),
-				),
-				DispatchError::BadOrigin,
-			);
-
-			PalletOwner::<TestRuntime>::put(2);
-
-			assert_noop!(
-				Pallet::<TestRuntime>::update_pallet_parameter(
-					RuntimeOrigin::signed(1),
-					TestMessagesParameter::TokenConversionRate(10.into()),
-				),
-				DispatchError::BadOrigin,
-			);
-		});
-	}
-
-	#[test]
-	fn fixed_u128_works_as_i_think() {
-		// this test is here just to be sure that conversion rate may be represented with FixedU128
-		run_test(|| {
-			use sp_runtime::{FixedPointNumber, FixedU128};
-
-			// 1:1 conversion that we use by default for testnets
-			let rialto_token = 1u64;
-			let rialto_token_in_millau_tokens =
-				TokenConversionRate::get().saturating_mul_int(rialto_token);
-			assert_eq!(rialto_token_in_millau_tokens, 1);
-
-			// let's say conversion rate is 1:1.7
-			let conversion_rate = FixedU128::saturating_from_rational(170, 100);
-			let rialto_tokens = 100u64;
-			let rialto_tokens_in_millau_tokens = conversion_rate.saturating_mul_int(rialto_tokens);
-			assert_eq!(rialto_tokens_in_millau_tokens, 170);
-
-			// let's say conversion rate is 1:0.25
-			let conversion_rate = FixedU128::saturating_from_rational(25, 100);
-			let rialto_tokens = 100u64;
-			let rialto_tokens_in_millau_tokens = conversion_rate.saturating_mul_int(rialto_tokens);
-			assert_eq!(rialto_tokens_in_millau_tokens, 25);
-		});
-	}
-
-	#[test]
 	fn pallet_rejects_transactions_if_halted() {
 		run_test(|| {
 			// send message first to be able to check that delivery_proof fails later
@@ -1307,24 +1102,12 @@ mod tests {
 			));
 
 			assert_noop!(
-				Pallet::<TestRuntime>::send_message(
+				send_message::<TestRuntime, ()>(
 					RuntimeOrigin::signed(1),
 					TEST_LANE_ID,
 					REGULAR_PAYLOAD,
-					REGULAR_PAYLOAD.declared_weight.ref_time(),
 				),
 				Error::<TestRuntime, ()>::NotOperatingNormally,
-			);
-
-			assert_noop!(
-				Pallet::<TestRuntime>::receive_messages_proof(
-					RuntimeOrigin::signed(1),
-					TEST_RELAYER_A,
-					Ok(vec![message(2, REGULAR_PAYLOAD)]).into(),
-					1,
-					REGULAR_PAYLOAD.declared_weight
-				),
-				Error::<TestRuntime, ()>::BridgeModule(bp_runtime::OwnedBridgeModuleError::Halted),
 			);
 
 			assert_noop!(
@@ -1362,22 +1145,13 @@ mod tests {
 			);
 
 			assert_noop!(
-				Pallet::<TestRuntime>::send_message(
+				send_message::<TestRuntime, ()>(
 					RuntimeOrigin::signed(1),
 					TEST_LANE_ID,
 					REGULAR_PAYLOAD,
-					REGULAR_PAYLOAD.declared_weight.ref_time(),
 				),
 				Error::<TestRuntime, ()>::NotOperatingNormally,
 			);
-
-			assert_ok!(Pallet::<TestRuntime>::receive_messages_proof(
-				RuntimeOrigin::signed(1),
-				TEST_RELAYER_A,
-				Ok(vec![message(1, REGULAR_PAYLOAD)]).into(),
-				1,
-				REGULAR_PAYLOAD.declared_weight
-			),);
 
 			assert_ok!(Pallet::<TestRuntime>::receive_messages_delivery_proof(
 				RuntimeOrigin::signed(1),
@@ -1415,25 +1189,23 @@ mod tests {
 			// `MAX_OUTBOUND_PAYLOAD_SIZE` if we add `MAX_OUTBOUND_PAYLOAD_SIZE` bytes to extra
 			message_payload.extra.extend_from_slice(&[0u8; MAX_OUTBOUND_PAYLOAD_SIZE as usize]);
 			assert_noop!(
-				Pallet::<TestRuntime>::send_message(
+				send_message::<TestRuntime, ()>(
 					RuntimeOrigin::signed(1),
 					TEST_LANE_ID,
 					message_payload.clone(),
-					Balance::MAX,
 				),
 				Error::<TestRuntime, ()>::MessageIsTooLarge,
 			);
 
 			// let's check that we're able to send `MAX_OUTBOUND_PAYLOAD_SIZE` messages
-			while message_payload.size() > MAX_OUTBOUND_PAYLOAD_SIZE {
+			while message_payload.encoded_size() as u32 > MAX_OUTBOUND_PAYLOAD_SIZE {
 				message_payload.extra.pop();
 			}
-			assert_eq!(message_payload.size(), MAX_OUTBOUND_PAYLOAD_SIZE);
-			assert_ok!(Pallet::<TestRuntime>::send_message(
+			assert_eq!(message_payload.encoded_size() as u32, MAX_OUTBOUND_PAYLOAD_SIZE);
+			assert_ok!(send_message::<TestRuntime, ()>(
 				RuntimeOrigin::signed(1),
 				TEST_LANE_ID,
 				message_payload,
-				Balance::MAX,
 			),);
 		})
 	}
@@ -1443,11 +1215,10 @@ mod tests {
 		run_test(|| {
 			// messages with this payload are rejected by target chain verifier
 			assert_noop!(
-				Pallet::<TestRuntime>::send_message(
+				send_message::<TestRuntime, ()>(
 					RuntimeOrigin::signed(1),
 					TEST_LANE_ID,
 					PAYLOAD_REJECTED_BY_TARGET_CHAIN,
-					PAYLOAD_REJECTED_BY_TARGET_CHAIN.declared_weight.ref_time()
 				),
 				Error::<TestRuntime, ()>::MessageRejectedByChainVerifier,
 			);
@@ -1458,30 +1229,11 @@ mod tests {
 	fn lane_verifier_rejects_invalid_message_in_send_message() {
 		run_test(|| {
 			// messages with zero fee are rejected by lane verifier
+			let mut message = REGULAR_PAYLOAD;
+			message.reject_by_lane_verifier = true;
 			assert_noop!(
-				Pallet::<TestRuntime>::send_message(
-					RuntimeOrigin::signed(1),
-					TEST_LANE_ID,
-					REGULAR_PAYLOAD,
-					0
-				),
+				send_message::<TestRuntime, ()>(RuntimeOrigin::signed(1), TEST_LANE_ID, message,),
 				Error::<TestRuntime, ()>::MessageRejectedByLaneVerifier,
-			);
-		});
-	}
-
-	#[test]
-	fn message_send_fails_if_submitter_cant_pay_message_fee() {
-		run_test(|| {
-			TestMessageDeliveryAndDispatchPayment::reject_payments();
-			assert_noop!(
-				Pallet::<TestRuntime>::send_message(
-					RuntimeOrigin::signed(1),
-					TEST_LANE_ID,
-					REGULAR_PAYLOAD,
-					REGULAR_PAYLOAD.declared_weight.ref_time()
-				),
-				Error::<TestRuntime, ()>::FailedToWithdrawMessageFee,
 			);
 		});
 	}
@@ -1629,17 +1381,15 @@ mod tests {
 	#[test]
 	fn receive_messages_delivery_proof_rewards_relayers() {
 		run_test(|| {
-			assert_ok!(Pallet::<TestRuntime>::send_message(
+			assert_ok!(send_message::<TestRuntime, ()>(
 				RuntimeOrigin::signed(1),
 				TEST_LANE_ID,
 				REGULAR_PAYLOAD,
-				1000,
 			));
-			assert_ok!(Pallet::<TestRuntime>::send_message(
+			assert_ok!(send_message::<TestRuntime, ()>(
 				RuntimeOrigin::signed(1),
 				TEST_LANE_ID,
 				REGULAR_PAYLOAD,
-				2000,
 			));
 
 			// this reports delivery of message 1 => reward is paid to TEST_RELAYER_A
@@ -1661,8 +1411,8 @@ mod tests {
 					..Default::default()
 				},
 			));
-			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 1000));
-			assert!(!TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_B, 2000));
+			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 1));
+			assert!(!TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_B, 1));
 
 			// this reports delivery of both message 1 and message 2 => reward is paid only to
 			// TEST_RELAYER_B
@@ -1687,8 +1437,8 @@ mod tests {
 					..Default::default()
 				},
 			));
-			assert!(!TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 1000));
-			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_B, 2000));
+			assert!(!TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_A, 1));
+			assert!(TestMessageDeliveryAndDispatchPayment::is_reward_paid(TEST_RELAYER_B, 1));
 		});
 	}
 
@@ -1793,7 +1543,7 @@ mod tests {
 	fn receive_messages_accepts_single_message_with_invalid_payload() {
 		run_test(|| {
 			let mut invalid_message = message(1, REGULAR_PAYLOAD);
-			invalid_message.data.payload = Vec::new();
+			invalid_message.payload = Vec::new();
 
 			assert_ok!(Pallet::<TestRuntime, ()>::receive_messages_proof(
 				RuntimeOrigin::signed(1),
@@ -1812,7 +1562,7 @@ mod tests {
 	fn receive_messages_accepts_batch_with_message_with_invalid_payload() {
 		run_test(|| {
 			let mut invalid_message = message(2, REGULAR_PAYLOAD);
-			invalid_message.data.payload = Vec::new();
+			invalid_message.payload = Vec::new();
 
 			assert_ok!(Pallet::<TestRuntime, ()>::receive_messages_proof(
 				RuntimeOrigin::signed(1),
@@ -2085,51 +1835,6 @@ mod tests {
 	}
 
 	#[test]
-	fn weight_is_refunded_for_messages_that_are_not_pruned() {
-		run_test(|| {
-			// send first MAX messages - no messages are pruned
-			let max_messages_to_prune = crate::mock::MaxMessagesToPruneAtOnce::get();
-			let when_zero_messages_are_pruned = send_regular_message();
-			let mut delivered_messages = DeliveredMessages::new(1, true);
-			for _ in 1..max_messages_to_prune {
-				assert_eq!(send_regular_message(), when_zero_messages_are_pruned);
-				delivered_messages.note_dispatched_message(true);
-			}
-
-			// confirm delivery of all sent messages
-			assert_ok!(Pallet::<TestRuntime>::receive_messages_delivery_proof(
-				RuntimeOrigin::signed(1),
-				TestMessagesDeliveryProof(Ok((
-					TEST_LANE_ID,
-					InboundLaneData {
-						last_confirmed_nonce: 1,
-						relayers: vec![UnrewardedRelayer {
-							relayer: 0,
-							messages: delivered_messages,
-						}]
-						.into_iter()
-						.collect(),
-					},
-				))),
-				UnrewardedRelayersState {
-					unrewarded_relayer_entries: 1,
-					total_messages: max_messages_to_prune,
-					last_delivered_nonce: max_messages_to_prune,
-					..Default::default()
-				},
-			));
-
-			// when next message is sent, MAX messages are pruned
-			let weight_when_max_messages_are_pruned = send_regular_message();
-			assert_eq!(
-				weight_when_max_messages_are_pruned,
-				when_zero_messages_are_pruned
-					+ crate::mock::DbWeight::get().writes(max_messages_to_prune),
-			);
-		});
-	}
-
-	#[test]
 	fn message_accepted_callbacks_are_called() {
 		run_test(|| {
 			send_regular_message();
@@ -2146,27 +1851,6 @@ mod tests {
 				crate::mock::DbWeight::get().reads_writes(2, 2),
 			);
 			send_regular_message();
-		});
-	}
-
-	#[test]
-	fn message_accepted_refunds_non_zero_weight() {
-		run_test(|| {
-			TestOnMessageAccepted::set_consumed_weight_per_message(
-				crate::mock::DbWeight::get().writes(1),
-			);
-			let actual_callback_weight = send_regular_message();
-			let pre_dispatch_weight = <TestRuntime as Config>::WeightInfo::send_message_weight(
-				&REGULAR_PAYLOAD,
-				crate::mock::DbWeight::get(),
-			);
-			let prune_weight = crate::mock::DbWeight::get()
-				.writes(<TestRuntime as Config>::MaxMessagesToPruneAtOnce::get());
-
-			assert_eq!(
-				pre_dispatch_weight.saturating_sub(actual_callback_weight),
-				crate::mock::DbWeight::get().reads(1).saturating_add(prune_weight)
-			);
 		});
 	}
 
@@ -2207,9 +1891,6 @@ mod tests {
 						nonce: 0,
 						dispatch_weight: 0,
 						size: 0,
-						delivery_and_dispatch_fee: 0,
-						dispatch_fee_payment:
-							bp_runtime::messages::DispatchFeePayment::AtTargetChain,
 					},
 				),
 				InboundMessageDetails { dispatch_weight: REGULAR_PAYLOAD.declared_weight },
