@@ -85,6 +85,12 @@ pub const TEST_ERROR: &str = "Test error";
 /// Lane that we're using in tests.
 pub const TEST_LANE_ID: LaneId = [0, 0, 0, 1];
 
+/// Secondary lane that we're using in tests.
+pub const TEST_LANE_ID_2: LaneId = [0, 0, 0, 2];
+
+/// Inactive outbound lane.
+pub const TEST_LANE_ID_3: LaneId = [0, 0, 0, 3];
+
 /// Regular message payload.
 pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, 50);
 
@@ -177,6 +183,7 @@ parameter_types! {
 	pub const MaxUnrewardedRelayerEntriesAtInboundLane: u64 = 16;
 	pub const MaxUnconfirmedMessagesAtInboundLane: u64 = 32;
 	pub const TestBridgedChainId: bp_runtime::ChainId = *b"test";
+	pub const ActiveOutboundLanes: &'static [LaneId] = &[TEST_LANE_ID, TEST_LANE_ID_2];
 }
 impl Config for TestRuntime {
 	type AccountIdConverter = AccountIdConverter;
@@ -184,7 +191,7 @@ impl Config for TestRuntime {
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
 	type LaneMessageVerifier = TestLaneMessageVerifier;
-	type MaxMessagesToPruneAtOnce = MaxMessagesToPruneAtOnce;
+	type ActiveOutboundLanes = ActiveOutboundLanes;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
 	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;

@@ -179,9 +179,9 @@ where
 	GI: 'static,
 {
 	assert!(
-		R::MaxRequests::get() > 0,
-		"MaxRequests ({}) must be larger than zero",
-		R::MaxRequests::get(),
+		!R::ActiveOutboundLanes::get().is_empty(),
+		"ActiveOutboundLanes ({:?}) must not be empty",
+		R::ActiveOutboundLanes::get(),
 	);
 }
 
