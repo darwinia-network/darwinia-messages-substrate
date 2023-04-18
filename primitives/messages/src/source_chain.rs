@@ -18,7 +18,7 @@
 
 // darwinia-network
 use crate::{
-	DeliveredMessages, InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer,
+	InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer,
 };
 use bp_runtime::Size;
 // paritytech
@@ -125,46 +125,6 @@ impl<SenderOrigin, AccountId> MessageDeliveryAndDispatchPayment<SenderOrigin, Ac
 		_received_range: &RangeInclusive<MessageNonce>,
 		_relayer_fund_account: &AccountId,
 	) {
-	}
-}
-
-/// Handler for messages delivery confirmation.
-pub trait OnDeliveryConfirmed {
-	/// Called when we receive confirmation that our messages have been delivered to the
-	/// target chain. The confirmation also has single bit dispatch result for every
-	/// confirmed message (see `DeliveredMessages` for details). Guaranteed to be called
-	/// only when at least one message is delivered.
-	///
-	/// Should return total weight consumed by the call.
-	///
-	/// NOTE: messages pallet assumes that maximal weight that may be spent on processing
-	/// single message is single DB read + single DB write. So this function shall never
-	/// return weight that is larger than total number of messages * (db read + db write).
-	/// If your pallet needs more time for processing single message, please do it
-	/// from `on_initialize` call(s) of the next block(s).
-	fn on_messages_delivered(_lane: &LaneId, _messages: &DeliveredMessages) -> Weight;
-}
-#[impl_trait_for_tuples::impl_for_tuples(30)]
-impl OnDeliveryConfirmed for Tuple {
-	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
-		let mut total_weight = Weight::zero();
-		for_tuples!(
-			#(
-				total_weight = total_weight.saturating_add(Tuple::on_messages_delivered(lane, messages));
-			)*
-		);
-		total_weight
-	}
-}
-
-/// Handler for messages have been accepted
-pub trait OnMessageAccepted {
-	/// Called when a message has been accepted by message pallet.
-	fn on_messages_accepted(lane: &LaneId, message: &MessageNonce) -> Weight;
-}
-impl OnMessageAccepted for () {
-	fn on_messages_accepted(_lane: &LaneId, _message: &MessageNonce) -> Weight {
-		Weight::zero()
 	}
 }
 
