@@ -321,8 +321,7 @@ impl MessageDeliveryAndDispatchPayment<RuntimeOrigin, AccountId>
 			messages: MessageNonce,
 		}
 
-		let relayers_rewards =
-			calc_relayers_rewards::<TestRuntime, ()>(message_relayers, received_range);
+		let relayers_rewards = calc_relayers_rewards(message_relayers, received_range);
 		for (relayer, reward) in &relayers_rewards {
 			let key = (b":relayer-reward:", relayer, reward).encode();
 			frame_support::storage::unhashed::put(&key, &true);
