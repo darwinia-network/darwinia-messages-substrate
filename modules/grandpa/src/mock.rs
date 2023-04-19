@@ -41,7 +41,6 @@ type Block = MockBlock<TestRuntime>;
 type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 pub const MAX_BRIDGED_AUTHORITIES: u32 = 2048;
-pub const MAX_HEADER_SIZE: u32 = 65536;
 
 frame_support::construct_runtime! {
 	pub enum TestRuntime where
@@ -96,7 +95,6 @@ impl grandpa::Config for TestRuntime {
 	type BridgedChain = TestBridgedChain;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<MAX_BRIDGED_AUTHORITIES>;
-	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<MAX_HEADER_SIZE>;
 	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }

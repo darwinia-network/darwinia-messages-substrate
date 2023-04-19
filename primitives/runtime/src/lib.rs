@@ -372,9 +372,33 @@ impl OperatingMode for BasicOperatingMode {
 
 /// Generic header Id.
 #[derive(
-	Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord, Encode, Decode, RuntimeDebug,
+	RuntimeDebug,
+	Default,
+	Clone,
+	Encode,
+	Decode,
+	Copy,
+	Eq,
+	Hash,
+	MaxEncodedLen,
+	PartialEq,
+	PartialOrd,
+	Ord,
+	TypeInfo,
 )]
 pub struct HeaderId<Hash, Number>(pub Number, pub Hash);
+
+impl<Hash: Copy, Number: Copy> HeaderId<Hash, Number> {
+	/// Return header number.
+	pub fn number(&self) -> Number {
+		self.0
+	}
+
+	/// Return header hash.
+	pub fn hash(&self) -> Hash {
+		self.1
+	}
+}
 
 /// Pre-computed size.
 pub struct PreComputedSize(pub usize);
