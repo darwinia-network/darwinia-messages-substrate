@@ -340,7 +340,6 @@ name = "bp-messages"
 version = "0.1.0"
 dependencies = [
  "array-bytes 6.0.0",
- "bitvec",
  "bp-runtime",
  "frame-support",
  "impl-trait-for-tuples",
@@ -1758,7 +1757,6 @@ dependencies = [
 name = "pallet-bridge-messages"
 version = "0.1.0"
 dependencies = [
- "bitvec",
  "bp-messages",
  "bp-runtime",
  "bp-test-utils",

@@ -558,7 +558,7 @@ pub mod target {
 			};
 
 			let xcm_outcome = do_dispatch();
-			let dispatch_result = match xcm_outcome {
+			match xcm_outcome {
 				Ok(outcome) => {
 					log::trace!(
 						target: "runtime::bridge-dispatch",
@@ -567,7 +567,7 @@ pub mod target {
 						outcome,
 					);
 					match outcome.ensure_execution() {
-						Ok(_weight) => true,
+						Ok(_weight) => (),
 						Err(e) => {
 							log::error!(
 								target: "runtime::bridge-dispatch",
@@ -575,7 +575,6 @@ pub mod target {
 								message_id,
 								e,
 							);
-							false
 						},
 					}
 				},
@@ -586,12 +585,10 @@ pub mod target {
 						message_id,
 						e,
 					);
-					false
 				},
-			};
+			}
 
 			MessageDispatchResult {
-				dispatch_result,
 				unspent_weight: 0,
 				dispatch_fee_paid_during_dispatch: false,
 			}

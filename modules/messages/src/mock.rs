@@ -23,7 +23,6 @@ use std::{
 	ops::RangeInclusive,
 };
 // crates.io
-use bitvec::prelude::*;
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // darwinia-network
@@ -405,7 +404,6 @@ pub const fn message_payload(id: u64, declared_weight: u64) -> TestPayload {
 /// Returns message dispatch result with given unspent weight.
 pub const fn dispatch_result(unspent_weight: u64) -> MessageDispatchResult {
 	MessageDispatchResult {
-		dispatch_result: true,
 		unspent_weight: Weight::from_ref_time(unspent_weight),
 		dispatch_fee_paid_during_dispatch: true,
 	}
@@ -417,18 +415,7 @@ pub fn unrewarded_relayer(
 	end: MessageNonce,
 	relayer: TestRelayer,
 ) -> UnrewardedRelayer<TestRelayer> {
-	UnrewardedRelayer {
-		relayer,
-		messages: DeliveredMessages {
-			begin,
-			end,
-			dispatch_results: if end >= begin {
-				bitvec![u8, Msb0; 1; (end - begin + 1) as _]
-			} else {
-				Default::default()
-			},
-		},
-	}
+	UnrewardedRelayer { relayer, messages: DeliveredMessages { begin, end } }
 }
 
 /// Run pallet test.

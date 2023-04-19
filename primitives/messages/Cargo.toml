@@ -8,7 +8,6 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-bitvec                = { workspace = true }
 codec                 = { package = "parity-scale-codec", workspace = true, features = ["bit-vec"] }
 impl-trait-for-tuples = { version = "0.2" }
 scale-info            = { workspace = true, features = ["bit-vec"] }
@@ -29,7 +28,6 @@ array-bytes = { workspace = true }
 default = ["std"]
 std = [
 	# crates.io
-	"bitvec/std",
 	"codec/std",
 	"scale-info/std",
 	"serde",
