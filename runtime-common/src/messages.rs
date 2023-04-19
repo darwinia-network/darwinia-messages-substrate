@@ -589,11 +589,7 @@ pub mod target {
 				},
 			}
 
-			MessageDispatchResult {
-				unspent_weight: 0,
-				dispatch_fee_paid_during_dispatch: false,
-				dispatch_level_result: (),
-			}
+			MessageDispatchResult { unspent_weight: Weight::zero(), dispatch_level_result: () }
 		}
 	}
 
