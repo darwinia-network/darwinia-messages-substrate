@@ -20,6 +20,9 @@ sp-finality-grandpa   = { workspace = true }
 sp-runtime            = { workspace = true }
 sp-std                = { workspace = true }
 
+[dev-dependencies]
+xcm = { workspace = true }
+
 # paritytech
 [features]
 default = ["std"]
