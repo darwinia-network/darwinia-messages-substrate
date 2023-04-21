@@ -1,0 +1,31 @@
+[package]
+name = "bp-relayers"
+description = "Primitives of relayers module."
+version = "0.1.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2021"
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+
+[dependencies]
+
+# Bridge Dependencies
+
+bp-messages = { path = "../messages", default-features = false }
+
+# paritytech
+frame-support = { workspace = true, default-features = false}
+sp-runtime    = { workspace = true, default-features = false}
+sp-std        = { workspace = true, default-features = false}
+
+[dev-dependencies]
+hex         = { workspace = true }
+hex-literal = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	"bp-messages/std",
+	"frame-support/std",
+	"sp-runtime/std",
+	"sp-std/std",
+]
