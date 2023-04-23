@@ -7,15 +7,19 @@ members = [
 
 [workspace.dependencies]
 # crates.io
-array-bytes      = { version = "6.0" }
-bitvec           = { version = "1", default-features = false, features = ["alloc"] }
-codec            = { package = "parity-scale-codec", version = "3.3", default-features = false, features = ["derive"] }
-finality-grandpa = { version = "0.16", default-features = false }
-hex              = { version = "0.4" }
-hex-literal      = { version = "0.3" }
-scale-info       = { version = "2.3", default-features = false, features = ["derive"] }
-serde            = { version = "1.0" }
-num-traits       = { version = "0.2", default-features = false }
+array-bytes           = { version = "6.0" }
+bitvec                = { version = "1", default-features = false, features = ["alloc"] }
+codec                 = { package = "parity-scale-codec", version = "3.3", default-features = false, features = ["derive"] }
+finality-grandpa      = { version = "0.16", default-features = false }
+hash-db               = { version = "0.15", default-features = false }
+hex                   = { version = "0.4" }
+hex-literal           = { version = "0.3" }
+impl-trait-for-tuples = { version = "0.2" }
+log                   = { version = "0.4", default-features = false }
+scale-info            = { version = "2.3", default-features = false, features = ["derive"] }
+serde                 = { version = "1.0" }
+static_assertions     = { version = "1.1" }
+num-traits            = { version = "0.2", default-features = false }
 
 # darwinia
 bp-header-chain          = { default-features = false, path = "primitives/header-chain" }
@@ -42,6 +46,7 @@ pallet-root-testing        = { default-features = false, git = "https://github.c
 pallet-timestamp           = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 sp-api                     = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
+sp-arithmetic              = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 sp-application-crypto      = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 sp-core                    = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
 sp-finality-grandpa        = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.38" }
