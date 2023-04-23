@@ -36,7 +36,7 @@ use bp_messages::{
 use bp_runtime::{messages::MessageDispatchResult, Chain, ChainId, Size, StorageProofChecker};
 // paritytech
 use frame_support::{
-	traits::{Currency, Get},
+	traits::{Get},
 	weights::Weight,
 	RuntimeDebug,
 };
@@ -187,8 +187,11 @@ pub mod source {
 	/// The error message returned from LaneMessageVerifier when call origin is mismatch.
 	pub const BAD_ORIGIN: &str = "Unable to match the source origin to expected target origin.";
 
-	impl<B> LaneMessageVerifier<OriginOf<ThisChain<B>>, FromThisChainMessagePayload>
-		for FromThisChainMessageVerifier<B>
+	impl<B, F, I>
+		LaneMessageVerifier<
+			OriginOf<ThisChain<B>>,
+			FromThisChainMessagePayload,
+		> for FromThisChainMessageVerifier<B, F, I>
 	where
 		B: MessageBridge,
 		F: pallet_fee_market::Config<I>,
@@ -222,24 +225,24 @@ pub mod source {
 			if pending_messages > max_pending_messages {
 				return Err(TOO_MANY_PENDING_MESSAGES);
 			}
-
+			unimplemented!("TODO")
 			// Do the delivery_and_dispatch_fee. We assume that the delivery and dispatch fee always
 			// greater than the fee market provided fee.
-			if let Some(market_fee) = pallet_fee_market::Pallet::<F, I>::market_fee() {
-				let message_fee: pallet_fee_market::BalanceOf<F, I> =
-					(*delivery_and_dispatch_fee).into();
+			// if let Some(market_fee) = pallet_fee_market::Pallet::<F, I>::market_fee() {
+			// 	let message_fee: pallet_fee_market::BalanceOf<F, I> =
+			// 		(*delivery_and_dispatch_fee).into();
 
-				// compare with actual fee paid
-				if message_fee < market_fee {
-					return Err(TOO_LOW_FEE);
-				}
-			} else {
-				const NO_MARKET_FEE: &str = "The fee market are not ready for accepting messages.";
+			// 	// compare with actual fee paid
+			// 	if message_fee < market_fee {
+			// 		return Err(TOO_LOW_FEE);
+			// 	}
+			// } else {
+			// 	const NO_MARKET_FEE: &str = "The fee market are not ready for accepting messages.";
 
-				return Err(NO_MARKET_FEE);
-			}
+			// 	return Err(NO_MARKET_FEE);
+			// }
 
-			Ok(())
+			// Ok(())
 		}
 
 		#[cfg(feature = "runtime-benchmarks")]
@@ -507,24 +510,25 @@ pub mod target {
 
 						// we shall return 0 and then the XCM executor will fail to execute XCM
 						// if we'll return something else (e.g. maximal value), the lane may stuck
-						0
+						Weight::zero()
 					});
 
 					payload.weight = Some(weight);
 					weight
 				},
-				_ => 0,
+				_ => Weight::zero(),
 			}
 		}
 
 		fn pre_dispatch(
-			relayer_account: &AccountIdOf<ThisChain<B>>,
-			message: &DispatchMessage<Self::DispatchPayload>,
+			_relayer_account: &AccountIdOf<ThisChain<B>>,
+			_message: &DispatchMessage<Self::DispatchPayload>,
 		) -> Result<(), &'static str> {
-			pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
-				relayer_account,
-				message.data.payload.as_ref().map_err(drop),
-			)
+			unimplemented!("TODO")
+			// pallet_bridge_dispatch::Pallet::<ThisRuntime, ThisDispatchInstance>::pre_dispatch(
+			// 	relayer_account,
+			// 	message.data.payload.as_ref().map_err(drop),
+			// )
 		}
 
 		fn dispatch(
@@ -552,7 +556,7 @@ pub mod target {
 					location,
 					xcm,
 					hash,
-					weight_limit.unwrap_or(0),
+					weight_limit.unwrap_or(Weight::zero()),
 					weight_credit,
 				);
 				Ok(xcm_outcome)
@@ -757,7 +761,6 @@ mod tests {
 	use crate::messages_generation::{
 		encode_all_messages, encode_lane_data, prepare_messages_storage_proof,
 	};
-	use bp_runtime::messages::DispatchFeePayment;
 	// paritytech
 	use frame_support::weights::Weight;
 	use sp_core::H256;
