@@ -51,7 +51,7 @@ use frame_system::RawOrigin;
 use sp_core::{storage::StorageKey, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
-	traits::{BadOrigin, Header as HeaderT},
+	traits::{BadOrigin, Header as HeaderT, UniqueSaturatedInto},
 	transaction_validity::TransactionValidity,
 };
 use sp_std::{fmt::Debug, prelude::*};
@@ -106,6 +106,9 @@ pub const ROOT_ACCOUNT_DERIVATION_PREFIX: &[u8] = b"pallet-bridge/account-deriva
 /// Chain2. Sometimes we need to be able to identify deployed instance dynamically. This type may be
 /// used for that.
 pub type ChainId = [u8; 4];
+
+/// Header id used by the chain.
+pub type HeaderIdOf<C> = HeaderId<HashOf<C>, BlockNumberOf<C>>;
 
 /// Generic header id provider.
 pub trait HeaderIdProvider<Header: HeaderT> {
@@ -301,7 +304,9 @@ pub enum TransactionEra<BlockNumber, BlockHash> {
 	/// Transaction is valid for a given number of blocks, starting from given block.
 	Mortal(HeaderId<BlockHash, BlockNumber>, u32),
 }
-impl<BlockNumber: Copy + Into<u64>, BlockHash: Copy> TransactionEra<BlockNumber, BlockHash> {
+impl<BlockNumber: Copy + UniqueSaturatedInto<u64>, BlockHash: Copy>
+	TransactionEra<BlockNumber, BlockHash>
+{
 	/// Prepare transaction era, based on mortality period and current best block number.
 	pub fn new(
 		best_block_id: HeaderId<BlockHash, BlockNumber>,
@@ -329,8 +334,10 @@ impl<BlockNumber: Copy + Into<u64>, BlockHash: Copy> TransactionEra<BlockNumber,
 	pub fn frame_era(&self) -> sp_runtime::generic::Era {
 		match *self {
 			TransactionEra::Immortal => sp_runtime::generic::Era::immortal(),
+			// `unique_saturated_into` is fine here - mortality `u64::MAX` is not something we
+			// expect to see on any chain
 			TransactionEra::Mortal(header_id, period) =>
-				sp_runtime::generic::Era::mortal(period as _, header_id.0.into()),
+				sp_runtime::generic::Era::mortal(period as _, header_id.0.unique_saturated_into()),
 		}
 	}
 
