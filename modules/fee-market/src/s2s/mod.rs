@@ -18,6 +18,3 @@
 
 pub mod payment;
 pub use payment::{FeeMarketPayment, RewardItem};
-
-pub mod callbacks;
-pub use callbacks::{FeeMarketMessageAcceptedHandler, FeeMarketMessageConfirmedHandler};
