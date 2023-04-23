@@ -21,7 +21,7 @@ use scale_info::TypeInfo;
 // darwinia-network
 use crate::{Config, Orders, Pallet, *};
 use bp_messages::{
-	source_chain::{MessageDeliveryAndDispatchPayment, SenderOrigin},
+	source_chain::{DeliveryConfirmationPayments},
 	MessageNonce, UnrewardedRelayer,
 };
 // --- paritytech ---
@@ -45,106 +45,73 @@ pub struct FeeMarketPayment<T, I, Currency> {
 }
 
 impl<T, I, Currency>
-	MessageDeliveryAndDispatchPayment<T::RuntimeOrigin, T::AccountId, BalanceOf<T, I>>
+	DeliveryConfirmationPayments<T::AccountId>
 	for FeeMarketPayment<T, I, Currency>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,
-	T::RuntimeOrigin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId>,
 {
 	type Error = &'static str;
 
-	fn pay_delivery_and_dispatch_fee(
-		submitter: &T::RuntimeOrigin,
-		fee: &BalanceOf<T, I>,
-		relayer_fund_account: &T::AccountId,
-	) -> Result<(), Self::Error> {
-		let submitter_account = match submitter.linked_account() {
-			Some(submitter_account) => submitter_account,
-			None if !fee.is_zero() => {
-				// if we'll accept some message that has declared that the `fee` has been paid but
-				// it isn't actually paid, then it'll lead to problems with delivery confirmation
-				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
-				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE);
-			},
-			None => {
-				// message lane verifier has accepted the message before, so this message
-				// is unpaid **by design**
-				// => let's just do nothing
-				return Ok(());
-			},
-		};
-
-		<T as Config<I>>::Currency::transfer(
-			&submitter_account,
-			relayer_fund_account,
-			*fee,
-			// it's fine for the submitter to go below Existential Deposit and die.
-			ExistenceRequirement::AllowDeath,
-		)
-		.map_err(Into::into)
-	}
-
-	fn pay_relayers_rewards(
+	fn pay_reward(
 		lane_id: LaneId,
 		messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
 		confirmation_relayer: &T::AccountId,
 		received_range: &RangeInclusive<MessageNonce>,
-		relayer_fund_account: &T::AccountId,
 	) {
-		let rewards_items = calculate_rewards::<T, I>(
-			lane_id,
-			messages_relayers,
-			confirmation_relayer.clone(),
-			received_range,
-			relayer_fund_account,
-		);
+		unimplemented!("TODO")
+		// let rewards_items = calculate_rewards::<T, I>(
+		// 	lane_id,
+		// 	messages_relayers,
+		// 	confirmation_relayer.clone(),
+		// 	received_range,
+		// );
 
-		let mut deliver_sum = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
-		let mut confirm_sum = BalanceOf::<T, I>::zero();
-		let mut assigned_relayers_sum = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
-		let mut treasury_sum = BalanceOf::<T, I>::zero();
-		for item in rewards_items {
-			for (k, v) in item.to_assigned_relayers.iter() {
-				assigned_relayers_sum
-					.entry(k.clone())
-					.and_modify(|r| *r = r.saturating_add(*v))
-					.or_insert(*v);
-			}
+		// let mut deliver_sum = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
+		// let mut confirm_sum = BalanceOf::<T, I>::zero();
+		// let mut assigned_relayers_sum = BTreeMap::<T::AccountId, BalanceOf<T, I>>::new();
+		// let mut treasury_sum = BalanceOf::<T, I>::zero();
+		// for item in rewards_items {
+		// 	for (k, v) in item.to_assigned_relayers.iter() {
+		// 		assigned_relayers_sum
+		// 			.entry(k.clone())
+		// 			.and_modify(|r| *r = r.saturating_add(*v))
+		// 			.or_insert(*v);
+		// 	}
 
-			if let Some(reward) = item.to_treasury {
-				treasury_sum = treasury_sum.saturating_add(reward);
-			}
+		// 	if let Some(reward) = item.to_treasury {
+		// 		treasury_sum = treasury_sum.saturating_add(reward);
+		// 	}
 
-			if let Some((id, reward)) = item.to_message_relayer {
-				deliver_sum
-					.entry(id)
-					.and_modify(|r| *r = r.saturating_add(reward))
-					.or_insert(reward);
-			}
+		// 	if let Some((id, reward)) = item.to_message_relayer {
+		// 		deliver_sum
+		// 			.entry(id)
+		// 			.and_modify(|r| *r = r.saturating_add(reward))
+		// 			.or_insert(reward);
+		// 	}
 
-			if let Some((_id, reward)) = item.to_confirm_relayer {
-				confirm_sum = confirm_sum.saturating_add(reward);
-			}
-		}
+		// 	if let Some((_id, reward)) = item.to_confirm_relayer {
+		// 		confirm_sum = confirm_sum.saturating_add(reward);
+		// 	}
+		// }
 
-		// Pay rewards to the message confirm relayer
-		do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_sum);
-		// Pay rewards to the messages deliver relayers
-		for (relayer, reward) in deliver_sum {
-			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
-		}
-		// Pay rewards to the assigned relayers
-		for (relayer, reward) in assigned_relayers_sum {
-			do_reward::<T, I>(relayer_fund_account, &relayer, reward);
-		}
-		// Pay to treasury
-		do_reward::<T, I>(
-			relayer_fund_account,
-			&T::TreasuryPalletId::get().into_account_truncating(),
-			treasury_sum,
-		);
+		// // Pay rewards to the message confirm relayer
+		// do_reward::<T, I>(relayer_fund_account, confirmation_relayer, confirm_sum);
+		// // Pay rewards to the messages deliver relayers
+		// for (relayer, reward) in deliver_sum {
+		// 	do_reward::<T, I>(relayer_fund_account, &relayer, reward);
+		// }
+		// // Pay rewards to the assigned relayers
+		// for (relayer, reward) in assigned_relayers_sum {
+		// 	do_reward::<T, I>(relayer_fund_account, &relayer, reward);
+		// }
+		// // Pay to treasury
+		// do_reward::<T, I>(
+		// 	relayer_fund_account,
+		// 	&T::TreasuryPalletId::get().into_account_truncating(),
+		// 	treasury_sum,
+		// );
 	}
 }
 

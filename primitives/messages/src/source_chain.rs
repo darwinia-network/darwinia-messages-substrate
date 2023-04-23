@@ -198,7 +198,6 @@ impl<AccountId> DeliveryConfirmationPayments<AccountId> for ForbidOutboundMessag
 		_messages_relayers: VecDeque<UnrewardedRelayer<AccountId>>,
 		_confirmation_relayer: &AccountId,
 		_received_range: &RangeInclusive<MessageNonce>,
-		_relayer_fund_account: &AccountId,
 	) {
 	}
 }

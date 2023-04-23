@@ -84,7 +84,7 @@ pub trait MessageDispatch<AccountId> {
 	/// be not be processed by this relayer, latter relayers can still continue process it.
 	fn pre_dispatch(
 		relayer_account: &AccountId,
-		message: &DispatchMessage<Self::DispatchPayload, Fee>,
+		message: &DispatchMessage<Self::DispatchPayload>,
 	) -> Result<(), &'static str>;
 
 	/// Called when inbound message is received.
