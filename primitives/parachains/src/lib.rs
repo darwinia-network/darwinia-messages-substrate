@@ -34,6 +34,7 @@ use bp_runtime::{
 };
 // paritytech
 use frame_support::{Blake2_128Concat, RuntimeDebug, Twox64Concat};
+use sp_core::storage::StorageKey;
 use sp_runtime::traits::Header as HeaderT;
 use sp_std::{marker::PhantomData, prelude::*};
 
@@ -79,6 +80,8 @@ impl StorageMapKeyProvider for ParasInfoKeyProvider {
 /// The head is stored by the `pallet-bridge-parachains` pallet in the `ImportedParaHeads` map.
 pub struct ImportedParaHeadsKeyProvider;
 impl StorageDoubleMapKeyProvider for ImportedParaHeadsKeyProvider {
+	const MAP_NAME: &'static str = "ImportedParaHeads";
+
 	type Hasher1 = Blake2_128Concat;
 	type Hasher2 = Blake2_128Concat;
 	type Key1 = ParaId;
@@ -129,8 +132,6 @@ impl<C: Parachain> ParaStoredHeaderDataBuilder for SingleParaStoredHeaderDataBui
 #[impl_trait_for_tuples::impl_for_tuples(1, 30)]
 #[tuple_types_custom_trait_bound(Parachain)]
 impl ParaStoredHeaderDataBuilder for C {
-	const MAP_NAME: &'static str = "ImportedParaHeads";
-
 	fn try_build(para_id: ParaId, para_head: &ParaHead) -> Option<ParaStoredHeaderData> {
 		for_tuples!( #(
 			let maybe_para_head = SingleParaStoredHeaderDataBuilder::<C>::try_build(para_id, para_head);
