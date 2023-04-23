@@ -29,16 +29,12 @@ use frame_support::{
 	log,
 	traits::{Currency as CurrencyT, ExistenceRequirement, Get},
 };
-use sp_runtime::traits::{AccountIdConversion, CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
+use sp_runtime::traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
 use sp_std::{
 	cmp::{max, min},
 	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
 	ops::RangeInclusive,
 };
-
-/// Error that occurs when message fee is non-zero, but payer is not defined.
-const NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE: &str =
-	"Non-zero message fee can't be paid by <None>";
 
 pub struct FeeMarketPayment<T, I, Currency> {
 	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
@@ -55,10 +51,10 @@ where
 	type Error = &'static str;
 
 	fn pay_reward(
-		lane_id: LaneId,
-		messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
-		confirmation_relayer: &T::AccountId,
-		received_range: &RangeInclusive<MessageNonce>,
+		_lane_id: LaneId,
+		_messages_relayers: VecDeque<UnrewardedRelayer<T::AccountId>>,
+		_confirmation_relayer: &T::AccountId,
+		_received_range: &RangeInclusive<MessageNonce>,
 	) {
 		unimplemented!("TODO")
 		// let rewards_items = calculate_rewards::<T, I>(
@@ -303,7 +299,7 @@ pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
 }
 
 /// Do reward
-pub(crate) fn do_reward<T: Config<I>, I: 'static>(
+pub(crate) fn _do_reward<T: Config<I>, I: 'static>(
 	from: &T::AccountId,
 	to: &T::AccountId,
 	reward: BalanceOf<T, I>,

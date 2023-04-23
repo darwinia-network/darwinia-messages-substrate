@@ -502,7 +502,6 @@ pub mod pallet {
 					lane_data.relayers,
 					&confirmation_relayer,
 					&received_range,
-					&relayer_fund_account_id::<T::AccountId, T::AccountIdConverter>(),
 				);
 			}
 
@@ -633,7 +632,7 @@ pub mod pallet {
 	impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		/// Get stored data of the outbound message with given nonce.
 		pub fn outbound_message_data(lane: LaneId, nonce: MessageNonce) -> Option<MessagePayload> {
-			OutboundMessages::<T, I>::get(MessageKey { lane_id: lane, nonce })
+			OutboundMessages::<T, I>::get(MessageKey { lane_id: lane, nonce }).map(Into::into)
 		}
 
 		/// Prepare data, related to given inbound message.

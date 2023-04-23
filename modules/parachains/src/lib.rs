@@ -42,11 +42,11 @@ use core::marker::PhantomData;
 // darwinia-network
 use bp_header_chain::HeaderChain;
 use bp_parachains::{parachain_head_storage_key_at_source, ParaInfo, ParaStoredHeaderData};
-use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaHead, ParaId};
+use bp_polkadot_core::parachains::{ParaHash, ParaHeadsProof, ParaHead, ParaId};
 use bp_runtime::{Chain, HashOf, HeaderId, HeaderIdOf, Parachain, StorageProofError};
 // paritytech
 use frame_support::dispatch::PostDispatchInfo;
-use sp_std::{marker::PhantomData, vec::Vec};
+use sp_std::{vec::Vec};
 
 /// Block hash of the bridged relay chain.
 pub type RelayBlockHash = bp_polkadot_core::Hash;
