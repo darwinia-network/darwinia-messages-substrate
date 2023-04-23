@@ -18,9 +18,7 @@
 
 use crate as pallet_bridge_relayers;
 
-use bp_messages::{
-	source_chain::ForbidOutboundMessages, target_chain::ForbidInboundMessages, LaneId,
-};
+use bp_messages::LaneId;
 use bp_relayers::PaymentProcedure;
 use frame_support::{parameter_types, weights::RuntimeDbWeight};
 use sp_core::H256;
@@ -43,40 +41,8 @@ frame_support::construct_runtime! {
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Event<T>},
-		Messages: pallet_bridge_messages::{Pallet, Event<T>},
 		Relayers: pallet_bridge_relayers::{Pallet, Call, Event<T>},
 	}
-}
-
-parameter_types! {
-	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
-}
-
-impl frame_system::Config for TestRuntime {
-	type RuntimeOrigin = RuntimeOrigin;
-	type Index = u64;
-	type RuntimeCall = RuntimeCall;
-	type BlockNumber = u64;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = SubstrateHeader;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = frame_support::traits::ConstU64<250>;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type BaseCallFilter = frame_support::traits::Everything;
-	type SystemWeightInfo = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = DbWeight;
-	type SS58Prefix = ();
-	type OnSetCode = ();
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 impl pallet_balances::Config for TestRuntime {
