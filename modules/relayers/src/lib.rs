@@ -101,7 +101,7 @@ pub mod pallet {
 		/// Register reward for given relayer.
 		pub fn register_relayer_reward(lane_id: LaneId, relayer: &T::AccountId, reward: T::Reward) {
 			if reward.is_zero() {
-				return
+				return;
 			}
 
 			RelayerRewards::<T>::mutate(relayer, lane_id, |old_reward: &mut Option<T::Reward>| {

@@ -188,8 +188,8 @@ impl SourceHeaderChain for ForbidInboundMessages {
 	}
 }
 impl<AccountId> MessageDispatch<AccountId> for ForbidInboundMessages {
-	type DispatchPayload = ();
 	type DispatchLevelResult = ();
+	type DispatchPayload = ();
 
 	fn dispatch_weight(_message: &mut DispatchMessage<Self::DispatchPayload>) -> Weight {
 		Weight::MAX

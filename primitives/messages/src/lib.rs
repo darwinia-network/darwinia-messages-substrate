@@ -206,7 +206,6 @@ pub struct InboundMessageDetails {
 	pub dispatch_weight: Weight,
 }
 
-
 /// Unrewarded relayer entry stored in the inbound lane data.
 ///
 /// This struct represents a continuous range of messages that have been delivered by the same

@@ -20,10 +20,7 @@
 use scale_info::TypeInfo;
 // darwinia-network
 use crate::{Config, Orders, Pallet, *};
-use bp_messages::{
-	source_chain::{DeliveryConfirmationPayments},
-	MessageNonce, UnrewardedRelayer,
-};
+use bp_messages::{source_chain::DeliveryConfirmationPayments, MessageNonce, UnrewardedRelayer};
 // --- paritytech ---
 use frame_support::{
 	log,
@@ -40,9 +37,7 @@ pub struct FeeMarketPayment<T, I, Currency> {
 	_phantom: sp_std::marker::PhantomData<(T, I, Currency)>,
 }
 
-impl<T, I, Currency>
-	DeliveryConfirmationPayments<T::AccountId>
-	for FeeMarketPayment<T, I, Currency>
+impl<T, I, Currency> DeliveryConfirmationPayments<T::AccountId> for FeeMarketPayment<T, I, Currency>
 where
 	T: frame_system::Config + Config<I>,
 	I: 'static,

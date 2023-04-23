@@ -94,7 +94,7 @@ pub trait HeaderChain<C: Chain> {
 			.ok_or(HeaderChainError::UnknownHeader)?;
 		let storage_proof_checker = bp_runtime::StorageProofChecker::new(state_root, storage_proof)
 			.map_err(|_| HeaderChainError::StorageRootMismatch)?;
-		
+
 		Ok(parse(storage_proof_checker))
 	}
 }
@@ -158,12 +158,12 @@ impl<Number: Codec> GrandpaConsensusLogReader<Number> {
 	) -> Option<sp_finality_grandpa::ScheduledChange<Number>> {
 		// find the first consensus digest with the right ID which converts to
 		// the right kind of consensus log.
-		digest
-			.convert_first(|log| log.consensus_try_to(&GRANDPA_ENGINE_ID))
-			.and_then(|log| match log {
+		digest.convert_first(|log| log.consensus_try_to(&GRANDPA_ENGINE_ID)).and_then(|log| {
+			match log {
 				ConsensusLog::ScheduledChange(change) => Some(change),
 				_ => None,
-			})
+			}
+		})
 	}
 }
 

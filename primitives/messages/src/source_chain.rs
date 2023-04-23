@@ -17,13 +17,15 @@
 //! Primitives of messages module, that are used on the source chain.
 
 // darwinia-network
-use crate::{
-	InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer,
-};
+use crate::{InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer};
 use bp_runtime::Size;
 // paritytech
 use frame_support::{weights::Weight, Parameter, RuntimeDebug};
-use sp_std::{collections::btree_map::BTreeMap, collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
+use sp_std::{
+	collections::{btree_map::BTreeMap, vec_deque::VecDeque},
+	fmt::Debug,
+	ops::RangeInclusive,
+};
 
 /// Error message that is used in `ForbidOutboundMessages` implementation.
 const ALL_OUTBOUND_MESSAGES_REJECTED: &str =
@@ -37,7 +39,7 @@ pub type RelayersRewards<AccountId> = BTreeMap<AccountId, MessageNonce>;
 /// All implementations of this trait should only work with finalized data that
 /// can't change. Wrong implementation may lead to invalid lane states (i.e. lane
 /// that's stuck) and/or processing messages without paying fees.
-/// 
+///
 /// The `Payload` type here means the payload of the message that is sent from the
 /// source chain to the target chain. The `AccountId` type here means the account
 /// type used by the source chain.

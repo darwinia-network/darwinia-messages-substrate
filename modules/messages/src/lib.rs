@@ -204,7 +204,7 @@ pub mod pallet {
 			// we'll need at least to read outbound lane state, kill a message and update lane state
 			let db_weight = T::DbWeight::get();
 			if !remaining_weight.all_gte(db_weight.reads_writes(1, 2)) {
-				return Weight::zero()
+				return Weight::zero();
 			}
 
 			// messages from lane with index `i` in `ActiveOutboundLanes` are pruned when
@@ -1701,11 +1701,7 @@ mod tests {
 				Pallet::<TestRuntime>::inbound_message_data(
 					TEST_LANE_ID,
 					REGULAR_PAYLOAD.encode(),
-					OutboundMessageDetails {
-						nonce: 0,
-						dispatch_weight: 0,
-						size: 0,
-					},
+					OutboundMessageDetails { nonce: 0, dispatch_weight: 0, size: 0 },
 				),
 				InboundMessageDetails { dispatch_weight: REGULAR_PAYLOAD.declared_weight },
 			);

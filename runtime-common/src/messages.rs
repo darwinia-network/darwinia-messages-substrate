@@ -35,11 +35,7 @@ use bp_messages::{
 };
 use bp_runtime::{messages::MessageDispatchResult, Chain, ChainId, Size, StorageProofChecker};
 // paritytech
-use frame_support::{
-	traits::{Get},
-	weights::Weight,
-	RuntimeDebug,
-};
+use frame_support::{traits::Get, weights::Weight, RuntimeDebug};
 use sp_std::prelude::*;
 use sp_trie::StorageProof;
 use xcm::latest::prelude::*;
@@ -187,11 +183,8 @@ pub mod source {
 	/// The error message returned from LaneMessageVerifier when call origin is mismatch.
 	pub const BAD_ORIGIN: &str = "Unable to match the source origin to expected target origin.";
 
-	impl<B, F, I>
-		LaneMessageVerifier<
-			OriginOf<ThisChain<B>>,
-			FromThisChainMessagePayload,
-		> for FromThisChainMessageVerifier<B, F, I>
+	impl<B, F, I> LaneMessageVerifier<OriginOf<ThisChain<B>>, FromThisChainMessagePayload>
+		for FromThisChainMessageVerifier<B, F, I>
 	where
 		B: MessageBridge,
 		F: pallet_fee_market::Config<I>,
@@ -362,7 +355,7 @@ pub mod source {
 			let d = dest.take().ok_or(SendError::MissingArgument)?;
 			if !T::verify_destination(&d) {
 				*dest = Some(d);
-				return Err(SendError::NotApplicable)
+				return Err(SendError::NotApplicable);
 			}
 
 			let route = T::build_destination();
@@ -488,8 +481,8 @@ pub mod target {
 		XcmWeigher: xcm_executor::traits::WeightBounds<CallOf<ThisChain<B>>>,
 		WeightCredit: Get<Weight>,
 	{
-		type DispatchPayload = FromBridgedChainMessagePayload<CallOf<ThisChain<B>>>;
 		type DispatchLevelResult = ();
+		type DispatchPayload = FromBridgedChainMessagePayload<CallOf<ThisChain<B>>>;
 
 		fn dispatch_weight(
 			message: &mut DispatchMessage<Self::DispatchPayload>,
@@ -641,7 +634,7 @@ pub mod target {
 						// (this bounds maximal capacity of messages vec below)
 						let messages_in_the_proof = nonces_difference.saturating_add(1);
 						if messages_in_the_proof != MessageNonce::from(messages_count) {
-							return Err(MessageProofError::MessagesCountMismatch)
+							return Err(MessageProofError::MessagesCountMismatch);
 						}
 
 						messages_in_the_proof
@@ -676,10 +669,10 @@ pub mod target {
 				}
 
 				// Now we may actually check if the proof is empty or not.
-				if proved_lane_messages.lane_state.is_none() &&
-					proved_lane_messages.messages.is_empty()
+				if proved_lane_messages.lane_state.is_none()
+					&& proved_lane_messages.messages.is_empty()
 				{
-					return Err(MessageProofError::Empty)
+					return Err(MessageProofError::Empty);
 				}
 
 				// We only support single lane messages in this generated_schema
@@ -835,12 +828,12 @@ mod tests {
 	struct ThisChainCall;
 
 	impl Chain for ThisUnderlyingChain {
+		type AccountId = ThisChainAccountId;
+		type Balance = ThisChainBalance;
 		type BlockNumber = u64;
 		type Hash = H256;
 		type Hasher = BlakeTwo256;
 		type Header = ThisChainHeader;
-		type AccountId = ThisChainAccountId;
-		type Balance = ThisChainBalance;
 		type Index = u32;
 		type Signature = sp_runtime::MultiSignature;
 
@@ -882,12 +875,12 @@ mod tests {
 	#[derive(Decode, Encode)]
 	struct BridgedChainCall;
 	impl Chain for BridgedUnderlyingChain {
+		type AccountId = BridgedChainAccountId;
+		type Balance = BridgedChainBalance;
 		type BlockNumber = u64;
 		type Hash = H256;
 		type Hasher = BlakeTwo256;
 		type Header = BridgedChainHeader;
-		type AccountId = BridgedChainAccountId;
-		type Balance = BridgedChainBalance;
 		type Index = u32;
 		type Signature = sp_runtime::MultiSignature;
 

@@ -42,11 +42,11 @@ use core::marker::PhantomData;
 // darwinia-network
 use bp_header_chain::HeaderChain;
 use bp_parachains::{parachain_head_storage_key_at_source, ParaInfo, ParaStoredHeaderData};
-use bp_polkadot_core::parachains::{ParaHash, ParaHeadsProof, ParaHead, ParaId};
+use bp_polkadot_core::parachains::{ParaHash, ParaHead, ParaHeadsProof, ParaId};
 use bp_runtime::{Chain, HashOf, HeaderId, HeaderIdOf, Parachain, StorageProofError};
 // paritytech
 use frame_support::dispatch::PostDispatchInfo;
-use sp_std::{vec::Vec};
+use sp_std::vec::Vec;
 
 /// Block hash of the bridged relay chain.
 pub type RelayBlockHash = bp_polkadot_core::Hash;
@@ -542,10 +542,10 @@ pub mod pallet {
 
 			// verify that the parachain head data size is <= `MaxParaHeadDataSize`
 			let updated_head_data =
-			match StoredParaHeadDataOf::<T, I>::try_from_inner(updated_head_data) {
-				Ok(updated_head_data) => updated_head_data,
-				Err(e) => {
-					log::trace!(
+				match StoredParaHeadDataOf::<T, I>::try_from_inner(updated_head_data) {
+					Ok(updated_head_data) => updated_head_data,
+					Err(e) => {
+						log::trace!(
 						target: LOG_TARGET,
 						"{}. The parachain head data size for {:?} is {}. It exceeds maximal configured size {}.",
 						err_log_prefix,
@@ -554,15 +554,15 @@ pub mod pallet {
 						e.maximal_size,
 					);
 
-					Self::deposit_event(Event::RejectedLargeParachainHead {
-						parachain,
-						parachain_head_hash: updated_head_hash,
-						parachain_head_size: e.value_size as _,
-					});
+						Self::deposit_event(Event::RejectedLargeParachainHead {
+							parachain,
+							parachain_head_hash: updated_head_hash,
+							parachain_head_size: e.value_size as _,
+						});
 
-					return Err(())
-				},
-			};
+						return Err(());
+					},
+				};
 
 			let next_imported_hash_position = stored_best_head
 				.map_or(0, |stored_best_head| stored_best_head.next_imported_hash_position);
@@ -911,7 +911,7 @@ mod tests {
 			assert_eq!(
 				ImportedParaHeads::<TestRuntime>::get(ParaId(3), head_hash(3, 10))
 					.map(|h| h.into_inner()),
-					Some(stored_head_data(3, 10))
+				Some(stored_head_data(3, 10))
 			);
 
 			assert_eq!(
@@ -961,7 +961,7 @@ mod tests {
 			assert_eq!(
 				ImportedParaHeads::<TestRuntime>::get(ParaId(1), head_data(1, 5).hash())
 					.map(|h| h.into_inner()),
-					Some(stored_head_data(1, 5))
+				Some(stored_head_data(1, 5))
 			);
 			assert_eq!(
 				ImportedParaHeads::<TestRuntime>::get(ParaId(1), head_data(1, 10).hash())

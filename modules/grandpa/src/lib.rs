@@ -290,7 +290,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn best_finalized)]
 	pub type BestFinalized<T: Config<I>, I: 'static = ()> =
-		StorageValue<_, BridgedBlockId<T, I>, OptionQuery>;	
+		StorageValue<_, BridgedBlockId<T, I>, OptionQuery>;
 
 	/// A ring buffer of imported hashes. Ordered by the insertion time.
 	#[pallet::storage]

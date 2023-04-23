@@ -126,7 +126,7 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		}
 
 		if let Err(e) = ensure_unrewarded_relayers_are_correct(latest_delivered_nonce, relayers) {
-			return e
+			return e;
 		}
 
 		let prev_latest_received_nonce = data.latest_received_nonce;
@@ -151,8 +151,8 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		let two_writes_weight = write_weight + write_weight;
 		let mut spent_weight = Weight::zero();
 		let mut data = self.storage.data();
-		while remaining_weight.all_gte(two_writes_weight) &&
-			data.oldest_unpruned_nonce <= data.latest_received_nonce
+		while remaining_weight.all_gte(two_writes_weight)
+			&& data.oldest_unpruned_nonce <= data.latest_received_nonce
 		{
 			self.storage.remove_message(&data.oldest_unpruned_nonce);
 

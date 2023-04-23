@@ -187,17 +187,17 @@ parameter_types! {
 }
 impl Config for TestRuntime {
 	type AccountIdConverter = AccountIdConverter;
+	type ActiveOutboundLanes = ActiveOutboundLanes;
 	type BridgedChainId = TestBridgedChainId;
+	type DeliveryConfirmationPayments = TestDeliveryConfirmationPayments;
+	type DeliveryPayments = TestDeliveryPayments;
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
-	type DeliveryPayments = TestDeliveryPayments;
 	type LaneMessageVerifier = TestLaneMessageVerifier;
-	type ActiveOutboundLanes = ActiveOutboundLanes;
 	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
 	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
 	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
 	type MessageDeliveryAndDispatchPayment = TestMessageDeliveryAndDispatchPayment;
-	type DeliveryConfirmationPayments = TestDeliveryConfirmationPayments;
 	type MessageDispatch = TestMessageDispatch;
 	type OutboundPayload = TestPayload;
 	type RuntimeEvent = RuntimeEvent;
@@ -375,8 +375,8 @@ impl SourceHeaderChain for TestSourceHeaderChain {
 #[derive(Debug)]
 pub struct TestMessageDispatch;
 impl MessageDispatch<AccountId> for TestMessageDispatch {
-	type DispatchPayload = TestPayload;
 	type DispatchLevelResult = TestDispatchLevelResult;
+	type DispatchPayload = TestPayload;
 
 	fn dispatch_weight(message: &mut DispatchMessage<TestPayload>) -> Weight {
 		match message.data.payload.as_ref() {

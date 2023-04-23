@@ -46,15 +46,15 @@ frame_support::construct_runtime! {
 }
 
 impl pallet_balances::Config for TestRuntime {
-	type MaxLocks = ();
+	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type RuntimeEvent = RuntimeEvent;
 	type ExistentialDeposit = frame_support::traits::ConstU64<1>;
-	type AccountStore = frame_system::Pallet<TestRuntime>;
-	type WeightInfo = ();
+	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -64,31 +64,27 @@ parameter_types! {
 
 // we're not testing messages pallet here, so values in this config might be crazy
 impl pallet_bridge_messages::Config for TestRuntime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
 	type ActiveOutboundLanes = ActiveOutboundLanes;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = frame_support::traits::ConstU64<8>;
-	type MaxUnconfirmedMessagesAtInboundLane = frame_support::traits::ConstU64<8>;
-
-	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<1024>;
-	type OutboundPayload = ();
-
+	type BridgedChainId = TestBridgedChainId;
 	type InboundPayload = ();
 	type InboundRelayer = AccountId;
-
-	type TargetHeaderChain = ForbidOutboundMessages;
 	type LaneMessageVerifier = ForbidOutboundMessages;
+	type MaxUnconfirmedMessagesAtInboundLane = frame_support::traits::ConstU64<8>;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = frame_support::traits::ConstU64<8>;
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<1024>;
 	type MessageDeliveryAndDispatchPayment = ();
-
-	type SourceHeaderChain = ForbidInboundMessages;
 	type MessageDispatch = ForbidInboundMessages;
-	type BridgedChainId = TestBridgedChainId;
+	type OutboundPayload = ();
+	type RuntimeEvent = RuntimeEvent;
+	type SourceHeaderChain = ForbidInboundMessages;
+	type TargetHeaderChain = ForbidOutboundMessages;
+	type WeightInfo = ();
 }
 
 impl pallet_bridge_relayers::Config for TestRuntime {
-	type RuntimeEvent = RuntimeEvent;
-	type Reward = Balance;
 	type PaymentProcedure = TestPaymentProcedure;
+	type Reward = Balance;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
 

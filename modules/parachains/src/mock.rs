@@ -40,7 +40,7 @@ type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 pub const PARAS_PALLET_NAME: &str = "Paras";
 pub const UNTRACKED_PARACHAIN_ID: u32 = 10;
-+// use exact expected encoded size: `vec_len_size + header_number_size + state_root_hash_size`
+// use exact expected encoded size: `vec_len_size + header_number_size + state_root_hash_size`
 pub const MAXIMAL_PARACHAIN_HEAD_DATA_SIZE: u32 = 1 + 8 + 32;
 
 pub type RegularParachainHeader = sp_runtime::testing::Header;
@@ -50,18 +50,19 @@ pub type BigParachainHeader = sp_runtime::generic::Header<u128, BlakeTwo256>;
 pub struct Parachain1;
 
 impl Chain for Parachain1 {
+	type AccountId = u64;
+	type Balance = u64;
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hasher = RegularParachainHasher;
 	type Header = RegularParachainHeader;
-	type AccountId = u64;
-	type Balance = u64;
 	type Index = u64;
 	type Signature = MultiSignature;
 
 	fn max_extrinsic_size() -> u32 {
 		0
 	}
+
 	fn max_extrinsic_weight() -> Weight {
 		Weight::zero()
 	}
@@ -74,18 +75,19 @@ impl Parachain for Parachain1 {
 pub struct Parachain2;
 
 impl Chain for Parachain2 {
+	type AccountId = u64;
+	type Balance = u64;
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hasher = RegularParachainHasher;
 	type Header = RegularParachainHeader;
-	type AccountId = u64;
-	type Balance = u64;
 	type Index = u64;
 	type Signature = MultiSignature;
 
 	fn max_extrinsic_size() -> u32 {
 		0
 	}
+
 	fn max_extrinsic_weight() -> Weight {
 		Weight::zero()
 	}
@@ -98,18 +100,19 @@ impl Parachain for Parachain2 {
 pub struct Parachain3;
 
 impl Chain for Parachain3 {
+	type AccountId = u64;
+	type Balance = u64;
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hasher = RegularParachainHasher;
 	type Header = RegularParachainHeader;
-	type AccountId = u64;
-	type Balance = u64;
 	type Index = u64;
 	type Signature = MultiSignature;
 
 	fn max_extrinsic_size() -> u32 {
 		0
 	}
+
 	fn max_extrinsic_weight() -> Weight {
 		Weight::zero()
 	}
@@ -123,18 +126,19 @@ impl Parachain for Parachain3 {
 pub struct BigParachain;
 
 impl Chain for BigParachain {
+	type AccountId = u64;
+	type Balance = u64;
 	type BlockNumber = u128;
 	type Hash = H256;
 	type Hasher = RegularParachainHasher;
 	type Header = BigParachainHeader;
-	type AccountId = u64;
-	type Balance = u64;
 	type Index = u64;
 	type Signature = MultiSignature;
 
 	fn max_extrinsic_size() -> u32 {
 		0
 	}
+
 	fn max_extrinsic_weight() -> Weight {
 		Weight::zero()
 	}
@@ -220,9 +224,9 @@ impl pallet_bridge_parachains::Config for TestRuntime {
 	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
 	type HeadsToKeep = HeadsToKeep;
 	type MaxParaHeadDataSize = frame_support::traits::ConstU32<MAXIMAL_PARACHAIN_HEAD_DATA_SIZE>;
+	type ParaStoredHeaderDataBuilder = (Parachain1, Parachain2, Parachain3, BigParachain);
 	type ParasPalletName = ParasPalletName;
 	type RuntimeEvent = RuntimeEvent;
-	type ParaStoredHeaderDataBuilder = (Parachain1, Parachain2, Parachain3, BigParachain);
 	type WeightInfo = ();
 }
 

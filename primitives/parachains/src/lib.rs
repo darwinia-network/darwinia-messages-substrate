@@ -80,13 +80,13 @@ impl StorageMapKeyProvider for ParasInfoKeyProvider {
 /// The head is stored by the `pallet-bridge-parachains` pallet in the `ImportedParaHeads` map.
 pub struct ImportedParaHeadsKeyProvider;
 impl StorageDoubleMapKeyProvider for ImportedParaHeadsKeyProvider {
-	const MAP_NAME: &'static str = "ImportedParaHeads";
-
 	type Hasher1 = Blake2_128Concat;
 	type Hasher2 = Blake2_128Concat;
 	type Key1 = ParaId;
 	type Key2 = ParaHash;
 	type Value = ParaStoredHeaderData;
+
+	const MAP_NAME: &'static str = "ImportedParaHeads";
 }
 
 /// Stored data of the parachain head. It is encoded version of the
