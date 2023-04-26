@@ -14,10 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-// darwinia-network
 use crate::{Config, Pallet, RelayBlockHash, RelayBlockHasher, RelayBlockNumber};
 use bp_runtime::FilterCall;
-// paritytech
 use frame_support::{dispatch::CallableCallFor, traits::IsSubType};
 use sp_runtime::transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction};
 
@@ -77,7 +75,6 @@ where
 
 #[cfg(test)]
 mod tests {
-	// darwinia-network
 	use crate::{
 		extension::FilterCall,
 		mock::{run_test, RuntimeCall, TestRuntime},

@@ -16,11 +16,9 @@
 
 //! Utilities for working with test accounts.
 
-// crates.io
 use codec::Encode;
 use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signature};
 use finality_grandpa::voter_set::VoterSet;
-// paritytech
 use sp_finality_grandpa::{AuthorityId, AuthorityList, AuthorityWeight};
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
@@ -34,8 +32,9 @@ pub const EVE: Account = Account(4);
 pub const FERDIE: Account = Account(5);
 
 /// A test account which can be used to sign messages.
-#[derive(Clone, Copy, RuntimeDebug)]
+#[derive(RuntimeDebug, Clone, Copy)]
 pub struct Account(pub u16);
+
 impl Account {
 	pub fn public(&self) -> PublicKey {
 		(&self.secret()).into()
@@ -67,6 +66,7 @@ impl Account {
 		self.pair().sign(msg)
 	}
 }
+
 impl From<Account> for AuthorityId {
 	fn from(p: Account) -> Self {
 		sp_application_crypto::UncheckedFrom::unchecked_from(p.public().to_bytes())
@@ -90,5 +90,5 @@ pub fn test_keyring() -> Vec<(Account, AuthorityWeight)> {
 
 /// Get a list of "unique" accounts.
 pub fn accounts(len: u16) -> Vec<Account> {
-	(0..len).into_iter().map(Account).collect()
+	(0..len).map(Account).collect()
 }

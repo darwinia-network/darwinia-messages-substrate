@@ -52,7 +52,7 @@ impl finality_grandpa::Chain<TestHash, TestNumber> for AncestryChain {
 		let mut current_hash = block;
 		loop {
 			if current_hash == base {
-				break;
+				break
 			}
 			match self.0.parents.get(&current_hash).cloned() {
 				Some(parent_hash) => {
@@ -105,7 +105,7 @@ pub fn make_default_justification(header: &TestHeader) -> GrandpaJustification<T
 //
 // 1) to return `Err()` (which only may happen if `finality_grandpa::Chain` implementation
 //    returns an error);
-// 2) to return `Ok(validation_result) if validation_result.ghost().is_none()`.
+// 2) to return `Ok(validation_result)` if `validation_result.is_valid()` is false.
 //
 // Our implementation would just return error in both cases.
 
@@ -125,17 +125,17 @@ fn same_result_when_precommit_target_has_lower_number_than_commit_target() {
 		),
 		Err(Error::PrecommitIsNotCommitDescendant),
 	);
-	// original implementation returns empty GHOST
-	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
-	assert_eq!(
-		finality_grandpa::validate_commit(
-			&justification.commit,
-			&full_voter_set(),
-			&AncestryChain::new(&justification.votes_ancestries),
-		)
-		.map(|result| result.is_valid()),
-		Ok(false)
-	);
+
+	// original implementation returns `Ok(validation_result)`
+	// with `validation_result.is_valid() == false`.
+	let result = finality_grandpa::validate_commit(
+		&justification.commit,
+		&full_voter_set(),
+		&AncestryChain::new(&justification.votes_ancestries),
+	)
+	.unwrap();
+
+	assert!(!result.is_valid());
 }
 
 #[test]
@@ -158,22 +158,27 @@ fn same_result_when_precommit_target_is_not_descendant_of_commit_target() {
 		),
 		Err(Error::PrecommitIsNotCommitDescendant),
 	);
-	// original implementation returns empty GHOST
-	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
-	assert_eq!(
-		finality_grandpa::validate_commit(
-			&justification.commit,
-			&full_voter_set(),
-			&AncestryChain::new(&justification.votes_ancestries),
-		)
-		.map(|result| result.is_valid()),
-		Ok(false)
-	);
+
+	// original implementation returns `Ok(validation_result)`
+	// with `validation_result.is_valid() == false`.
+	let result = finality_grandpa::validate_commit(
+		&justification.commit,
+		&full_voter_set(),
+		&AncestryChain::new(&justification.votes_ancestries),
+	)
+	.unwrap();
+
+	assert!(!result.is_valid());
 }
 
 #[test]
 fn same_result_when_justification_contains_duplicate_vote() {
-	let mut justification = make_default_justification(&test_header(1));
+	let mut justification = make_justification_for_header(JustificationGeneratorParams {
+		header: test_header(1),
+		authorities: minimal_accounts_set(),
+		ancestors: 0,
+		..Default::default()
+	});
 	// the justification may contain exactly the same vote (i.e. same precommit and same signature)
 	// multiple times && it isn't treated as an error by original implementation
 	justification.commit.precommits.push(justification.commit.precommits[0].clone());
@@ -189,22 +194,26 @@ fn same_result_when_justification_contains_duplicate_vote() {
 		),
 		Ok(()),
 	);
-	// original implementation returns non-empty GHOST
-	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
-	assert_eq!(
-		finality_grandpa::validate_commit(
-			&justification.commit,
-			&full_voter_set(),
-			&AncestryChain::new(&justification.votes_ancestries),
-		)
-		.map(|result| result.is_valid()),
-		Ok(false)
-	);
+	// original implementation returns `Ok(validation_result)`
+	// with `validation_result.is_valid() == true`.
+	let result = finality_grandpa::validate_commit(
+		&justification.commit,
+		&full_voter_set(),
+		&AncestryChain::new(&justification.votes_ancestries),
+	)
+	.unwrap();
+
+	assert!(result.is_valid());
 }
 
 #[test]
 fn same_result_when_authority_equivocates_once_in_a_round() {
-	let mut justification = make_default_justification(&test_header(1));
+	let mut justification = make_justification_for_header(JustificationGeneratorParams {
+		header: test_header(1),
+		authorities: minimal_accounts_set(),
+		ancestors: 0,
+		..Default::default()
+	});
 	// the justification original implementation allows authority to submit two different
 	// votes in a single round, of which only first is 'accepted'
 	justification.commit.precommits.push(signed_precommit::<TestHeader>(
@@ -224,22 +233,26 @@ fn same_result_when_authority_equivocates_once_in_a_round() {
 		),
 		Ok(()),
 	);
-	// original implementation returns non-empty GHOST
-	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
-	assert_eq!(
-		finality_grandpa::validate_commit(
-			&justification.commit,
-			&full_voter_set(),
-			&AncestryChain::new(&justification.votes_ancestries),
-		)
-		.map(|result| result.is_valid()),
-		Ok(false)
-	);
+	// original implementation returns `Ok(validation_result)`
+	// with `validation_result.is_valid() == true`.
+	let result = finality_grandpa::validate_commit(
+		&justification.commit,
+		&full_voter_set(),
+		&AncestryChain::new(&justification.votes_ancestries),
+	)
+	.unwrap();
+
+	assert!(result.is_valid());
 }
 
 #[test]
 fn same_result_when_authority_equivocates_twice_in_a_round() {
-	let mut justification = make_default_justification(&test_header(1));
+	let mut justification = make_justification_for_header(JustificationGeneratorParams {
+		header: test_header(1),
+		authorities: minimal_accounts_set(),
+		ancestors: 0,
+		..Default::default()
+	});
 	// there's some code in the original implementation that should return an error when
 	// same authority submits more than two different votes in a single round:
 	// https://github.com/paritytech/finality-grandpa/blob/6aeea2d1159d0f418f0b86e70739f2130629ca09/src/lib.rs#L473
@@ -269,17 +282,16 @@ fn same_result_when_authority_equivocates_twice_in_a_round() {
 		),
 		Ok(()),
 	);
-	// original implementation returns non-empty GHOST
-	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
-	assert_eq!(
-		finality_grandpa::validate_commit(
-			&justification.commit,
-			&full_voter_set(),
-			&AncestryChain::new(&justification.votes_ancestries),
-		)
-		.map(|result| result.is_valid()),
-		Ok(false)
-	);
+	// original implementation returns `Ok(validation_result)`
+	// with `validation_result.is_valid() == true`.
+	let result = finality_grandpa::validate_commit(
+		&justification.commit,
+		&full_voter_set(),
+		&AncestryChain::new(&justification.votes_ancestries),
+	)
+	.unwrap();
+
+	assert!(result.is_valid());
 }
 
 #[test]
@@ -303,15 +315,14 @@ fn same_result_when_there_are_not_enough_cumulative_weight_to_finalize_commit_ta
 		),
 		Err(Error::TooLowCumulativeWeight),
 	);
-	// original implementation returns empty GHOST
-	// https://github.com/paritytech/finality-grandpa/commit/36e409bcb76b41344be5b284732b529cd087432b#diff-b1a35a68f14e696205874893c07fd24fdb88882b47c23cc0e0c80a30c7d53759L496-R521
-	assert_eq!(
-		finality_grandpa::validate_commit(
-			&justification.commit,
-			&full_voter_set(),
-			&AncestryChain::new(&justification.votes_ancestries),
-		)
-		.map(|result| result.is_valid()),
-		Ok(false)
-	);
+	// original implementation returns `Ok(validation_result)`
+	// with `validation_result.is_valid() == false`.
+	let result = finality_grandpa::validate_commit(
+		&justification.commit,
+		&full_voter_set(),
+		&AncestryChain::new(&justification.votes_ancestries),
+	)
+	.unwrap();
+
+	assert!(!result.is_valid());
 }

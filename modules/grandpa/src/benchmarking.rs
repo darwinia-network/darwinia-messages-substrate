@@ -39,20 +39,19 @@
 //! Note that the worst case scenario here would be a justification where each validator has it's
 //! own fork which is `SESSION_LENGTH` blocks long.
 
-// darwinia-network
 use crate::*;
+
 use bp_runtime::BasicOperatingMode;
 use bp_test_utils::{
 	accounts, make_justification_for_header, JustificationGeneratorParams, TEST_GRANDPA_ROUND,
 	TEST_GRANDPA_SET_ID,
 };
-// paritytech
 use frame_benchmarking::{benchmarks_instance_pallet, whitelisted_caller};
 use frame_support::traits::Get;
 use frame_system::RawOrigin;
 use sp_finality_grandpa::AuthorityId;
 use sp_runtime::traits::Zero;
-use sp_std::prelude::*;
+use sp_std::vec::Vec;
 
 // The maximum number of vote ancestries to include in a justification.
 //

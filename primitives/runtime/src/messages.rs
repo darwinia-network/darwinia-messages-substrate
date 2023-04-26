@@ -16,35 +16,13 @@
 
 //! Primitives that may be used by different message delivery and dispatch mechanisms.
 
-// crates.io
 use codec::{Decode, Encode};
-use scale_info::TypeInfo;
-// paritytech
 use frame_support::{weights::Weight, RuntimeDebug};
-
-/// Where message dispatch fee is paid?
-#[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum DispatchFeePayment {
-	/// The dispatch fee is paid at the source chain.
-	AtSourceChain,
-	/// The dispatch fee is paid at the target chain.
-	///
-	/// The fee will be paid right before the message is dispatched. So in case of any other
-	/// issues (like invalid call encoding, invalid signature, ...) the dispatch module won't
-	/// do any direct transfers. Instead, it'll return fee related to this message dispatch to the
-	/// relayer.
-	AtTargetChain,
-}
+use scale_info::TypeInfo;
 
 /// Message dispatch result.
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct MessageDispatchResult {
-	/// Dispatch result flag. This flag is relayed back to the source chain and, generally
-	/// speaking, may bring any (that fits in single bit) information from the dispatcher at
-	/// the target chain to the message submitter at the source chain. If you're using immediate
-	/// call dispatcher, then it'll be result of the dispatch - `true` if dispatch has succeeded
-	/// and `false` otherwise.
-	pub dispatch_result: bool,
+#[derive(Encode, Decode, RuntimeDebug, Clone, PartialEq, Eq, TypeInfo)]
+pub struct MessageDispatchResult<DispatchLevelResult> {
 	/// Unspent dispatch weight. This weight that will be deducted from total delivery transaction
 	/// weight, thus reducing the transaction cost. This shall not be zero in (at least) two cases:
 	///
@@ -52,8 +30,6 @@ pub struct MessageDispatchResult {
 	///    the weight, declared by the message sender;
 	/// 2) if message has not been dispatched at all.
 	pub unspent_weight: Weight,
-	/// Whether the message dispatch fee has been paid during dispatch. This will be true if your
-	/// configuration supports pay-dispatch-fee-at-target-chain option and message sender has
-	/// enabled this option.
-	pub dispatch_fee_paid_during_dispatch: bool,
+	/// Fine-grained result of single message dispatch (for better diagnostic purposes)
+	pub dispatch_level_result: DispatchLevelResult,
 }

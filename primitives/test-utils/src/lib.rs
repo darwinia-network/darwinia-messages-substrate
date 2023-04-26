@@ -18,17 +18,16 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-mod keyring;
-pub use keyring::*;
-
-// crates.io
+use bp_header_chain::justification::GrandpaJustification;
 use codec::Encode;
-// paritytech
 use sp_finality_grandpa::{AuthorityId, AuthoritySignature, AuthorityWeight, SetId};
 use sp_runtime::traits::{Header as HeaderT, One, Zero};
 use sp_std::prelude::*;
-// darwinia-network
-use bp_header_chain::justification::GrandpaJustification;
+
+// Re-export all our test account utilities
+pub use keyring::*;
+
+mod keyring;
 
 pub const TEST_GRANDPA_ROUND: u64 = 1;
 pub const TEST_GRANDPA_SET_ID: SetId = 1;
@@ -55,6 +54,7 @@ pub struct JustificationGeneratorParams<H> {
 	/// Useful for creating a "worst-case" scenario in which each authority is on its own fork.
 	pub forks: u32,
 }
+
 impl<H: HeaderT> Default for JustificationGeneratorParams<H> {
 	fn default() -> Self {
 		Self {

@@ -16,13 +16,12 @@
 
 //! Storage keys of bridge GRANDPA pallet.
 
-// paritytech
-use sp_core::storage::StorageKey;
-
 /// Name of the `IsHalted` storage value.
 pub const PALLET_OPERATING_MODE_VALUE_NAME: &str = "PalletOperatingMode";
 /// Name of the `BestFinalized` storage value.
 pub const BEST_FINALIZED_VALUE_NAME: &str = "BestFinalized";
+
+use sp_core::storage::StorageKey;
 
 /// Storage key of the `PalletOperatingMode` variable in the runtime storage.
 pub fn pallet_operating_mode_key(pallet_prefix: &str) -> StorageKey {
@@ -49,6 +48,7 @@ pub fn best_finalized_key(pallet_prefix: &str) -> StorageKey {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use hex_literal::hex;
 
 	#[test]
 	fn pallet_operating_mode_key_computed_properly() {
@@ -57,11 +57,9 @@ mod tests {
 		let storage_key = pallet_operating_mode_key("BridgeGrandpa").0;
 		assert_eq!(
 			storage_key,
-			array_bytes::hex2bytes_unchecked(
-				"0b06f475eddb98cf933a12262e0388de0f4cf0917788d791142ff6c1f216e7b3"
-			),
+			hex!("0b06f475eddb98cf933a12262e0388de0f4cf0917788d791142ff6c1f216e7b3").to_vec(),
 			"Unexpected storage key: {}",
-			array_bytes::bytes2hex("", &storage_key),
+			hex::encode(&storage_key),
 		);
 	}
 
@@ -72,11 +70,9 @@ mod tests {
 		let storage_key = best_finalized_key("BridgeGrandpa").0;
 		assert_eq!(
 			storage_key,
-			array_bytes::hex2bytes_unchecked(
-				"0b06f475eddb98cf933a12262e0388dea4ebafdd473c549fdb24c5c991c5591c"
-			),
+			hex!("0b06f475eddb98cf933a12262e0388dea4ebafdd473c549fdb24c5c991c5591c").to_vec(),
 			"Unexpected storage key: {}",
-			array_bytes::bytes2hex("", &storage_key),
+			hex::encode(&storage_key),
 		);
 	}
 }

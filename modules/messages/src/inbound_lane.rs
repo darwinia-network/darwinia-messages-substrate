@@ -16,23 +16,20 @@
 
 //! Everything about incoming messages receival.
 
-// crates.io
-use codec::{Decode, Encode, EncodeLike, MaxEncodedLen};
-use scale_info::{Type, TypeInfo};
-// darwinia-network
 use crate::Config;
+
 use bp_messages::{
 	target_chain::{DispatchMessage, DispatchMessageData, MessageDispatch},
 	DeliveredMessages, InboundLaneData, LaneId, MessageKey, MessageNonce, OutboundLaneData,
 	ReceivalResult, UnrewardedRelayer,
 };
-// paritytech
+use codec::{Decode, Encode, EncodeLike, MaxEncodedLen};
 use frame_support::{traits::Get, RuntimeDebug};
+use scale_info::{Type, TypeInfo};
+use sp_std::prelude::PartialEq;
 
 /// Inbound lane storage.
 pub trait InboundLaneStorage {
-	/// Delivery and dispatch fee type on source chain.
-	type MessageFee;
 	/// Id of relayer on source chain.
 	type Relayer: Clone + PartialEq;
 
@@ -58,6 +55,7 @@ pub trait InboundLaneStorage {
 /// The encoding of this type matches encoding of the corresponding `MessageData`.
 #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
 pub struct StoredInboundLaneData<T: Config<I>, I: 'static>(pub InboundLaneData<T::InboundRelayer>);
+
 impl<T: Config<I>, I: 'static> sp_std::ops::Deref for StoredInboundLaneData<T, I> {
 	type Target = InboundLaneData<T::InboundRelayer>;
 
@@ -65,16 +63,19 @@ impl<T: Config<I>, I: 'static> sp_std::ops::Deref for StoredInboundLaneData<T, I
 		&self.0
 	}
 }
+
 impl<T: Config<I>, I: 'static> sp_std::ops::DerefMut for StoredInboundLaneData<T, I> {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.0
 	}
 }
+
 impl<T: Config<I>, I: 'static> Default for StoredInboundLaneData<T, I> {
 	fn default() -> Self {
 		StoredInboundLaneData(Default::default())
 	}
 }
+
 impl<T: Config<I>, I: 'static> From<StoredInboundLaneData<T, I>>
 	for InboundLaneData<T::InboundRelayer>
 {
@@ -82,10 +83,12 @@ impl<T: Config<I>, I: 'static> From<StoredInboundLaneData<T, I>>
 		data.0
 	}
 }
+
 impl<T: Config<I>, I: 'static> EncodeLike<StoredInboundLaneData<T, I>>
 	for InboundLaneData<T::InboundRelayer>
 {
 }
+
 impl<T: Config<I>, I: 'static> TypeInfo for StoredInboundLaneData<T, I> {
 	type Identity = Self;
 
@@ -93,11 +96,11 @@ impl<T: Config<I>, I: 'static> TypeInfo for StoredInboundLaneData<T, I> {
 		InboundLaneData::<T::InboundRelayer>::type_info()
 	}
 }
+
 impl<T: Config<I>, I: 'static> MaxEncodedLen for StoredInboundLaneData<T, I> {
 	fn max_encoded_len() -> usize {
 		InboundLaneData::<T::InboundRelayer>::encoded_size_hint(
 			T::MaxUnrewardedRelayerEntriesAtInboundLane::get() as usize,
-			T::MaxUnconfirmedMessagesAtInboundLane::get() as usize,
 		)
 		.unwrap_or(usize::MAX)
 	}
@@ -107,6 +110,7 @@ impl<T: Config<I>, I: 'static> MaxEncodedLen for StoredInboundLaneData<T, I> {
 pub struct InboundLane<S> {
 	storage: S,
 }
+
 impl<S: InboundLaneStorage> InboundLane<S> {
 	/// Create new inbound lane backed by given storage.
 	pub fn new(storage: S) -> Self {
@@ -123,10 +127,10 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 
 		if outbound_lane_data.latest_received_nonce > last_delivered_nonce {
 			// this is something that should never happen if proofs are correct
-			return None;
+			return None
 		}
 		if outbound_lane_data.latest_received_nonce <= data.last_confirmed_nonce {
-			return None;
+			return None
 		}
 
 		let new_confirmed_nonce = outbound_lane_data.latest_received_nonce;
@@ -145,10 +149,6 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 		// overlap.
 		match data.relayers.front_mut() {
 			Some(entry) if entry.messages.begin < new_confirmed_nonce => {
-				entry.messages.dispatch_results = entry
-					.messages
-					.dispatch_results
-					.split_off((new_confirmed_nonce + 1 - entry.messages.begin) as _);
 				entry.messages.begin = new_confirmed_nonce + 1;
 			},
 			_ => {},
@@ -159,47 +159,43 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 	}
 
 	/// Receive new message.
-	pub fn receive_message<Dispatch: MessageDispatch<AccountId, S::MessageFee>, AccountId>(
+	pub fn receive_message<Dispatch: MessageDispatch<AccountId>, AccountId>(
 		&mut self,
 		relayer_at_bridged_chain: &S::Relayer,
 		relayer_at_this_chain: &AccountId,
 		nonce: MessageNonce,
-		message_data: DispatchMessageData<Dispatch::DispatchPayload, S::MessageFee>,
-	) -> ReceivalResult {
+		message_data: DispatchMessageData<Dispatch::DispatchPayload>,
+	) -> ReceivalResult<Dispatch::DispatchLevelResult> {
 		let mut data = self.storage.data();
 		let is_correct_message = nonce == data.last_delivered_nonce() + 1;
 		if !is_correct_message {
-			return ReceivalResult::InvalidNonce;
+			return ReceivalResult::InvalidNonce
 		}
 
 		// if there are more unrewarded relayer entries than we may accept, reject this message
 		if data.relayers.len() as MessageNonce >= self.storage.max_unrewarded_relayer_entries() {
-			return ReceivalResult::TooManyUnrewardedRelayers;
+			return ReceivalResult::TooManyUnrewardedRelayers
 		}
 
 		// if there are more unconfirmed messages than we may accept, reject this message
 		let unconfirmed_messages_count = nonce.saturating_sub(data.last_confirmed_nonce);
 		if unconfirmed_messages_count > self.storage.max_unconfirmed_messages() {
-			return ReceivalResult::TooManyUnconfirmedMessages;
-		}
-
-		let dispatch_message = DispatchMessage {
-			key: MessageKey { lane_id: self.storage.id(), nonce },
-			data: message_data,
-		};
-
-		// if there are some extra pre-dispatch validation errors, reject this message.
-		if Dispatch::pre_dispatch(relayer_at_this_chain, &dispatch_message).is_err() {
-			return ReceivalResult::PreDispatchValidateFailed;
+			return ReceivalResult::TooManyUnconfirmedMessages
 		}
 
 		// then, dispatch message
-		let dispatch_result = Dispatch::dispatch(relayer_at_this_chain, dispatch_message);
+		let dispatch_result = Dispatch::dispatch(
+			relayer_at_this_chain,
+			DispatchMessage {
+				key: MessageKey { lane_id: self.storage.id(), nonce },
+				data: message_data,
+			},
+		);
 
 		// now let's update inbound lane storage
 		let push_new = match data.relayers.back_mut() {
 			Some(entry) if entry.relayer == *relayer_at_bridged_chain => {
-				entry.messages.note_dispatched_message(dispatch_result.dispatch_result);
+				entry.messages.note_dispatched_message();
 				false
 			},
 			_ => true,
@@ -207,7 +203,7 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 		if push_new {
 			data.relayers.push_back(UnrewardedRelayer {
 				relayer: (*relayer_at_bridged_chain).clone(),
-				messages: DeliveredMessages::new(nonce, dispatch_result.dispatch_result),
+				messages: DeliveredMessages::new(nonce),
 			});
 		}
 		self.storage.set_data(data);
@@ -218,14 +214,13 @@ impl<S: InboundLaneStorage> InboundLane<S> {
 
 #[cfg(test)]
 mod tests {
-	// darwinia-network
 	use super::*;
 	use crate::{
 		inbound_lane,
 		mock::{
-			dispatch_result, message_data, run_test, unrewarded_relayer, TestMessageDispatch,
-			TestRuntime, REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A, TEST_RELAYER_B,
-			TEST_RELAYER_C,
+			dispatch_result, inbound_message_data, run_test, unrewarded_relayer,
+			TestMessageDispatch, TestRuntime, REGULAR_PAYLOAD, TEST_LANE_ID, TEST_RELAYER_A,
+			TEST_RELAYER_B, TEST_RELAYER_C,
 		},
 		RuntimeInboundLaneStorage,
 	};
@@ -239,7 +234,7 @@ mod tests {
 				&TEST_RELAYER_A,
 				&TEST_RELAYER_A,
 				nonce,
-				message_data(REGULAR_PAYLOAD).into()
+				inbound_message_data(REGULAR_PAYLOAD)
 			),
 			ReceivalResult::Dispatched(dispatch_result(0))
 		);
@@ -367,7 +362,7 @@ mod tests {
 					&TEST_RELAYER_A,
 					&TEST_RELAYER_A,
 					10,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::InvalidNonce
 			);
@@ -387,7 +382,7 @@ mod tests {
 						&(TEST_RELAYER_A + current_nonce),
 						&(TEST_RELAYER_A + current_nonce),
 						current_nonce,
-						message_data(REGULAR_PAYLOAD).into()
+						inbound_message_data(REGULAR_PAYLOAD)
 					),
 					ReceivalResult::Dispatched(dispatch_result(0))
 				);
@@ -398,7 +393,7 @@ mod tests {
 					&(TEST_RELAYER_A + max_nonce + 1),
 					&(TEST_RELAYER_A + max_nonce + 1),
 					max_nonce + 1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::TooManyUnrewardedRelayers,
 			);
@@ -408,7 +403,7 @@ mod tests {
 					&(TEST_RELAYER_A + max_nonce),
 					&(TEST_RELAYER_A + max_nonce),
 					max_nonce + 1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::TooManyUnrewardedRelayers,
 			);
@@ -426,7 +421,7 @@ mod tests {
 						&TEST_RELAYER_A,
 						&TEST_RELAYER_A,
 						current_nonce,
-						message_data(REGULAR_PAYLOAD).into()
+						inbound_message_data(REGULAR_PAYLOAD)
 					),
 					ReceivalResult::Dispatched(dispatch_result(0))
 				);
@@ -437,7 +432,7 @@ mod tests {
 					&TEST_RELAYER_B,
 					&TEST_RELAYER_B,
 					max_nonce + 1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::TooManyUnconfirmedMessages,
 			);
@@ -447,7 +442,7 @@ mod tests {
 					&TEST_RELAYER_A,
 					&TEST_RELAYER_A,
 					max_nonce + 1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::TooManyUnconfirmedMessages,
 			);
@@ -463,7 +458,7 @@ mod tests {
 					&TEST_RELAYER_A,
 					&TEST_RELAYER_A,
 					1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::Dispatched(dispatch_result(0))
 			);
@@ -472,7 +467,7 @@ mod tests {
 					&TEST_RELAYER_B,
 					&TEST_RELAYER_B,
 					2,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::Dispatched(dispatch_result(0))
 			);
@@ -481,7 +476,7 @@ mod tests {
 					&TEST_RELAYER_A,
 					&TEST_RELAYER_A,
 					3,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::Dispatched(dispatch_result(0))
 			);
@@ -505,7 +500,7 @@ mod tests {
 					&TEST_RELAYER_A,
 					&TEST_RELAYER_A,
 					1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::Dispatched(dispatch_result(0))
 			);
@@ -514,7 +509,7 @@ mod tests {
 					&TEST_RELAYER_B,
 					&TEST_RELAYER_B,
 					1,
-					message_data(REGULAR_PAYLOAD).into()
+					inbound_message_data(REGULAR_PAYLOAD)
 				),
 				ReceivalResult::InvalidNonce,
 			);
@@ -541,7 +536,7 @@ mod tests {
 					&TEST_RELAYER_A,
 					&TEST_RELAYER_A,
 					1,
-					message_data(payload).into()
+					inbound_message_data(payload)
 				),
 				ReceivalResult::Dispatched(dispatch_result(1))
 			);

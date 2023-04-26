@@ -18,34 +18,26 @@
 
 use crate::{
 	inbound_lane::InboundLaneStorage, inbound_lane_storage, outbound_lane,
-	outbound_lane::ReceivalConfirmationResult, weights_ext::EXPECTED_DEFAULT_MESSAGE_LENGTH, Call,
-	OutboundLanes,
+	weights_ext::EXPECTED_DEFAULT_MESSAGE_LENGTH, Call, OutboundLanes,
 };
 
 use bp_messages::{
 	source_chain::TargetHeaderChain, target_chain::SourceHeaderChain, DeliveredMessages,
-	InboundLaneData, LaneId, MessageData, MessageNonce, OutboundLaneData, UnrewardedRelayer,
+	InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer,
 	UnrewardedRelayersState,
 };
-use bp_runtime::{messages::DispatchFeePayment, StorageProofSize};
+use bp_runtime::StorageProofSize;
+use codec::Decode;
 use frame_benchmarking::{account, benchmarks_instance_pallet};
-use frame_support::{traits::Get, weights::Weight};
+use frame_support::weights::Weight;
 use frame_system::RawOrigin;
-use sp_std::{collections::vec_deque::VecDeque, ops::RangeInclusive, prelude::*};
+use sp_runtime::traits::TrailingZeroInput;
+use sp_std::{ops::RangeInclusive, prelude::*};
 
 const SEED: u32 = 0;
 
 /// Pallet we're benchmarking here.
 pub struct Pallet<T: Config<I>, I: 'static>(crate::Pallet<T, I>);
-
-/// Benchmark-specific message parameters.
-#[derive(Debug)]
-pub struct MessageParams<ThisAccountId> {
-	/// Size of the message payload.
-	pub size: u32,
-	/// Message sender account.
-	pub sender_account: ThisAccountId,
-}
 
 /// Benchmark-specific message proof parameters.
 #[derive(Debug)]
@@ -58,8 +50,6 @@ pub struct MessageProofParams {
 	pub outbound_lane_data: Option<OutboundLaneData>,
 	/// Proof size requirements.
 	pub size: StorageProofSize,
-	/// Where the fee for dispatching message is paid?
-	pub dispatch_fee_payment: DispatchFeePayment,
 }
 
 /// Benchmark-specific message delivery proof parameters.
@@ -76,150 +66,54 @@ pub struct MessageDeliveryProofParams<ThisChainAccountId> {
 /// Trait that must be implemented by runtime.
 pub trait Config<I: 'static>: crate::Config<I> {
 	/// Lane id to use in benchmarks.
+	///
+	/// By default, lane 00000000 is used.
 	fn bench_lane_id() -> LaneId {
-		Default::default()
+		LaneId([0, 0, 0, 0])
 	}
-	/// Get maximal size of the message payload.
-	fn maximal_message_size() -> u32;
+
 	/// Return id of relayer account at the bridged chain.
-	fn bridged_relayer_id() -> Self::InboundRelayer;
-	/// Return balance of given account.
-	fn account_balance(account: &Self::AccountId) -> Self::OutboundMessageFee;
-	/// Create given account and give it enough balance for test purposes.
-	fn endow_account(account: &Self::AccountId);
-	/// Fee paid by submitter for single message delivery.
-	fn message_fee() -> Self::OutboundMessageFee {
-		100_000_000_000_000.into()
+	///
+	/// By default, zero account is returned.
+	fn bridged_relayer_id() -> Self::InboundRelayer {
+		Self::InboundRelayer::decode(&mut TrailingZeroInput::zeroes()).unwrap()
 	}
-	/// Prepare message to send over lane.
-	fn prepare_outbound_message(
-		params: MessageParams<Self::AccountId>,
-	) -> (Self::OutboundPayload, Self::OutboundMessageFee);
+
+	/// Create given account and give it enough balance for test purposes. Used to create
+	/// relayer account at the target chain. Is strictly necessary when your rewards scheme
+	/// assumes that the relayer account must exist.
+	///
+	/// Does nothing by default.
+	fn endow_account(_account: &Self::AccountId) {}
+
 	/// Prepare messages proof to receive by the module.
 	fn prepare_message_proof(
 		params: MessageProofParams,
-	) -> (
-		<Self::SourceHeaderChain as SourceHeaderChain<Self::InboundMessageFee>>::MessagesProof,
-		Weight,
-	);
+	) -> (<Self::SourceHeaderChain as SourceHeaderChain>::MessagesProof, Weight);
 	/// Prepare messages delivery proof to receive by the module.
 	fn prepare_message_delivery_proof(
 		params: MessageDeliveryProofParams<Self::AccountId>,
 	) -> <Self::TargetHeaderChain as TargetHeaderChain<Self::OutboundPayload, Self::AccountId>>::MessagesDeliveryProof;
+
 	/// Returns true if message has been dispatched (either successfully or not).
-	fn is_message_dispatched(nonce: MessageNonce) -> bool;
+	///
+	/// We assume that messages have near-zero dispatch weight, so most of times it
+	/// is hard to determine whether messages has been dispatched or not. For example,
+	/// XCM message can be a call that leaves entry in `frame_system::Events` vector,
+	/// but not all XCM messages do that and we don't want to include weight of this
+	/// action to the base weight of message delivery. Hence, the default `true` return
+	/// value.
+	fn is_message_dispatched(_nonce: MessageNonce) -> bool {
+		true
+	}
+	/// Returns true if given relayer has been rewarded for some of its actions.
+	fn is_relayer_rewarded(relayer: &Self::AccountId) -> bool;
 }
 
 benchmarks_instance_pallet! {
 	//
 	// Benchmarks that are used directly by the runtime.
 	//
-
-	// Benchmark `send_message` extrinsic with the worst possible conditions:
-	// * outbound lane already has state, so it needs to be read and decoded;
-	// * relayers fund account does not exists (in practice it needs to exist in production environment);
-	// * maximal number of messages is being pruned during the call;
-	// * message size is minimal for the target chain.
-	//
-	// Result of this benchmark is used as a base weight for `send_message` call. Then the 'message weight'
-	// (estimated using `send_half_maximal_message_worst_case` and `send_maximal_message_worst_case`) is
-	// added.
-	send_minimal_message_worst_case {
-		let lane_id = T::bench_lane_id();
-		let sender = account("sender", 0, SEED);
-		T::endow_account(&sender);
-
-		// 'send' messages that are to be pruned when our message is sent
-		for _nonce in 1..=T::MaxMessagesToPruneAtOnce::get() {
-			send_regular_message::<T, I>();
-		}
-		confirm_message_delivery::<T, I>(T::MaxMessagesToPruneAtOnce::get());
-
-		let (payload, fee) = T::prepare_outbound_message(MessageParams {
-			size: 0,
-			sender_account: sender.clone(),
-		});
-	}: send_message(RawOrigin::Signed(sender), lane_id, payload, fee)
-	verify {
-		assert_eq!(
-			crate::OutboundLanes::<T, I>::get(&T::bench_lane_id()).latest_generated_nonce,
-			T::MaxMessagesToPruneAtOnce::get() + 1,
-		);
-	}
-
-	// Benchmark `send_message` extrinsic with the worst possible conditions:
-	// * outbound lane already has state, so it needs to be read and decoded;
-	// * relayers fund account does not exists (in practice it needs to exist in production environment);
-	// * maximal number of messages is being pruned during the call;
-	// * message size is 1KB.
-	//
-	// With single KB of message size, the weight of the call is increased (roughly) by
-	// `(send_16_kb_message_worst_case - send_1_kb_message_worst_case) / 15`.
-	send_1_kb_message_worst_case {
-		let lane_id = T::bench_lane_id();
-		let sender = account("sender", 0, SEED);
-		T::endow_account(&sender);
-
-		// 'send' messages that are to be pruned when our message is sent
-		for _nonce in 1..=T::MaxMessagesToPruneAtOnce::get() {
-			send_regular_message::<T, I>();
-		}
-		confirm_message_delivery::<T, I>(T::MaxMessagesToPruneAtOnce::get());
-
-		let size = 1024;
-		assert!(
-			T::maximal_message_size() > size,
-			"This benchmark can only be used with runtime that accepts 1KB messages",
-		);
-
-		let (payload, fee) = T::prepare_outbound_message(MessageParams {
-			size,
-			sender_account: sender.clone(),
-		});
-	}: send_message(RawOrigin::Signed(sender), lane_id, payload, fee)
-	verify {
-		assert_eq!(
-			crate::OutboundLanes::<T, I>::get(&T::bench_lane_id()).latest_generated_nonce,
-			T::MaxMessagesToPruneAtOnce::get() + 1,
-		);
-	}
-
-	// Benchmark `send_message` extrinsic with the worst possible conditions:
-	// * outbound lane already has state, so it needs to be read and decoded;
-	// * relayers fund account does not exists (in practice it needs to exist in production environment);
-	// * maximal number of messages is being pruned during the call;
-	// * message size is 16KB.
-	//
-	// With single KB of message size, the weight of the call is increased (roughly) by
-	// `(send_16_kb_message_worst_case - send_1_kb_message_worst_case) / 15`.
-	send_16_kb_message_worst_case {
-		let lane_id = T::bench_lane_id();
-		let sender = account("sender", 0, SEED);
-		T::endow_account(&sender);
-
-		// 'send' messages that are to be pruned when our message is sent
-		for _nonce in 1..=T::MaxMessagesToPruneAtOnce::get() {
-			send_regular_message::<T, I>();
-		}
-		confirm_message_delivery::<T, I>(T::MaxMessagesToPruneAtOnce::get());
-
-		let size = 16 * 1024;
-		assert!(
-			T::maximal_message_size() > size,
-			"This benchmark can only be used with runtime that accepts 16KB messages",
-		);
-
-		let (payload, fee) = T::prepare_outbound_message(MessageParams {
-			size,
-			sender_account: sender.clone(),
-		});
-	}: send_message(RawOrigin::Signed(sender), lane_id, payload, fee)
-	verify {
-		assert_eq!(
-			crate::OutboundLanes::<T, I>::get(&T::bench_lane_id()).latest_generated_nonce,
-			T::MaxMessagesToPruneAtOnce::get() + 1,
-		);
-	}
 
 	// Benchmark `receive_messages_proof` extrinsic with single minimal-weight message and following conditions:
 	// * proof does not include outbound lane state proof;
@@ -242,7 +136,6 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=21,
 			outbound_lane_data: None,
 			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -277,7 +170,6 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=22,
 			outbound_lane_data: None,
 			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 2, dispatch_weight)
 	verify {
@@ -316,7 +208,6 @@ benchmarks_instance_pallet! {
 				latest_generated_nonce: 21,
 			}),
 			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -348,7 +239,6 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=21,
 			outbound_lane_data: None,
 			size: StorageProofSize::HasExtraNodes(1024),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -383,41 +273,6 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=21,
 			outbound_lane_data: None,
 			size: StorageProofSize::HasExtraNodes(16 * 1024),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
-		});
-	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
-	verify {
-		assert_eq!(
-			crate::InboundLanes::<T, I>::get(&T::bench_lane_id()).last_delivered_nonce(),
-			21,
-		);
-		assert!(T::is_message_dispatched(21));
-	}
-
-	// Benchmark `receive_messages_proof` extrinsic with single minimal-weight message and following conditions:
-	// * proof does not include outbound lane state proof;
-	// * inbound lane already has state, so it needs to be read and decoded;
-	// * message is successfully dispatched;
-	// * message requires all heavy checks done by dispatcher;
-	// * message dispatch fee is paid at source (bridged) chain.
-	//
-	// This benchmark is used to compute extra weight spent at target chain when fee is paid there. Then we use
-	// this information in two places: (1) to reduce weight of delivery tx if sender pays fee at the source chain
-	// and (2) to refund relayer with this weight if fee has been paid at the source chain.
-	receive_single_prepaid_message_proof {
-		let relayer_id_on_source = T::bridged_relayer_id();
-		let relayer_id_on_target = account("relayer", 0, SEED);
-		T::endow_account(&relayer_id_on_target);
-
-		// mark messages 1..=20 as delivered
-		receive_messages::<T, I>(20);
-
-		let (proof, dispatch_weight) = T::prepare_message_proof(MessageProofParams {
-			lane: T::bench_lane_id(),
-			message_nonces: 21..=21,
-			outbound_lane_data: None,
-			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -435,7 +290,6 @@ benchmarks_instance_pallet! {
 	// This is base benchmark for all other confirmations delivery benchmarks.
 	receive_delivery_proof_for_single_message {
 		let relayer_id: T::AccountId = account("relayer", 0, SEED);
-		let relayer_balance = T::account_balance(&relayer_id);
 
 		// send message that we're going to confirm
 		send_regular_message::<T, I>();
@@ -451,7 +305,7 @@ benchmarks_instance_pallet! {
 			inbound_lane_data: InboundLaneData {
 				relayers: vec![UnrewardedRelayer {
 					relayer: relayer_id.clone(),
-					messages: DeliveredMessages::new(1, true),
+					messages: DeliveredMessages::new(1),
 				}].into_iter().collect(),
 				last_confirmed_nonce: 0,
 			},
@@ -460,6 +314,7 @@ benchmarks_instance_pallet! {
 	}: receive_messages_delivery_proof(RawOrigin::Signed(relayer_id.clone()), proof, relayers_state)
 	verify {
 		assert_eq!(OutboundLanes::<T, I>::get(T::bench_lane_id()).latest_received_nonce, 1);
+		assert!(T::is_relayer_rewarded(&relayer_id));
 	}
 
 	// Benchmark `receive_messages_delivery_proof` extrinsic with following conditions:
@@ -471,7 +326,6 @@ benchmarks_instance_pallet! {
 	//   - weight(receive_delivery_proof_for_single_message)`.
 	receive_delivery_proof_for_two_messages_by_single_relayer {
 		let relayer_id: T::AccountId = account("relayer", 0, SEED);
-		let relayer_balance = T::account_balance(&relayer_id);
 
 		// send message that we're going to confirm
 		send_regular_message::<T, I>();
@@ -483,8 +337,8 @@ benchmarks_instance_pallet! {
 			total_messages: 2,
 			last_delivered_nonce: 2,
 		};
-		let mut delivered_messages = DeliveredMessages::new(1, true);
-		delivered_messages.note_dispatched_message(true);
+		let mut delivered_messages = DeliveredMessages::new(1);
+		delivered_messages.note_dispatched_message();
 		let proof = T::prepare_message_delivery_proof(MessageDeliveryProofParams {
 			lane: T::bench_lane_id(),
 			inbound_lane_data: InboundLaneData {
@@ -499,6 +353,7 @@ benchmarks_instance_pallet! {
 	}: receive_messages_delivery_proof(RawOrigin::Signed(relayer_id.clone()), proof, relayers_state)
 	verify {
 		assert_eq!(OutboundLanes::<T, I>::get(T::bench_lane_id()).latest_received_nonce, 2);
+		assert!(T::is_relayer_rewarded(&relayer_id));
 	}
 
 	// Benchmark `receive_messages_delivery_proof` extrinsic with following conditions:
@@ -510,9 +365,7 @@ benchmarks_instance_pallet! {
 	//   - weight(receive_delivery_proof_for_two_messages_by_single_relayer)`.
 	receive_delivery_proof_for_two_messages_by_two_relayers {
 		let relayer1_id: T::AccountId = account("relayer1", 1, SEED);
-		let relayer1_balance = T::account_balance(&relayer1_id);
 		let relayer2_id: T::AccountId = account("relayer2", 2, SEED);
-		let relayer2_balance = T::account_balance(&relayer2_id);
 
 		// send message that we're going to confirm
 		send_regular_message::<T, I>();
@@ -530,11 +383,11 @@ benchmarks_instance_pallet! {
 				relayers: vec![
 					UnrewardedRelayer {
 						relayer: relayer1_id.clone(),
-						messages: DeliveredMessages::new(1, true),
+						messages: DeliveredMessages::new(1),
 					},
 					UnrewardedRelayer {
-						relayer: relayer2_id,
-						messages: DeliveredMessages::new(2, true),
+						relayer: relayer2_id.clone(),
+						messages: DeliveredMessages::new(2),
 					},
 				].into_iter().collect(),
 				last_confirmed_nonce: 0,
@@ -544,28 +397,14 @@ benchmarks_instance_pallet! {
 	}: receive_messages_delivery_proof(RawOrigin::Signed(relayer1_id.clone()), proof, relayers_state)
 	verify {
 		assert_eq!(OutboundLanes::<T, I>::get(T::bench_lane_id()).latest_received_nonce, 2);
+		assert!(T::is_relayer_rewarded(&relayer1_id));
+		assert!(T::is_relayer_rewarded(&relayer2_id));
 	}
 }
 
 fn send_regular_message<T: Config<I>, I: 'static>() {
 	let mut outbound_lane = outbound_lane::<T, I>(T::bench_lane_id());
-	outbound_lane.send_message(MessageData { payload: vec![], fee: T::message_fee() });
-}
-
-fn confirm_message_delivery<T: Config<I>, I: 'static>(nonce: MessageNonce) {
-	let mut outbound_lane = outbound_lane::<T, I>(T::bench_lane_id());
-	let latest_received_nonce = outbound_lane.data().latest_received_nonce;
-	let mut relayers = VecDeque::with_capacity((nonce - latest_received_nonce) as usize);
-	for nonce in latest_received_nonce + 1..=nonce {
-		relayers.push_back(UnrewardedRelayer {
-			relayer: (),
-			messages: DeliveredMessages::new(nonce, true),
-		});
-	}
-	assert!(matches!(
-		outbound_lane.confirm_delivery(nonce - latest_received_nonce, nonce, &relayers),
-		ReceivalConfirmationResult::ConfirmedMessages(_),
-	));
+	outbound_lane.send_message(vec![]);
 }
 
 fn receive_messages<T: Config<I>, I: 'static>(nonce: MessageNonce) {
@@ -573,7 +412,7 @@ fn receive_messages<T: Config<I>, I: 'static>(nonce: MessageNonce) {
 	inbound_lane_storage.set_data(InboundLaneData {
 		relayers: vec![UnrewardedRelayer {
 			relayer: T::bridged_relayer_id(),
-			messages: DeliveredMessages::new(nonce, true),
+			messages: DeliveredMessages::new(nonce),
 		}]
 		.into_iter()
 		.collect(),

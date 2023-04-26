@@ -14,17 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
-// darwinia-network
 use bp_polkadot_core::parachains::ParaId;
-use bp_runtime::Chain;
-// paritytech
-use frame_support::{traits::IsInVec, weights::Weight};
-use frame_system::mocking::*;
-use sp_core::ConstU32;
+use bp_runtime::{Chain, Parachain};
+use frame_support::{construct_runtime, parameter_types, traits::ConstU32, weights::Weight};
 use sp_runtime::{
 	testing::{Header, H256},
 	traits::{BlakeTwo256, Header as HeaderT, IdentityLookup},
-	Perbill,
+	MultiSignature, Perbill,
 };
 
 use crate as pallet_bridge_parachains;
@@ -35,14 +31,116 @@ pub type TestNumber = u64;
 pub type RelayBlockHeader =
 	sp_runtime::generic::Header<crate::RelayBlockNumber, crate::RelayBlockHasher>;
 
-type Block = MockBlock<TestRuntime>;
-type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
+type Block = frame_system::mocking::MockBlock<TestRuntime>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
 
 pub const PARAS_PALLET_NAME: &str = "Paras";
 pub const UNTRACKED_PARACHAIN_ID: u32 = 10;
-pub const MAXIMAL_PARACHAIN_HEAD_SIZE: u32 = 512;
+// use exact expected encoded size: `vec_len_size + header_number_size + state_root_hash_size`
+pub const MAXIMAL_PARACHAIN_HEAD_DATA_SIZE: u32 = 1 + 8 + 32;
 
-frame_support::construct_runtime! {
+pub type RegularParachainHeader = sp_runtime::testing::Header;
+pub type RegularParachainHasher = BlakeTwo256;
+pub type BigParachainHeader = sp_runtime::generic::Header<u128, BlakeTwo256>;
+
+pub struct Parachain1;
+
+impl Chain for Parachain1 {
+	type BlockNumber = u64;
+	type Hash = H256;
+	type Hasher = RegularParachainHasher;
+	type Header = RegularParachainHeader;
+	type AccountId = u64;
+	type Balance = u64;
+	type Index = u64;
+	type Signature = MultiSignature;
+
+	fn max_extrinsic_size() -> u32 {
+		0
+	}
+	fn max_extrinsic_weight() -> Weight {
+		Weight::zero()
+	}
+}
+
+impl Parachain for Parachain1 {
+	const PARACHAIN_ID: u32 = 1;
+}
+
+pub struct Parachain2;
+
+impl Chain for Parachain2 {
+	type BlockNumber = u64;
+	type Hash = H256;
+	type Hasher = RegularParachainHasher;
+	type Header = RegularParachainHeader;
+	type AccountId = u64;
+	type Balance = u64;
+	type Index = u64;
+	type Signature = MultiSignature;
+
+	fn max_extrinsic_size() -> u32 {
+		0
+	}
+	fn max_extrinsic_weight() -> Weight {
+		Weight::zero()
+	}
+}
+
+impl Parachain for Parachain2 {
+	const PARACHAIN_ID: u32 = 2;
+}
+
+pub struct Parachain3;
+
+impl Chain for Parachain3 {
+	type BlockNumber = u64;
+	type Hash = H256;
+	type Hasher = RegularParachainHasher;
+	type Header = RegularParachainHeader;
+	type AccountId = u64;
+	type Balance = u64;
+	type Index = u64;
+	type Signature = MultiSignature;
+
+	fn max_extrinsic_size() -> u32 {
+		0
+	}
+	fn max_extrinsic_weight() -> Weight {
+		Weight::zero()
+	}
+}
+
+impl Parachain for Parachain3 {
+	const PARACHAIN_ID: u32 = 3;
+}
+
+// this parachain is using u128 as block number and stored head data size exceeds limit
+pub struct BigParachain;
+
+impl Chain for BigParachain {
+	type BlockNumber = u128;
+	type Hash = H256;
+	type Hasher = RegularParachainHasher;
+	type Header = BigParachainHeader;
+	type AccountId = u64;
+	type Balance = u64;
+	type Index = u64;
+	type Signature = MultiSignature;
+
+	fn max_extrinsic_size() -> u32 {
+		0
+	}
+	fn max_extrinsic_weight() -> Weight {
+		Weight::zero()
+	}
+}
+
+impl Parachain for BigParachain {
+	const PARACHAIN_ID: u32 = 4;
+}
+
+construct_runtime! {
 	pub enum TestRuntime where
 		Block = Block,
 		NodeBlock = Block,
@@ -55,86 +153,89 @@ frame_support::construct_runtime! {
 	}
 }
 
-frame_support::parameter_types! {
+parameter_types! {
 	pub const BlockHashCount: TestNumber = 250;
 	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
+
 impl frame_system::Config for TestRuntime {
-	type AccountData = ();
-	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
-	type BlockHashCount = BlockHashCount;
-	type BlockLength = ();
-	type BlockNumber = TestNumber;
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
-	type Header = Header;
-	type Index = u64;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
+	type Index = u64;
+	type RuntimeCall = RuntimeCall;
+	type BlockNumber = TestNumber;
+	type Hash = H256;
+	type Hashing = RegularParachainHasher;
+	type AccountId = AccountId;
+	type Lookup = IdentityLookup<Self::AccountId>;
+	type Header = Header;
+	type RuntimeEvent = RuntimeEvent;
+	type BlockHashCount = BlockHashCount;
 	type Version = ();
+	type PalletInfo = PalletInfo;
+	type AccountData = ();
+	type OnNewAccount = ();
+	type OnKilledAccount = ();
+	type BaseCallFilter = frame_support::traits::Everything;
+	type SystemWeightInfo = ();
+	type DbWeight = ();
+	type BlockWeights = ();
+	type BlockLength = ();
+	type SS58Prefix = ();
+	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-frame_support::parameter_types! {
+parameter_types! {
 	pub const SessionLength: u64 = 5;
 	pub const NumValidators: u32 = 5;
 	pub const HeadersToKeep: u32 = 5;
 }
+
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance1> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
+	type MaxRequests = ConstU32<2>;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
-	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
-	type MaxRequests = ConstU32<2>;
 	type WeightInfo = ();
 }
 
 impl pallet_bridge_grandpa::Config<pallet_bridge_grandpa::Instance2> for TestRuntime {
 	type BridgedChain = TestBridgedChain;
+	type MaxRequests = ConstU32<2>;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<5>;
-	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<512>;
-	type MaxRequests = ConstU32<2>;
 	type WeightInfo = ();
 }
 
-frame_support::parameter_types! {
+parameter_types! {
 	pub const HeadsToKeep: u32 = 4;
 	pub const ParasPalletName: &'static str = PARAS_PALLET_NAME;
 	pub GetTenFirstParachains: Vec<ParaId> = (0..10).map(ParaId).collect();
 }
+
 impl pallet_bridge_parachains::Config for TestRuntime {
-	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
-	type HeadsToKeep = HeadsToKeep;
-	type MaxParaHeadSize = frame_support::traits::ConstU32<MAXIMAL_PARACHAIN_HEAD_SIZE>;
-	type ParasPalletName = ParasPalletName;
 	type RuntimeEvent = RuntimeEvent;
-	type TrackedParachains = IsInVec<GetTenFirstParachains>;
 	type WeightInfo = ();
+	type BridgesGrandpaPalletInstance = pallet_bridge_grandpa::Instance1;
+	type ParasPalletName = ParasPalletName;
+	type ParaStoredHeaderDataBuilder = (Parachain1, Parachain2, Parachain3, BigParachain);
+	type HeadsToKeep = HeadsToKeep;
+	type MaxParaHeadDataSize = frame_support::traits::ConstU32<MAXIMAL_PARACHAIN_HEAD_DATA_SIZE>;
 }
 
 #[derive(Debug)]
 pub struct TestBridgedChain;
+
 impl Chain for TestBridgedChain {
-	type AccountId = AccountId;
-	type Balance = u32;
 	type BlockNumber = crate::RelayBlockNumber;
 	type Hash = crate::RelayBlockHash;
 	type Hasher = crate::RelayBlockHasher;
 	type Header = RelayBlockHeader;
+
+	type AccountId = AccountId;
+	type Balance = u32;
 	type Index = u32;
 	type Signature = sp_runtime::testing::TestSignature;
 
@@ -149,13 +250,15 @@ impl Chain for TestBridgedChain {
 
 #[derive(Debug)]
 pub struct OtherBridgedChain;
+
 impl Chain for OtherBridgedChain {
-	type AccountId = AccountId;
-	type Balance = u32;
 	type BlockNumber = u64;
 	type Hash = crate::RelayBlockHash;
 	type Hasher = crate::RelayBlockHasher;
 	type Header = sp_runtime::generic::Header<u64, crate::RelayBlockHasher>;
+
+	type AccountId = AccountId;
+	type Balance = u32;
 	type Index = u32;
 	type Signature = sp_runtime::testing::TestSignature;
 

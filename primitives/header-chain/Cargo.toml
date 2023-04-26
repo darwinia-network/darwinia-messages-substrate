@@ -22,12 +22,13 @@ sp-core             = { workspace = true }
 sp-finality-grandpa = { workspace = true }
 sp-runtime          = { workspace = true }
 sp-std              = { workspace = true }
+sp-trie             = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-array-bytes    = { workspace = true }
-assert_matches = { version = "1.5" }
-bp-test-utils  = { workspace = true }
+bp-test-utils = { workspace = true }
+hex           = { workspace = true }
+hex-literal   = { workspace = true }
 
 [features]
 default = ["std"]
@@ -40,11 +41,12 @@ std = [
 
 	# darwinia-network
 	"bp-runtime/std",
-	
+
 	# paritytech
 	"frame-support/std",
 	"sp-core/std",
 	"sp-finality-grandpa/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	"sp-trie/std",
 ]

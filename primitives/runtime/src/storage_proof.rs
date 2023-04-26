@@ -16,12 +16,10 @@
 
 //! Logic for checking Substrate storage proofs.
 
-// crates.io
 use codec::Decode;
 use hash_db::{HashDB, Hasher, EMPTY_PREFIX};
-// paritytech
 use sp_runtime::RuntimeDebug;
-use sp_std::prelude::*;
+use sp_std::{boxed::Box, vec::Vec};
 use sp_trie::{
 	read_trie_value, LayoutV1, MemoryDB, Recorder, StorageProof, Trie, TrieConfiguration,
 	TrieDBBuilder, TrieError, TrieHash,
@@ -41,13 +39,6 @@ pub enum ProofSize {
 	/// The proof is expected to have at least given size and grow by increasing value that is
 	/// stored in the trie.
 	HasLargeLeaf(u32),
-}
-
-#[derive(Eq, PartialEq, RuntimeDebug)]
-pub enum Error {
-	StorageRootMismatch,
-	StorageValueUnavailable,
-	StorageValueDecodeFailed(codec::Error),
 }
 
 /// This struct is used to read storage values from a subset of a Merklized database. The "proof"
@@ -71,7 +62,7 @@ where
 	pub fn new(root: H::Out, proof: StorageProof) -> Result<Self, Error> {
 		let db = proof.into_memory_db();
 		if !db.contains(&root, EMPTY_PREFIX) {
-			return Err(Error::StorageRootMismatch);
+			return Err(Error::StorageRootMismatch)
 		}
 
 		let checker = StorageProofChecker { root, db };
@@ -91,9 +82,17 @@ where
 	/// read, but decoding fails, this function returns an error.
 	pub fn read_and_decode_value<T: Decode>(&self, key: &[u8]) -> Result<Option<T>, Error> {
 		self.read_value(key).and_then(|v| {
-			v.map(|v| T::decode(&mut &v[..]).map_err(Error::StorageValueDecodeFailed)).transpose()
+			v.map(|v| T::decode(&mut &v[..]).map_err(Error::StorageValueDecodeFailed))
+				.transpose()
 		})
 	}
+}
+
+#[derive(Eq, RuntimeDebug, PartialEq)]
+pub enum Error {
+	StorageRootMismatch,
+	StorageValueUnavailable,
+	StorageValueDecodeFailed(codec::Error),
 }
 
 /// Return valid storage proof and state root.

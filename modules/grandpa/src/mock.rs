@@ -17,16 +17,9 @@
 // From construct_runtime macro
 #![allow(clippy::from_over_into)]
 
-// darwinia-network
-use crate as grandpa;
 use bp_runtime::Chain;
-// paritytech
-use frame_support::{
-	traits::{ConstU32, Everything},
-	weights::Weight,
-};
-use frame_system::mocking::*;
-use sp_core::{sr25519::Signature, ConstU64};
+use frame_support::{construct_runtime, parameter_types, traits::ConstU64, weights::Weight};
+use sp_core::sr25519::Signature;
 use sp_runtime::{
 	testing::{Header, H256},
 	traits::{BlakeTwo256, IdentityLookup},
@@ -37,13 +30,14 @@ pub type AccountId = u64;
 pub type TestHeader = crate::BridgedHeader<TestRuntime, ()>;
 pub type TestNumber = crate::BridgedBlockNumber<TestRuntime, ()>;
 
-type Block = MockBlock<TestRuntime>;
-type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
+type Block = frame_system::mocking::MockBlock<TestRuntime>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
 
 pub const MAX_BRIDGED_AUTHORITIES: u32 = 2048;
-pub const MAX_HEADER_SIZE: u32 = 65536;
 
-frame_support::construct_runtime! {
+use crate as grandpa;
+
+construct_runtime! {
 	pub enum TestRuntime where
 		Block = Block,
 		NodeBlock = Block,
@@ -54,69 +48,71 @@ frame_support::construct_runtime! {
 	}
 }
 
-frame_support::parameter_types! {
+parameter_types! {
 	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
+
 impl frame_system::Config for TestRuntime {
-	type AccountData = ();
-	type AccountId = AccountId;
-	type BaseCallFilter = Everything;
-	type BlockHashCount = ConstU64<250>;
-	type BlockLength = ();
+	type RuntimeOrigin = RuntimeOrigin;
+	type Index = u64;
+	type RuntimeCall = RuntimeCall;
 	type BlockNumber = u64;
-	type BlockWeights = ();
-	type DbWeight = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type Header = Header;
-	type Index = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type MaxConsumers = ConstU32<16>;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
+	type Header = Header;
 	type RuntimeEvent = ();
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
+	type BlockHashCount = ConstU64<250>;
 	type Version = ();
+	type PalletInfo = PalletInfo;
+	type AccountData = ();
+	type OnNewAccount = ();
+	type OnKilledAccount = ();
+	type BaseCallFilter = frame_support::traits::Everything;
+	type SystemWeightInfo = ();
+	type DbWeight = ();
+	type BlockWeights = ();
+	type BlockLength = ();
+	type SS58Prefix = ();
+	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-frame_support::parameter_types! {
+parameter_types! {
 	pub const MaxRequests: u32 = 2;
 	pub const HeadersToKeep: u32 = 5;
 	pub const SessionLength: u64 = 5;
 	pub const NumValidators: u32 = 5;
 }
+
 impl grandpa::Config for TestRuntime {
 	type BridgedChain = TestBridgedChain;
+	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<MAX_BRIDGED_AUTHORITIES>;
-	type MaxBridgedHeaderSize = frame_support::traits::ConstU32<MAX_HEADER_SIZE>;
-	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
 
 #[derive(Debug)]
 pub struct TestBridgedChain;
+
 impl Chain for TestBridgedChain {
-	type AccountId = AccountId;
-	type Balance = u64;
 	type BlockNumber = <TestRuntime as frame_system::Config>::BlockNumber;
 	type Hash = <TestRuntime as frame_system::Config>::Hash;
 	type Hasher = <TestRuntime as frame_system::Config>::Hashing;
 	type Header = <TestRuntime as frame_system::Config>::Header;
+
+	type AccountId = AccountId;
+	type Balance = u64;
 	type Index = u64;
 	type Signature = Signature;
 
 	fn max_extrinsic_size() -> u32 {
 		unreachable!()
 	}
-
 	fn max_extrinsic_weight() -> Weight {
 		unreachable!()
 	}

@@ -9,9 +9,8 @@ version = "0.1.0"
 # crates.io
 codec            = { package = "parity-scale-codec", workspace = true }
 finality-grandpa = { workspace = true }
-num-traits       = { workspace = true }
+log              = { workspace = true }
 scale-info       = { workspace = true }
-serde            = { workspace = true, optional = true }
 
 # darwinia-network
 bp-header-chain = { workspace = true }
@@ -38,9 +37,8 @@ std = [
 	# crates.io
 	"codec/std",
 	"finality-grandpa/std",
-	"num-traits/std",
+	"log/std",
 	"scale-info/std",
-	"serde",
 
 	# darwinia-network
 	"bp-header-chain/std",
@@ -48,6 +46,7 @@ std = [
 	"bp-test-utils/std",
 
 	# paritytech
+	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
 	"sp-finality-grandpa/std",
@@ -56,9 +55,6 @@ std = [
 	"sp-trie/std",
 ]
 
-runtime-benchmarks = [
-	"bp-test-utils",
-	"frame-benchmarking/runtime-benchmarks",
-]
+runtime-benchmarks = ["bp-test-utils", "frame-benchmarking/runtime-benchmarks"]
 
 try-runtime = ["frame-support/try-runtime"]
