@@ -200,12 +200,12 @@ impl<T> Chain for T
 where
 	T: Send + Sync + 'static + UnderlyingChainProvider,
 {
+	type AccountId = <T::Chain as Chain>::AccountId;
+	type Balance = <T::Chain as Chain>::Balance;
 	type BlockNumber = <T::Chain as Chain>::BlockNumber;
 	type Hash = <T::Chain as Chain>::Hash;
 	type Hasher = <T::Chain as Chain>::Hasher;
 	type Header = <T::Chain as Chain>::Header;
-	type AccountId = <T::Chain as Chain>::AccountId;
-	type Balance = <T::Chain as Chain>::Balance;
 	type Index = <T::Chain as Chain>::Index;
 	type Signature = <T::Chain as Chain>::Signature;
 

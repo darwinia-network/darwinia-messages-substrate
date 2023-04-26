@@ -70,36 +70,43 @@ impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_two_messages_proof() -> Weight {
 		Weight::from_ref_time(127_794_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_single_message_proof_with_outbound_lane_state() -> Weight {
 		Weight::from_ref_time(105_698_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_single_message_proof_1_kb() -> Weight {
 		Weight::from_ref_time(92_963_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
+
 	fn receive_single_message_proof_16_kb() -> Weight {
 		Weight::from_ref_time(158_449_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
+
 	fn receive_delivery_proof_for_single_message() -> Weight {
 		Weight::from_ref_time(72_085_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_delivery_proof_for_two_messages_by_single_relayer() -> Weight {
 		Weight::from_ref_time(70_889_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_delivery_proof_for_two_messages_by_two_relayers() -> Weight {
 		Weight::from_ref_time(78_211_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(5 as u64))
@@ -114,36 +121,43 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_two_messages_proof() -> Weight {
 		Weight::from_ref_time(127_794_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_single_message_proof_with_outbound_lane_state() -> Weight {
 		Weight::from_ref_time(105_698_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_single_message_proof_1_kb() -> Weight {
 		Weight::from_ref_time(92_963_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(3 as u64))
 			.saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
+
 	fn receive_single_message_proof_16_kb() -> Weight {
 		Weight::from_ref_time(158_449_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(3 as u64))
 			.saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
+
 	fn receive_delivery_proof_for_single_message() -> Weight {
 		Weight::from_ref_time(72_085_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_delivery_proof_for_two_messages_by_single_relayer() -> Weight {
 		Weight::from_ref_time(70_889_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
+
 	fn receive_delivery_proof_for_two_messages_by_two_relayers() -> Weight {
 		Weight::from_ref_time(78_211_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(5 as u64))

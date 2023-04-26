@@ -248,10 +248,11 @@ pub mod pallet {
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
-		const LOG_TARGET: &'static str = LOG_TARGET;
-		type OwnerStorage = PalletOwner<T, I>;
 		type OperatingMode = BasicOperatingMode;
 		type OperatingModeStorage = PalletOperatingMode<T, I>;
+		type OwnerStorage = PalletOwner<T, I>;
+
+		const LOG_TARGET: &'static str = LOG_TARGET;
 	}
 
 	#[pallet::call]
@@ -489,8 +490,8 @@ pub mod pallet {
 				None => return true,
 			};
 
-			if stored_best_head.best_head_hash.at_relay_block_number >=
-				updated_at_relay_block_number
+			if stored_best_head.best_head_hash.at_relay_block_number
+				>= updated_at_relay_block_number
 			{
 				log::trace!(
 					target: LOG_TARGET,
@@ -500,7 +501,7 @@ pub mod pallet {
 					stored_best_head.best_head_hash.at_relay_block_number,
 					updated_at_relay_block_number
 				);
-				return false
+				return false;
 			}
 
 			if stored_best_head.best_head_hash.head_hash == updated_head_hash {
@@ -513,7 +514,7 @@ pub mod pallet {
 					stored_best_head.best_head_hash.at_relay_block_number,
 					updated_at_relay_block_number
 				);
-				return false
+				return false;
 			}
 
 			true
@@ -542,7 +543,7 @@ pub mod pallet {
 					parachain,
 					parachain_head_hash: updated_head_hash,
 				});
-				return Err(())
+				return Err(());
 			}
 
 			// verify that the parachain head data size is <= `MaxParaHeadDataSize`
@@ -565,7 +566,7 @@ pub mod pallet {
 							parachain_head_size: e.value_size as _,
 						});
 
-						return Err(())
+						return Err(());
 					},
 				};
 
@@ -580,8 +581,8 @@ pub mod pallet {
 					at_relay_block_number: updated_at_relay_block_number,
 					head_hash: updated_head_hash,
 				},
-				next_imported_hash_position: (next_imported_hash_position + 1) %
-					T::HeadsToKeep::get(),
+				next_imported_hash_position: (next_imported_hash_position + 1)
+					% T::HeadsToKeep::get(),
 			};
 			ImportedParaHashes::<T, I>::insert(
 				parachain,

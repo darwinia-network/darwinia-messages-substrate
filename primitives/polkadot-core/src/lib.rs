@@ -72,9 +72,8 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 ///
 /// This is a copy-paste from the Polkadot repo's `polkadot-runtime-common` crate.
 // TODO: https://github.com/paritytech/parity-bridges-common/issues/1543 - remove `set_proof_size`
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_ref_time(WEIGHT_REF_TIME_PER_SECOND)
-	.set_proof_size(1_000)
-	.saturating_mul(2);
+pub const MAXIMUM_BLOCK_WEIGHT: Weight =
+	Weight::from_ref_time(WEIGHT_REF_TIME_PER_SECOND).set_proof_size(1_000).saturating_mul(2);
 
 /// All Polkadot-like chains assume that an on-initialize consumes 1 percent of the weight on
 /// average, hence a single extrinsic will not be allowed to consume more than
@@ -193,13 +192,12 @@ pub type Address = MultiAddress<AccountId, ()>;
 pub struct PolkadotLike;
 
 impl Chain for PolkadotLike {
+	type AccountId = AccountId;
+	type Balance = Balance;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
 	type Hasher = Hasher;
 	type Header = Header;
-
-	type AccountId = AccountId;
-	type Balance = Balance;
 	type Index = Index;
 	type Signature = Signature;
 
@@ -208,10 +206,7 @@ impl Chain for PolkadotLike {
 	}
 
 	fn max_extrinsic_weight() -> Weight {
-		BlockWeights::get()
-			.get(DispatchClass::Normal)
-			.max_extrinsic
-			.unwrap_or(Weight::MAX)
+		BlockWeights::get().get(DispatchClass::Normal).max_extrinsic.unwrap_or(Weight::MAX)
 	}
 }
 
@@ -359,12 +354,13 @@ impl PolkadotSignedExtension for BridgeSignedExtension {
 pub struct AccountInfoStorageMapKeyProvider;
 
 impl StorageMapKeyProvider for AccountInfoStorageMapKeyProvider {
-	const MAP_NAME: &'static str = "Account";
 	type Hasher = Blake2_128Concat;
 	type Key = AccountId;
 	// This should actually be `AccountInfo`, but we don't use this property in order to decode the
 	// data. So we use `Vec<u8>` as if we would work with encoded data.
 	type Value = Vec<u8>;
+
+	const MAP_NAME: &'static str = "Account";
 }
 
 impl AccountInfoStorageMapKeyProvider {

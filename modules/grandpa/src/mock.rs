@@ -55,30 +55,30 @@ parameter_types! {
 }
 
 impl frame_system::Config for TestRuntime {
-	type RuntimeOrigin = RuntimeOrigin;
-	type Index = u64;
-	type RuntimeCall = RuntimeCall;
+	type AccountData = ();
+	type AccountId = AccountId;
+	type BaseCallFilter = frame_support::traits::Everything;
+	type BlockHashCount = ConstU64<250>;
+	type BlockLength = ();
 	type BlockNumber = u64;
+	type BlockWeights = ();
+	type DbWeight = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type RuntimeEvent = ();
-	type BlockHashCount = ConstU64<250>;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = ();
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type BaseCallFilter = frame_support::traits::Everything;
-	type SystemWeightInfo = ();
-	type DbWeight = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
+	type Index = u64;
+	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type OnKilledAccount = ();
+	type OnNewAccount = ();
+	type OnSetCode = ();
+	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = ();
+	type RuntimeOrigin = RuntimeOrigin;
+	type SS58Prefix = ();
+	type SystemWeightInfo = ();
+	type Version = ();
 }
 
 parameter_types! {
@@ -90,9 +90,9 @@ parameter_types! {
 
 impl grandpa::Config for TestRuntime {
 	type BridgedChain = TestBridgedChain;
-	type MaxRequests = MaxRequests;
 	type HeadersToKeep = HeadersToKeep;
 	type MaxBridgedAuthorities = frame_support::traits::ConstU32<MAX_BRIDGED_AUTHORITIES>;
+	type MaxRequests = MaxRequests;
 	type WeightInfo = ();
 }
 
@@ -100,19 +100,19 @@ impl grandpa::Config for TestRuntime {
 pub struct TestBridgedChain;
 
 impl Chain for TestBridgedChain {
+	type AccountId = AccountId;
+	type Balance = u64;
 	type BlockNumber = <TestRuntime as frame_system::Config>::BlockNumber;
 	type Hash = <TestRuntime as frame_system::Config>::Hash;
 	type Hasher = <TestRuntime as frame_system::Config>::Hashing;
 	type Header = <TestRuntime as frame_system::Config>::Header;
-
-	type AccountId = AccountId;
-	type Balance = u64;
 	type Index = u64;
 	type Signature = Signature;
 
 	fn max_extrinsic_size() -> u32 {
 		unreachable!()
 	}
+
 	fn max_extrinsic_weight() -> Weight {
 		unreachable!()
 	}

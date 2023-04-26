@@ -52,7 +52,7 @@ impl<
 				best_finalized_number,
 			);
 
-			return InvalidTransaction::Stale.into()
+			return InvalidTransaction::Stale.into();
 		}
 
 		Ok(ValidTransaction::default())

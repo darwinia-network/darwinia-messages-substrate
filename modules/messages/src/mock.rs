@@ -96,42 +96,42 @@ parameter_types! {
 }
 
 impl frame_system::Config for TestRuntime {
-	type RuntimeOrigin = RuntimeOrigin;
-	type Index = u64;
-	type RuntimeCall = RuntimeCall;
+	type AccountData = pallet_balances::AccountData<Balance>;
+	type AccountId = AccountId;
+	type BaseCallFilter = frame_support::traits::Everything;
+	type BlockHashCount = ConstU64<250>;
+	type BlockLength = ();
 	type BlockNumber = u64;
+	type BlockWeights = ();
+	type DbWeight = DbWeight;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = SubstrateHeader;
-	type RuntimeEvent = RuntimeEvent;
-	type BlockHashCount = ConstU64<250>;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type BaseCallFilter = frame_support::traits::Everything;
-	type SystemWeightInfo = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = DbWeight;
-	type SS58Prefix = ();
-	type OnSetCode = ();
+	type Index = u64;
+	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type OnKilledAccount = ();
+	type OnNewAccount = ();
+	type OnSetCode = ();
+	type PalletInfo = PalletInfo;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
+	type SS58Prefix = ();
+	type SystemWeightInfo = ();
+	type Version = ();
 }
 
 impl pallet_balances::Config for TestRuntime {
-	type MaxLocks = ();
+	type AccountStore = frame_system::Pallet<TestRuntime>;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type RuntimeEvent = RuntimeEvent;
 	type ExistentialDeposit = ConstU64<1>;
-	type AccountStore = frame_system::Pallet<TestRuntime>;
-	type WeightInfo = ();
+	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -143,26 +143,22 @@ parameter_types! {
 }
 
 impl Config for TestRuntime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
 	type ActiveOutboundLanes = ActiveOutboundLanes;
-	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
-	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
-
-	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
-	type OutboundPayload = TestPayload;
-
+	type BridgedChainId = TestBridgedChainId;
+	type DeliveryConfirmationPayments = TestDeliveryConfirmationPayments;
+	type DeliveryPayments = TestDeliveryPayments;
 	type InboundPayload = TestPayload;
 	type InboundRelayer = TestRelayer;
-	type DeliveryPayments = TestDeliveryPayments;
-
-	type TargetHeaderChain = TestTargetHeaderChain;
 	type LaneMessageVerifier = TestLaneMessageVerifier;
-	type DeliveryConfirmationPayments = TestDeliveryConfirmationPayments;
-
-	type SourceHeaderChain = TestSourceHeaderChain;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaximalOutboundPayloadSize = frame_support::traits::ConstU32<MAX_OUTBOUND_PAYLOAD_SIZE>;
 	type MessageDispatch = TestMessageDispatch;
-	type BridgedChainId = TestBridgedChainId;
+	type OutboundPayload = TestPayload;
+	type RuntimeEvent = RuntimeEvent;
+	type SourceHeaderChain = TestSourceHeaderChain;
+	type TargetHeaderChain = TestTargetHeaderChain;
+	type WeightInfo = ();
 }
 
 impl Size for TestPayload {
@@ -250,7 +246,6 @@ pub struct TestTargetHeaderChain;
 
 impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 	type Error = &'static str;
-
 	type MessagesDeliveryProof = TestMessagesDeliveryProof;
 
 	fn verify_message(payload: &TestPayload) -> Result<(), Self::Error> {
@@ -352,7 +347,6 @@ pub struct TestSourceHeaderChain;
 
 impl SourceHeaderChain for TestSourceHeaderChain {
 	type Error = &'static str;
-
 	type MessagesProof = TestMessagesProof;
 
 	fn verify_messages_proof(
@@ -368,8 +362,8 @@ impl SourceHeaderChain for TestSourceHeaderChain {
 pub struct TestMessageDispatch;
 
 impl MessageDispatch<AccountId> for TestMessageDispatch {
-	type DispatchPayload = TestPayload;
 	type DispatchLevelResult = TestDispatchLevelResult;
+	type DispatchPayload = TestPayload;
 
 	fn dispatch_weight(message: &mut DispatchMessage<TestPayload>) -> Weight {
 		match message.data.payload.as_ref() {

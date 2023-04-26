@@ -108,10 +108,10 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 	) -> ReceivalConfirmationResult {
 		let mut data = self.storage.data();
 		if latest_delivered_nonce <= data.latest_received_nonce {
-			return ReceivalConfirmationResult::NoNewConfirmations
+			return ReceivalConfirmationResult::NoNewConfirmations;
 		}
 		if latest_delivered_nonce > data.latest_generated_nonce {
-			return ReceivalConfirmationResult::FailedToConfirmFutureMessages
+			return ReceivalConfirmationResult::FailedToConfirmFutureMessages;
 		}
 		if latest_delivered_nonce - data.latest_received_nonce > max_allowed_messages {
 			// that the relayer has declared correct number of messages that the proof contains (it
@@ -121,11 +121,11 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 			// weight formula accounts, so we can't allow that.
 			return ReceivalConfirmationResult::TryingToConfirmMoreMessagesThanExpected(
 				latest_delivered_nonce - data.latest_received_nonce,
-			)
+			);
 		}
 
 		if let Err(e) = ensure_unrewarded_relayers_are_correct(latest_delivered_nonce, relayers) {
-			return e
+			return e;
 		}
 
 		let prev_latest_received_nonce = data.latest_received_nonce;
@@ -150,8 +150,8 @@ impl<S: OutboundLaneStorage> OutboundLane<S> {
 		let two_writes_weight = write_weight + write_weight;
 		let mut spent_weight = Weight::zero();
 		let mut data = self.storage.data();
-		while remaining_weight.all_gte(two_writes_weight) &&
-			data.oldest_unpruned_nonce <= data.latest_received_nonce
+		while remaining_weight.all_gte(two_writes_weight)
+			&& data.oldest_unpruned_nonce <= data.latest_received_nonce
 		{
 			self.storage.remove_message(&data.oldest_unpruned_nonce);
 
@@ -182,14 +182,14 @@ fn ensure_unrewarded_relayers_are_correct<RelayerId>(
 		// unrewarded relayer entry must have at least 1 unconfirmed message
 		// (guaranteed by the `InboundLane::receive_message()`)
 		if entry.messages.end < entry.messages.begin {
-			return Err(ReceivalConfirmationResult::EmptyUnrewardedRelayerEntry)
+			return Err(ReceivalConfirmationResult::EmptyUnrewardedRelayerEntry);
 		}
 		// every entry must confirm range of messages that follows previous entry range
 		// (guaranteed by the `InboundLane::receive_message()`)
 		if let Some(last_entry_end) = last_entry_end {
 			let expected_entry_begin = last_entry_end.checked_add(1);
 			if expected_entry_begin != Some(entry.messages.begin) {
-				return Err(ReceivalConfirmationResult::NonConsecutiveUnrewardedRelayerEntries)
+				return Err(ReceivalConfirmationResult::NonConsecutiveUnrewardedRelayerEntries);
 			}
 		}
 		last_entry_end = Some(entry.messages.end);
@@ -199,7 +199,7 @@ fn ensure_unrewarded_relayers_are_correct<RelayerId>(
 			// technically this will be detected in the next loop iteration as
 			// `InvalidNumberOfDispatchResults` but to guarantee safety of loop operations below
 			// this is detected now
-			return Err(ReceivalConfirmationResult::FailedToConfirmFutureMessages)
+			return Err(ReceivalConfirmationResult::FailedToConfirmFutureMessages);
 		}
 	}
 
@@ -222,9 +222,7 @@ mod tests {
 	fn unrewarded_relayers(
 		nonces: RangeInclusive<MessageNonce>,
 	) -> VecDeque<UnrewardedRelayer<TestRelayer>> {
-		vec![unrewarded_relayer(*nonces.start(), *nonces.end(), 0)]
-			.into_iter()
-			.collect()
+		vec![unrewarded_relayer(*nonces.start(), *nonces.end(), 0)].into_iter().collect()
 	}
 
 	fn delivered_messages(nonces: RangeInclusive<MessageNonce>) -> DeliveredMessages {

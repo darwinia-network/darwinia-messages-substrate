@@ -181,10 +181,11 @@ pub mod pallet {
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
-		const LOG_TARGET: &'static str = LOG_TARGET;
-		type OwnerStorage = PalletOwner<T, I>;
 		type OperatingMode = MessagesOperatingMode;
 		type OperatingModeStorage = PalletOperatingMode<T, I>;
+		type OwnerStorage = PalletOwner<T, I>;
+
+		const LOG_TARGET: &'static str = LOG_TARGET;
 	}
 
 	#[pallet::hooks]
@@ -196,7 +197,7 @@ pub mod pallet {
 			// we'll need at least to read outbound lane state, kill a message and update lane state
 			let db_weight = T::DbWeight::get();
 			if !remaining_weight.all_gte(db_weight.reads_writes(1, 2)) {
-				return Weight::zero()
+				return Weight::zero();
 			}
 
 			// messages from lane with index `i` in `ActiveOutboundLanes` are pruned when
@@ -326,7 +327,7 @@ pub mod pallet {
 					if is_lane_processing_stopped_no_weight_left {
 						lane_messages_received_status
 							.push_skipped_for_not_enough_weight(message.key.nonce);
-						continue
+						continue;
 					}
 
 					// ensure that relayer has declared enough weight for dispatching next message
@@ -344,7 +345,7 @@ pub mod pallet {
 						lane_messages_received_status
 							.push_skipped_for_not_enough_weight(message.key.nonce);
 						is_lane_processing_stopped_no_weight_left = true;
-						continue
+						continue;
 					}
 
 					let receival_result = lane.receive_message::<T::MessageDispatch, T::AccountId>(
@@ -365,9 +366,9 @@ pub mod pallet {
 							valid_messages += 1;
 							dispatch_result.unspent_weight
 						},
-						ReceivalResult::InvalidNonce |
-						ReceivalResult::TooManyUnrewardedRelayers |
-						ReceivalResult::TooManyUnconfirmedMessages => message_dispatch_weight,
+						ReceivalResult::InvalidNonce
+						| ReceivalResult::TooManyUnrewardedRelayers
+						| ReceivalResult::TooManyUnconfirmedMessages => message_dispatch_weight,
 					};
 					lane_messages_received_status.push(message.key.nonce, receival_result);
 
@@ -430,10 +431,10 @@ pub mod pallet {
 			// (we only care about total number of entries and messages, because this affects call
 			// weight)
 			ensure!(
-				total_unrewarded_messages(&lane_data.relayers).unwrap_or(MessageNonce::MAX) ==
-					relayers_state.total_messages &&
-					lane_data.relayers.len() as MessageNonce ==
-						relayers_state.unrewarded_relayer_entries,
+				total_unrewarded_messages(&lane_data.relayers).unwrap_or(MessageNonce::MAX)
+					== relayers_state.total_messages
+					&& lane_data.relayers.len() as MessageNonce
+						== relayers_state.unrewarded_relayer_entries,
 				Error::<T, I>::InvalidUnrewardedRelayersState
 			);
 			// the `last_delivered_nonce` field may also be used by the signed extension. Even
@@ -740,10 +741,10 @@ fn send_message<T: Config<I>, I: 'static>(
 
 /// Ensure that the pallet is in normal operational mode.
 fn ensure_normal_operating_mode<T: Config<I>, I: 'static>() -> Result<(), Error<T, I>> {
-	if PalletOperatingMode::<T, I>::get() ==
-		MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+	if PalletOperatingMode::<T, I>::get()
+		== MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
 	{
-		return Ok(())
+		return Ok(());
 	}
 
 	Err(Error::<T, I>::NotOperatingNormally)
@@ -1111,9 +1112,7 @@ mod tests {
 			let mut message_payload = message_payload(1, 0);
 			// the payload isn't simply extra, so it'll definitely overflow
 			// `MAX_OUTBOUND_PAYLOAD_SIZE` if we add `MAX_OUTBOUND_PAYLOAD_SIZE` bytes to extra
-			message_payload
-				.extra
-				.extend_from_slice(&[0u8; MAX_OUTBOUND_PAYLOAD_SIZE as usize]);
+			message_payload.extra.extend_from_slice(&[0u8; MAX_OUTBOUND_PAYLOAD_SIZE as usize]);
 			assert_noop!(
 				send_message::<TestRuntime, ()>(
 					RuntimeOrigin::signed(1),

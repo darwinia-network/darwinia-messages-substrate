@@ -45,8 +45,8 @@ where
 	P: Encode + Decode + Debug + Eq + Clone + StaticTypeInfo,
 	S: Encode + Debug + Eq + Clone + StaticTypeInfo,
 {
-	type Payload = P;
 	type AdditionalSigned = S;
+	type Payload = P;
 }
 
 /// The `SignedExtensionSchema` for `frame_system::CheckNonZeroSender`.
@@ -79,6 +79,7 @@ pub type BridgeRejectObsoleteHeadersAndMessages = GenericSignedExtensionSchema<(
 #[impl_for_tuples(1, 12)]
 impl SignedExtensionSchema for Tuple {
 	for_tuples!( type Payload = ( #( Tuple::Payload ),* ); );
+
 	for_tuples!( type AdditionalSigned = ( #( Tuple::AdditionalSigned ),* ); );
 }
 
@@ -107,11 +108,12 @@ where
 	S::Payload: Send + Sync,
 	S::AdditionalSigned: Send + Sync,
 {
-	const IDENTIFIER: &'static str = "Not needed.";
 	type AccountId = ();
-	type Call = ();
 	type AdditionalSigned = S::AdditionalSigned;
+	type Call = ();
 	type Pre = ();
+
+	const IDENTIFIER: &'static str = "Not needed.";
 
 	fn additional_signed(&self) -> Result<Self::AdditionalSigned, TransactionValidityError> {
 		// we shall not ever see this error in relay, because we are never signing decoded

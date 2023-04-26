@@ -65,11 +65,13 @@ impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
+
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
 		Weight::from_ref_time(55_253_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
+
 	fn submit_parachain_heads_with_16kb_proof() -> Weight {
 		Weight::from_ref_time(98_772_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
@@ -84,11 +86,13 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
+
 	fn submit_parachain_heads_with_1kb_proof() -> Weight {
 		Weight::from_ref_time(55_253_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))
 			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
+
 	fn submit_parachain_heads_with_16kb_proof() -> Weight {
 		Weight::from_ref_time(98_772_000 as u64)
 			.saturating_add(RocksDbWeight::get().reads(4 as u64))

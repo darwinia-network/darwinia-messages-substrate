@@ -186,10 +186,7 @@ impl<RelayerId> InboundLaneData<RelayerId> {
 
 	/// Nonce of the last message that has been delivered to this (target) chain.
 	pub fn last_delivered_nonce(&self) -> MessageNonce {
-		self.relayers
-			.back()
-			.map(|entry| entry.messages.end)
-			.unwrap_or(self.last_confirmed_nonce)
+		self.relayers.back().map(|entry| entry.messages.end).unwrap_or(self.last_confirmed_nonce)
 	}
 }
 

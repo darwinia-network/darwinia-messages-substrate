@@ -189,8 +189,8 @@ impl<MessagesProof: Parameter + Size, DispatchPayload> SourceHeaderChain
 impl<MessagesProof, DispatchPayload: Decode, AccountId> MessageDispatch<AccountId>
 	for ForbidInboundMessages<MessagesProof, DispatchPayload>
 {
-	type DispatchPayload = DispatchPayload;
 	type DispatchLevelResult = ();
+	type DispatchPayload = DispatchPayload;
 
 	fn dispatch_weight(_message: &mut DispatchMessage<Self::DispatchPayload>) -> Weight {
 		Weight::MAX
