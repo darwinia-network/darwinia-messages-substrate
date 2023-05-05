@@ -18,18 +18,22 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(feature = "integrity-test")]
-pub mod integrity;
-pub mod lanes;
+use bp_runtime::FilterCall;
+use sp_runtime::transaction_validity::TransactionValidity;
+use xcm::v3::NetworkId;
+
 pub mod messages;
+pub mod messages_api;
 pub mod messages_benchmarking;
 pub mod messages_extension;
-pub mod pallets;
+pub mod parachains_benchmarking;
+pub mod refund_relayer_extension;
 
-// darwinia-network
-use bp_runtime::FilterCall;
-// paritytech
-use sp_runtime::transaction_validity::TransactionValidity;
+mod messages_generation;
+mod mock;
+
+#[cfg(feature = "integrity-test")]
+pub mod integrity;
 
 /// A duplication of the `FilterCall` trait.
 ///
@@ -58,67 +62,6 @@ where
 	}
 }
 
-pub fn put_pallet_operation_mode<Mode>(module: &[u8], mode: Mode)
-where
-	Mode: codec::FullCodec,
-{
-	// paritytech
-	use frame_support::migration;
-
-	let item = b"PalletOperatingMode";
-	let hash = &[];
-
-	migration::put_storage_value(module, item, hash, mode);
-}
-
-pub fn migrate_pallet_operation_mode(module: &[u8]) {
-	// darwinia-network
-	use bp_runtime::BasicOperatingMode;
-	// paritytech
-	use frame_support::migration;
-
-	let item = b"IsHalted";
-	let hash = &[];
-
-	if let Some(is_halted) = migration::take_storage_value::<bool>(module, item, hash) {
-		if is_halted {
-			put_pallet_operation_mode(module, BasicOperatingMode::Halted);
-		} else {
-			put_pallet_operation_mode(module, BasicOperatingMode::Normal);
-		}
-	}
-}
-
-pub fn migrate_message_pallet_operation_mode(module: &[u8]) {
-	// darwinia-network
-	use bp_messages::MessagesOperatingMode;
-	use bp_runtime::BasicOperatingMode;
-	// paritytech
-	use frame_support::migration;
-
-	let item = b"PalletOperatingMode";
-	let hash = &[];
-
-	if let Some(mode) = migration::take_storage_value::<BasicOperatingMode>(module, item, hash) {
-		put_pallet_operation_mode(module, MessagesOperatingMode::Basic(mode));
-	}
-}
-
-pub fn migrate_best_finalized<BlockNumber, Hash>(module: &[u8], best_finalized: (BlockNumber, Hash))
-where
-	BlockNumber: codec::FullCodec,
-	Hash: codec::FullCodec,
-{
-	// paritytech
-	use frame_support::migration;
-
-	let item = b"BestFinalized";
-	let hash = &[];
-
-	migration::take_storage_value::<Hash>(module, item, hash);
-	migration::put_storage_value(module, item, hash, best_finalized);
-}
-
 /// Declares a runtime-specific `BridgeRejectObsoleteHeadersAndMessages` signed extension.
 ///
 /// ## Example
@@ -137,7 +80,7 @@ where
 #[macro_export]
 macro_rules! generate_bridge_reject_obsolete_headers_and_messages {
 	($call:ty, $account_id:ty, $($filter_call:ty),*) => {
-		#[derive(Clone, codec::Decode, codec::Encode, Eq, PartialEq, frame_support::RuntimeDebug, scale_info::TypeInfo)]
+		#[derive(Clone, codec::Decode, Default, codec::Encode, Eq, PartialEq, frame_support::RuntimeDebug, scale_info::TypeInfo)]
 		pub struct BridgeRejectObsoleteHeadersAndMessages;
 		impl sp_runtime::traits::SignedExtension for BridgeRejectObsoleteHeadersAndMessages {
 			const IDENTIFIER: &'static str = "BridgeRejectObsoleteHeadersAndMessages";
@@ -183,9 +126,7 @@ macro_rules! generate_bridge_reject_obsolete_headers_and_messages {
 
 #[cfg(test)]
 mod tests {
-	// darwinia-network
 	use crate::BridgeRuntimeFilterCall;
-	// paritytech
 	use frame_support::{assert_err, assert_ok};
 	use sp_runtime::{
 		traits::SignedExtension,
@@ -195,11 +136,12 @@ mod tests {
 	pub struct MockCall {
 		data: u32,
 	}
+
 	impl sp_runtime::traits::Dispatchable for MockCall {
+		type RuntimeOrigin = ();
 		type Config = ();
 		type Info = ();
 		type PostInfo = ();
-		type RuntimeOrigin = ();
 
 		fn dispatch(
 			self,
@@ -213,7 +155,7 @@ mod tests {
 	impl BridgeRuntimeFilterCall<MockCall> for FirstFilterCall {
 		fn validate(call: &MockCall) -> TransactionValidity {
 			if call.data <= 1 {
-				return InvalidTransaction::Custom(1).into();
+				return InvalidTransaction::Custom(1).into()
 			}
 
 			Ok(ValidTransaction { priority: 1, ..Default::default() })
@@ -224,7 +166,7 @@ mod tests {
 	impl BridgeRuntimeFilterCall<MockCall> for SecondFilterCall {
 		fn validate(call: &MockCall) -> TransactionValidity {
 			if call.data <= 2 {
-				return InvalidTransaction::Custom(2).into();
+				return InvalidTransaction::Custom(2).into()
 			}
 
 			Ok(ValidTransaction { priority: 2, ..Default::default() })

@@ -19,13 +19,14 @@
 //! Most of the tests in this module assume that the bridge is using standard (see `crate::messages`
 //! module for details) configuration.
 
-use crate::messages::MessageBridge;
+use crate::{messages, messages::MessageBridge};
 
-use bp_messages::MessageNonce;
+use bp_messages::{InboundLaneData, MessageNonce};
 use bp_runtime::{Chain, ChainId};
 use codec::Encode;
 use frame_support::{storage::generator::StorageValue, traits::Get};
 use frame_system::limits;
+use sp_runtime::traits::SignedExtension;
 
 /// Macro that ensures that the runtime configuration and chain primitives crate are sharing
 /// the same types (index, block number, hash, hasher, account id and header).
@@ -45,36 +46,6 @@ macro_rules! assert_chain_types(
 			assert_type_eq_all!(<$r as SystemConfig>::Hashing, bp_runtime::HasherOf<$this>);
 			assert_type_eq_all!(<$r as SystemConfig>::AccountId, bp_runtime::AccountIdOf<$this>);
 			assert_type_eq_all!(<$r as SystemConfig>::Header, bp_runtime::HeaderOf<$this>);
-		}
-	}
-);
-
-/// Macro that ensures that the bridge configuration and chain primitives crates are sharing
-/// the same types (hash, account id, ...).
-#[macro_export]
-macro_rules! assert_bridge_types(
-	( bridge: $bridge:path, this_chain: $this:path, bridged_chain: $bridged:path ) => {
-		{
-			// if one of this asserts fail, then all chains, bridged with this chain and bridge relays are now broken
-			//
-			// `frame_support::weights::Weight` is used here directly, because all chains we know are using this
-			// primitive (may be changed in the future)
-			use $crate::messages::{
-				AccountIdOf, BalanceOf, BridgedChain, HashOf, SignatureOf, SignerOf, ThisChain,
-			};
-			use static_assertions::assert_type_eq_all;
-
-			assert_type_eq_all!(HashOf<ThisChain<$bridge>>, bp_runtime::HashOf<$this>);
-			assert_type_eq_all!(AccountIdOf<ThisChain<$bridge>>, bp_runtime::AccountIdOf<$this>);
-			assert_type_eq_all!(SignerOf<ThisChain<$bridge>>, bp_runtime::AccountPublicOf<$this>);
-			assert_type_eq_all!(SignatureOf<ThisChain<$bridge>>, bp_runtime::SignatureOf<$this>);
-			assert_type_eq_all!(BalanceOf<ThisChain<$bridge>>, bp_runtime::BalanceOf<$this>);
-
-			assert_type_eq_all!(HashOf<BridgedChain<$bridge>>, bp_runtime::HashOf<$bridged>);
-			assert_type_eq_all!(AccountIdOf<BridgedChain<$bridge>>, bp_runtime::AccountIdOf<$bridged>);
-			assert_type_eq_all!(SignerOf<BridgedChain<$bridge>>, bp_runtime::AccountPublicOf<$bridged>);
-			assert_type_eq_all!(SignatureOf<BridgedChain<$bridge>>, bp_runtime::SignatureOf<$bridged>);
-			assert_type_eq_all!(BalanceOf<BridgedChain<$bridge>>, bp_runtime::BalanceOf<$bridged>);
 		}
 	}
 );
@@ -110,30 +81,27 @@ macro_rules! assert_bridge_messages_pallet_types(
 			// configuration is used), or something has broke existing configuration (meaning that all bridged chains
 			// and relays will stop functioning)
 			use $crate::messages::{
-				source::FromThisChainMessagePayload,
-				target::FromBridgedChainMessagePayload,
+				source::{FromThisChainMessagePayload, TargetHeaderChainAdapter},
+				target::{FromBridgedChainMessagePayload, SourceHeaderChainAdapter},
 				AccountIdOf, BalanceOf, BridgedChain, CallOf, ThisChain,
 			};
 			use pallet_bridge_messages::Config as MessagesConfig;
 			use static_assertions::assert_type_eq_all;
 
-			assert_type_eq_all!(<$r as MessagesConfig<$i>>::OutboundPayload, FromThisChainMessagePayload<$bridge>);
-			assert_type_eq_all!(<$r as MessagesConfig<$i>>::OutboundMessageFee, BalanceOf<ThisChain<$bridge>>);
+			assert_type_eq_all!(<$r as MessagesConfig<$i>>::OutboundPayload, FromThisChainMessagePayload);
 
-			assert_type_eq_all!(<$r as MessagesConfig<$i>>::InboundPayload, FromBridgedChainMessagePayload<$bridge>);
-			assert_type_eq_all!(<$r as MessagesConfig<$i>>::InboundMessageFee, BalanceOf<BridgedChain<$bridge>>);
 			assert_type_eq_all!(<$r as MessagesConfig<$i>>::InboundRelayer, AccountIdOf<BridgedChain<$bridge>>);
 
-			assert_type_eq_all!(<$r as MessagesConfig<$i>>::TargetHeaderChain, BridgedChain<$bridge>);
-			assert_type_eq_all!(<$r as MessagesConfig<$i>>::SourceHeaderChain, BridgedChain<$bridge>);
+			assert_type_eq_all!(<$r as MessagesConfig<$i>>::TargetHeaderChain, TargetHeaderChainAdapter<$bridge>);
+			assert_type_eq_all!(<$r as MessagesConfig<$i>>::SourceHeaderChain, SourceHeaderChainAdapter<$bridge>);
 		}
 	}
 );
 
 /// Macro that combines four other macro calls - `assert_chain_types`, `assert_bridge_types`,
 /// `assert_bridge_grandpa_pallet_types` and `assert_bridge_messages_pallet_types`. It may be used
-/// at the chain that is implemeting complete standard messages bridge (i.e. with bridge GRANDPA and
-/// messages pallets deployed).
+/// at the chain that is implementing complete standard messages bridge (i.e. with bridge GRANDPA
+/// and messages pallets deployed).
 #[macro_export]
 macro_rules! assert_complete_bridge_types(
 	(
@@ -145,7 +113,6 @@ macro_rules! assert_complete_bridge_types(
 		bridged_chain: $bridged:path,
 	) => {
 		$crate::assert_chain_types!(runtime: $r, this_chain: $this);
-		$crate::assert_bridge_types!(bridge: $bridge, this_chain: $this, bridged_chain: $bridged);
 		$crate::assert_bridge_grandpa_pallet_types!(
 			runtime: $r,
 			with_bridged_chain_grandpa_instance: $gi,
@@ -237,9 +204,9 @@ where
 	MI: 'static,
 {
 	assert!(
-		R::MaxMessagesToPruneAtOnce::get() > 0,
-		"MaxMessagesToPruneAtOnce ({}) must be larger than zero",
-		R::MaxMessagesToPruneAtOnce::get(),
+		!R::ActiveOutboundLanes::get().is_empty(),
+		"ActiveOutboundLanes ({:?}) must not be empty",
+		R::ActiveOutboundLanes::get(),
 	);
 	assert!(
 		R::MaxUnrewardedRelayerEntriesAtInboundLane::get() <= params.max_unrewarded_relayers_in_bridged_confirmation_tx,
@@ -321,4 +288,46 @@ where
 	assert_bridge_grandpa_pallet_constants::<R, GI>();
 	assert_bridge_messages_pallet_constants::<R, MI>(params.messages_pallet_constants);
 	assert_bridge_pallet_names::<B, R, GI, MI>(params.pallet_names);
+}
+
+/// Check that the message lane weights are correct.
+pub fn check_message_lane_weights<C: Chain, T: frame_system::Config>(
+	bridged_chain_extra_storage_proof_size: u32,
+	this_chain_max_unrewarded_relayers: MessageNonce,
+	this_chain_max_unconfirmed_messages: MessageNonce,
+) {
+	type Weights<T> = pallet_bridge_messages::weights::BridgeWeight<T>;
+
+	pallet_bridge_messages::ensure_weights_are_correct::<Weights<T>>();
+
+	let max_incoming_message_proof_size = bridged_chain_extra_storage_proof_size
+		.saturating_add(messages::target::maximal_incoming_message_size(C::max_extrinsic_size()));
+	pallet_bridge_messages::ensure_able_to_receive_message::<Weights<T>>(
+		C::max_extrinsic_size(),
+		C::max_extrinsic_weight(),
+		max_incoming_message_proof_size,
+		messages::target::maximal_incoming_message_dispatch_weight(C::max_extrinsic_weight()),
+	);
+
+	let max_incoming_inbound_lane_data_proof_size =
+		InboundLaneData::<()>::encoded_size_hint_u32(this_chain_max_unrewarded_relayers as _);
+	pallet_bridge_messages::ensure_able_to_receive_confirmation::<Weights<T>>(
+		C::max_extrinsic_size(),
+		C::max_extrinsic_weight(),
+		max_incoming_inbound_lane_data_proof_size,
+		this_chain_max_unrewarded_relayers,
+		this_chain_max_unconfirmed_messages,
+	);
+}
+
+/// Check that the `AdditionalSigned` type of a wrapped runtime is the same as the one of the
+/// corresponding actual runtime.
+///
+/// This method doesn't perform any `assert`. If the condition is not true it will generate a
+/// compile-time error.
+pub fn check_additional_signed<SignedExt, IndirectSignedExt: SignedExtension>()
+where
+	SignedExt: SignedExtension,
+	IndirectSignedExt: SignedExtension<AdditionalSigned = SignedExt::AdditionalSigned>,
+{
 }
