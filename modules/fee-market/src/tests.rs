@@ -1065,7 +1065,7 @@ fn test_order_create_if_market_not_ready() {
 				),
 				DispatchError::Module(ModuleError {
 					index: 4,
-					error: [3, 0, 0, 0],
+					error: [3, 11, 0, 0],
 					message: Some("MessageRejectedByLaneVerifier")
 				})
 			);

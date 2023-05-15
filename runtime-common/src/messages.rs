@@ -32,6 +32,7 @@ use bp_messages::{
 	source_chain::LaneMessageVerifier,
 	target_chain::{DispatchMessage, MessageDispatch, ProvedLaneMessages, ProvedMessages},
 	InboundLaneData, LaneId, Message, MessageData, MessageKey, MessageNonce, OutboundLaneData,
+	VerificationError,
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
@@ -231,8 +232,6 @@ pub mod source {
 		AccountIdOf<ThisChain<B>>: PartialEq + Clone,
 		pallet_fee_market::BalanceOf<F, I>: From<BalanceOf<ThisChain<B>>>,
 	{
-		type Error = &'static str;
-
 		#[allow(clippy::single_match)]
 		#[cfg(not(feature = "runtime-benchmarks"))]
 		fn verify_message(
@@ -241,10 +240,10 @@ pub mod source {
 			lane: &LaneId,
 			lane_outbound_data: &OutboundLaneData,
 			payload: &FromThisChainMessagePayload<B>,
-		) -> Result<(), Self::Error> {
+		) -> Result<(), VerificationError> {
 			// reject message if lane is blocked
 			if !ThisChain::<B>::is_message_accepted(submitter, lane) {
-				return Err(MESSAGE_REJECTED_BY_OUTBOUND_LANE);
+				return Err(VerificationError::MessageRejectedByOutBoundLane);
 			}
 
 			// reject message if there are too many pending messages at this lane
@@ -253,7 +252,7 @@ pub mod source {
 				.latest_generated_nonce
 				.saturating_sub(lane_outbound_data.latest_received_nonce);
 			if pending_messages > max_pending_messages {
-				return Err(TOO_MANY_PENDING_MESSAGES);
+				return Err(VerificationError::TooManyPendingMessages);
 			}
 
 			// Do the dispatch-specific check. We assume that the target chain uses
@@ -265,7 +264,7 @@ pub mod source {
 			if let Ok(raw_origin) = raw_origin_or_err {
 				pallet_bridge_dispatch::verify_message_origin(&raw_origin, payload)
 					.map(drop)
-					.map_err(|_| BAD_ORIGIN)?;
+					.map_err(|_| VerificationError::MessageDispatchWithBadOrigin)?;
 			} else {
 				// so what it means that we've failed to convert origin to the
 				// `frame_system::RawOrigin`? now it means that the custom pallet origin has
@@ -282,12 +281,12 @@ pub mod source {
 
 				// compare with actual fee paid
 				if message_fee < market_fee {
-					return Err(TOO_LOW_FEE);
+					return Err(VerificationError::MessageWithTooLowFee);
 				}
 			} else {
 				const NO_MARKET_FEE: &str = "The fee market are not ready for accepting messages.";
 
-				return Err(NO_MARKET_FEE);
+				return Err(VerificationError::Other(NO_MARKET_FEE));
 			}
 
 			Ok(())
@@ -300,7 +299,7 @@ pub mod source {
 			_lane: &LaneId,
 			_lane_outbound_data: &OutboundLaneData,
 			_payload: &FromThisChainMessagePayload<B>,
-		) -> Result<(), Self::Error> {
+		) -> Result<(), VerificationError> {
 			Ok(())
 		}
 	}
@@ -317,9 +316,9 @@ pub mod source {
 	/// check) that would reject message (see `FromThisChainMessageVerifier`).
 	pub fn verify_chain_message<B: MessageBridge>(
 		payload: &FromThisChainMessagePayload<B>,
-	) -> Result<(), &'static str> {
+	) -> Result<(), VerificationError> {
 		if !BridgedChain::<B>::verify_dispatch_weight(&payload.call, &payload.weight) {
-			return Err("Incorrect message weight declared");
+			return Err(VerificationError::InvalidMessageWeight);
 		}
 
 		// The maximal size of extrinsic at Substrate-based chain depends on the
@@ -333,7 +332,7 @@ pub mod source {
 		// transaction also contains signatures and signed extensions. Because of this, we reserve
 		// 1/3 of the the maximal extrinsic weight for this data.
 		if payload.call.len() > maximal_message_size::<B>() as usize {
-			return Err("The message is too large to be sent over the lane");
+			return Err(VerificationError::MessageTooLarge);
 		}
 
 		Ok(())
@@ -345,7 +344,7 @@ pub mod source {
 	/// parachains, please use the `verify_messages_delivery_proof_from_parachain`.
 	pub fn verify_messages_delivery_proof<B: MessageBridge, ThisRuntime, GrandpaInstance: 'static>(
 		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
-	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, VerificationError>
 	where
 		ThisRuntime: pallet_bridge_grandpa::Config<GrandpaInstance>,
 		HashOf<BridgedChain<B>>: Into<
@@ -366,7 +365,7 @@ pub mod source {
 				>,
 			>(lane, storage),
 		)
-		.map_err(<&'static str>::from)?
+		.map_err(|err| VerificationError::Other(<&'static str>::from(err)))?
 	}
 
 	/// Verify proof of This -> Bridged chain messages delivery.
@@ -384,7 +383,7 @@ pub mod source {
 	>(
 		bridged_parachain: ParaId,
 		proof: FromBridgedChainMessagesDeliveryProof<HashOf<BridgedChain<B>>>,
-	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str>
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, VerificationError>
 	where
 		B: MessageBridge,
 		B::BridgedChain: ChainWithMessages<Hash = ParaHash>,
@@ -400,14 +399,14 @@ pub mod source {
 			|para_head| BridgedHeader::decode(&mut &para_head.0[..]).ok().map(|h| *h.state_root()),
 			|storage| do_verify_messages_delivery_proof::<B, ParaHasher>(lane, storage),
 		)
-		.map_err(<&'static str>::from)?
+		.map_err(|err| VerificationError::Other(<&'static str>::from(err)))?
 	}
 
 	/// The essense of This -> Bridged chain messages delivery proof verification.
 	fn do_verify_messages_delivery_proof<B: MessageBridge, H: Hasher>(
 		lane: LaneId,
 		storage: bp_runtime::StorageProofChecker<H>,
-	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, &'static str> {
+	) -> Result<ParsedMessagesDeliveryProofFromBridgedChain<B>, VerificationError> {
 		// Messages delivery proof is just proof of single storage key read => any error
 		// is fatal.
 		let storage_inbound_lane_data_key = bp_messages::storage_keys::inbound_lane_data_key(
@@ -416,10 +415,16 @@ pub mod source {
 		);
 		let raw_inbound_lane_data = storage
 			.read_value(storage_inbound_lane_data_key.0.as_ref())
-			.map_err(|_| "Failed to read inbound lane state from storage proof")?
-			.ok_or("Inbound lane state is missing from the messages proof")?;
-		let inbound_lane_data = InboundLaneData::decode(&mut &raw_inbound_lane_data[..])
-			.map_err(|_| "Failed to decode inbound lane state from the proof")?;
+			.map_err(|_| {
+				VerificationError::Other("Failed to read inbound lane state from storage proof")
+			})?
+			.ok_or(VerificationError::Other(
+				"Inbound lane state is missing from the messages proof",
+			))?;
+		let inbound_lane_data =
+			InboundLaneData::decode(&mut &raw_inbound_lane_data[..]).map_err(|_| {
+				VerificationError::Other("Failed to decode inbound lane state from the proof")
+			})?;
 
 		Ok((lane, inbound_lane_data))
 	}
@@ -601,7 +606,7 @@ pub mod target {
 	pub fn verify_messages_proof<B: MessageBridge, ThisRuntime, GrandpaInstance: 'static>(
 		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, &'static str>
+	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, VerificationError>
 	where
 		ThisRuntime: pallet_bridge_grandpa::Config<GrandpaInstance>,
 		HashOf<BridgedChain<B>>: Into<
@@ -623,10 +628,9 @@ pub mod target {
 					storage,
 					_dummy: Default::default(),
 				})
-				.map_err(|err| MessageProofError::Custom(err.into()))
+				.map_err(|err| VerificationError::Other(err.into()))
 			},
 		)
-		.map_err(Into::into)
 	}
 
 	/// Verify proof of Bridged -> This chain messages.
@@ -649,7 +653,7 @@ pub mod target {
 		bridged_parachain: ParaId,
 		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, &'static str>
+	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, VerificationError>
 	where
 		B: MessageBridge,
 		B::BridgedChain: ChainWithMessages<Hash = ParaHash>,
@@ -671,36 +675,9 @@ pub mod target {
 					storage,
 					_dummy: Default::default(),
 				})
-				.map_err(|err| MessageProofError::Custom(err.into()))
+				.map_err(|err| VerificationError::Other(err.into()))
 			},
 		)
-		.map_err(Into::into)
-	}
-
-	#[derive(Debug, PartialEq, Eq)]
-	pub(crate) enum MessageProofError {
-		Empty,
-		MessagesCountMismatch,
-		MissingRequiredMessage,
-		FailedToDecodeMessage,
-		FailedToDecodeOutboundLaneState,
-		Custom(&'static str),
-	}
-
-	impl From<MessageProofError> for &'static str {
-		fn from(err: MessageProofError) -> &'static str {
-			match err {
-				MessageProofError::Empty => "Messages proof is empty",
-				MessageProofError::MessagesCountMismatch =>
-					"Declared messages count doesn't match actual value",
-				MessageProofError::MissingRequiredMessage => "Message is missing from the proof",
-				MessageProofError::FailedToDecodeMessage =>
-					"Failed to decode message from the proof",
-				MessageProofError::FailedToDecodeOutboundLaneState =>
-					"Failed to decode outbound lane data from the proof",
-				MessageProofError::Custom(err) => err,
-			}
-		}
 	}
 
 	pub(crate) trait MessageProofParser {
@@ -741,10 +718,10 @@ pub mod target {
 		proof: FromBridgedChainMessagesProof<HashOf<BridgedChain<B>>>,
 		messages_count: u32,
 		build_parser: BuildParser,
-	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, MessageProofError>
+	) -> Result<ProvedMessages<Message<BalanceOf<BridgedChain<B>>>>, VerificationError>
 	where
 		BuildParser:
-			FnOnce(HashOf<BridgedChain<B>>, RawStorageProof) -> Result<Parser, MessageProofError>,
+			FnOnce(HashOf<BridgedChain<B>>, RawStorageProof) -> Result<Parser, VerificationError>,
 		Parser: MessageProofParser,
 	{
 		let FromBridgedChainMessagesProof {
@@ -762,7 +739,7 @@ pub mod target {
 				// (this bounds maximal capacity of messages vec below)
 				let messages_in_the_proof = nonces_difference.saturating_add(1);
 				if messages_in_the_proof != MessageNonce::from(messages_count) {
-					return Err(MessageProofError::MessagesCountMismatch);
+					return Err(VerificationError::MessagesCountMismatch);
 				}
 
 				messages_in_the_proof
@@ -781,10 +758,10 @@ pub mod target {
 			let message_key = MessageKey { lane_id: lane, nonce };
 			let raw_message_data = parser
 				.read_raw_message(&message_key)
-				.ok_or(MessageProofError::MissingRequiredMessage)?;
+				.ok_or(VerificationError::MissingRequiredMessage)?;
 			let message_data =
 				MessageData::<BalanceOf<BridgedChain<B>>>::decode(&mut &raw_message_data[..])
-					.map_err(|_| MessageProofError::FailedToDecodeMessage)?;
+					.map_err(|_| VerificationError::FailedToDecodeMessage)?;
 			messages.push(Message { key: message_key, data: message_data });
 		}
 
@@ -795,13 +772,13 @@ pub mod target {
 		if let Some(raw_outbound_lane_data) = raw_outbound_lane_data {
 			proved_lane_messages.lane_state = Some(
 				OutboundLaneData::decode(&mut &raw_outbound_lane_data[..])
-					.map_err(|_| MessageProofError::FailedToDecodeOutboundLaneState)?,
+					.map_err(|_| VerificationError::FailedToDecodeOutboundLaneData)?,
 			);
 		}
 
 		// Now we may actually check if the proof is empty or not.
 		if proved_lane_messages.lane_state.is_none() && proved_lane_messages.messages.is_empty() {
-			return Err(MessageProofError::Empty);
+			return Err(VerificationError::EmptyMessageProof);
 		}
 
 		// We only support single lane messages in this generated_schema
@@ -1252,7 +1229,7 @@ mod tests {
 				5,
 				|_, _| unreachable!(),
 			),
-			Err(target::MessageProofError::MessagesCountMismatch),
+			Err(VerificationError::MessagesCountMismatch),
 		);
 	}
 
@@ -1264,7 +1241,7 @@ mod tests {
 				15,
 				|_, _| unreachable!(),
 			),
-			Err(target::MessageProofError::MessagesCountMismatch),
+			Err(VerificationError::MessagesCountMismatch),
 		);
 	}
 
@@ -1274,9 +1251,9 @@ mod tests {
 			target::verify_messages_proof_with_parser::<OnThisChainBridge, _, TestMessageProofParser>(
 				messages_proof(10),
 				10,
-				|_, _| Err(target::MessageProofError::Custom("test")),
+				|_, _| Err(VerificationError::Other("test")),
 			),
-			Err(target::MessageProofError::Custom("test")),
+			Err(VerificationError::Other("test")),
 		);
 	}
 
@@ -1292,7 +1269,7 @@ mod tests {
 					outbound_lane_data: None,
 				}),
 			),
-			Err(target::MessageProofError::MissingRequiredMessage),
+			Err(VerificationError::MissingRequiredMessage),
 		);
 	}
 
@@ -1308,7 +1285,7 @@ mod tests {
 					outbound_lane_data: None,
 				}),
 			),
-			Err(target::MessageProofError::FailedToDecodeMessage),
+			Err(VerificationError::FailedToDecodeMessage),
 		);
 	}
 
@@ -1328,7 +1305,7 @@ mod tests {
 					}),
 				}),
 			),
-			Err(target::MessageProofError::FailedToDecodeOutboundLaneState),
+			Err(VerificationError::FailedToDecodeOutboundLaneData),
 		);
 	}
 
@@ -1344,7 +1321,7 @@ mod tests {
 					outbound_lane_data: None,
 				}),
 			),
-			Err(target::MessageProofError::Empty),
+			Err(VerificationError::EmptyMessageProof),
 		);
 	}
 
@@ -1431,7 +1408,7 @@ mod tests {
 					}),
 				}),
 			),
-			Err(target::MessageProofError::MessagesCountMismatch),
+			Err(VerificationError::MessagesCountMismatch),
 		);
 	}
 }

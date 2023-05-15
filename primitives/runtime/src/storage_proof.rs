@@ -45,8 +45,11 @@ pub enum ProofSize {
 
 #[derive(Eq, PartialEq, RuntimeDebug)]
 pub enum Error {
+	/// Expected storage root is missing from the proof.
 	StorageRootMismatch,
+	/// Unable to reach expected storage value using provided trie nodes.
 	StorageValueUnavailable,
+	/// Failed to decode storage value.
 	StorageValueDecodeFailed(codec::Error),
 }
 
