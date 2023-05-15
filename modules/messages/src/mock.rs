@@ -271,12 +271,11 @@ impl Size for TestMessagesDeliveryProof {
 #[derive(Debug, Default)]
 pub struct TestTargetHeaderChain;
 impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
-	type Error = &'static str;
 	type MessagesDeliveryProof = TestMessagesDeliveryProof;
 
-	fn verify_message(payload: &TestPayload) -> Result<(), Self::Error> {
+	fn verify_message(payload: &TestPayload) -> Result<(), VerificationError> {
 		if *payload == PAYLOAD_REJECTED_BY_TARGET_CHAIN {
-			Err(TEST_ERROR)
+			Err(VerificationError::Other(TEST_ERROR))
 		} else {
 			Ok(())
 		}
@@ -284,8 +283,8 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<TestRelayer>), Self::Error> {
-		proof.0.map_err(|_| TEST_ERROR)
+	) -> Result<(LaneId, InboundLaneData<TestRelayer>), VerificationError> {
+		proof.0.map_err(|_| VerificationError::Other(TEST_ERROR))
 	}
 }
 
@@ -293,19 +292,17 @@ impl TargetHeaderChain<TestPayload, TestRelayer> for TestTargetHeaderChain {
 #[derive(Debug, Default)]
 pub struct TestLaneMessageVerifier;
 impl LaneMessageVerifier<RuntimeOrigin, TestPayload, TestMessageFee> for TestLaneMessageVerifier {
-	type Error = &'static str;
-
 	fn verify_message(
 		_submitter: &RuntimeOrigin,
 		delivery_and_dispatch_fee: &TestMessageFee,
 		_lane: &LaneId,
 		_lane_outbound_data: &OutboundLaneData,
 		_payload: &TestPayload,
-	) -> Result<(), Self::Error> {
+	) -> Result<(), VerificationError> {
 		if *delivery_and_dispatch_fee != 0 {
 			Ok(())
 		} else {
-			Err(TEST_ERROR)
+			Err(VerificationError::Other(TEST_ERROR))
 		}
 	}
 }
@@ -336,15 +333,13 @@ impl TestMessageDeliveryAndDispatchPayment {
 impl MessageDeliveryAndDispatchPayment<RuntimeOrigin, AccountId, TestMessageFee>
 	for TestMessageDeliveryAndDispatchPayment
 {
-	type Error = &'static str;
-
 	fn pay_delivery_and_dispatch_fee(
 		submitter: &RuntimeOrigin,
 		fee: &TestMessageFee,
 		_relayer_fund_account: &AccountId,
-	) -> Result<(), Self::Error> {
+	) -> Result<(), VerificationError> {
 		if frame_support::storage::unhashed::get(b":reject-message-fee:") == Some(true) {
-			return Err(TEST_ERROR);
+			return Err(VerificationError::Other(TEST_ERROR));
 		}
 
 		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();
@@ -494,14 +489,16 @@ impl OnDeliveryConfirmed for TestOnDeliveryConfirmed2 {
 #[derive(Debug)]
 pub struct TestSourceHeaderChain;
 impl SourceHeaderChain<TestMessageFee> for TestSourceHeaderChain {
-	type Error = &'static str;
 	type MessagesProof = TestMessagesProof;
 
 	fn verify_messages_proof(
 		proof: Self::MessagesProof,
 		_messages_count: u32,
-	) -> Result<ProvedMessages<Message<TestMessageFee>>, Self::Error> {
-		proof.result.map(|proof| proof.into_iter().collect()).map_err(|_| TEST_ERROR)
+	) -> Result<ProvedMessages<Message<TestMessageFee>>, VerificationError> {
+		proof
+			.result
+			.map(|proof| proof.into_iter().collect())
+			.map_err(|_| VerificationError::Other(TEST_ERROR))
 	}
 }
 

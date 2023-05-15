@@ -31,7 +31,7 @@ use scale_info::TypeInfo;
 // darwinia-network
 use bp_runtime::{BasicOperatingMode, OperatingMode};
 // paritytech
-use frame_support::RuntimeDebug;
+use frame_support::{PalletError, RuntimeDebug};
 use sp_std::{collections::vec_deque::VecDeque, prelude::*};
 
 // Weight is reexported to avoid additional frame-support dependencies in related crates.
@@ -363,6 +363,35 @@ pub fn total_unrewarded_messages<RelayerId>(
 		},
 		_ => Some(0),
 	}
+}
+
+/// Error that happens during message verification.
+#[derive(Encode, Decode, RuntimeDebug, PartialEq, Eq, PalletError, TypeInfo)]
+pub enum VerificationError {
+	/// Rejected by the lane which is not open.
+	MessageRejectedByOutBoundLane,
+	/// The message origin is incorrect.
+	MessageDispatchWithBadOrigin,
+	/// The message fee is too low.
+	MessageWithTooLowFee,
+	/// Too many pending messages now.
+	TooManyPendingMessages,
+	/// The message proof is empty.
+	EmptyMessageProof,
+	/// The declared message weight is incorrect.
+	InvalidMessageWeight,
+	/// Declared messages count doesn't match actual value.
+	MessagesCountMismatch,
+	/// Can not find the message in the storage by the key.
+	MissingRequiredMessage,
+	/// Error returned while reading/decoding message data from the storage proof.
+	FailedToDecodeMessage,
+	/// The message is too large.
+	MessageTooLarge,
+	/// Error returned while reading/decoding outbound lane data from the storage proof.
+	FailedToDecodeOutboundLaneData,
+	/// Custom error
+	Other(#[codec(skip)] &'static str),
 }
 
 #[cfg(test)]

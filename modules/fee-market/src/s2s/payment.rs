@@ -22,7 +22,7 @@ use scale_info::TypeInfo;
 use crate::{Config, Orders, Pallet, *};
 use bp_messages::{
 	source_chain::{MessageDeliveryAndDispatchPayment, SenderOrigin},
-	MessageNonce, UnrewardedRelayer,
+	MessageNonce, UnrewardedRelayer, VerificationError,
 };
 // --- paritytech ---
 use frame_support::{
@@ -53,20 +53,18 @@ where
 	T::RuntimeOrigin: SenderOrigin<T::AccountId>,
 	Currency: CurrencyT<T::AccountId>,
 {
-	type Error = &'static str;
-
 	fn pay_delivery_and_dispatch_fee(
 		submitter: &T::RuntimeOrigin,
 		fee: &BalanceOf<T, I>,
 		relayer_fund_account: &T::AccountId,
-	) -> Result<(), Self::Error> {
+	) -> Result<(), VerificationError> {
 		let submitter_account = match submitter.linked_account() {
 			Some(submitter_account) => submitter_account,
 			None if !fee.is_zero() => {
 				// if we'll accept some message that has declared that the `fee` has been paid but
 				// it isn't actually paid, then it'll lead to problems with delivery confirmation
 				// payments (see `pay_relayer_rewards` && `confirmation_relayer` in particular)
-				return Err(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE);
+				return Err(VerificationError::Other(NON_ZERO_MESSAGE_FEE_CANT_BE_PAID_BY_NONE));
 			},
 			None => {
 				// message lane verifier has accepted the message before, so this message
@@ -83,7 +81,7 @@ where
 			// it's fine for the submitter to go below Existential Deposit and die.
 			ExistenceRequirement::AllowDeath,
 		)
-		.map_err(Into::into)
+		.map_err(|e| VerificationError::Other(e.into()))
 	}
 
 	fn pay_relayers_rewards(

@@ -76,7 +76,7 @@ use bp_messages::{
 	},
 	total_unrewarded_messages, DeliveredMessages, InboundLaneData, LaneId, MessageData, MessageKey,
 	MessageNonce, MessagesOperatingMode, OutboundLaneData, Parameter as MessagesParameter,
-	UnrewardedRelayersState,
+	UnrewardedRelayersState, VerificationError,
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // paritytech
@@ -626,9 +626,9 @@ pub mod pallet {
 		/// The message is too large to be sent over the bridge.
 		MessageIsTooLarge,
 		/// Message has been treated as invalid by chain verifier.
-		MessageRejectedByChainVerifier,
+		MessageRejectedByChainVerifier(VerificationError),
 		/// Message has been treated as invalid by lane verifier.
-		MessageRejectedByLaneVerifier,
+		MessageRejectedByLaneVerifier(VerificationError),
 		/// Submitter has failed to pay fee for delivering and dispatching messages.
 		FailedToWithdrawMessageFee,
 		/// The transaction brings too many messages.
@@ -817,7 +817,7 @@ fn send_message<T: Config<I>, I: 'static>(
 			err,
 		);
 
-		Error::<T, I>::MessageRejectedByChainVerifier
+		Error::<T, I>::MessageRejectedByChainVerifier(err)
 	})?;
 
 	// now let's enforce any additional lane rules
@@ -837,7 +837,7 @@ fn send_message<T: Config<I>, I: 'static>(
 			err,
 		);
 
-		Error::<T, I>::MessageRejectedByLaneVerifier
+		Error::<T, I>::MessageRejectedByLaneVerifier(err)
 	})?;
 
 	// let's withdraw delivery and dispatch fee from submitter
@@ -1003,7 +1003,7 @@ impl<T: Config<I>, I: 'static> InboundLaneStorage for RuntimeInboundLaneStorage<
 fn verify_and_decode_messages_proof<Chain: SourceHeaderChain<Fee>, Fee, DispatchPayload: Decode>(
 	proof: Chain::MessagesProof,
 	messages_count: u32,
-) -> Result<ProvedMessages<DispatchMessage<DispatchPayload, Fee>>, Chain::Error> {
+) -> Result<ProvedMessages<DispatchMessage<DispatchPayload, Fee>>, VerificationError> {
 	// `receive_messages_proof` weight formula and `MaxUnconfirmedMessagesAtInboundLane` check
 	// guarantees that the `message_count` is sane and Vec<Message> may be allocated.
 	// (tx with too many messages will either be rejected from the pool, or will fail earlier)
@@ -1393,7 +1393,9 @@ mod tests {
 					PAYLOAD_REJECTED_BY_TARGET_CHAIN,
 					PAYLOAD_REJECTED_BY_TARGET_CHAIN.declared_weight.ref_time()
 				),
-				Error::<TestRuntime, ()>::MessageRejectedByChainVerifier,
+				Error::<TestRuntime, ()>::MessageRejectedByChainVerifier(VerificationError::Other(
+					mock::TEST_ERROR
+				)),
 			);
 		});
 	}
@@ -1409,7 +1411,9 @@ mod tests {
 					REGULAR_PAYLOAD,
 					0
 				),
-				Error::<TestRuntime, ()>::MessageRejectedByLaneVerifier,
+				Error::<TestRuntime, ()>::MessageRejectedByLaneVerifier(VerificationError::Other(
+					mock::TEST_ERROR
+				)),
 			);
 		});
 	}
