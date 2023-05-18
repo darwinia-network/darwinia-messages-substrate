@@ -20,7 +20,7 @@
 // darwinia-network
 use crate as grandpa;
 use bp_runtime::Chain;
-// paritytech
+// substrate
 use frame_support::{
 	traits::{ConstU32, Everything},
 	weights::Weight,

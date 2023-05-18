@@ -36,7 +36,7 @@ use bp_runtime::{
 	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, SourceAccount,
 };
-// paritytech
+// substrate
 use frame_support::{
 	dispatch::{DispatchInfo, DispatchResultWithPostInfo, Dispatchable, GetDispatchInfo, Weight},
 	ensure, log,
@@ -51,7 +51,7 @@ use sp_std::{fmt::Debug, prelude::*};
 pub mod pallet {
 	// darwinia-network
 	use super::*;
-	// paritytech
+	// substrate
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
@@ -117,7 +117,6 @@ pub mod pallet {
 	type BridgeMessageIdOf<T, I> = <T as Config<I>>::BridgeMessageId;
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	#[pallet::hooks]
@@ -485,7 +484,7 @@ mod tests {
 	// darwinia-network
 	use super::*;
 	use crate as call_dispatch;
-	// paritytech
+	// substrate
 	use frame_support::{parameter_types, weights::Weight};
 	use frame_system::{mocking::*, EventRecord, Phase};
 	use scale_info::TypeInfo;

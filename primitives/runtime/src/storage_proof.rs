@@ -19,7 +19,7 @@
 // crates.io
 use codec::Decode;
 use hash_db::{HashDB, Hasher, EMPTY_PREFIX};
-// paritytech
+// substrate
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 use sp_trie::{

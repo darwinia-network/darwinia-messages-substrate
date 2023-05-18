@@ -17,7 +17,7 @@
 //! Weight-related utilities.
 
 // darwinia-network
-use crate::weights::{BridgeWeight, WeightInfo};
+use crate::weights::WeightInfo;
 use bp_runtime::Size;
 // paritytech
 use frame_support::weights::{RuntimeDbWeight, Weight};
@@ -96,12 +96,6 @@ pub trait WeightInfoExt: WeightInfo {
 }
 
 impl WeightInfoExt for () {
-	fn expected_extra_storage_proof_size() -> u32 {
-		EXTRA_STORAGE_PROOF_SIZE
-	}
-}
-
-impl<T: frame_system::Config> WeightInfoExt for BridgeWeight<T> {
 	fn expected_extra_storage_proof_size() -> u32 {
 		EXTRA_STORAGE_PROOF_SIZE
 	}

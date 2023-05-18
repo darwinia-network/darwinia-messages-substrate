@@ -41,7 +41,7 @@ use scale_info::{StaticTypeInfo, TypeInfo};
 // darwinia-network
 use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall};
-// paritytech
+// substrate
 use frame_support::{
 	dispatch::{DispatchClass, Dispatchable},
 	parameter_types,

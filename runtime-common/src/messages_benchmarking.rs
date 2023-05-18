@@ -33,7 +33,7 @@ use bp_runtime::{messages::DispatchFeePayment, record_all_trie_keys, StorageProo
 use pallet_bridge_messages::benchmarking::{
 	MessageDeliveryProofParams, MessageParams, MessageProofParams,
 };
-// paritytech
+// substrate
 use frame_support::{dispatch::GetDispatchInfo, weights::Weight};
 use sp_core::Hasher;
 use sp_runtime::traits::{Header, IdentifyAccount, MaybeSerializeDeserialize, Zero};

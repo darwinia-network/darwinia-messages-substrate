@@ -6,7 +6,7 @@ homepage    = "https://darwinia.network"
 license     = "GPL-3.0"
 name        = "pallet-fee-market"
 readme      = "README.md"
-repository  = "https://github.com/darwinia-network/darwinia-bridges-substrate"
+repository  = "https://github.com/darwinia-network/darwinia-messages-substrate"
 version     = "0.1.0"
 
 [dependencies]
@@ -14,7 +14,11 @@ version     = "0.1.0"
 codec      = { package = "parity-scale-codec", workspace = true }
 scale-info = { workspace = true }
 
-# paritytech
+# darwinia-messages-substrate
+bp-messages = { workspace = true }
+bp-runtime  = { workspace = true }
+
+# substrate
 frame-benchmarking = { workspace = true, optional = true }
 frame-support      = { workspace = true }
 frame-system       = { workspace = true }
@@ -24,24 +28,24 @@ sp-io              = { workspace = true }
 sp-runtime         = { workspace = true }
 sp-std             = { workspace = true }
 
-# darwinia-bridges-substrate
-bp-messages            = { workspace = true }
-bp-runtime             = { workspace = true }
-
 [dev-dependencies]
-bitvec                 = { workspace = true }
-pallet-balances        = { workspace = true, features = ["std"] }
-pallet-bridge-messages = { workspace = true }
+# crates.io
+bitvec = { workspace = true }
+
+# darwinia-messages-substrate
+pallet-bridge-messages = { workspace = true, features = ["std"] }
+
+# substrate
+pallet-balances = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
-
 std = [
 	# crates.io
 	"codec/std",
 	"scale-info/std",
 
-	# paritytech
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-timestamp/std",
@@ -49,12 +53,18 @@ std = [
 	"sp-io/std",
 	"sp-std/std",
 	"sp-runtime/std",
-	
-	# darwinia-bridges-substrate
+
+	# darwinia-messages-substrate
 	"bp-messages/std",
 	"bp-runtime/std",
 ]
 
-runtime-benchmarks = ["frame-benchmarking"]
+runtime-benchmarks = [
+	# substrate
+	"frame-benchmarking",
+]
 
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = [
+	# substrate
+	"frame-support/try-runtime",
+]

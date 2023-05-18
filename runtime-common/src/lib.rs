@@ -28,7 +28,7 @@ pub mod pallets;
 
 // darwinia-network
 use bp_runtime::FilterCall;
-// paritytech
+// substrate
 use sp_runtime::transaction_validity::TransactionValidity;
 
 /// A duplication of the `FilterCall` trait.
@@ -62,7 +62,7 @@ pub fn put_pallet_operation_mode<Mode>(module: &[u8], mode: Mode)
 where
 	Mode: codec::FullCodec,
 {
-	// paritytech
+	// substrate
 	use frame_support::migration;
 
 	let item = b"PalletOperatingMode";
@@ -74,7 +74,7 @@ where
 pub fn migrate_pallet_operation_mode(module: &[u8]) {
 	// darwinia-network
 	use bp_runtime::BasicOperatingMode;
-	// paritytech
+	// substrate
 	use frame_support::migration;
 
 	let item = b"IsHalted";
@@ -93,7 +93,7 @@ pub fn migrate_message_pallet_operation_mode(module: &[u8]) {
 	// darwinia-network
 	use bp_messages::MessagesOperatingMode;
 	use bp_runtime::BasicOperatingMode;
-	// paritytech
+	// substrate
 	use frame_support::migration;
 
 	let item = b"PalletOperatingMode";
@@ -109,7 +109,7 @@ where
 	BlockNumber: codec::FullCodec,
 	Hash: codec::FullCodec,
 {
-	// paritytech
+	// substrate
 	use frame_support::migration;
 
 	let item = b"BestFinalized";
@@ -185,7 +185,7 @@ macro_rules! generate_bridge_reject_obsolete_headers_and_messages {
 mod tests {
 	// darwinia-network
 	use crate::BridgeRuntimeFilterCall;
-	// paritytech
+	// substrate
 	use frame_support::{assert_err, assert_ok};
 	use sp_runtime::{
 		traits::SignedExtension,

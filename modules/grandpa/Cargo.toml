@@ -13,24 +13,24 @@ num-traits       = { workspace = true }
 scale-info       = { workspace = true }
 serde            = { workspace = true, optional = true }
 
-# darwinia-network
+# darwinia-messages-substrate
 bp-header-chain = { workspace = true }
 bp-runtime      = { workspace = true }
 bp-test-utils   = { workspace = true, optional = true }
 
-# paritytech
-frame-benchmarking  = { workspace = true, optional = true }
-frame-support       = { workspace = true }
-frame-system        = { workspace = true }
-sp-finality-grandpa = { workspace = true }
-sp-runtime          = { workspace = true }
-sp-std              = { workspace = true }
-sp-trie             = { workspace = true }
+# substrate
+frame-benchmarking   = { workspace = true, optional = true }
+frame-support        = { workspace = true }
+frame-system         = { workspace = true }
+sp-consensus-grandpa = { workspace = true }
+sp-runtime           = { workspace = true }
+sp-std               = { workspace = true }
+sp-trie              = { workspace = true }
 
 [dev-dependencies]
-# paritytech
-sp-core = { workspace = true }
-sp-io   = { workspace = true }
+# substrate
+sp-core = { workspace = true, features = ["std"] }
+sp-io   = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -42,23 +42,29 @@ std = [
 	"scale-info/std",
 	"serde",
 
-	# darwinia-network
+	# darwinia-messages-substrate
 	"bp-header-chain/std",
 	"bp-runtime/std",
 	"bp-test-utils/std",
 
-	# paritytech
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
-	"sp-finality-grandpa/std",
+	"sp-consensus-grandpa/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	"sp-trie/std",
 ]
 
 runtime-benchmarks = [
+	# darwinia-messages-substrate
 	"bp-test-utils",
+
+	# substrate
 	"frame-benchmarking/runtime-benchmarks",
 ]
 
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = [
+	# substrate
+	"frame-support/try-runtime",
+]

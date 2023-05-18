@@ -28,8 +28,8 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-pub mod weight;
-pub use weight::WeightInfo;
+pub mod weights;
+pub use weights::WeightInfo;
 
 pub mod s2s;
 pub mod types;
@@ -226,7 +226,6 @@ pub mod pallet {
 	}
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T, I = ()>(_);
 

@@ -26,7 +26,7 @@ use bp_messages::{
 	DeliveredMessages, DispatchResultsBitVec, LaneId, MessageData, MessageNonce, OutboundLaneData,
 	UnrewardedRelayer,
 };
-// paritytech
+// substrate
 use frame_support::{traits::Get, RuntimeDebug};
 use sp_std::collections::vec_deque::VecDeque;
 

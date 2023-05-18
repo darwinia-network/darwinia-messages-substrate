@@ -17,7 +17,7 @@
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use num_traits::{AsPrimitive, Bounded, CheckedSub, Saturating, SaturatingAdd, Zero};
-// paritytech
+// substrate
 use frame_support::{weights::Weight, Parameter};
 use sp_runtime::{
 	traits::{

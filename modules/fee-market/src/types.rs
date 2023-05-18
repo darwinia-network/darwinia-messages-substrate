@@ -23,7 +23,7 @@ use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // darwinia-network
 use bp_messages::{LaneId, MessageNonce};
-// paritytech
+// substrate
 use sp_runtime::{traits::AtLeast32BitUnsigned, RuntimeDebug};
 use sp_std::vec::Vec;
 

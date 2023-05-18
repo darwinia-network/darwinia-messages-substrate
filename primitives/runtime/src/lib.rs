@@ -43,7 +43,7 @@ pub use sp_runtime::paste;
 use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use num_traits::{CheckedSub, One};
 use scale_info::TypeInfo;
-// paritytech
+// substrate
 use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
 };

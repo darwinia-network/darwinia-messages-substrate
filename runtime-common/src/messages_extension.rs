@@ -22,7 +22,7 @@ use crate::{
 	BridgeRuntimeFilterCall,
 };
 use pallet_bridge_messages::{Config, Pallet};
-// paritytech
+// substrate
 use frame_support::{dispatch::CallableCallFor, log, traits::IsSubType};
 use sp_runtime::transaction_validity::TransactionValidity;
 

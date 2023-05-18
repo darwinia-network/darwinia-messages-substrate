@@ -73,7 +73,7 @@ fn valid_justification_accepted_with_single_fork() {
 #[test]
 fn valid_justification_accepted_with_arbitrary_number_of_authorities() {
 	use finality_grandpa::voter_set::VoterSet;
-	use sp_finality_grandpa::AuthorityId;
+	use sp_consensus_grandpa::AuthorityId;
 
 	let n = 15;
 	let authorities = accounts(n).iter().map(|k| (*k, 1)).collect::<Vec<_>>();

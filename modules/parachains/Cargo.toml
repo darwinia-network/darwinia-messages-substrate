@@ -11,13 +11,13 @@ codec      = { package = "parity-scale-codec", workspace = true }
 scale-info = { workspace = true }
 serde      = { workspace = true, optional = true }
 
-# darwinia-network
+# darwinia-messages-substrate
 bp-parachains         = { workspace = true }
 bp-polkadot-core      = { workspace = true }
 bp-runtime            = { workspace = true }
 pallet-bridge-grandpa = { workspace = true }
 
-# paritytech
+# substrate
 frame-benchmarking = { workspace = true, optional = true }
 frame-support      = { workspace = true }
 frame-system       = { workspace = true }
@@ -27,12 +27,12 @@ sp-std             = { workspace = true }
 sp-trie            = { workspace = true }
 
 [dev-dependencies]
-# darwinia-network
-bp-header-chain = { workspace = true }
-bp-test-utils   = { workspace = true }
+# darwinia-messages-substrate
+bp-header-chain = { workspace = true, features = ["std"] }
+bp-test-utils   = { workspace = true, features = ["std"] }
 
-# paritytech
-sp-io = { workspace = true }
+# substrate
+sp-io = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -42,12 +42,12 @@ std = [
 	"scale-info/std",
 	"serde",
 
-	# darwinia-network
+	# darwinia-messages-substrate
 	"bp-parachains/std",
 	"bp-polkadot-core/std",
 	"bp-runtime/std",
-	
-	# paritytech
+
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-bridge-grandpa/std",
@@ -58,7 +58,11 @@ std = [
 ]
 
 runtime-benchmarks = [
+	# substrate
 	"frame-benchmarking/runtime-benchmarks",
 ]
 
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = [
+	# substrate
+	"frame-support/try-runtime",
+]

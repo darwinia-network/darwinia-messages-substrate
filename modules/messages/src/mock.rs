@@ -41,7 +41,7 @@ use bp_messages::{
 	OutboundLaneData, Parameter as MessagesParameter, UnrewardedRelayer,
 };
 use bp_runtime::{messages::MessageDispatchResult, Size};
-// paritytech
+// substrate
 use frame_support::{
 	parameter_types,
 	weights::{RuntimeDbWeight, Weight},
