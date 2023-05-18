@@ -19,6 +19,7 @@
 // darwinia-network
 use crate::{
 	DeliveredMessages, InboundLaneData, LaneId, MessageNonce, OutboundLaneData, UnrewardedRelayer,
+	VerificationError,
 };
 use bp_runtime::Size;
 // paritytech
@@ -52,9 +53,6 @@ pub trait SenderOrigin<AccountId> {
 /// can't change. Wrong implementation may lead to invalid lane states (i.e. lane
 /// that's stuck) and/or processing messages without paying fees.
 pub trait TargetHeaderChain<Payload, AccountId> {
-	/// Error type.
-	type Error: Debug + Into<&'static str>;
-
 	/// Proof that messages have been received by target chain.
 	type MessagesDeliveryProof: Parameter + Size;
 
@@ -70,12 +68,12 @@ pub trait TargetHeaderChain<Payload, AccountId> {
 	/// 1MB. BTC nodes aren't accepting transactions that are larger than 1MB, so relayer
 	/// will be unable to craft valid transaction => this (and all subsequent) messages will
 	/// never be delivered.
-	fn verify_message(payload: &Payload) -> Result<(), Self::Error>;
+	fn verify_message(payload: &Payload) -> Result<(), VerificationError>;
 
 	/// Verify messages delivery proof and return lane && nonce of the latest received message.
 	fn verify_messages_delivery_proof(
 		proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<AccountId>), Self::Error>;
+	) -> Result<(LaneId, InboundLaneData<AccountId>), VerificationError>;
 }
 
 /// Lane message verifier.
@@ -87,9 +85,6 @@ pub trait TargetHeaderChain<Payload, AccountId> {
 ///
 /// Any fee requirements should also be enforced here.
 pub trait LaneMessageVerifier<SenderOrigin, Payload, Fee> {
-	/// Error type.
-	type Error: Debug + Into<&'static str>;
-
 	/// Verify message payload and return Ok(()) if message is valid and allowed to be sent over the
 	/// lane.
 	fn verify_message(
@@ -98,7 +93,7 @@ pub trait LaneMessageVerifier<SenderOrigin, Payload, Fee> {
 		lane: &LaneId,
 		outbound_data: &OutboundLaneData,
 		payload: &Payload,
-	) -> Result<(), Self::Error>;
+	) -> Result<(), VerificationError>;
 }
 
 /// Message delivery payment. It is called as a part of submit-message transaction. Transaction
@@ -115,16 +110,13 @@ pub trait LaneMessageVerifier<SenderOrigin, Payload, Fee> {
 /// should set `delivery_and_dispatch_fee` to at least (equivalent of): sum of fees from (2)
 /// to (4) above, plus some interest for the relayer.
 pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
-	/// Error type.
-	type Error: Debug + Into<&'static str>;
-
 	/// Withhold/write-off delivery_and_dispatch_fee from submitter account to
 	/// some relayers-fund account.
 	fn pay_delivery_and_dispatch_fee(
 		submitter: &SenderOrigin,
 		fee: &Balance,
 		relayer_fund_account: &AccountId,
-	) -> Result<(), Self::Error>;
+	) -> Result<(), VerificationError>;
 
 	/// Pay rewards for delivering messages to the given relayers.
 	///
@@ -141,13 +133,11 @@ pub trait MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> {
 impl<SenderOrigin, AccountId, Balance>
 	MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> for ()
 {
-	type Error = &'static str;
-
 	fn pay_delivery_and_dispatch_fee(
 		_submitter: &SenderOrigin,
 		_fee: &Balance,
 		_relayer_fund_account: &AccountId,
-	) -> Result<(), Self::Error> {
+	) -> Result<(), VerificationError> {
 		Ok(())
 	}
 
@@ -249,45 +239,40 @@ impl<SenderOrigin, Balance, Payload> MessagesBridge<SenderOrigin, Balance, Paylo
 /// `MessageDeliveryAndDispatchPayment` on chains, where outbound messages are forbidden.
 pub struct ForbidOutboundMessages;
 impl<Payload, AccountId> TargetHeaderChain<Payload, AccountId> for ForbidOutboundMessages {
-	type Error = &'static str;
 	type MessagesDeliveryProof = ();
 
-	fn verify_message(_payload: &Payload) -> Result<(), Self::Error> {
-		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
+	fn verify_message(_payload: &Payload) -> Result<(), VerificationError> {
+		Err(VerificationError::Other(ALL_OUTBOUND_MESSAGES_REJECTED))
 	}
 
 	fn verify_messages_delivery_proof(
 		_proof: Self::MessagesDeliveryProof,
-	) -> Result<(LaneId, InboundLaneData<AccountId>), Self::Error> {
-		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
+	) -> Result<(LaneId, InboundLaneData<AccountId>), VerificationError> {
+		Err(VerificationError::Other(ALL_OUTBOUND_MESSAGES_REJECTED))
 	}
 }
 impl<SenderOrigin, Payload, Fee> LaneMessageVerifier<SenderOrigin, Payload, Fee>
 	for ForbidOutboundMessages
 {
-	type Error = &'static str;
-
 	fn verify_message(
 		_submitter: &SenderOrigin,
 		_delivery_and_dispatch_fee: &Fee,
 		_lane: &LaneId,
 		_outbound_data: &OutboundLaneData,
 		_payload: &Payload,
-	) -> Result<(), Self::Error> {
-		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
+	) -> Result<(), VerificationError> {
+		Err(VerificationError::Other(ALL_OUTBOUND_MESSAGES_REJECTED))
 	}
 }
 impl<SenderOrigin, AccountId, Balance>
 	MessageDeliveryAndDispatchPayment<SenderOrigin, AccountId, Balance> for ForbidOutboundMessages
 {
-	type Error = &'static str;
-
 	fn pay_delivery_and_dispatch_fee(
 		_submitter: &SenderOrigin,
 		_fee: &Balance,
 		_relayer_fund_account: &AccountId,
-	) -> Result<(), Self::Error> {
-		Err(ALL_OUTBOUND_MESSAGES_REJECTED)
+	) -> Result<(), VerificationError> {
+		Err(VerificationError::Other(ALL_OUTBOUND_MESSAGES_REJECTED))
 	}
 
 	fn pay_relayers_rewards(

@@ -29,10 +29,10 @@ sp-std             = { workspace = true }
 
 [dev-dependencies]
 # darwinia-network
-bp-test-utils = { workspace = true }
+bp-test-utils = { workspace = true, features = ["std"] }
 # paritytech
 pallet-balances = { workspace = true, features = ["std"] }
-sp-io           = { workspace = true }
+sp-io           = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

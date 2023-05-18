@@ -16,13 +16,13 @@
 
 //! Primitives of messages module, that are used on the target chain.
 
-use crate::{LaneId, Message, MessageData, MessageKey, OutboundLaneData};
+use crate::{LaneId, Message, MessageData, MessageKey, OutboundLaneData, VerificationError};
 
 use bp_runtime::{messages::MessageDispatchResult, Size};
 use codec::{Decode, Encode, Error as CodecError};
 use frame_support::{weights::Weight, Parameter, RuntimeDebug};
 use scale_info::TypeInfo;
-use sp_std::{collections::btree_map::BTreeMap, fmt::Debug, prelude::*};
+use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 /// Proved messages from the source chain.
 pub type ProvedMessages<Message> = BTreeMap<LaneId, ProvedLaneMessages<Message>>;
@@ -37,9 +37,6 @@ const ALL_INBOUND_MESSAGES_REJECTED: &str =
 /// can't change. Wrong implementation may lead to invalid lane states (i.e. lane
 /// that's stuck) and/or processing messages without paying fees.
 pub trait SourceHeaderChain<Fee> {
-	/// Error type.
-	type Error: Debug + Into<&'static str>;
-
 	/// Proof that messages are sent from source chain. This may also include proof
 	/// of corresponding outbound lane states.
 	type MessagesProof: Parameter + Size;
@@ -58,7 +55,7 @@ pub trait SourceHeaderChain<Fee> {
 	fn verify_messages_proof(
 		proof: Self::MessagesProof,
 		messages_count: u32,
-	) -> Result<ProvedMessages<Message<Fee>>, Self::Error>;
+	) -> Result<ProvedMessages<Message<Fee>>, VerificationError>;
 }
 
 /// Called when inbound message is received.
@@ -148,14 +145,13 @@ impl<DispatchPayload: Decode, Fee> From<Message<Fee>> for DispatchMessage<Dispat
 /// where inbound messages are forbidden.
 pub struct ForbidInboundMessages;
 impl<Fee> SourceHeaderChain<Fee> for ForbidInboundMessages {
-	type Error = &'static str;
 	type MessagesProof = ();
 
 	fn verify_messages_proof(
 		_proof: Self::MessagesProof,
 		_messages_count: u32,
-	) -> Result<ProvedMessages<Message<Fee>>, Self::Error> {
-		Err(ALL_INBOUND_MESSAGES_REJECTED)
+	) -> Result<ProvedMessages<Message<Fee>>, VerificationError> {
+		Err(VerificationError::Other(ALL_INBOUND_MESSAGES_REJECTED))
 	}
 }
 impl<AccountId, Fee> MessageDispatch<AccountId, Fee> for ForbidInboundMessages {
