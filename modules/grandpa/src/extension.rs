@@ -17,7 +17,7 @@
 // darwinia-network
 use crate::{Config, Pallet};
 use bp_runtime::FilterCall;
-// paritytech
+// substrate
 use frame_support::{dispatch::CallableCallFor, log, traits::IsSubType};
 use sp_runtime::{
 	traits::Header,

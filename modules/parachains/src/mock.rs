@@ -17,7 +17,7 @@
 // darwinia-network
 use bp_polkadot_core::parachains::ParaId;
 use bp_runtime::Chain;
-// paritytech
+// substrate
 use frame_support::{traits::IsInVec, weights::Weight};
 use frame_system::mocking::*;
 use sp_core::ConstU32;

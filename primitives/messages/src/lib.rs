@@ -30,7 +30,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 // darwinia-network
 use bp_runtime::{BasicOperatingMode, OperatingMode};
-// paritytech
+// substrate
 use frame_support::{PalletError, RuntimeDebug};
 use sp_std::{collections::vec_deque::VecDeque, prelude::*};
 

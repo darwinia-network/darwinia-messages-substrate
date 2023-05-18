@@ -14,12 +14,12 @@ num-traits = { workspace = true }
 scale-info = { workspace = true }
 serde      = { workspace = true, optional = true, features = ["derive"] }
 
-# darwinia-network
+# darwinia-messages-substrate
 bp-message-dispatch = { workspace = true }
 bp-messages         = { workspace = true }
 bp-runtime          = { workspace = true }
 
-# paritytech
+# substrate
 frame-benchmarking = { workspace = true, optional = true }
 frame-support      = { workspace = true }
 frame-system       = { workspace = true }
@@ -28,9 +28,10 @@ sp-runtime         = { workspace = true }
 sp-std             = { workspace = true }
 
 [dev-dependencies]
-# darwinia-network
+# darwinia-messages-substrate
 bp-test-utils = { workspace = true, features = ["std"] }
-# paritytech
+
+# substrate
 pallet-balances = { workspace = true, features = ["std"] }
 sp-io           = { workspace = true, features = ["std"] }
 
@@ -43,12 +44,12 @@ std = [
 	"scale-info/std",
 	"serde",
 
-	# darwinia-network
+	# darwinia-messages-substrate
 	"bp-message-dispatch/std",
 	"bp-messages/std",
 	"bp-runtime/std",
 
-	# paritytech
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",
@@ -57,7 +58,11 @@ std = [
 ]
 
 runtime-benchmarks = [
+	# substrate
 	"frame-benchmarking/runtime-benchmarks",
 ]
 
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = [
+	# substrate
+	"frame-support/try-runtime",
+]

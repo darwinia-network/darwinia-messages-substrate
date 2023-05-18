@@ -22,7 +22,7 @@ use bp_header_chain::AuthoritySet;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{BoundedVec, RuntimeDebugNoBound};
 use scale_info::TypeInfo;
-use sp_finality_grandpa::{AuthorityId, AuthorityList, AuthorityWeight, SetId};
+use sp_consensus_grandpa::{AuthorityId, AuthorityList, AuthorityWeight, SetId};
 
 /// A bounded list of Grandpa authorities with associated weights.
 pub type StoredAuthorityList<MaxBridgedAuthorities> =

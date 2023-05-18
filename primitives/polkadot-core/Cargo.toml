@@ -8,15 +8,15 @@ version     = "0.1.0"
 
 [dependencies]
 # crates.io
-codec           = { package = "parity-scale-codec", workspace = true }
-scale-info      = { workspace = true }
-serde           = { workspace = true, optional = true }
+codec      = { package = "parity-scale-codec", workspace = true }
+scale-info = { workspace = true }
+serde      = { workspace = true, optional = true }
 
-# darwinia-network
+# darwinia-messages-substrate
 bp-messages = { workspace = true }
 bp-runtime  = { workspace = true }
 
-# paritytech
+# substrate
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-api        = { workspace = true }
@@ -33,11 +33,11 @@ std = [
 	"scale-info/std",
 	"serde",
 
-	# darwinia-network
+	# darwinia-messages-substrate
 	"bp-messages/std",
 	"bp-runtime/std",
-	
-	# paritytech
+
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
 	"sp-api/std",

@@ -43,7 +43,7 @@ use core::marker::PhantomData;
 use bp_parachains::{parachain_head_storage_key_at_source, ParaInfo};
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaHead, ParaHeadsProof, ParaId};
 use bp_runtime::StorageProofError;
-// paritytech
+// substrate
 use frame_support::{dispatch::PostDispatchInfo, traits::Contains};
 use sp_runtime::traits::Header as HeaderT;
 use sp_std::prelude::*;
@@ -229,7 +229,6 @@ pub mod pallet {
 		StorageDoubleMap<_, Blake2_128Concat, ParaId, Twox64Concat, u32, ParaHash>;
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
@@ -642,7 +641,7 @@ mod tests {
 	use bp_test_utils::{
 		authority_list, generate_owned_bridge_module_tests, make_default_justification,
 	};
-	// paritytech
+	// substrate
 	use frame_support::{
 		assert_noop, assert_ok,
 		dispatch::DispatchResultWithPostInfo,

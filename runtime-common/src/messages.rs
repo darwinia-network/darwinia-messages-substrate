@@ -36,7 +36,7 @@ use bp_messages::{
 };
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaId};
 use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChecker};
-// paritytech
+// substrate
 use frame_support::{
 	traits::{Currency, ExistenceRequirement, Get},
 	weights::{Weight, WeightToFee},
@@ -798,7 +798,7 @@ mod tests {
 	// darwinia-network
 	use super::*;
 	use bp_runtime::messages::DispatchFeePayment;
-	// paritytech
+	// substrate
 	use frame_support::weights::Weight;
 
 	const BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT: u64 = 2048;

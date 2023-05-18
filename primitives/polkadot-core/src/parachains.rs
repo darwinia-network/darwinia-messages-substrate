@@ -29,7 +29,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::Size;
-// paritytech
+// substrate
 use frame_support::RuntimeDebug;
 use sp_core::Hasher;
 use sp_std::prelude::*;

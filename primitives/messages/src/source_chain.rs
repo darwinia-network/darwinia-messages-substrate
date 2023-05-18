@@ -22,7 +22,7 @@ use crate::{
 	VerificationError,
 };
 use bp_runtime::Size;
-// paritytech
+// substrate
 use frame_support::{weights::Weight, Parameter, RuntimeDebug};
 use sp_std::{collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
 
@@ -170,6 +170,7 @@ pub trait OnDeliveryConfirmed {
 #[impl_trait_for_tuples::impl_for_tuples(30)]
 impl OnDeliveryConfirmed for Tuple {
 	fn on_messages_delivered(lane: &LaneId, messages: &DeliveredMessages) -> Weight {
+		#[allow(clippy::let_and_return)]
 		let mut total_weight = Weight::zero();
 		for_tuples!(
 			#(

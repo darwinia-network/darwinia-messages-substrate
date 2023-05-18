@@ -26,7 +26,7 @@ use bp_messages::{
 	DeliveredMessages, InboundLaneData, LaneId, MessageKey, MessageNonce, OutboundLaneData,
 	ReceivalResult, UnrewardedRelayer,
 };
-// paritytech
+// substrate
 use frame_support::{traits::Get, RuntimeDebug};
 
 /// Inbound lane storage.

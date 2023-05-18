@@ -57,10 +57,10 @@ use bp_runtime::{
 	BlockNumberOf, BoundedStorageValue, Chain, HashOf, HasherOf, HeaderOf, OwnedBridgeModule,
 };
 use storage_types::StoredAuthoritySet;
-// paritytech
+// substrate
 use frame_support::{ensure, fail, log};
 use frame_system::ensure_signed;
-use sp_finality_grandpa::{ConsensusLog, GRANDPA_ENGINE_ID};
+use sp_consensus_grandpa::{ConsensusLog, GRANDPA_ENGINE_ID};
 use sp_runtime::traits::{Header as HeaderT, Zero};
 use sp_std::{boxed::Box, convert::TryInto};
 
@@ -84,7 +84,7 @@ pub mod pallet {
 	// darwinia-network
 	use super::*;
 	use bp_runtime::BasicOperatingMode;
-	// paritytech
+	// substrate
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
@@ -418,7 +418,7 @@ pub mod pallet {
 	/// Returned value will indicate if a change was enacted or not.
 	pub(crate) fn try_enact_authority_change<T: Config<I>, I: 'static>(
 		header: &BridgedHeader<T, I>,
-		current_set_id: sp_finality_grandpa::SetId,
+		current_set_id: sp_consensus_grandpa::SetId,
 	) -> Result<bool, sp_runtime::DispatchError> {
 		let mut change_enacted = false;
 
@@ -620,7 +620,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 pub(crate) fn find_scheduled_change<H: HeaderT>(
 	header: &H,
-) -> Option<sp_finality_grandpa::ScheduledChange<H::Number>> {
+) -> Option<sp_consensus_grandpa::ScheduledChange<H::Number>> {
 	use sp_runtime::generic::OpaqueDigestItemId;
 
 	let id = OpaqueDigestItemId::Consensus(&GRANDPA_ENGINE_ID);
@@ -639,7 +639,7 @@ pub(crate) fn find_scheduled_change<H: HeaderT>(
 /// extracts it.
 pub(crate) fn find_forced_change<H: HeaderT>(
 	header: &H,
-) -> Option<(H::Number, sp_finality_grandpa::ScheduledChange<H::Number>)> {
+) -> Option<(H::Number, sp_consensus_grandpa::ScheduledChange<H::Number>)> {
 	use sp_runtime::generic::OpaqueDigestItemId;
 
 	let id = OpaqueDigestItemId::Consensus(&GRANDPA_ENGINE_ID);
@@ -729,7 +729,7 @@ mod tests {
 
 	fn change_log(delay: u64) -> Digest {
 		let consensus_log =
-			ConsensusLog::<TestNumber>::ScheduledChange(sp_finality_grandpa::ScheduledChange {
+			ConsensusLog::<TestNumber>::ScheduledChange(sp_consensus_grandpa::ScheduledChange {
 				next_authorities: vec![(ALICE.into(), 1), (BOB.into(), 1)],
 				delay,
 			});
@@ -740,7 +740,7 @@ mod tests {
 	fn forced_change_log(delay: u64) -> Digest {
 		let consensus_log = ConsensusLog::<TestNumber>::ForcedChange(
 			delay,
-			sp_finality_grandpa::ScheduledChange {
+			sp_consensus_grandpa::ScheduledChange {
 				next_authorities: vec![(ALICE.into(), 1), (BOB.into(), 1)],
 				delay,
 			},
@@ -751,7 +751,7 @@ mod tests {
 
 	fn many_authorities_log() -> Digest {
 		let consensus_log =
-			ConsensusLog::<TestNumber>::ScheduledChange(sp_finality_grandpa::ScheduledChange {
+			ConsensusLog::<TestNumber>::ScheduledChange(sp_consensus_grandpa::ScheduledChange {
 				next_authorities: std::iter::repeat((ALICE.into(), 1))
 					.take(MAX_BRIDGED_AUTHORITIES as usize + 1)
 					.collect(),

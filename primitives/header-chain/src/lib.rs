@@ -31,8 +31,8 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::BasicOperatingMode;
-// paritytech
-use sp_finality_grandpa::{AuthorityList, SetId};
+// substrate
+use sp_consensus_grandpa::{AuthorityList, SetId};
 use sp_runtime::{traits::Header as HeaderT, RuntimeDebug};
 use sp_std::boxed::Box;
 

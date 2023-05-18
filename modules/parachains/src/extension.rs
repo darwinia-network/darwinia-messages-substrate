@@ -17,7 +17,7 @@
 // darwinia-network
 use crate::{Config, Pallet, RelayBlockHash, RelayBlockHasher, RelayBlockNumber};
 use bp_runtime::FilterCall;
-// paritytech
+// substrate
 use frame_support::{dispatch::CallableCallFor, traits::IsSubType};
 use sp_runtime::transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction};
 

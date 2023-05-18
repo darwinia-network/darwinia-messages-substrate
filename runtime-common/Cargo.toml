@@ -9,12 +9,12 @@ version    = "0.1.0"
 [dependencies]
 # crates.io
 codec             = { package = "parity-scale-codec", workspace = true }
-hash-db           = { version = "0.15", default-features = false }
+hash-db           = { workspace = true }
 num-traits        = { workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { version = "1.1", optional = true }
 
-# darwinia-network
+# darwinia-messages-substrate
 bp-header-chain          = { workspace = true }
 bp-message-dispatch      = { workspace = true }
 bp-messages              = { workspace = true }
@@ -22,12 +22,12 @@ bp-parachains            = { workspace = true }
 bp-polkadot-core         = { workspace = true }
 bp-runtime               = { workspace = true }
 pallet-bridge-dispatch   = { workspace = true }
-pallet-bridge-grandpa    = { workspace = true}
+pallet-bridge-grandpa    = { workspace = true }
 pallet-bridge-messages   = { workspace = true }
 pallet-bridge-parachains = { workspace = true }
 pallet-fee-market        = { workspace = true }
 
-# paritytech
+# substrate
 frame-support              = { workspace = true }
 frame-system               = { workspace = true }
 pallet-balances            = { workspace = true, optional = true }
@@ -44,7 +44,13 @@ sp-version                 = { workspace = true, optional = true }
 [features]
 default = ["std"]
 std = [
-	# darwinia-network
+	# crates.io
+	"codec/std",
+	"hash-db/std",
+	"num-traits/std",
+	"scale-info/std",
+
+	# darwinia-messages-substrate
 	"bp-header-chain/std",
 	"bp-message-dispatch/std",
 	"bp-messages/std",
@@ -57,13 +63,7 @@ std = [
 	"pallet-bridge-parachains/std",
 	"pallet-fee-market/std",
 
-	# crates.io
-	"codec/std",
-	"hash-db/std",
-	"num-traits/std",
-	"scale-info/std",
-	
-	# paritytech
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-transaction-payment/std",
@@ -77,10 +77,12 @@ std = [
 ]
 
 integrity-test = [
+	# crates.io
 	"static_assertions",
 ]
 
 runtime-benchmarks = [
+	# darwinia-messages-substrate
 	"pallet-balances/runtime-benchmarks",
 	"pallet-bridge-grandpa/runtime-benchmarks",
 	"pallet-bridge-messages/runtime-benchmarks",

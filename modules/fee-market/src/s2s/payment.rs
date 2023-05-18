@@ -166,7 +166,7 @@ where
 
 		for message_nonce in nonce_begin..nonce_end + 1 {
 			// The order created when message was accepted, so we can always get the order info.
-			if let Some(order) = <Orders<T, I>>::get(&(lane_id, message_nonce)) {
+			if let Some(order) = <Orders<T, I>>::get((lane_id, message_nonce)) {
 				let mut reward_item = RewardItem::new();
 				let order_collater = order.collateral_per_assigned_relayer;
 

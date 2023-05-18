@@ -79,7 +79,7 @@ use bp_messages::{
 	UnrewardedRelayersState, VerificationError,
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
-// paritytech
+// substrate
 use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get};
 use sp_core::H256;
 use sp_runtime::traits::Convert;
@@ -215,7 +215,6 @@ pub mod pallet {
 		>>::MessagesDeliveryProof;
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
 	impl<T: Config<I>, I: 'static> OwnedBridgeModule<T> for Pallet<T, I> {
@@ -1037,7 +1036,7 @@ mod tests {
 	};
 	use bp_messages::{UnrewardedRelayer, UnrewardedRelayersState};
 	use bp_test_utils::generate_owned_bridge_module_tests;
-	// paritytech
+	// substrate
 	use frame_support::{
 		assert_noop, assert_ok,
 		storage::generator::{StorageMap, StorageValue},

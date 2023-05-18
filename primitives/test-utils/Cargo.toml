@@ -11,16 +11,16 @@ codec            = { package = "parity-scale-codec", workspace = true }
 ed25519-dalek    = { version = "1.0", default-features = false, features = ["u64_backend"] }
 finality-grandpa = { workspace = true }
 
-# darwinia-network
+# darwinia-messages-substrate
 bp-header-chain = { workspace = true }
 
-# paritytech
+# substrate
 sp-application-crypto = { workspace = true }
-sp-finality-grandpa   = { workspace = true }
+sp-consensus-grandpa  = { workspace = true }
 sp-runtime            = { workspace = true }
 sp-std                = { workspace = true }
 
-# paritytech
+# substrate
 [features]
 default = ["std"]
 std = [
@@ -29,12 +29,12 @@ std = [
 	"ed25519-dalek/std",
 	"finality-grandpa/std",
 
-	# darwinia-network
+	# darwinia-messages-substrate
 	"bp-header-chain/std",
-	
-	# paritytech
+
+	# substrate
 	"sp-application-crypto/std",
-	"sp-finality-grandpa/std",
+	"sp-consensus-grandpa/std",
 	"sp-runtime/std",
 	"sp-std/std",
 ]

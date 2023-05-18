@@ -20,7 +20,7 @@
 use codec::Encode;
 // darwinia-network
 use crate::{LaneId, MessageKey, MessageNonce};
-// paritytech
+// substrate
 use frame_support::Blake2_128Concat;
 use sp_core::storage::StorageKey;
 

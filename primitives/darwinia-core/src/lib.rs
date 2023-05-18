@@ -19,9 +19,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod copy_paste_from_darwinia {
-	// moonbeam
-	use account::EthereumSignature;
-	// paritytech
+	// frontier
+	use fp_account::EthereumSignature;
+	// substrate
 	use frame_support::{
 		dispatch::DispatchClass,
 		weights::{
@@ -143,7 +143,7 @@ use scale_info::{StaticTypeInfo, TypeInfo};
 // darwinia-network
 use bp_messages::MessageNonce;
 use bp_runtime::{Chain, EncodedOrDecodedCall, TransactionEraOf};
-// paritytech
+// substrate
 use frame_support::{
 	dispatch::DispatchClass,
 	unsigned::{TransactionValidityError, UnknownTransaction},

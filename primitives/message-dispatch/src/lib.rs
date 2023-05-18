@@ -27,7 +27,7 @@ use bp_runtime::{
 	messages::{DispatchFeePayment, MessageDispatchResult},
 	ChainId, Size,
 };
-// paritytech
+// substrate
 use frame_support::RuntimeDebug;
 use sp_runtime::transaction_validity::TransactionValidityError;
 use sp_std::prelude::*;

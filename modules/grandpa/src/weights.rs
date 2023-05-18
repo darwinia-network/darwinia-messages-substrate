@@ -53,25 +53,9 @@ pub trait WeightInfo {
 	fn submit_finality_proof(p: u32, v: u32) -> Weight;
 }
 
-/// Weights for `pallet_bridge_grandpa` using the Millau node and recommended hardware.
-pub struct BridgeWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
-	fn submit_finality_proof(p: u32, v: u32) -> Weight {
-		Weight::from_ref_time(55_070_000 as u64)
-			.saturating_add(Weight::from_ref_time(39_678_000 as u64).saturating_mul(p as u64))
-			.saturating_add(Weight::from_ref_time(1_540_000 as u64).saturating_mul(v as u64))
-			.saturating_add(T::DbWeight::get().reads(7 as u64))
-			.saturating_add(T::DbWeight::get().writes(6 as u64))
-	}
-}
-
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	fn submit_finality_proof(p: u32, v: u32) -> Weight {
-		Weight::from_ref_time(55_070_000 as u64)
-			.saturating_add(Weight::from_ref_time(39_678_000 as u64).saturating_mul(p as u64))
-			.saturating_add(Weight::from_ref_time(1_540_000 as u64).saturating_mul(v as u64))
-			.saturating_add(RocksDbWeight::get().reads(7 as u64))
-			.saturating_add(RocksDbWeight::get().writes(6 as u64))
+	fn submit_finality_proof(_: u32, _: u32) -> Weight {
+		sp_runtime::traits::Zero::zero()
 	}
 }

@@ -24,8 +24,8 @@ rustup target add wasm32-unknown-unknown --toolchain nightly
 Once this is configured you can build and test the repo as follows:
 
 ```
-git clone https://github.com/darwinia-network/darwinia-bridges-substrate.git
-cd darwinia-bridges-substrate
+git clone https://github.com/darwinia-network/darwinia-messages-substrate.git
+cd darwinia-messages-substrate
 cargo build --all
 cargo test --all
 ```

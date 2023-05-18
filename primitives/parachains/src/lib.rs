@@ -27,7 +27,7 @@ use bp_polkadot_core::{
 	BlockNumber as RelayBlockNumber,
 };
 use bp_runtime::{StorageDoubleMapKeyProvider, StorageMapKeyProvider};
-// paritytech
+// substrate
 use frame_support::{Blake2_128Concat, RuntimeDebug, Twox64Concat};
 use sp_core::storage::StorageKey;
 

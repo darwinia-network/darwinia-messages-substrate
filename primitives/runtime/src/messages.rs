@@ -19,7 +19,7 @@
 // crates.io
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-// paritytech
+// substrate
 use frame_support::{weights::Weight, RuntimeDebug};
 
 /// Where message dispatch fee is paid?

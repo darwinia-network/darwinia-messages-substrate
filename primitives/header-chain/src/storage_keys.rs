@@ -16,7 +16,7 @@
 
 //! Storage keys of bridge GRANDPA pallet.
 
-// paritytech
+// substrate
 use sp_core::storage::StorageKey;
 
 /// Name of the `IsHalted` storage value.
