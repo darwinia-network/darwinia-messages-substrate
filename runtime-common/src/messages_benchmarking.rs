@@ -39,6 +39,7 @@ use sp_core::Hasher;
 use sp_runtime::traits::{Header, IdentifyAccount, MaybeSerializeDeserialize, Zero};
 use sp_std::{fmt::Debug, prelude::*};
 use sp_trie::{trie_types::TrieDBMutBuilderV1, LayoutV1, MemoryDB, Recorder, TrieMut};
+use fp_account::EthereumSignature;
 
 /// Prepare outbound message for the `send_message` call.
 pub fn prepare_outbound_message<B>(
@@ -78,13 +79,13 @@ where
 	BH: Header<Hash = HashOf<BridgedChain<B>>>,
 	BHH: Hasher<Out = HashOf<BridgedChain<B>>>,
 	AccountIdOf<ThisChain<B>>: PartialEq + sp_std::fmt::Debug,
-	AccountIdOf<BridgedChain<B>>: From<[u8; 32]>,
+	AccountIdOf<BridgedChain<B>>: From<sp_core::H160>,
 	BalanceOf<ThisChain<B>>: Debug + MaybeSerializeDeserialize,
 	CallOf<ThisChain<B>>: From<frame_system::Call<R>> + GetDispatchInfo,
 	HashOf<BridgedChain<B>>: Copy + Default,
-	SignatureOf<ThisChain<B>>: From<sp_core::ed25519::Signature>,
+	SignatureOf<ThisChain<B>>: From<EthereumSignature>,
 	SignerOf<ThisChain<B>>: Clone
-		+ From<sp_core::ed25519::Public>
+		+ From<fp_account::EthereumSigner>
 		+ IdentifyAccount<AccountId = AccountIdOf<ThisChain<B>>>,
 {
 	let message_payload = match params.size {
