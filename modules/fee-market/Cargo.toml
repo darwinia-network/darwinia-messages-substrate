@@ -53,6 +53,8 @@ std = [
 	"sp-io/std",
 	"sp-std/std",
 	"sp-runtime/std",
+	# substrate optional
+	"frame-benchmarking?/std",
 
 	# darwinia-messages-substrate
 	"bp-messages/std",
@@ -61,7 +63,7 @@ std = [
 
 runtime-benchmarks = [
 	# substrate
-	"frame-benchmarking",
+	"frame-benchmarking/runtime-benchmarks",
 ]
 
 try-runtime = [
