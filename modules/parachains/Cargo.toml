@@ -55,6 +55,8 @@ std = [
 	"sp-runtime/std",
 	"sp-std/std",
 	"sp-trie/std",
+	# substrate optional
+	"frame-benchmarking?/std",
 ]
 
 runtime-benchmarks = [
