@@ -53,7 +53,7 @@ where
 
 	FromThisChainMessagePayload::<B> {
 		spec_version: 0,
-		weight: bp_messages::Weight::from_ref_time(params.size.into()),
+		weight: bp_messages::Weight::from_parts(params.size.into(), 0),
 		origin: dispatch_origin,
 		call: message_payload,
 		dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
