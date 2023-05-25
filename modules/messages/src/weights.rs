@@ -63,165 +63,57 @@ pub trait WeightInfo {
 	fn receive_delivery_proof_for_two_messages_by_two_relayers() -> Weight;
 }
 
-/// Weights for `pallet_bridge_messages` using the Millau node and recommended hardware.
-pub struct BridgeWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for BridgeWeight<T> {
-	fn send_minimal_message_worst_case() -> Weight {
-		Weight::from_ref_time(117_480_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(7 as u64))
-			.saturating_add(T::DbWeight::get().writes(12 as u64))
-	}
-
-	fn send_1_kb_message_worst_case() -> Weight {
-		Weight::from_ref_time(128_391_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(7 as u64))
-			.saturating_add(T::DbWeight::get().writes(12 as u64))
-	}
-
-	fn send_16_kb_message_worst_case() -> Weight {
-		Weight::from_ref_time(149_149_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(7 as u64))
-			.saturating_add(T::DbWeight::get().writes(12 as u64))
-	}
-
-	fn maximal_increase_message_fee() -> Weight {
-		Weight::from_ref_time(6_015_058_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(5 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_single_message_proof() -> Weight {
-		Weight::from_ref_time(179_892_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(6 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_two_messages_proof() -> Weight {
-		Weight::from_ref_time(291_793_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(6 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_single_message_proof_with_outbound_lane_state() -> Weight {
-		Weight::from_ref_time(192_191_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(6 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_single_message_proof_1_kb() -> Weight {
-		Weight::from_ref_time(202_104_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(6 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_single_message_proof_16_kb() -> Weight {
-		Weight::from_ref_time(357_144_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(6 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_single_prepaid_message_proof() -> Weight {
-		Weight::from_ref_time(122_648_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(3 as u64))
-			.saturating_add(T::DbWeight::get().writes(1 as u64))
-	}
-
-	fn receive_delivery_proof_for_single_message() -> Weight {
-		Weight::from_ref_time(107_631_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(6 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_delivery_proof_for_two_messages_by_single_relayer() -> Weight {
-		Weight::from_ref_time(113_885_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(7 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
-	}
-
-	fn receive_delivery_proof_for_two_messages_by_two_relayers() -> Weight {
-		Weight::from_ref_time(155_151_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(8 as u64))
-			.saturating_add(T::DbWeight::get().writes(4 as u64))
-	}
-}
-
 // For backwards compatibility and tests
 impl WeightInfo for () {
 	fn send_minimal_message_worst_case() -> Weight {
-		Weight::from_ref_time(117_480_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(7 as u64))
-			.saturating_add(RocksDbWeight::get().writes(12 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn send_1_kb_message_worst_case() -> Weight {
-		Weight::from_ref_time(128_391_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(7 as u64))
-			.saturating_add(RocksDbWeight::get().writes(12 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn send_16_kb_message_worst_case() -> Weight {
-		Weight::from_ref_time(149_149_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(7 as u64))
-			.saturating_add(RocksDbWeight::get().writes(12 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn maximal_increase_message_fee() -> Weight {
-		Weight::from_ref_time(6_015_058_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(5 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_single_message_proof() -> Weight {
-		Weight::from_ref_time(179_892_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(6 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_two_messages_proof() -> Weight {
-		Weight::from_ref_time(291_793_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(6 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_single_message_proof_with_outbound_lane_state() -> Weight {
-		Weight::from_ref_time(192_191_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(6 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_single_message_proof_1_kb() -> Weight {
-		Weight::from_ref_time(202_104_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(6 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_single_message_proof_16_kb() -> Weight {
-		Weight::from_ref_time(357_144_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(6 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_single_prepaid_message_proof() -> Weight {
-		Weight::from_ref_time(122_648_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(3 as u64))
-			.saturating_add(RocksDbWeight::get().writes(1 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_delivery_proof_for_single_message() -> Weight {
-		Weight::from_ref_time(107_631_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(6 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_delivery_proof_for_two_messages_by_single_relayer() -> Weight {
-		Weight::from_ref_time(113_885_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(7 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 
 	fn receive_delivery_proof_for_two_messages_by_two_relayers() -> Weight {
-		Weight::from_ref_time(155_151_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(8 as u64))
-			.saturating_add(RocksDbWeight::get().writes(4 as u64))
+		sp_runtime::traits::Zero::zero()
 	}
 }

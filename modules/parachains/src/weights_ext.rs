@@ -41,7 +41,9 @@ pub trait WeightInfoExt: WeightInfo {
 	///
 	/// The relayer would pay some extra fee for additional proof bytes, since they mean
 	/// more hashing operations.
-	fn expected_extra_storage_proof_size() -> u32;
+	fn expected_extra_storage_proof_size() -> u32 {
+		EXTRA_STORAGE_PROOF_SIZE
+	}
 
 	/// Weight of the parachain heads delivery extrinsic.
 	fn submit_parachain_heads_weight(
