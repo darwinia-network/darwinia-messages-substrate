@@ -387,9 +387,3 @@ pub trait WeightInfoExt: WeightInfo {
 		db_weight.reads_writes(1, 1)
 	}
 }
-
-impl WeightInfoExt for () {
-	fn expected_extra_storage_proof_size() -> u32 {
-		EXTRA_STORAGE_PROOF_SIZE
-	}
-}

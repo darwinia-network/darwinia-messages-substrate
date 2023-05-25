@@ -96,9 +96,3 @@ pub trait WeightInfoExt: WeightInfo {
 		extra_byte_weight.saturating_mul(extra_proof_bytes as u64)
 	}
 }
-
-impl WeightInfoExt for () {
-	fn expected_extra_storage_proof_size() -> u32 {
-		EXTRA_STORAGE_PROOF_SIZE
-	}
-}
