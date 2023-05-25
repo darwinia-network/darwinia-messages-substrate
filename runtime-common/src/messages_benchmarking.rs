@@ -88,10 +88,28 @@ where
 		+ From<fp_account::EthereumSigner>
 		+ IdentifyAccount<AccountId = AccountIdOf<ThisChain<B>>>,
 {
-	let message_payload = match params.size {
+	let remark = match params.size {
 		StorageProofSize::Minimal(ref size) => vec![0u8; *size as _],
 		_ => vec![],
 	};
+
+	let call: CallOf<ThisChain<B>> = frame_system::Call::remark { remark }.into();
+	let call_weight = call.get_dispatch_info().weight;
+
+	// prepare message payload that is stored in the Bridged chain storage
+	let bridged_account_id: AccountIdOf<BridgedChain<B>> = sp_core::H160::default().into();
+	let message_payload = bp_message_dispatch::MessagePayload {
+		spec_version: 0,
+		weight: call_weight,
+		origin: bp_message_dispatch::CallOrigin::<
+			AccountIdOf<BridgedChain<B>>,
+			SignerOf<ThisChain<B>>,
+			SignatureOf<ThisChain<B>>,
+		>::SourceAccount(bridged_account_id),
+		dispatch_fee_payment: params.dispatch_fee_payment.clone(),
+		call: call.encode(),
+	}
+	.encode();
 
 	// finally - prepare storage proof and update environment
 	let (state_root, storage_proof) =
@@ -106,7 +124,11 @@ where
 			nonces_start: *params.message_nonces.start(),
 			nonces_end: *params.message_nonces.end(),
 		},
-		Weight::zero(),
+		call_weight
+			.checked_mul(
+				params.message_nonces.end().saturating_sub(*params.message_nonces.start()) + 1,
+			)
+			.expect("too many messages requested by benchmark"),
 	)
 }
 
