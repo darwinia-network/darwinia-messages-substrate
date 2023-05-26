@@ -387,3 +387,5 @@ pub trait WeightInfoExt: WeightInfo {
 		db_weight.reads_writes(1, 1)
 	}
 }
+
+impl WeightInfoExt for () {}

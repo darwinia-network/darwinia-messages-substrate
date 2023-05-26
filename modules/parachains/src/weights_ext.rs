@@ -96,3 +96,5 @@ pub trait WeightInfoExt: WeightInfo {
 		extra_byte_weight.saturating_mul(extra_proof_bytes as u64)
 	}
 }
+
+impl WeightInfoExt for () {}

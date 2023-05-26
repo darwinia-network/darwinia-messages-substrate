@@ -1027,7 +1027,7 @@ mod tests {
 		let message_on_bridged_chain =
 			source::FromThisChainMessagePayload::<OnBridgedChainBridge> {
 				spec_version: 1,
-				weight: Weight::from_ref_time(100),
+				weight: Weight::from_parts(100, 0),
 				origin: bp_message_dispatch::CallOrigin::SourceRoot,
 				dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
 				call: ThisChainCall::Transfer.encode(),
@@ -1044,7 +1044,7 @@ mod tests {
 			message_on_this_chain,
 			target::FromBridgedChainMessagePayload::<OnThisChainBridge> {
 				spec_version: 1,
-				weight: Weight::from_ref_time(100),
+				weight: Weight::from_parts(100, 0),
 				origin: bp_message_dispatch::CallOrigin::SourceRoot,
 				dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
 				call: target::FromBridgedChainEncodedMessageCall::<ThisChainCall>::new(
@@ -1120,7 +1120,7 @@ mod tests {
 		assert!(source::verify_chain_message::<OnThisChainBridge>(
 			&source::FromThisChainMessagePayload::<OnThisChainBridge> {
 				spec_version: 1,
-				weight: Weight::from_ref_time(5),
+				weight: Weight::from_parts(5, 0),
 				origin: bp_message_dispatch::CallOrigin::SourceRoot,
 				dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 				call: vec![1, 2, 3, 4, 5, 6],
@@ -1134,7 +1134,7 @@ mod tests {
 		assert!(source::verify_chain_message::<OnThisChainBridge>(
 			&source::FromThisChainMessagePayload::<OnThisChainBridge> {
 				spec_version: 1,
-				weight: Weight::from_ref_time((BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT + 1) as u64),
+				weight: Weight::from_parts((BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT + 1) as u64, 0),
 				origin: bp_message_dispatch::CallOrigin::SourceRoot,
 				dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 				call: vec![1, 2, 3, 4, 5, 6],
@@ -1148,7 +1148,7 @@ mod tests {
 		assert!(source::verify_chain_message::<OnThisChainBridge>(
 			&source::FromThisChainMessagePayload::<OnThisChainBridge> {
 				spec_version: 1,
-				weight: Weight::from_ref_time(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT as u64),
+				weight: Weight::from_parts(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT as u64, 0),
 				origin: bp_message_dispatch::CallOrigin::SourceRoot,
 				dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 				call: vec![0; source::maximal_message_size::<OnThisChainBridge>() as usize + 1],
@@ -1163,7 +1163,7 @@ mod tests {
 			source::verify_chain_message::<OnThisChainBridge>(
 				&source::FromThisChainMessagePayload::<OnThisChainBridge> {
 					spec_version: 1,
-					weight: Weight::from_ref_time(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT as u64),
+					weight: Weight::from_parts(BRIDGED_CHAIN_MAX_EXTRINSIC_WEIGHT as u64, 0),
 					origin: bp_message_dispatch::CallOrigin::SourceRoot,
 					dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 					call: vec![0; source::maximal_message_size::<OnThisChainBridge>() as _],
