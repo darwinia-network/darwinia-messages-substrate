@@ -2102,12 +2102,12 @@ mod tests {
 			TestOnMessageAccepted::set_consumed_weight_per_message(
 				crate::mock::DbWeight::get().writes(1),
 			);
-			let actual_callback_weight = send_regular_message();
-			let pre_dispatch_weight = <TestRuntime as Config>::WeightInfo::send_message_weight(
+			let _actual_callback_weight = send_regular_message();
+			let _pre_dispatch_weight = <TestRuntime as Config>::WeightInfo::send_message_weight(
 				&REGULAR_PAYLOAD,
 				crate::mock::DbWeight::get(),
 			);
-			let prune_weight = crate::mock::DbWeight::get()
+			let _prune_weight = crate::mock::DbWeight::get()
 				.writes(<TestRuntime as Config>::MaxMessagesToPruneAtOnce::get());
 
 			// assert_eq!(

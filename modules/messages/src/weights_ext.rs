@@ -195,7 +195,9 @@ pub trait WeightInfoExt: WeightInfo {
 	/// factors that may increase proof size: (1) the message size may be larger than predefined
 	/// and (2) relayer may add extra trie nodes to the proof. So if proof size is larger than
 	/// this value, we're going to charge relayer for that.
-	fn expected_extra_storage_proof_size() -> u32;
+	fn expected_extra_storage_proof_size() -> u32 {
+		EXTRA_STORAGE_PROOF_SIZE
+	}
 
 	// Functions that are directly mapped to extrinsics weights.
 
@@ -386,8 +388,4 @@ pub trait WeightInfoExt: WeightInfo {
 	}
 }
 
-impl WeightInfoExt for () {
-	fn expected_extra_storage_proof_size() -> u32 {
-		EXTRA_STORAGE_PROOF_SIZE
-	}
-}
+impl WeightInfoExt for () {}

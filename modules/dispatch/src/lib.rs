@@ -506,7 +506,7 @@ mod tests {
 	const TARGET_CHAIN_ID: ChainId = *b"trgt";
 
 	const TEST_SPEC_VERSION: SpecVersion = 0;
-	const TEST_WEIGHT: Weight = Weight::from_ref_time(1_000_000_000);
+	const TEST_WEIGHT: Weight = Weight::from_parts(1_000_000_000, 0);
 
 	#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
 	pub struct TestAccountPublic(AccountId);
@@ -549,7 +549,7 @@ mod tests {
 
 	parameter_types! {
 		pub const BlockHashCount: u64 = 250;
-		pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
+		pub const MaximumBlockWeight: Weight = Weight::from_parts(1024, 0);
 		pub const MaximumBlockLength: u32 = 2 * 1024;
 		pub const AvailableBlockRatio: Perbill = Perbill::one();
 	}
@@ -736,7 +736,7 @@ mod tests {
 			let call = RuntimeCall::System(frame_system::Call::set_heap_pages { pages: 42 });
 			let call_weight = call.get_dispatch_info().weight;
 			let mut message = prepare_root_message(call);
-			message.weight = Weight::from_ref_time(7);
+			message.weight = Weight::from_parts(7, 0);
 			assert!(
 				call_weight.ref_time() > message.weight.ref_time(),
 				"needed for test to actually trigger a weight mismatch"
@@ -751,7 +751,7 @@ mod tests {
 				Ok(message),
 				|_, _| unreachable!(),
 			);
-			assert_eq!(result.unspent_weight, Weight::from_ref_time(7));
+			assert_eq!(result.unspent_weight, Weight::from_parts(7, 0));
 			assert!(!result.dispatch_result);
 
 			assert_eq!(
@@ -763,7 +763,7 @@ mod tests {
 							SOURCE_CHAIN_ID,
 							id,
 							call_weight,
-							Weight::from_ref_time(7),
+							Weight::from_parts(7, 0),
 						)
 					),
 					topics: vec![],
