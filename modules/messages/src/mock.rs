@@ -128,7 +128,7 @@ frame_support::construct_runtime! {
 }
 
 parameter_types! {
-	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
+	pub const MaximumBlockWeight: Weight = Weight::from_parts(1024, 0);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 	pub const DbWeight: RuntimeDbWeight = RuntimeDbWeight { read: 1, write: 2 };
@@ -542,7 +542,7 @@ pub fn message(nonce: MessageNonce, payload: TestPayload) -> Message<TestMessage
 pub const fn message_payload(id: u64, declared_weight: u64) -> TestPayload {
 	TestPayload {
 		id,
-		declared_weight: Weight::from_ref_time(declared_weight),
+		declared_weight: Weight::from_parts(declared_weight, 0),
 		dispatch_result: dispatch_result(0),
 		extra: Vec::new(),
 	}
@@ -557,7 +557,7 @@ pub fn message_data(payload: TestPayload) -> MessageData<TestMessageFee> {
 pub const fn dispatch_result(unspent_weight: u64) -> MessageDispatchResult {
 	MessageDispatchResult {
 		dispatch_result: true,
-		unspent_weight: Weight::from_ref_time(unspent_weight),
+		unspent_weight: Weight::from_parts(unspent_weight, 0),
 		dispatch_fee_paid_during_dispatch: true,
 	}
 }

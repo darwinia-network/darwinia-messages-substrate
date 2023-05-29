@@ -421,6 +421,7 @@ dependencies = [
  "bp-parachains",
  "bp-polkadot-core",
  "bp-runtime",
+ "fp-account",
  "frame-support",
  "frame-system",
  "hash-db",
