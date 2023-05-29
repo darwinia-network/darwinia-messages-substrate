@@ -28,14 +28,17 @@ use crate::messages::{
 	AccountIdOf, BalanceOf, BridgedChain, CallOf, HashOf, MessageBridge, RawStorageProof,
 	SignatureOf, SignerOf, ThisChain,
 };
+use bp_message_dispatch::CallOrigin;
 use bp_messages::{storage_keys, MessageData, MessageKey, MessagePayload};
 use bp_runtime::{messages::DispatchFeePayment, record_all_trie_keys, StorageProofSize};
 use pallet_bridge_messages::benchmarking::{
 	MessageDeliveryProofParams, MessageParams, MessageProofParams,
 };
+// frontier
+use fp_account::{EthereumSignature, EthereumSigner};
 // substrate
 use frame_support::{dispatch::GetDispatchInfo, weights::Weight};
-use sp_core::Hasher;
+use sp_core::{Hasher, H160};
 use sp_runtime::traits::{Header, IdentifyAccount, MaybeSerializeDeserialize, Zero};
 use sp_std::{fmt::Debug, prelude::*};
 use sp_trie::{trie_types::TrieDBMutBuilderV1, LayoutV1, MemoryDB, Recorder, TrieMut};
@@ -49,7 +52,7 @@ where
 	BalanceOf<ThisChain<B>>: From<u64>,
 {
 	let message_payload = vec![0; params.size as usize];
-	let dispatch_origin = bp_message_dispatch::CallOrigin::SourceAccount(params.sender_account);
+	let dispatch_origin = CallOrigin::SourceAccount(params.sender_account);
 
 	FromThisChainMessagePayload::<B> {
 		spec_version: 0,
@@ -78,19 +81,36 @@ where
 	BH: Header<Hash = HashOf<BridgedChain<B>>>,
 	BHH: Hasher<Out = HashOf<BridgedChain<B>>>,
 	AccountIdOf<ThisChain<B>>: PartialEq + sp_std::fmt::Debug,
-	AccountIdOf<BridgedChain<B>>: From<[u8; 32]>,
+	AccountIdOf<BridgedChain<B>>: From<H160>,
 	BalanceOf<ThisChain<B>>: Debug + MaybeSerializeDeserialize,
 	CallOf<ThisChain<B>>: From<frame_system::Call<R>> + GetDispatchInfo,
 	HashOf<BridgedChain<B>>: Copy + Default,
-	SignatureOf<ThisChain<B>>: From<sp_core::ed25519::Signature>,
-	SignerOf<ThisChain<B>>: Clone
-		+ From<sp_core::ed25519::Public>
-		+ IdentifyAccount<AccountId = AccountIdOf<ThisChain<B>>>,
+	SignatureOf<ThisChain<B>>: From<EthereumSignature>,
+	SignerOf<ThisChain<B>>:
+		Clone + From<EthereumSigner> + IdentifyAccount<AccountId = AccountIdOf<ThisChain<B>>>,
 {
-	let message_payload = match params.size {
+	let remark = match params.size {
 		StorageProofSize::Minimal(ref size) => vec![0u8; *size as _],
 		_ => vec![],
 	};
+
+	let call: CallOf<ThisChain<B>> = frame_system::Call::remark { remark }.into();
+	let call_weight = call.get_dispatch_info().weight;
+
+	// prepare message payload that is stored in the Bridged chain storage
+	let bridged_account_id: AccountIdOf<BridgedChain<B>> = H160::default().into();
+	let message_payload = bp_message_dispatch::MessagePayload {
+		spec_version: 0,
+		weight: call_weight,
+		origin: CallOrigin::<
+			AccountIdOf<BridgedChain<B>>,
+			SignerOf<ThisChain<B>>,
+			SignatureOf<ThisChain<B>>,
+		>::SourceAccount(bridged_account_id),
+		dispatch_fee_payment: params.dispatch_fee_payment.clone(),
+		call: call.encode(),
+	}
+	.encode();
 
 	// finally - prepare storage proof and update environment
 	let (state_root, storage_proof) =
@@ -105,7 +125,11 @@ where
 			nonces_start: *params.message_nonces.start(),
 			nonces_end: *params.message_nonces.end(),
 		},
-		Weight::zero(),
+		call_weight
+			.checked_mul(
+				params.message_nonces.end().saturating_sub(*params.message_nonces.start()) + 1,
+			)
+			.expect("too many messages requested by benchmark"),
 	)
 }
 

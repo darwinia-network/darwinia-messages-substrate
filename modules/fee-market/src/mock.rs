@@ -134,9 +134,9 @@ pub const TEST_RELAYER_A: AccountId = 100;
 pub const TEST_RELAYER_B: AccountId = 101;
 /// Payload that is rejected by `TestTargetHeaderChain`.
 pub const PAYLOAD_REJECTED_BY_TARGET_CHAIN: TestPayload =
-	message_payload(1, Weight::from_ref_time(50));
+	message_payload(1, Weight::from_parts(50, 0));
 /// Regular message payload.
-pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, Weight::from_ref_time(50));
+pub const REGULAR_PAYLOAD: TestPayload = message_payload(0, Weight::from_parts(50, 0));
 /// Vec of proved messages, grouped by lane.
 pub type MessagesByLaneVec = Vec<(LaneId, ProvedLaneMessages<Message<TestMessageFee>>)>;
 

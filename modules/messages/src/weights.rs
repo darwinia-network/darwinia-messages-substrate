@@ -51,7 +51,6 @@ pub trait WeightInfo {
 	fn send_minimal_message_worst_case() -> Weight;
 	fn send_1_kb_message_worst_case() -> Weight;
 	fn send_16_kb_message_worst_case() -> Weight;
-	fn maximal_increase_message_fee() -> Weight;
 	fn receive_single_message_proof() -> Weight;
 	fn receive_two_messages_proof() -> Weight;
 	fn receive_single_message_proof_with_outbound_lane_state() -> Weight;
@@ -74,10 +73,6 @@ impl WeightInfo for () {
 	}
 
 	fn send_16_kb_message_worst_case() -> Weight {
-		sp_runtime::traits::Zero::zero()
-	}
-
-	fn maximal_increase_message_fee() -> Weight {
 		sp_runtime::traits::Zero::zero()
 	}
 

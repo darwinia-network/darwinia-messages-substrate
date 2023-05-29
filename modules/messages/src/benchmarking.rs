@@ -242,7 +242,7 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=21,
 			outbound_lane_data: None,
 			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -277,7 +277,7 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=22,
 			outbound_lane_data: None,
 			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 2, dispatch_weight)
 	verify {
@@ -316,7 +316,7 @@ benchmarks_instance_pallet! {
 				latest_generated_nonce: 21,
 			}),
 			size: StorageProofSize::Minimal(EXPECTED_DEFAULT_MESSAGE_LENGTH),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -348,7 +348,7 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=21,
 			outbound_lane_data: None,
 			size: StorageProofSize::HasExtraNodes(1024),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {
@@ -383,7 +383,7 @@ benchmarks_instance_pallet! {
 			message_nonces: 21..=21,
 			outbound_lane_data: None,
 			size: StorageProofSize::HasExtraNodes(16 * 1024),
-			dispatch_fee_payment: DispatchFeePayment::AtTargetChain,
+			dispatch_fee_payment: DispatchFeePayment::AtSourceChain,
 		});
 	}: receive_messages_proof(RawOrigin::Signed(relayer_id_on_target), relayer_id_on_source, proof, 1, dispatch_weight)
 	verify {

@@ -27,6 +27,9 @@ pallet-bridge-messages   = { workspace = true }
 pallet-bridge-parachains = { workspace = true }
 pallet-fee-market        = { workspace = true }
 
+# frontier
+fp-account = { workspace = true, optional = true }
+
 # substrate
 frame-support              = { workspace = true }
 frame-system               = { workspace = true }
@@ -63,6 +66,9 @@ std = [
 	"pallet-bridge-parachains/std",
 	"pallet-fee-market/std",
 
+	# frontier
+	"fp-account/std",
+
 	# substrate
 	"frame-support/std",
 	"frame-system/std",
@@ -86,4 +92,6 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-bridge-grandpa/runtime-benchmarks",
 	"pallet-bridge-messages/runtime-benchmarks",
+	# frontier
+	"fp-account",
 ]
