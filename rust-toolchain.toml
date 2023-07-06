@@ -1,5 +1,5 @@
 [toolchain]
-channel    = "nightly-2022-11-15"
-components = ["cargo", "clippy", "rustc", "rustfmt", "rust-src"]
+channel    = "nightly-2023-05-22"
+components = ["cargo", "clippy", "rust-src", "rustc", "rustfmt"]
 profile    = "minimal"
 targets    = ["wasm32-unknown-unknown"]
