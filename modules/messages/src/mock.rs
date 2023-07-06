@@ -165,6 +165,10 @@ impl pallet_balances::Config for TestRuntime {
 	type Balance = Balance;
 	type DustRemoval = ();
 	type ExistentialDeposit = ConstU64<1>;
+	type FreezeIdentifier = ();
+	type HoldIdentifier = ();
+	type MaxFreezes = ();
+	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
@@ -387,7 +391,7 @@ impl MessageDeliveryAndDispatchPayment<RuntimeOrigin, AccountId, TestMessageFee>
 				// loop won't proceed if current entry is ahead of received range (begin > end).
 				// this loop is bound by `T::MaxUnconfirmedMessagesAtInboundLane` on the bridged
 				// chain
-				let mut relayer_reward = relayers_rewards.entry(entry.relayer).or_default();
+				let relayer_reward = relayers_rewards.entry(entry.relayer).or_default();
 				for nonce in nonce_begin..=nonce_end {
 					let key = MessageKey { lane_id, nonce };
 					let message_data = OutboundMessages::<T, I>::get(key).expect(
