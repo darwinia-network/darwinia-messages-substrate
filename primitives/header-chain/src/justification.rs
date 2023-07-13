@@ -24,7 +24,7 @@ use codec::{Decode, Encode};
 use finality_grandpa::voter_set::VoterSet;
 use scale_info::TypeInfo;
 // substrate
-use frame_support::RuntimeDebug;
+use frame_support::{RuntimeDebug, RuntimeDebugNoBound};
 use sp_consensus_grandpa::{AuthorityId, AuthoritySignature, SetId};
 use sp_runtime::traits::Header as HeaderT;
 use sp_std::{
@@ -37,7 +37,7 @@ use sp_std::{
 ///
 /// This particular proof is used to prove that headers on a bridged chain
 /// (so not our chain) have been finalized correctly.
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
 pub struct GrandpaJustification<Header: HeaderT> {
 	/// The round (voting period) this justification is valid for.
 	pub round: u64,
