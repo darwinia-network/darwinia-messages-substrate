@@ -39,13 +39,11 @@ use s2s::RewardItem;
 use types::{Order, Relayer, SlashReport};
 // paritytech
 use bp_messages::{LaneId, MessageNonce};
-#[cfg(feature = "std")]
-use frame_support::traits::GenesisBuild;
 use frame_support::{
 	ensure,
 	pallet_prelude::*,
 	traits::{Currency, Get, LockIdentifier, LockableCurrency, WithdrawReasons},
-	PalletId,
+	DefaultNoBound, PalletId,
 };
 use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 use sp_runtime::{
@@ -80,7 +78,7 @@ pub mod pallet {
 		type CollateralPerOrder: Get<BalanceOf<Self, I>>;
 		/// The slot times set
 		#[pallet::constant]
-		type Slot: Get<Self::BlockNumber>;
+		type Slot: Get<BlockNumberFor<Self>>;
 
 		/// Reward parameters
 		#[pallet::constant]
@@ -95,7 +93,7 @@ pub mod pallet {
 		type AssignedRelayerSlashRatio: Get<Permill>;
 		type Slasher: Slasher<Self, I>;
 
-		type Currency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+		type Currency: LockableCurrency<Self::AccountId, Moment = BlockNumberFor<Self>>;
 		type RuntimeEvent: From<Event<Self, I>>
 			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type WeightInfo: WeightInfo;
@@ -117,7 +115,7 @@ pub mod pallet {
 		/// Update market assigned relayers numbers. \[new_assigned_relayers_number\]
 		UpdateAssignedRelayersNumber(u32),
 		/// Slash report
-		FeeMarketSlash(SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>),
+		FeeMarketSlash(SlashReport<T::AccountId, BlockNumberFor<T>, BalanceOf<T, I>>),
 		/// Create new order. \[lane_id, message_nonce, order_fee, assigned_relayers,
 		/// out_of_slots_time\]
 		OrderCreated(
@@ -125,7 +123,7 @@ pub mod pallet {
 			MessageNonce,
 			BalanceOf<T, I>,
 			Vec<T::AccountId>,
-			Option<T::BlockNumber>,
+			Option<BlockNumberFor<T>>,
 		),
 		/// Reward distribute of the order. \[lane_id, message_nonce, rewards\]
 		OrderReward(LaneId, MessageNonce, RewardItem<T::AccountId, BalanceOf<T, I>>),
@@ -181,7 +179,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		(LaneId, MessageNonce),
-		Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
+		Order<T::AccountId, BlockNumberFor<T>, BalanceOf<T, I>>,
 		OptionQuery,
 	>;
 
@@ -199,21 +197,15 @@ pub mod pallet {
 		3
 	}
 
+	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		// Initialization relayers data.[AccoundId, Collateral, Quota]
 		pub relayers: Vec<(T::AccountId, BalanceOf<T, I>, Option<BalanceOf<T, I>>)>,
 	}
 
-	#[cfg(feature = "std")]
-	impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
-		fn default() -> Self {
-			Self { relayers: vec![] }
-		}
-	}
-
 	#[pallet::genesis_build]
-	impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
+	impl<T: Config<I>, I: 'static> BuildGenesisConfig for GenesisConfig<T, I> {
 		fn build(&self) {
 			self.relayers.iter().cloned().for_each(|(id, collateral, quota)| {
 				let _ = Pallet::<T, I>::enroll_and_lock_collateral(
@@ -504,7 +496,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	pub(crate) fn update_relayer_after_slash(
 		who: &T::AccountId,
 		new_collateral: BalanceOf<T, I>,
-		report: SlashReport<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
+		report: SlashReport<T::AccountId, BlockNumberFor<T>, BalanceOf<T, I>>,
 	) {
 		let _ = Self::update_market(
 			|| {
@@ -591,13 +583,13 @@ pub trait Slasher<T: Config<I>, I: 'static> {
 	/// Calculate the concrete slash amount
 	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
-		timeout: T::BlockNumber,
+		timeout: BlockNumberFor<T>,
 	) -> BalanceOf<T, I>;
 }
 
 /// No penalties, more for testing purposes.
 impl<T: Config<I>, I: 'static> Slasher<T, I> for () {
-	fn calc_amount(_: BalanceOf<T, I>, _: T::BlockNumber) -> BalanceOf<T, I> {
+	fn calc_amount(_: BalanceOf<T, I>, _: BlockNumberFor<T>) -> BalanceOf<T, I> {
 		BalanceOf::<T, I>::zero()
 	}
 }

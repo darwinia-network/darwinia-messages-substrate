@@ -49,19 +49,16 @@ use frame_support::{
 use frame_system::mocking::*;
 use sp_core::{ConstU64, H256};
 use sp_runtime::{
-	testing::Header as SubstrateHeader,
 	traits::{BlakeTwo256, IdentityLookup},
-	FixedU128, Perbill,
+	BuildStorage, FixedU128, Perbill,
 };
+
+type Block = MockBlock<TestRuntime>;
 
 pub type AccountId = u64;
 pub type Balance = u64;
-
 pub type TestMessageFee = u64;
 pub type TestRelayer = u64;
-
-type Block = MockBlock<TestRuntime>;
-type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 /// Vec of proved messages, grouped by lane.
 pub type MessagesByLaneVec = Vec<(LaneId, ProvedLaneMessages<Message<TestMessageFee>>)>;
@@ -116,12 +113,8 @@ impl sp_runtime::traits::Convert<H256, AccountId> for AccountIdConverter {
 }
 
 frame_support::construct_runtime! {
-	pub enum TestRuntime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+	pub enum TestRuntime {
+		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Event<T>},
 		Messages: pallet_bridge_messages::{Pallet, Call, Event<T>},
 	}
@@ -137,17 +130,16 @@ impl frame_system::Config for TestRuntime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = Block;
 	type BlockHashCount = ConstU64<250>;
 	type BlockLength = ();
-	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = DbWeight;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type Header = SubstrateHeader;
-	type Index = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -166,13 +158,13 @@ impl pallet_balances::Config for TestRuntime {
 	type DustRemoval = ();
 	type ExistentialDeposit = ConstU64<1>;
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = ();
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
@@ -588,7 +580,7 @@ pub fn unrewarded_relayer(
 
 /// Run pallet test.
 pub fn run_test<T>(test: impl FnOnce() -> T) -> T {
-	let mut t = frame_system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap();
+	let mut t = <frame_system::GenesisConfig<TestRuntime>>::default().build_storage().unwrap();
 	pallet_balances::GenesisConfig::<TestRuntime> { balances: vec![(ENDOWED_ACCOUNT, 1_000_000)] }
 		.assimilate_storage(&mut t)
 		.unwrap();

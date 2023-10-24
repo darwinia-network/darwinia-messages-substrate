@@ -44,7 +44,7 @@ use bp_parachains::{parachain_head_storage_key_at_source, ParaInfo};
 use bp_polkadot_core::parachains::{ParaHash, ParaHasher, ParaHead, ParaHeadsProof, ParaId};
 use bp_runtime::StorageProofError;
 // substrate
-use frame_support::{dispatch::PostDispatchInfo, traits::Contains};
+use frame_support::{dispatch::PostDispatchInfo, traits::Contains, DefaultNoBound};
 use sp_runtime::traits::Header as HeaderT;
 use sp_std::prelude::*;
 
@@ -590,6 +590,7 @@ pub mod pallet {
 		}
 	}
 
+	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		/// Initial pallet operating mode.
@@ -600,19 +601,8 @@ pub mod pallet {
 		pub phantom: sp_std::marker::PhantomData<I>,
 	}
 
-	#[cfg(feature = "std")]
-	impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
-		fn default() -> Self {
-			Self {
-				operating_mode: Default::default(),
-				owner: Default::default(),
-				phantom: Default::default(),
-			}
-		}
-	}
-
 	#[pallet::genesis_build]
-	impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
+	impl<T: Config<I>, I: 'static> BuildGenesisConfig for GenesisConfig<T, I> {
 		fn build(&self) {
 			PalletOperatingMode::<T, I>::put(self.operating_mode);
 			if let Some(ref owner) = self.owner {

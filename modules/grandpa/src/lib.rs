@@ -58,7 +58,7 @@ use bp_runtime::{
 };
 use storage_types::StoredAuthoritySet;
 // substrate
-use frame_support::{ensure, fail, log};
+use frame_support::{ensure, fail, log, DefaultNoBound};
 use frame_system::ensure_signed;
 use sp_consensus_grandpa::{ConsensusLog, GRANDPA_ENGINE_ID};
 use sp_runtime::traits::{Header as HeaderT, Zero};
@@ -134,7 +134,7 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
-		fn on_initialize(_n: T::BlockNumber) -> frame_support::weights::Weight {
+		fn on_initialize(_n: BlockNumberFor<T>) -> frame_support::weights::Weight {
 			<RequestCount<T, I>>::mutate(|count| *count = count.saturating_sub(1));
 
 			T::DbWeight::get().reads_writes(1, 1)
@@ -347,6 +347,7 @@ pub mod pallet {
 	pub type PalletOperatingMode<T: Config<I>, I: 'static = ()> =
 		StorageValue<_, BasicOperatingMode, ValueQuery>;
 
+		#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		/// Optional module owner account.
@@ -355,15 +356,8 @@ pub mod pallet {
 		pub init_data: Option<super::InitializationData<BridgedHeader<T, I>>>,
 	}
 
-	#[cfg(feature = "std")]
-	impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
-		fn default() -> Self {
-			Self { owner: None, init_data: None }
-		}
-	}
-
 	#[pallet::genesis_build]
-	impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
+	impl<T: Config<I>, I: 'static> BuildGenesisConfig for GenesisConfig<T, I> {
 		fn build(&self) {
 			if let Some(ref owner) = self.owner {
 				<PalletOwner<T, I>>::put(owner);

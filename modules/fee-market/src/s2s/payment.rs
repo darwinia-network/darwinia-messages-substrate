@@ -297,7 +297,7 @@ where
 /// order. The slash part will be transferred to fund_account first, and then distributed to various
 /// relayers.
 pub(crate) fn slash_assigned_relayer<T: Config<I>, I: 'static>(
-	order: &Order<T::AccountId, T::BlockNumber, BalanceOf<T, I>>,
+	order: &Order<T::AccountId, BlockNumberFor<T>, BalanceOf<T, I>>,
 	who: &T::AccountId,
 	fund_account: &T::AccountId,
 	amount: BalanceOf<T, I>,

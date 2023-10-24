@@ -489,7 +489,7 @@ pub mod target {
 	impl<DecodedCall> FromBridgedChainEncodedMessageCall<DecodedCall> {
 		/// Create encoded call.
 		pub fn new(encoded_call: Vec<u8>) -> Self {
-			FromBridgedChainEncodedMessageCall { encoded_call, _marker: PhantomData::default() }
+			FromBridgedChainEncodedMessageCall { encoded_call, _marker: PhantomData }
 		}
 	}
 

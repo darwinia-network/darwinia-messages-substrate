@@ -25,31 +25,26 @@ use frame_support::{
 	traits::{ConstU32, Everything},
 	weights::Weight,
 };
-use frame_system::mocking::*;
+use frame_system::{mocking::*, pallet_prelude::BlockNumberFor};
 use sp_core::{sr25519::Signature, ConstU64};
 use sp_runtime::{
-	testing::{Header, H256},
+	testing::H256,
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
 
-pub type AccountId = u64;
-pub type TestHeader = crate::BridgedHeader<TestRuntime, ()>;
-pub type TestNumber = crate::BridgedBlockNumber<TestRuntime, ()>;
-
 type Block = MockBlock<TestRuntime>;
-type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
+
+pub type AccountId = u64;
+pub type TestHeader = sp_runtime::testing::Header;
+pub type TestNumber = u64;
 
 pub const MAX_BRIDGED_AUTHORITIES: u32 = 2048;
 pub const MAX_HEADER_SIZE: u32 = 65536;
 
 frame_support::construct_runtime! {
-	pub enum TestRuntime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+	pub enum TestRuntime {
+		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Grandpa: grandpa::{Pallet, Call},
 	}
 }
@@ -63,17 +58,16 @@ impl frame_system::Config for TestRuntime {
 	type AccountData = ();
 	type AccountId = AccountId;
 	type BaseCallFilter = Everything;
+	type Block = Block;
 	type BlockHashCount = ConstU64<250>;
 	type BlockLength = ();
-	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type Header = Header;
-	type Index = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -106,10 +100,10 @@ pub struct TestBridgedChain;
 impl Chain for TestBridgedChain {
 	type AccountId = AccountId;
 	type Balance = u64;
-	type BlockNumber = <TestRuntime as frame_system::Config>::BlockNumber;
+	type BlockNumber = BlockNumberFor<TestRuntime>;
 	type Hash = <TestRuntime as frame_system::Config>::Hash;
 	type Hasher = <TestRuntime as frame_system::Config>::Hashing;
-	type Header = <TestRuntime as frame_system::Config>::Header;
+	type Header = TestHeader;
 	type Index = u64;
 	type Signature = Signature;
 

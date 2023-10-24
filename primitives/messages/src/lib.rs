@@ -28,6 +28,7 @@ pub mod target_chain;
 use bitvec::prelude::*;
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::{BasicOperatingMode, OperatingMode};
 // substrate
@@ -63,8 +64,19 @@ impl Parameter for () {
 }
 
 /// Messages pallet operating mode.
-#[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
-#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+#[derive(
+	Clone,
+	Copy,
+	PartialEq,
+	Eq,
+	Serialize,
+	Deserialize,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo,
+)]
 pub enum MessagesOperatingMode {
 	/// Basic operating mode (Normal/Halted)
 	Basic(BasicOperatingMode),

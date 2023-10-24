@@ -12,7 +12,7 @@ bitvec                = { workspace = true }
 codec                 = { package = "parity-scale-codec", workspace = true, features = ["bit-vec"] }
 impl-trait-for-tuples = { version = "0.2" }
 scale-info            = { workspace = true, features = ["bit-vec"] }
-serde                 = { workspace = true, optional = true }
+serde                 = { workspace = true }
 
 # darwinia-messages-substrate
 bp-runtime = { workspace = true }
@@ -34,7 +34,7 @@ std = [
 	"bitvec/std",
 	"codec/std",
 	"scale-info/std",
-	"serde",
+	"serde/std",
 
 	# darwinia-messages-substrate
 	"bp-runtime/std",

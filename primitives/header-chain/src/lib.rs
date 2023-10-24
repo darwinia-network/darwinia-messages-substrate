@@ -27,7 +27,6 @@ use core::fmt::Debug;
 // crates.io
 use codec::{Codec, Decode, Encode, EncodeLike};
 use scale_info::TypeInfo;
-#[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::BasicOperatingMode;
@@ -67,8 +66,9 @@ impl AuthoritySet {
 /// Data required for initializing the bridge pallet.
 ///
 /// The bridge needs to know where to start its sync from, and this provides that initial context.
-#[derive(Clone, Default, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(
+	Clone, Default, PartialEq, Eq, Serialize, Deserialize, Encode, Decode, RuntimeDebug, TypeInfo,
+)]
 pub struct InitializationData<H: HeaderT> {
 	/// The header from which we should start syncing.
 	pub header: Box<H>,

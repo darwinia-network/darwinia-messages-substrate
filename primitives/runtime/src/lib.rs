@@ -43,6 +43,7 @@ pub use sp_runtime::paste;
 use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use num_traits::{CheckedSub, One};
 use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 // substrate
 use frame_support::{
 	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
@@ -351,8 +352,19 @@ pub enum OwnedBridgeModuleError {
 }
 
 /// Basic operating modes for a bridges module (Normal/Halted).
-#[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
-#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+#[derive(
+	Clone,
+	Copy,
+	PartialEq,
+	Eq,
+	Serialize,
+	Deserialize,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo,
+)]
 pub enum BasicOperatingMode {
 	/// Normal mode, when all operations are allowed.
 	Normal,

@@ -490,17 +490,15 @@ mod tests {
 	use scale_info::TypeInfo;
 	use sp_core::H256;
 	use sp_runtime::{
-		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
 		transaction_validity::{InvalidTransaction, TransactionValidityError},
-		Perbill,
+		BuildStorage, Perbill,
 	};
+
+	type Block = MockBlock<TestRuntime>;
 
 	type AccountId = u64;
 	type BridgeMessageId = [u8; 4];
-
-	type Block = MockBlock<TestRuntime>;
-	type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 	const SOURCE_CHAIN_ID: ChainId = *b"srce";
 	const TARGET_CHAIN_ID: ChainId = *b"trgt";
@@ -536,13 +534,9 @@ mod tests {
 	}
 
 	frame_support::construct_runtime! {
-		pub enum TestRuntime where
-			Block = Block,
-			NodeBlock = Block,
-			UncheckedExtrinsic = UncheckedExtrinsic,
-		{
+		pub enum TestRuntime {
 			RootTesting: pallet_root_testing,
-			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+			System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 			Dispatch: call_dispatch::{Pallet, Call, Event<T>},
 		}
 	}
@@ -560,17 +554,16 @@ mod tests {
 		type AccountData = ();
 		type AccountId = AccountId;
 		type BaseCallFilter = frame_support::traits::Everything;
+		type Block = Block;
 		type BlockHashCount = BlockHashCount;
 		type BlockLength = ();
-		type BlockNumber = u64;
 		type BlockWeights = ();
 		type DbWeight = ();
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
-		type Header = Header;
-		type Index = u64;
 		type Lookup = IdentityLookup<Self::AccountId>;
 		type MaxConsumers = frame_support::traits::ConstU32<16>;
+		type Nonce = u64;
 		type OnKilledAccount = ();
 		type OnNewAccount = ();
 		type OnSetCode = ();
@@ -635,7 +628,7 @@ mod tests {
 	}
 
 	fn new_test_ext() -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap();
+		let t = <frame_system::GenesisConfig<TestRuntime>>::default().build_storage().unwrap();
 		sp_io::TestExternalities::new(t)
 	}
 

@@ -80,7 +80,7 @@ use bp_messages::{
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // substrate
-use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get};
+use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get, DefaultNoBound};
 use sp_core::H256;
 use sp_runtime::traits::Convert;
 use sp_std::{cell::RefCell, marker::PhantomData, prelude::*};
@@ -681,7 +681,8 @@ pub mod pallet {
 	pub type OutboundMessages<T: Config<I>, I: 'static = ()> =
 		StorageMap<_, Blake2_128Concat, MessageKey, StoredMessageData<T, I>>;
 
-	#[pallet::genesis_config]
+		#[derive(DefaultNoBound)]
+		#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		/// Initial pallet operating mode.
 		pub operating_mode: MessagesOperatingMode,
@@ -691,19 +692,8 @@ pub mod pallet {
 		pub phantom: sp_std::marker::PhantomData<I>,
 	}
 
-	#[cfg(feature = "std")]
-	impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
-		fn default() -> Self {
-			Self {
-				operating_mode: Default::default(),
-				owner: Default::default(),
-				phantom: Default::default(),
-			}
-		}
-	}
-
 	#[pallet::genesis_build]
-	impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
+	impl<T: Config<I>, I: 'static> BuildGenesisConfig for GenesisConfig<T, I> {
 		fn build(&self) {
 			PalletOperatingMode::<T, I>::put(self.operating_mode);
 			if let Some(ref owner) = self.owner {

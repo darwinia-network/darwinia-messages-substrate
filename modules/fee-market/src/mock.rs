@@ -46,9 +46,8 @@ use frame_system::mocking::*;
 use pallet_bridge_messages::outbound_lane;
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup, UniqueSaturatedInto},
-	FixedU128, Permill,
+	BuildStorage, FixedU128, Permill,
 };
 // --- darwinia-network ---
 use crate::{
@@ -61,7 +60,7 @@ use crate::{
 };
 
 type Block = MockBlock<Test>;
-type UncheckedExtrinsic = MockUncheckedExtrinsic<Test>;
+
 pub(crate) type Balance = u64;
 pub(crate) type AccountId = u64;
 
@@ -72,17 +71,16 @@ impl frame_system::Config for Test {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = Everything;
+	type Block = Block;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = DbWeight;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type Header = Header;
-	type Index = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -104,13 +102,13 @@ impl pallet_balances::Config for Test {
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
@@ -468,7 +466,7 @@ pub struct TestSlasher;
 impl<T: Config<I>, I: 'static> Slasher<T, I> for TestSlasher {
 	fn calc_amount(
 		collateral_per_order: BalanceOf<T, I>,
-		timeout: T::BlockNumber,
+		timeout: BlockNumberFor<T>,
 	) -> BalanceOf<T, I> {
 		let slash_each_block = 2;
 		let slash_value = UniqueSaturatedInto::<u128>::unique_saturated_into(timeout)
@@ -495,12 +493,8 @@ impl Config for Test {
 }
 
 frame_support::construct_runtime! {
-	pub enum Test where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+	pub enum Test {
+		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		FeeMarket: pallet_fee_market::{Pallet, Call, Storage, Event<T>},
@@ -531,7 +525,7 @@ impl ExtBuilder {
 	}
 
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let mut t = <frame_system::GenesisConfig<Test>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
 			.assimilate_storage(&mut t)

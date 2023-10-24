@@ -22,33 +22,27 @@ use frame_support::{traits::IsInVec, weights::Weight};
 use frame_system::mocking::*;
 use sp_core::ConstU32;
 use sp_runtime::{
-	testing::{Header, H256},
+	testing::H256,
 	traits::{BlakeTwo256, Header as HeaderT, IdentityLookup},
 	Perbill,
 };
 
 use crate as pallet_bridge_parachains;
 
+type Block = MockBlock<TestRuntime>;
+
 pub type AccountId = u64;
 pub type TestNumber = u64;
-
 pub type RelayBlockHeader =
 	sp_runtime::generic::Header<crate::RelayBlockNumber, crate::RelayBlockHasher>;
-
-type Block = MockBlock<TestRuntime>;
-type UncheckedExtrinsic = MockUncheckedExtrinsic<TestRuntime>;
 
 pub const PARAS_PALLET_NAME: &str = "Paras";
 pub const UNTRACKED_PARACHAIN_ID: u32 = 10;
 pub const MAXIMAL_PARACHAIN_HEAD_SIZE: u32 = 512;
 
 frame_support::construct_runtime! {
-	pub enum TestRuntime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+	pub enum TestRuntime {
+		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Grandpa1: pallet_bridge_grandpa::<Instance1>::{Pallet},
 		Grandpa2: pallet_bridge_grandpa::<Instance2>::{Pallet},
 		Parachains: pallet_bridge_parachains::{Call, Pallet, Event<T>},
@@ -65,17 +59,16 @@ impl frame_system::Config for TestRuntime {
 	type AccountData = ();
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = Block;
 	type BlockHashCount = BlockHashCount;
 	type BlockLength = ();
-	type BlockNumber = TestNumber;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type Header = Header;
-	type Index = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
