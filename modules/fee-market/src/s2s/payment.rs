@@ -25,10 +25,7 @@ use bp_messages::{
 	MessageNonce, UnrewardedRelayer, VerificationError,
 };
 // --- paritytech ---
-use frame_support::{
-	log,
-	traits::{Currency as CurrencyT, ExistenceRequirement, Get},
-};
+use frame_support::traits::{Currency as CurrencyT, ExistenceRequirement, Get};
 use sp_runtime::traits::{AccountIdConversion, CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
 use sp_std::{
 	cmp::{max, min},

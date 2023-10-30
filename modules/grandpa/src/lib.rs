@@ -58,7 +58,7 @@ use bp_runtime::{
 };
 use storage_types::StoredAuthoritySet;
 // substrate
-use frame_support::{ensure, fail, log, DefaultNoBound};
+use frame_support::{ensure, fail, DefaultNoBound};
 use frame_system::ensure_signed;
 use sp_consensus_grandpa::{ConsensusLog, GRANDPA_ENGINE_ID};
 use sp_runtime::traits::{Header as HeaderT, Zero};
@@ -347,7 +347,7 @@ pub mod pallet {
 	pub type PalletOperatingMode<T: Config<I>, I: 'static = ()> =
 		StorageValue<_, BasicOperatingMode, ValueQuery>;
 
-		#[derive(DefaultNoBound)]
+	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		/// Optional module owner account.
@@ -531,12 +531,12 @@ pub mod pallet {
 		let initial_hash = header.hash();
 		let header = StoredBridgedHeader::<T, I>::try_from_inner(*header).map_err(|e| {
 			log::error!(
-					target: LOG_TARGET,
-					"Failed to initialize bridge. Size of header {:?} ({}) is larger that the configured value {}",
-					initial_hash,
-					e.value_size,
-					e.maximal_size,
-				);
+				target: LOG_TARGET,
+				"Failed to initialize bridge. Size of header {:?} ({}) is larger that the configured value {}",
+				initial_hash,
+				e.value_size,
+				e.maximal_size,
+			);
 
 			Error::<T, I>::TooLargeHeader
 		})?;

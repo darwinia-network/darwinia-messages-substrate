@@ -27,7 +27,8 @@ use bp_messages::{
 	UnrewardedRelayer,
 };
 // substrate
-use frame_support::{traits::Get, RuntimeDebug};
+use frame_support::traits::Get;
+use sp_runtime::RuntimeDebug;
 use sp_std::collections::vec_deque::VecDeque;
 
 /// Outbound lane storage.

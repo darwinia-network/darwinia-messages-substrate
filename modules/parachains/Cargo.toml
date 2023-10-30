@@ -8,6 +8,7 @@ version = "0.1.0"
 [dependencies]
 # crates.io
 codec      = { package = "parity-scale-codec", workspace = true }
+log        = { workspace = true }
 scale-info = { workspace = true }
 serde      = { workspace = true, optional = true }
 

@@ -23,7 +23,8 @@ use crate::{
 };
 use bp_runtime::Size;
 // substrate
-use frame_support::{weights::Weight, Parameter, RuntimeDebug};
+use frame_support::{weights::Weight, Parameter};
+use sp_runtime::RuntimeDebug;
 use sp_std::{collections::vec_deque::VecDeque, fmt::Debug, ops::RangeInclusive};
 
 /// Error message that is used in `ForbidOutboundMessages` implementation.

@@ -12,6 +12,7 @@ version     = "0.1.0"
 [dependencies]
 # crates.io
 codec      = { package = "parity-scale-codec", workspace = true }
+log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia-messages-substrate
@@ -51,8 +52,8 @@ std = [
 	"pallet-timestamp/std",
 	"sp-core/std",
 	"sp-io/std",
-	"sp-std/std",
 	"sp-runtime/std",
+	"sp-std/std",
 	# substrate optional
 	"frame-benchmarking?/std",
 

@@ -18,6 +18,7 @@ bp-runtime       = { workspace = true }
 # substrate
 frame-support = { workspace = true }
 sp-core       = { workspace = true }
+sp-runtime    = { workspace = true }
 
 [features]
 default = ["std"]
@@ -33,4 +34,5 @@ std = [
 	# substrate
 	"frame-support/std",
 	"sp-core/std",
+	"sp-runtime/std",
 ]

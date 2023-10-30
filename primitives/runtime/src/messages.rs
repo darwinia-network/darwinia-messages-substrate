@@ -20,7 +20,8 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // substrate
-use frame_support::{weights::Weight, RuntimeDebug};
+use frame_support::weights::Weight;
+use sp_runtime::RuntimeDebug;
 
 /// Where message dispatch fee is paid?
 #[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]

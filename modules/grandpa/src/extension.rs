@@ -18,7 +18,7 @@
 use crate::{Config, Pallet};
 use bp_runtime::FilterCall;
 // substrate
-use frame_support::{dispatch::CallableCallFor, log, traits::IsSubType};
+use frame_support::{dispatch::CallableCallFor, traits::IsSubType};
 use sp_runtime::{
 	traits::Header,
 	transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction},

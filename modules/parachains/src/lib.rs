@@ -74,7 +74,7 @@ pub mod pallet {
 		BasicOperatingMode, BoundedStorageValue, OwnedBridgeModule, StorageDoubleMapKeyProvider,
 		StorageMapKeyProvider,
 	};
-	use frame_support::{log, pallet_prelude::*};
+	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
 	/// Stored parachain head of given parachains pallet.

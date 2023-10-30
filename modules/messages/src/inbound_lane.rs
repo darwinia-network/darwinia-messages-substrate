@@ -27,7 +27,8 @@ use bp_messages::{
 	ReceivalResult, UnrewardedRelayer,
 };
 // substrate
-use frame_support::{traits::Get, RuntimeDebug};
+use frame_support::traits::Get;
+use sp_runtime::RuntimeDebug;
 
 /// Inbound lane storage.
 pub trait InboundLaneStorage {

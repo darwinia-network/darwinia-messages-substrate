@@ -28,8 +28,9 @@ use bp_polkadot_core::{
 };
 use bp_runtime::{StorageDoubleMapKeyProvider, StorageMapKeyProvider};
 // substrate
-use frame_support::{Blake2_128Concat, RuntimeDebug, Twox64Concat};
+use frame_support::{Blake2_128Concat, Twox64Concat};
 use sp_core::storage::StorageKey;
+use sp_runtime::RuntimeDebug;
 
 /// Best known parachain head hash.
 #[derive(Clone, PartialEq, Decode, Encode, MaxEncodedLen, RuntimeDebug, TypeInfo)]

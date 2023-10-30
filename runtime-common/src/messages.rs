@@ -40,11 +40,10 @@ use bp_runtime::{messages::MessageDispatchResult, ChainId, Size, StorageProofChe
 use frame_support::{
 	traits::{Currency, ExistenceRequirement, Get},
 	weights::{Weight, WeightToFee},
-	RuntimeDebug,
 };
 use sp_runtime::{
 	traits::{CheckedAdd, CheckedDiv, CheckedMul, Header as HeaderT, Saturating, Zero},
-	FixedPointNumber, FixedPointOperand,
+	FixedPointNumber, FixedPointOperand, RuntimeDebug,
 };
 use sp_std::prelude::*;
 use sp_trie::StorageProof;

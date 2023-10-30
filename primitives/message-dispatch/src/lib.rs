@@ -28,8 +28,7 @@ use bp_runtime::{
 	ChainId, Size,
 };
 // substrate
-use frame_support::RuntimeDebug;
-use sp_runtime::transaction_validity::TransactionValidityError;
+use sp_runtime::{transaction_validity::TransactionValidityError, RuntimeDebug};
 use sp_std::prelude::*;
 
 /// Message dispatch weight.

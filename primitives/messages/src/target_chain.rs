@@ -20,8 +20,9 @@ use crate::{LaneId, Message, MessageData, MessageKey, OutboundLaneData, Verifica
 
 use bp_runtime::{messages::MessageDispatchResult, Size};
 use codec::{Decode, Encode, Error as CodecError};
-use frame_support::{weights::Weight, Parameter, RuntimeDebug};
+use frame_support::{weights::Weight, Parameter};
 use scale_info::TypeInfo;
+use sp_runtime::RuntimeDebug;
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 /// Proved messages from the source chain.

@@ -32,7 +32,8 @@ use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::{BasicOperatingMode, OperatingMode};
 // substrate
-use frame_support::{PalletError, RuntimeDebug};
+use frame_support::PalletError;
+use sp_runtime::RuntimeDebug;
 use sp_std::{collections::vec_deque::VecDeque, prelude::*};
 
 // Weight is reexported to avoid additional frame-support dependencies in related crates.

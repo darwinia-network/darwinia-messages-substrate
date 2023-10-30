@@ -45,15 +45,14 @@ use num_traits::{CheckedSub, One};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 // substrate
-use frame_support::{
-	log, pallet_prelude::DispatchResult, PalletError, RuntimeDebug, StorageHasher, StorageValue,
-};
+use frame_support::{pallet_prelude::DispatchResult, PalletError, StorageHasher, StorageValue};
 use frame_system::RawOrigin;
 use sp_core::{storage::StorageKey, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{BadOrigin, Header as HeaderT},
 	transaction_validity::TransactionValidity,
+	RuntimeDebug,
 };
 use sp_std::{fmt::Debug, prelude::*};
 

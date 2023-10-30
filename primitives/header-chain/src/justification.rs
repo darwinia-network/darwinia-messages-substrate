@@ -24,9 +24,9 @@ use codec::{Decode, Encode};
 use finality_grandpa::voter_set::VoterSet;
 use scale_info::TypeInfo;
 // substrate
-use frame_support::{RuntimeDebug, RuntimeDebugNoBound};
+use frame_support::RuntimeDebugNoBound;
 use sp_consensus_grandpa::{AuthorityId, AuthoritySignature, SetId};
-use sp_runtime::traits::Header as HeaderT;
+use sp_runtime::{traits::Header as HeaderT, RuntimeDebug};
 use sp_std::{
 	collections::{btree_map::BTreeMap, btree_set::BTreeSet},
 	prelude::*,

@@ -30,8 +30,8 @@ use serde::{Deserialize, Serialize};
 // darwinia-network
 use bp_runtime::Size;
 // substrate
-use frame_support::RuntimeDebug;
 use sp_core::Hasher;
+use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 
 /// Parachain head hash.

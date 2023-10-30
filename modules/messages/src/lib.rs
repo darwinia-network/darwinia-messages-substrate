@@ -80,7 +80,7 @@ use bp_messages::{
 };
 use bp_runtime::{BasicOperatingMode, ChainId, OwnedBridgeModule, Size};
 // substrate
-use frame_support::{dispatch::PostDispatchInfo, ensure, fail, log, traits::Get, DefaultNoBound};
+use frame_support::{dispatch::PostDispatchInfo, ensure, fail, traits::Get, DefaultNoBound};
 use sp_core::H256;
 use sp_runtime::traits::Convert;
 use sp_std::{cell::RefCell, marker::PhantomData, prelude::*};
@@ -681,8 +681,8 @@ pub mod pallet {
 	pub type OutboundMessages<T: Config<I>, I: 'static = ()> =
 		StorageMap<_, Blake2_128Concat, MessageKey, StoredMessageData<T, I>>;
 
-		#[derive(DefaultNoBound)]
-		#[pallet::genesis_config]
+	#[derive(DefaultNoBound)]
+	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
 		/// Initial pallet operating mode.
 		pub operating_mode: MessagesOperatingMode,

@@ -23,7 +23,7 @@ use crate::{
 };
 use pallet_bridge_messages::{Config, Pallet};
 // substrate
-use frame_support::{dispatch::CallableCallFor, log, traits::IsSubType};
+use frame_support::{dispatch::CallableCallFor, traits::IsSubType};
 use sp_runtime::transaction_validity::TransactionValidity;
 
 /// Validate messages in order to avoid "mining" messages delivery and delivery confirmation
@@ -59,7 +59,7 @@ impl<
 					log::trace!(
 						target: pallet_bridge_messages::LOG_TARGET,
 						"Rejecting obsolete messages delivery transaction: \
-                            lane {:?}, bundled {:?}, best {:?}",
+							lane {:?}, bundled {:?}, best {:?}",
 						proof.lane,
 						proof.nonces_end,
 						inbound_lane_data.last_delivered_nonce(),
@@ -81,7 +81,7 @@ impl<
 					log::trace!(
 						target: pallet_bridge_messages::LOG_TARGET,
 						"Rejecting obsolete messages confirmation transaction: \
-                            lane {:?}, bundled {:?}, best {:?}",
+							lane {:?}, bundled {:?}, best {:?}",
 						proof.lane,
 						latest_delivered_nonce,
 						outbound_lane_data.latest_received_nonce,

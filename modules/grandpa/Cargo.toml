@@ -9,6 +9,7 @@ version = "0.1.0"
 # crates.io
 codec            = { package = "parity-scale-codec", workspace = true }
 finality-grandpa = { workspace = true }
+log              = { workspace = true }
 num-traits       = { workspace = true }
 scale-info       = { workspace = true }
 serde            = { workspace = true, optional = true }
